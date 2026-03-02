@@ -1,14 +1,12 @@
 ---
-import { env } from "cloudflare:workers";
+import { db } from "@/db";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/d1";
 import Layout from "../../../../layouts/Layout.astro";
 import { Rooms } from "../../../../schemas/chatDB-schema";
 import { DiceRoller } from "./_components/DiceRoller";
 
 export const prerender = false;
 const roomName = Astro.params["roomName"] ?? "";
-const db = drizzle(env.chatDB);
 const room = (
   await db.select().from(Rooms).where(eq(Rooms.id, roomName)).limit(1).all()
 )[0];

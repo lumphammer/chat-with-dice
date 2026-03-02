@@ -41,6 +41,7 @@
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "astro": "6.0.0-beta.15",
+    "better-auth": "^1.5.1",
     "better-sqlite3": "^12.6.2",
     "daisyui": "^5.5.18",
     "dotenv": "^17.2.4",
