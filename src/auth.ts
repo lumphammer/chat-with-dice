@@ -1,11 +1,13 @@
 import { db } from "@/db";
+import * as schema from "@/schemas/chatDB-schema";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-
-// your drizzle instance
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "sqlite", // or "mysql", "sqlite"
+    provider: "sqlite", // or "pg" or "mysql"
+    schema,
+    usePlural: true,
   }),
+  //... the rest of your config
 });
