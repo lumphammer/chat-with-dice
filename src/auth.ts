@@ -5,6 +5,7 @@ import * as schema from "@/schemas/chatDB-schema";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
+import { waitUntil } from "cloudflare:workers";
 
 // see
 // https://github.com/better-auth/better-auth/issues/6766#issuecomment-3704724493
@@ -41,15 +42,16 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     // Avoid awaiting to prevent timing attacks.
     sendVerificationEmail: async ({ user, url }) => {
-      console.log("sendVerificationEmail", { user, url });
-      void sendEmail({
-        apiKey: RESEND_API_KEY,
-        from: RESEND_FROM_EMAIL,
-        to: user.email,
-        subject: "Verify your Chat with Dice email address",
-        html: verificationEmailHtml(url),
-        text: `Verify your email address by visiting: ${url}`,
-      });
+      waitUntil(
+        sendEmail({
+          apiKey: RESEND_API_KEY,
+          from: RESEND_FROM_EMAIL,
+          to: user.email,
+          subject: "Verify your Chat with Dice email address",
+          html: verificationEmailHtml(url),
+          text: `Verify your email address by visiting: ${url}`,
+        }),
+      );
     },
   },
 
@@ -73,14 +75,16 @@ export const auth = betterAuth({
       // Avoid awaiting to prevent timing attacks.
       sendVerificationOTP: async ({ email, otp, type }) => {
         if (type === "forget-password") {
-          void sendEmail({
-            apiKey: RESEND_API_KEY,
-            from: RESEND_FROM_EMAIL,
-            to: email,
-            subject: "Your Chat with Dice password reset code",
-            html: passwordResetEmailHtml(otp),
-            text: `Your password reset code is: ${otp}\n\nIt expires in 5 minutes.`,
-          });
+          waitUntil(
+            sendEmail({
+              apiKey: RESEND_API_KEY,
+              from: RESEND_FROM_EMAIL,
+              to: email,
+              subject: "Your Chat with Dice password reset code",
+              html: passwordResetEmailHtml(otp),
+              text: `Your password reset code is: ${otp}\n\nIt expires in 5 minutes.`,
+            }),
+          );
         }
       },
     }),

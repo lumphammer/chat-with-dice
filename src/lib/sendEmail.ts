@@ -15,8 +15,6 @@ export async function sendEmail({
   html,
   text,
 }: SendEmailOptions): Promise<void> {
-  throw new Error("OH NO YOU DON'T");
-
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -30,5 +28,4 @@ export async function sendEmail({
     const body = await response.text();
     throw new Error(`Resend API error ${response.status}: ${body}`);
   }
-  console.log("\n\nSENT OKAY", response);
 }
