@@ -14,6 +14,7 @@ export function SignupForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState<LoadingState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
 
   const isLoading = loading !== "idle";
 
@@ -39,7 +40,7 @@ export function SignupForm() {
       return;
     }
 
-    window.location.href = "/";
+    setDone(true);
   }
 
   async function handleSocialSignIn(provider: "github" | "google") {
@@ -51,6 +52,32 @@ export function SignupForm() {
       setLoading("idle");
     }
     // on success the browser is redirected by the OAuth flow
+  }
+
+  if (done) {
+    return (
+      <div className="card bg-base-100 w-full max-w-md shadow-xl">
+        <div className="card-body gap-4 text-center">
+          <div
+            className="bg-success/15 mx-auto flex size-14 items-center
+              justify-center rounded-full"
+          >
+            <Mail size={28} className="text-success" />
+          </div>
+          <h2 className="text-xl font-bold">Check your inbox</h2>
+          <p className="text-base-content/70 text-sm">
+            We've sent a verification link to <strong>{email}</strong>. Click it
+            to activate your account.
+          </p>
+          <p className="text-base-content/50 text-xs">
+            Already verified?{" "}
+            <a href="/signin" className="link link-primary">
+              Sign in
+            </a>
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

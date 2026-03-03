@@ -2,6 +2,8 @@ import { authClient } from "@/lib/auth-client";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 
+const HTTP_FORBIDDEN = 403;
+
 type LoadingState = "idle" | "email" | "github" | "google";
 
 export function SigninForm() {
@@ -10,12 +12,17 @@ export function SigninForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState<LoadingState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
 
   const isLoading = loading !== "idle";
 
   async function handleEmailSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     setError(null);
+    setEmailNotVerified(false);
+    setResendSent(false);
     setLoading("email");
 
     const { error: authError } = await authClient.signIn.email({
@@ -24,12 +31,23 @@ export function SigninForm() {
     });
 
     if (authError) {
-      setError(authError.message ?? "Sign-in failed. Please try again.");
+      if (authError.status === HTTP_FORBIDDEN) {
+        setEmailNotVerified(true);
+      } else {
+        setError(authError.message ?? "Sign-in failed. Please try again.");
+      }
       setLoading("idle");
       return;
     }
 
     window.location.href = "/";
+  }
+
+  async function handleResendVerification() {
+    setResendLoading(true);
+    await authClient.sendVerificationEmail({ email, callbackURL: "/" });
+    setResendLoading(false);
+    setResendSent(true);
   }
 
   async function handleSocialSignIn(provider: "github" | "google") {
@@ -56,6 +74,26 @@ export function SigninForm() {
         {error && (
           <div role="alert" className="alert alert-error text-sm">
             <span>{error}</span>
+          </div>
+        )}
+
+        {emailNotVerified && (
+          <div
+            role="alert"
+            className="alert alert-warning flex-col items-start gap-2 text-sm"
+          >
+            <span>Please verify your email address before signing in.</span>
+            <button
+              type="button"
+              className="btn btn-xs btn-warning"
+              disabled={resendLoading || resendSent}
+              onClick={handleResendVerification}
+            >
+              {resendLoading && (
+                <span className="loading loading-spinner loading-xs" />
+              )}
+              {resendSent ? "Email sent!" : "Resend verification email"}
+            </button>
           </div>
         )}
 
@@ -111,6 +149,12 @@ export function SigninForm() {
             )}
             Sign in
           </button>
+
+          <div className="text-right text-sm">
+            <a href="/forgot-password" className="link link-primary opacity-70">
+              Forgot password?
+            </a>
+          </div>
         </form>
 
         <div className="divider text-xs">or</div>
