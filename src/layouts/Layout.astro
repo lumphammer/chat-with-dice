@@ -1,5 +1,6 @@
 ---
 import Logo from "../assets/logo.svg";
+import { NavBarAccount } from "../components/NavBarAccount";
 import "../styles/global.css";
 
 const url = new URL(Astro.request.url);
@@ -17,6 +18,15 @@ type Props = {
 };
 
 const { title } = Astro.props;
+
+const serverUser = Astro.locals.user;
+const initialUser = serverUser
+  ? {
+      name: serverUser.name ?? null,
+      email: serverUser.email,
+      image: serverUser.image ?? null,
+    }
+  : null;
 ---
 
 <html lang="en" class="h-full">
@@ -54,7 +64,14 @@ const { title } = Astro.props;
         </h1>
       </div>
       <div class="navbar-end gap-4">
-        <a class="link link-hover link-primary" href={parentUrl}>Up</a>
+        {
+          parentUrl && (
+            <a class="link link-hover link-primary" href={parentUrl}>
+              Up
+            </a>
+          )
+        }
+        <NavBarAccount client:load initialUser={initialUser} />
       </div>
       <hr />
     </header>
