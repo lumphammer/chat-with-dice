@@ -42,7 +42,7 @@ export function NavBarAccount({ initialUser }: Props) {
 
   if (!user) {
     return (
-      <a href="/signup" className="btn btn-primary btn-sm">
+      <a href="/signin" className="btn btn-primary btn-sm">
         Sign in
       </a>
     );

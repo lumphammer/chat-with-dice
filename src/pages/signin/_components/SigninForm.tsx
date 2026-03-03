@@ -13,7 +13,7 @@ export function SigninForm() {
 
   const isLoading = loading !== "idle";
 
-  async function handleEmailSubmit(e: React.FormEvent) {
+  async function handleEmailSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     setError(null);
     setLoading("email");
@@ -46,7 +46,12 @@ export function SigninForm() {
   return (
     <div className="card bg-base-100 w-full max-w-md shadow-xl">
       <div className="card-body gap-4">
-        <h2 className="card-title justify-center text-2xl">Sign in</h2>
+        <p className="text-center text-sm font-medium">
+          Don't have an account?{" "}
+          <a href="/signup" className="link link-primary font-semibold">
+            Sign up
+          </a>
+        </p>
 
         {error && (
           <div role="alert" className="alert alert-error text-sm">
@@ -139,13 +144,6 @@ export function SigninForm() {
             Continue with Google
           </button>
         </div>
-
-        <p className="mt-2 text-center text-sm opacity-60">
-          Don't have an account?{" "}
-          <a href="/signup" className="link link-primary">
-            Sign up
-          </a>
-        </p>
       </div>
     </div>
   );

@@ -56,7 +56,12 @@ export function SignupForm() {
   return (
     <div className="card bg-base-100 w-full max-w-md shadow-xl">
       <div className="card-body gap-4">
-        <h2 className="card-title justify-center text-2xl">Create account</h2>
+        <p className="text-center text-sm font-medium">
+          Already have an account?{" "}
+          <a href="/signin" className="link link-primary font-semibold">
+            Sign in
+          </a>
+        </p>
 
         {error && (
           <div role="alert" className="alert alert-error text-sm">
@@ -204,13 +209,6 @@ export function SignupForm() {
             Continue with Google
           </button>
         </div>
-
-        <p className="mt-2 text-center text-sm opacity-60">
-          Already have an account?{" "}
-          <a href="/signin" className="link link-primary">
-            Sign in
-          </a>
-        </p>
       </div>
     </div>
   );
