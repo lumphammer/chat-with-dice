@@ -1,5 +1,5 @@
+import { envOrDie } from "./lib/envOrDie";
 import { db } from "@/db";
-import { envOrDie } from "@/lib/envOrDie";
 import { sendEmail } from "@/lib/sendEmail";
 import * as schema from "@/schemas/chatDB-schema";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
