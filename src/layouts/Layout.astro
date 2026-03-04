@@ -3,6 +3,11 @@ import Logo from "../assets/logo.svg";
 import { NavBarAccount } from "../components/NavBarAccount";
 import "../styles/global.css";
 
+type Props = {
+  class?: string;
+  title: string;
+};
+
 const url = new URL(Astro.request.url);
 const parentUrl =
   url.pathname === "/"
@@ -10,14 +15,7 @@ const parentUrl =
     : (url.pathname.replace(/\/$/, "").split("/").slice(0, -1).join("/") ||
         "") + "/";
 
-const { class: className } = Astro.props;
-
-type Props = {
-  class?: string;
-  title: string;
-};
-
-const { title } = Astro.props;
+const { title, class: className } = Astro.props;
 
 const serverUser = Astro.locals.user;
 const initialUser = serverUser
@@ -75,7 +73,7 @@ const initialUser = serverUser
       </div>
       <hr />
     </header>
-    <main class={`flex-1 w-full ${className} `}>
+    <main class={`flex-1 w-full ${className} overflow-auto `}>
       <slot />
     </main>
   </body>
