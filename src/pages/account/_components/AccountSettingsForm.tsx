@@ -1,4 +1,5 @@
 import { ChangeEmailSection } from "./ChangeEmailSection";
+import { ChangeImageSection } from "./ChangeImageSection";
 import { ChangeNameSection } from "./ChangeNameSection";
 import { ChangePasswordSection } from "./ChangePasswordSection";
 import { authClient } from "@/lib/auth-client";
@@ -6,6 +7,7 @@ import { authClient } from "@/lib/auth-client";
 type InitialUser = {
   name: string | null;
   email: string;
+  image: string | null;
 };
 
 type Props = {
@@ -17,9 +19,11 @@ export function AccountSettingsForm({ initialUser }: Props) {
 
   const name = sessionData?.user?.name ?? initialUser.name;
   const email = sessionData?.user?.email ?? initialUser.email;
+  const image = sessionData?.user?.image ?? initialUser.image;
 
   return (
     <div className="flex w-full max-w-lg flex-col gap-6">
+      <ChangeImageSection currentImage={image} name={name} email={email} />
       <ChangeNameSection currentName={name ?? ""} />
       <ChangeEmailSection currentEmail={email} />
       <ChangePasswordSection />
