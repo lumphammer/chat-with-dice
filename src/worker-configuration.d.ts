@@ -13,6 +13,7 @@ declare namespace Cloudflare {
 		CLOUDFLARE_ACCOUNT_ID: string;
 		BETTER_AUTH_SECRET: string;
 		BETTER_AUTH_URL: string;
+		BUCKET_PUBLIC_URL: string;
 		GITHUB_CLIENT_ID: string;
 		GITHUB_CLIENT_SECRET: string;
 		GOOGLE_CLIENT_ID: string;
@@ -26,6 +27,7 @@ declare namespace Cloudflare {
 		CLOUDFLARE_ACCOUNT_ID: string;
 		BETTER_AUTH_SECRET: string;
 		BETTER_AUTH_URL: string;
+		BUCKET_PUBLIC_URL: string;
 		GITHUB_CLIENT_ID: string;
 		GITHUB_CLIENT_SECRET: string;
 		GOOGLE_CLIENT_ID: string;

@@ -99,6 +99,7 @@
   ],
   "vars": {
     "BETTER_AUTH_URL": "https://chat-with-dice.neil-358.workers.dev/",
+    "BUCKET_PUBLIC_URL": "https://chat-with-dice-bucket.lumphammer.net",
     "GITHUB_CLIENT_ID": "Ov23liodlIl9o0JSyRY6",
     "GOOGLE_CLIENT_ID": "869954021187-jbep8bgnl19da678buk1t3v21vm5rvgt.apps.googleusercontent.com",
     "RESEND_FROM_EMAIL": "Chat with Dice <chatwithdice@lumphammer.net>",

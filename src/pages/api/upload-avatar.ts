@@ -7,7 +7,9 @@ const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 const MAX_BYTES = 5_242_880; // 5 MB — generous upper bound; client resizes first
 
-const BUCKET_PUBLIC_URL = "https://chat-with-dice-bucket.lumphammer.net";
+const BUCKET_PUBLIC_URL = import.meta.env.DEV
+  ? "/api/r2"
+  : env.BUCKET_PUBLIC_URL;
 
 const HTTP_OK = 200;
 const HTTP_BAD_REQUEST = 400;
