@@ -45,7 +45,7 @@ export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
       handleSetDisplayName: null,
       userIdentity: {
         displayName: sessionData.user.name,
-        chatId: sessionData.user.id,
+        chatId: sessionData.user.chatId,
       },
     };
   } else {
