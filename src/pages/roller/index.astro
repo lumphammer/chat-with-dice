@@ -51,7 +51,7 @@ import Layout from "@/layouts/Layout.astro";
       if (result.error) {
         console.error(result.error);
       } else if (!(result.data instanceof Response)) {
-        navigate(`rooms/${result.data.roomId}`);
+        navigate(`/roller/rooms/${result.data.roomId}`);
       }
     });
   }
