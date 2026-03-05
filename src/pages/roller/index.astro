@@ -19,19 +19,6 @@ import Layout from "@/layouts/Layout.astro";
   import { actions } from "astro:actions";
   import { navigate } from "astro:transitions/client";
 
-  function getUserId() {
-    const stored = localStorage.getItem("userId");
-    if (stored) {
-      return stored;
-    } else {
-      const generated = crypto.randomUUID();
-      localStorage.setItem("userId", generated);
-      return generated;
-    }
-  }
-
-  let userId = getUserId();
-
   function init() {
     const formElement = document.getElementById("roomForm");
     if (!(formElement instanceof HTMLFormElement)) {
@@ -46,7 +33,6 @@ import Layout from "@/layouts/Layout.astro";
       event.preventDefault();
       const result = await actions.createChatWithDiceRoom({
         roomName: inputElement.value,
-        userId,
       });
       if (result.error) {
         console.error(result.error);
