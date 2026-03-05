@@ -93,7 +93,7 @@ export class DiceRollerRoom extends DurableObject {
     this.ctx.acceptWebSocket(server);
 
     const attachment: SessionAttachment = {
-      chatId: "",
+      chatId,
       // displayName: "",
     };
 
