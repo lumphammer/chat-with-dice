@@ -13,6 +13,8 @@ import { waitUntil } from "cloudflare:workers";
 // https://github.com/better-auth/better-auth/pull/6913
 // for why we have a funny-lookin' adapter
 
+const MIN_PROD_PASSWORD_LENGTH = 8;
+
 const {
   GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET,
@@ -95,6 +97,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    minPasswordLength: import.meta.env.DEV ? 0 : MIN_PROD_PASSWORD_LENGTH,
   },
 
   socialProviders: {
