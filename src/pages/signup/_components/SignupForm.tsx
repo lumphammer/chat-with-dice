@@ -32,7 +32,7 @@ export function SignupForm() {
       name,
       email,
       password,
-      chatId: "",
+      chatId: localStorage.getItem("userId") ?? crypto.randomUUID(),
     });
 
     if (authError) {
