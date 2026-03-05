@@ -19,7 +19,9 @@ export const DiceRoller = memo(({ roomName }: DiceRollerProps) => {
     roomName,
   });
 
-  const { userIdentity, handleSetUsername } = useUserIdentityStorage();
+  const { userIdentity, handleSetUsername, loggedIn } =
+    useUserIdentityStorage();
+
   const hue = deriveHueFromUserId(userIdentity.userId);
 
   const {
@@ -61,6 +63,7 @@ export const DiceRoller = memo(({ roomName }: DiceRollerProps) => {
           <UsernameDialog
             initialUsername={userIdentity.username}
             onSetUsername={handleSetUsername}
+            loggedIn={loggedIn}
           />
           <div
             className="text-middle ml-4 inline-flex h-(--size) flex-col

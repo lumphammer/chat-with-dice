@@ -1,6 +1,16 @@
+import { authClient } from "@/lib/auth-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-export const useUserIdentityStorage = () => {
+type UseUserIdentityStorageReturn = {
+  userIdentity: { username: string; userId: string };
+} & (
+  | { loggedIn: false; handleSetUsername: (newUsername: string) => void }
+  | { loggedIn: true; handleSetUsername: null }
+);
+
+export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
+  const { data: sessionData, isPending } = authClient.useSession();
+
   const [username, setUsername] = useState<string>(
     localStorage.getItem("username") ?? "",
   );
@@ -8,12 +18,12 @@ export const useUserIdentityStorage = () => {
     localStorage.getItem("userId") ?? "",
   );
   useEffect(() => {
-    if (userId === "") {
+    if (userId === "" && !isPending) {
       const newUserId = crypto.randomUUID();
       localStorage.setItem("userId", newUserId);
       setUserId(newUserId);
     }
-  }, [userId]);
+  }, [userId, isPending]);
 
   const handleSetUsername = useCallback((newUsername: string) => {
     setUsername(newUsername);
@@ -25,5 +35,16 @@ export const useUserIdentityStorage = () => {
     [username, userId],
   );
 
-  return { userIdentity, handleSetUsername };
+  if (sessionData && sessionData.user) {
+    return {
+      loggedIn: true,
+      handleSetUsername: null,
+      userIdentity: {
+        username: sessionData.user.name,
+        userId: sessionData.user.id,
+      },
+    };
+  } else {
+    return { loggedIn: false, userIdentity, handleSetUsername };
+  }
 };
