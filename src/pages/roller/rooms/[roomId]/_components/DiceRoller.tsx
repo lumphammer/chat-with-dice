@@ -11,10 +11,10 @@ import { UserIdentityContextProvider } from "./userIdentityContext";
 import { memo, useCallback } from "react";
 
 type DiceRollerProps = {
-  roomName: string;
+  roomId: string;
 };
 
-export const DiceRoller = memo(({ roomName }: DiceRollerProps) => {
+export const DiceRoller = memo(({ roomId: roomName }: DiceRollerProps) => {
   const { connectionStatus, messages, sendJSON } = useChatWebSocket({
     roomName,
   });

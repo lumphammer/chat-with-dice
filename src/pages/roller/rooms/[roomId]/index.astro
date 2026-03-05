@@ -6,9 +6,9 @@ import { Rooms } from "../../../../schemas/chatDB-schema";
 import { DiceRoller } from "./_components/DiceRoller";
 
 export const prerender = false;
-const roomName = Astro.params["roomName"] ?? "";
+const roomId = Astro.params["roomId"] ?? "";
 const room = (
-  await db.select().from(Rooms).where(eq(Rooms.id, roomName)).limit(1).all()
+  await db.select().from(Rooms).where(eq(Rooms.id, roomId)).limit(1).all()
 )[0];
 if (!room) {
   return Astro.redirect("/roller");
@@ -16,5 +16,5 @@ if (!room) {
 ---
 
 <Layout title={room?.name ?? "(room not found)"}>
-  <DiceRoller client:only roomName={roomName ?? ""} />
+  <DiceRoller client:only roomId={roomId ?? ""} />
 </Layout>

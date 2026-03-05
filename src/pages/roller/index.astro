@@ -16,9 +16,19 @@ import Layout from "../../layouts/Layout.astro";
 </Layout>
 
 <script>
-  import { getUserId } from "@/lib/getUserId";
   import { actions } from "astro:actions";
   import { navigate } from "astro:transitions/client";
+
+  function getUserId() {
+    const stored = localStorage.getItem("userId");
+    if (stored) {
+      return stored;
+    } else {
+      const generated = crypto.randomUUID();
+      localStorage.setItem("userId", generated);
+      return generated;
+    }
+  }
 
   let userId = getUserId();
 
