@@ -61,7 +61,7 @@ export const POST: APIRoute = async (ctx) => {
     return json({ error: "Image must be smaller than 5 MB" }, HTTP_BAD_REQUEST);
   }
 
-  const key = `avatars/${user.id}`;
+  const key = `avatars/${user.chatId}`;
 
   await bucket.put(key, await file.arrayBuffer(), {
     httpMetadata: { contentType: file.type },
