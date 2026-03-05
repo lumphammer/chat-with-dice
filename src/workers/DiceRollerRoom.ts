@@ -94,7 +94,6 @@ export class DiceRollerRoom extends DurableObject {
 
     const attachment: SessionAttachment = {
       chatId,
-      // displayName: "",
     };
 
     server.serializeAttachment(attachment);
@@ -153,13 +152,7 @@ export class DiceRollerRoom extends DurableObject {
    * Handle WebSocket close events (Hibernation API)
    * Called when a client disconnects
    */
-  override async webSocketClose(
-    ws: WebSocket,
-    code: number,
-    // reason: string,
-    // wasClean: boolean,
-  ): Promise<void> {
-    // Close the WebSocket
+  override async webSocketClose(ws: WebSocket, code: number): Promise<void> {
     ws.close(code, "Durable Object is closing WebSocket");
   }
 
@@ -192,7 +185,6 @@ export class DiceRollerRoom extends DurableObject {
       rolls: structuredRolls ? JSON.stringify(structuredRolls) : null,
       total: roll?.total ?? null,
       text,
-      // username,
       chatId,
       displayName,
     };
