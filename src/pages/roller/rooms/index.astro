@@ -1,9 +1,15 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { RoomListWrapper } from "./_components/RoomListWrapper";
-// export const prerender = false;
+export const prerender = false;
 ---
 
-<Layout title="Your rooms">
-  <RoomListWrapper client:only />
-</Layout>
+{
+  Astro.locals.user ? (
+    <Layout title="Your rooms">
+      <RoomListWrapper client:only />
+    </Layout>
+  ) : (
+    <Layout title="Your rooms">You aint logged in</Layout>
+  )
+}
