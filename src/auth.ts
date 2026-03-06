@@ -4,6 +4,7 @@ import { sendEmail } from "@/lib/sendEmail";
 import * as schema from "@/schemas/chatDB-schema";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
+import { getOAuthState } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
 import { waitUntil } from "cloudflare:workers";
 
@@ -108,6 +109,28 @@ export const auth = betterAuth({
     google: {
       clientId: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
+    },
+  },
+
+  databaseHooks: {
+    user: {
+      create: {
+        // https://better-auth.com/docs/concepts/oauth#accessing-additional-data-in-hooks
+        // this is how we pass the client-provided chatId into the newly created
+        // SSO user
+        before: async (user, ctx) => {
+          if (ctx?.path === "/callback/:id") {
+            const additionalData = await getOAuthState();
+            if (additionalData?.chatId) {
+              return {
+                data: {
+                  chatId: additionalData.chatId,
+                },
+              };
+            }
+          }
+        },
+      },
     },
   },
 

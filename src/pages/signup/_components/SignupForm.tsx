@@ -1,3 +1,7 @@
+import {
+  CHAT_ID_LOCAL_STORAGE_KEY,
+  DISPLAY_NAME_LOCAL_STORAGE_KEY,
+} from "@/constants";
 import { authClient } from "@/lib/auth-client";
 import { generateRandomName } from "@/lib/generateRandomName";
 import { Dice6, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
@@ -32,27 +36,37 @@ export function SignupForm() {
       name,
       email,
       password,
-      chatId: localStorage.getItem("userId") ?? crypto.randomUUID(),
+      chatId:
+        localStorage.getItem(CHAT_ID_LOCAL_STORAGE_KEY) ?? crypto.randomUUID(),
     });
 
     if (authError) {
       setError(authError.message ?? "Sign-up failed. Please try again.");
       setLoading("idle");
-      return;
+    } else {
+      localStorage.removeItem(CHAT_ID_LOCAL_STORAGE_KEY);
+      localStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
+      setDone(true);
     }
-
-    setDone(true);
   }
 
   async function handleSocialSignIn(provider: "github" | "google") {
     setError(null);
     setLoading(provider);
-    const { error: authError } = await authClient.signIn.social({ provider });
+    const { error: authError } = await authClient.signIn.social({
+      provider,
+      additionalData: {
+        chatId: localStorage.getItem("userId") ?? crypto.randomUUID(),
+      },
+    });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");
       setLoading("idle");
+    } else {
+      localStorage.removeItem(CHAT_ID_LOCAL_STORAGE_KEY);
+      localStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
+      // on success the browser is redirected by the OAuth flow
     }
-    // on success the browser is redirected by the OAuth flow
   }
 
   if (done) {
