@@ -31,7 +31,7 @@ export const RoomList = () => {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Your Rooms</h2>
-        <a href="/roller/rooms/new" className="btn btn-primary btn-sm gap-2">
+        <a href="/roller/new" className="btn btn-primary btn-sm gap-2">
           <Plus size={16} />
           New Room
         </a>

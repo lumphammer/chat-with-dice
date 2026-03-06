@@ -1,6 +1,6 @@
 import { authClient } from "@/lib/auth-client";
-import { LogOut, Settings } from "lucide-react";
-import { useRef } from "react";
+import { Dices, LogOut, Settings } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 type UserInfo = {
   name: string | null;
@@ -16,6 +16,15 @@ export function NavBarAccount({ initialUser }: Props) {
   const { data: sessionData, isPending } = authClient.useSession();
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // When no initialUser was provided (e.g. static pages), start invisible and
+  // fade in once the client has resolved the session, to avoid flashing the
+  // wrong state (e.g. "Sign in" briefly appearing for a logged-in user).
+  const needsFade = initialUser === null;
+  const [revealed, setRevealed] = useState(!needsFade);
+  useEffect(() => {
+    if (!isPending && needsFade) setRevealed(true);
+  }, [isPending, needsFade]);
+
   // While the client-side session is still loading, use the server-provided
   // initial state so there's no skeleton flash or layout shift.
   const user: UserInfo | null = isPending
@@ -27,6 +36,12 @@ export function NavBarAccount({ initialUser }: Props) {
           image: sessionData.user.image ?? null,
         }
       : null;
+
+  const wrapperClass = !needsFade
+    ? undefined
+    : revealed
+      ? "animate-fadein"
+      : "opacity-0";
 
   function closeMenu() {
     menuRef.current?.hidePopover();
@@ -40,19 +55,21 @@ export function NavBarAccount({ initialUser }: Props) {
 
   if (!user) {
     return (
-      <a
-        href={`/signin?returnUrl=${encodeURIComponent(window.location.pathname)}`}
-        className="btn btn-primary btn-sm"
-      >
-        Sign in
-      </a>
+      <div className={wrapperClass}>
+        <a
+          href={`/signin?returnUrl=${encodeURIComponent(window.location.pathname)}`}
+          className="btn btn-primary btn-sm"
+        >
+          Sign in
+        </a>
+      </div>
     );
   }
 
   const initials = getInitials(user.name, user.email);
 
   return (
-    <>
+    <div className={wrapperClass}>
       <button
         className="btn btn-ghost btn-circle"
         popoverTarget="nav-user-menu"
@@ -78,6 +95,12 @@ export function NavBarAccount({ initialUser }: Props) {
         </div>
         <ul className="menu p-2">
           <li>
+            <a href="/roller/rooms" onClick={closeMenu}>
+              <Dices size={16} />
+              Your rooms
+            </a>
+          </li>
+          <li>
             <a href="/account" onClick={closeMenu}>
               <Settings size={16} />
               Account Settings
@@ -91,7 +114,7 @@ export function NavBarAccount({ initialUser }: Props) {
           </li>
         </ul>
       </div>
-    </>
+    </div>
   );
 }
 

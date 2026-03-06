@@ -1,0 +1,161 @@
+---
+import Layout from "@/layouts/Layout.astro";
+
+export const prerender = false;
+
+if (!Astro.locals.user) {
+  return Astro.redirect("/signin?returnUrl=/roller/new");
+}
+---
+
+<Layout title="Create a Room" class="flex items-center justify-center p-6">
+  <div class="card bg-base-100 w-full max-w-md shadow-xl">
+    <div class="card-body gap-6">
+      <!-- Header -->
+      <div class="flex flex-col gap-1">
+        <h2 class="card-title text-2xl">Create a new room</h2>
+        <p class="text-base-content/60 text-sm">
+          Give your room a name and start rolling.
+        </p>
+      </div>
+
+      <!-- Error banner -->
+      <div
+        id="errorBanner"
+        role="alert"
+        class="alert alert-error hidden"
+        aria-live="polite"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="errorMessage"></span>
+      </div>
+
+      <!-- Form -->
+      <form id="roomForm" class="flex flex-col gap-6" novalidate>
+        <label class="form-control w-full">
+          <div class="label">
+            <span class="label-text font-medium">Room name</span>
+          </div>
+          <input
+            id="roomName"
+            name="roomName"
+            type="text"
+            class="input input-bordered input-primary w-full"
+            placeholder="e.g. Friday Night D&D"
+            maxlength="80"
+            required
+            autofocus
+          />
+          <div class="label">
+            <span class="label-text-alt text-base-content/50">
+              Up to 80 characters
+            </span>
+          </div>
+        </label>
+
+        <button
+          id="submitBtn"
+          type="submit"
+          class="btn btn-primary w-full gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 8h.01M8 16h.01M12 12h.01"></path>
+          </svg>
+          Create Room
+        </button>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { actions } from "astro:actions";
+  import { navigate } from "astro:transitions/client";
+
+  function init() {
+    const formElement = document.getElementById("roomForm");
+    if (!(formElement instanceof HTMLFormElement)) return;
+
+    const inputElement = document.getElementById("roomName");
+    if (!(inputElement instanceof HTMLInputElement)) return;
+
+    const submitBtn = document.getElementById("submitBtn");
+    const errorBanner = document.getElementById("errorBanner");
+    const errorMessage = document.getElementById("errorMessage");
+
+    function showError(message: string) {
+      if (errorBanner && errorMessage) {
+        errorMessage.textContent = message;
+        errorBanner.classList.remove("hidden");
+        errorBanner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+
+    function hideError() {
+      errorBanner?.classList.add("hidden");
+    }
+
+    function setLoading(loading: boolean) {
+      if (submitBtn instanceof HTMLButtonElement) {
+        submitBtn.disabled = loading;
+        submitBtn.classList.toggle("loading", loading);
+      }
+    }
+
+    formElement.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      hideError();
+
+      const roomName = inputElement.value.trim();
+      if (!roomName) {
+        showError("Please enter a room name.");
+        inputElement.focus();
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const result = await actions.createChatWithDiceRoom({ roomName });
+        if (result.error) {
+          showError(
+            result.error.message ?? "Something went wrong. Please try again.",
+          );
+          console.error(result.error);
+        } else if (!(result.data instanceof Response)) {
+          navigate(`/roller/rooms/${result.data.roomId}`);
+        }
+      } finally {
+        setLoading(false);
+      }
+    });
+  }
+
+  init();
+</script>
