@@ -1,0 +1,9 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { RoomListWrapper } from "./_components/RoomListWrapper";
+// export const prerender = false;
+---
+
+<Layout title="Your rooms">
+  <RoomListWrapper client:only />
+</Layout>
