@@ -1,4 +1,4 @@
-import { GENERIC_ROOM_TYPE } from "#/constants";
+import { ROOM_TYPES } from "#/constants";
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export * from "./auth-schema";
@@ -9,5 +9,5 @@ export const Rooms = sqliteTable("Rooms", {
   description: text(),
   created_by_user_id: text().notNull(),
   created_time: int().notNull(),
-  type: text().default(GENERIC_ROOM_TYPE),
+  type: text({ enum: ROOM_TYPES }).notNull(),
 });
