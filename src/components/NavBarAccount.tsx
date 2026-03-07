@@ -1,4 +1,4 @@
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "#/lib/auth-client";
 import { Dices, LogOut, Settings } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

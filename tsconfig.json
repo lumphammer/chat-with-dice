@@ -8,7 +8,7 @@
     "jsxImportSource": "react",
     "strict": true,
     "paths": {
-      "@/*": ["./src/*"],
+      "#/*": ["./src/*"],
     },
   },
 }

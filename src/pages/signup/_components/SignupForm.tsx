@@ -1,11 +1,11 @@
-import { GithubIcon } from "@/components/GithubIcon";
-import { GoogleIcon } from "@/components/GoogleIcon";
+import { GithubIcon } from "#/components/GithubIcon";
+import { GoogleIcon } from "#/components/GoogleIcon";
 import {
   CHAT_ID_LOCAL_STORAGE_KEY,
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
-} from "@/constants";
-import { authClient } from "@/lib/auth-client";
-import { generateRandomName } from "@/lib/generateRandomName";
+} from "#/constants";
+import { authClient } from "#/lib/auth-client";
+import { generateRandomName } from "#/lib/generateRandomName";
 import { Dice6, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { useState } from "react";
 

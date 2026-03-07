@@ -1,8 +1,8 @@
 import {
   CHAT_ID_LOCAL_STORAGE_KEY,
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
-} from "@/constants";
-import { authClient } from "@/lib/auth-client";
+} from "#/constants";
+import { authClient } from "#/lib/auth-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type UseUserIdentityStorageReturn = {

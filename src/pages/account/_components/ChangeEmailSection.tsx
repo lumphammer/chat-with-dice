@@ -1,4 +1,4 @@
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "#/lib/auth-client";
 import { Mail } from "lucide-react";
 import { useState } from "react";
 
@@ -84,9 +84,7 @@ export function ChangeEmailSection({ currentEmail }: { currentEmail: string }) {
             className="btn btn-primary w-full"
             disabled={loading}
           >
-            {loading && (
-              <span className="loading loading-spinner loading-sm" />
-            )}
+            {loading && <span className="loading loading-spinner loading-sm" />}
             Send verification email
           </button>
         </form>

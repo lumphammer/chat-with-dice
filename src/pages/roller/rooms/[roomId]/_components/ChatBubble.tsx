@@ -1,10 +1,10 @@
+import type { RollerMessage } from "#/workers/types";
 import { DiceRollResult } from "./DiceRollResult";
 import { ShowMoreDialog } from "./ShowMoreDialog";
 import { TimeDisplay } from "./TimeDisplay";
 import { deriveHueFromUserId } from "./deriveHueFromUserId";
 import type { UserHueStyle } from "./types";
 import { useUserIdentityContext } from "./userIdentityContext";
-import type { RollerMessage } from "@/workers/types";
 import quikdown from "quikdown";
 import { memo, useLayoutEffect, useMemo, useRef, useState } from "react";
 

@@ -1,5 +1,5 @@
+import { auth } from "#/auth";
 import { magicAnswers } from "./lib/magicAnswers";
-import { auth } from "@/auth";
 import { defineMiddleware, sequence } from "astro:middleware";
 
 const HTTP_SWITCHING_PROTOCOLS = 101;

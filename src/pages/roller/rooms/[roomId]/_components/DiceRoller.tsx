@@ -1,3 +1,4 @@
+import { type WebSocketClientMessage } from "#/workers/types";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
@@ -7,7 +8,6 @@ import { useChatWebSocket } from "./useChatWebSocket";
 import { useSmartScroll } from "./useSmartScroll";
 import { useUserIdentityStorage } from "./useUserIdentityStorage";
 import { UserIdentityContextProvider } from "./userIdentityContext";
-import { type WebSocketClientMessage } from "@/workers/types";
 import { memo, useCallback } from "react";
 
 type DiceRollerProps = {

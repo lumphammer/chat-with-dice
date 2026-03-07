@@ -5,7 +5,7 @@ import {
   type RollResults,
   type StructuredRolls,
   structuredRollsSchema,
-} from "@/workers/types";
+} from "#/workers/types";
 import { memo } from "react";
 
 type DiceRollResultProps = {

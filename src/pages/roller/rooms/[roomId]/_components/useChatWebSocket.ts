@@ -1,9 +1,9 @@
-import type { ConnectionStatus } from "./types";
-import { ReconnectingWebSocket } from "@/lib/ReconnectingWebSocket";
+import { ReconnectingWebSocket } from "#/lib/ReconnectingWebSocket";
 import {
   type RollerMessage,
   webSocketServerMessageSchema,
-} from "@/workers/types";
+} from "#/workers/types";
+import type { ConnectionStatus } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type UseChatWebSocketArgs = {

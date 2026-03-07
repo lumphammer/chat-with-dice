@@ -1,10 +1,10 @@
-import { GithubIcon } from "@/components/GithubIcon";
-import { GoogleIcon } from "@/components/GoogleIcon";
+import { GithubIcon } from "#/components/GithubIcon";
+import { GoogleIcon } from "#/components/GoogleIcon";
 import {
   CHAT_ID_LOCAL_STORAGE_KEY,
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
-} from "@/constants";
-import { authClient } from "@/lib/auth-client";
+} from "#/constants";
+import { authClient } from "#/lib/auth-client";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 

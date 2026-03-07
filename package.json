@@ -1,6 +1,9 @@
 {
   "type": "module",
   "name": "@lumphammer/chat-with-dice",
+  "imports": {
+    "#/*": "./src/*"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",

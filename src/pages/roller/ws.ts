@@ -1,6 +1,6 @@
-import type { User } from "@/auth";
-import { db } from "@/db";
-import { users } from "@/schemas/chatDB-schema";
+import type { User } from "#/auth";
+import { db } from "#/db";
+import { users } from "#/schemas/chatDB-schema";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { eq, sql } from "drizzle-orm";

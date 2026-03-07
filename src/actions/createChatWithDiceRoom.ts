@@ -1,5 +1,5 @@
-import { Rooms } from "../schemas/chatDB-schema";
-import { db } from "@/db";
+import { db } from "#/db";
+import { Rooms } from "#/schemas/chatDB-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";

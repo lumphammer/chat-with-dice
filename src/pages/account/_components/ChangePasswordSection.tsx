@@ -1,4 +1,4 @@
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "#/lib/auth-client";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { useState } from "react";
 
@@ -132,9 +132,7 @@ export function ChangePasswordSection() {
             className="btn btn-primary w-full"
             disabled={loading}
           >
-            {loading && (
-              <span className="loading loading-spinner loading-sm" />
-            )}
+            {loading && <span className="loading loading-spinner loading-sm" />}
             Change password
           </button>
         </form>

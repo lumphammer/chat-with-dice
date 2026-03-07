@@ -1,4 +1,4 @@
-import { generateRandomName } from "@/lib/generateRandomName";
+import { generateRandomName } from "#/lib/generateRandomName";
 import { memo, useId, useLayoutEffect, useRef, useState } from "react";
 
 type DisplayNameDialogProps = {

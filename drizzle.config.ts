@@ -1,8 +1,8 @@
+import { envOrDie } from "#/lib/envOrDie";
 import {
   getIdForD1Binding,
   getLocalPathForD1Binding,
 } from "./scripts/d1Helpers";
-import { envOrDie } from "./src/lib/envOrDie";
 import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 

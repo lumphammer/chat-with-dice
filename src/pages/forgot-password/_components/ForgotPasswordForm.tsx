@@ -1,4 +1,4 @@
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "#/lib/auth-client";
 import { KeyRound, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 

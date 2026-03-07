@@ -1,6 +1,5 @@
-import migrations from "../durable-object-migrations/roller/migrations";
-import * as dbSchema from "../schemas/roller-schema";
-import { Messages } from "../schemas/roller-schema";
+import migrations from "#/durable-object-migrations/roller/migrations";
+import * as dbSchema from "#/schemas/roller-schema";
 import {
   type RollerMessage,
   type SessionAttachment,
@@ -188,7 +187,7 @@ export class DiceRollerRoom extends DurableObject {
       chatId,
       displayName,
     };
-    await this.db.insert(Messages).values(rollerMessage);
+    await this.db.insert(dbSchema.Messages).values(rollerMessage);
     console.log("inserting into Messages", rollerMessage);
     this.broadcastMessage(rollerMessage);
   }
@@ -216,8 +215,8 @@ export class DiceRollerRoom extends DurableObject {
     const messages = (
       await this.db
         .select()
-        .from(Messages)
-        .orderBy(desc(Messages.created_time))
+        .from(dbSchema.Messages)
+        .orderBy(desc(dbSchema.Messages.created_time))
         .limit(MESSAGE_CATCHUP_LENGTH)
         .execute()
     ).toReversed();
