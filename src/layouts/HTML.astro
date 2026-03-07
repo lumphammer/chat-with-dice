@@ -1,0 +1,23 @@
+---
+import "../styles/global.css";
+
+type Props = {
+  title: string | null;
+  bodyClass?: string;
+};
+
+const { title, bodyClass = "" } = Astro.props;
+---
+
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{`${title ?? ""}${title ? " | " : ""}Chat with Dice`}</title>
+  </head>
+  <body class={"flex h-full w-full flex-col overflow-auto " + bodyClass}>
+    <slot />
+  </body>
+</html>
