@@ -47,6 +47,8 @@ export default defineConfig({
     "react-perf/jsx-no-new-object-as-prop": "off",
     // sometimes you gotta though
     "react/no-array-index-key": "off",
+    // this comes up way too much in plumbing code
+    "typescript/no-unsafe-type-assertion": "off",
   },
   settings: {
     "jsx-a11y": {
