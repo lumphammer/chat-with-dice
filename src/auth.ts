@@ -1,7 +1,7 @@
-import { envOrDie } from "./lib/envOrDie";
 import { db } from "#/db";
 import { sendEmail } from "#/lib/sendEmail";
 import * as schema from "#/schemas/chatDB-schema";
+import { envOrDie } from "./lib/envOrDie";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
 import { getOAuthState } from "better-auth/api";
@@ -118,7 +118,7 @@ export const auth = betterAuth({
         // https://better-auth.com/docs/concepts/oauth#accessing-additional-data-in-hooks
         // this is how we pass the client-provided chatId into the newly created
         // SSO user
-        before: async (user, ctx) => {
+        before: async (_user, ctx) => {
           if (ctx?.path === "/callback/:id") {
             const additionalData = await getOAuthState();
             if (additionalData?.chatId) {
