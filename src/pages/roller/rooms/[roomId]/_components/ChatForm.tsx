@@ -1,13 +1,33 @@
+import { StandardDieRollForm } from "./StandardDieRollForm";
+import { Input } from "./inputs";
 import { Dices, SendHorizontal } from "lucide-react";
 import { type SubmitEvent, memo, useCallback, useState } from "react";
+
+// * Normal (X Y Z) => Total, success?
+//   * Normal
+//   * With advantage
+//   * With disadvantage
+//   * Exploding
+// * F20 (CST=20, T) => Total, success?, is crit?
+//   * Normal
+//   * With advantage
+//   * With disadvantage
+// * Havoc (X) => hits, crits
+// * FitD (X) => Result(Fail, Success with complications, crits?)
+// * Gumshoe (X) => total
+// * Formula (formula) => total
 
 type ChatFormProps = {
   onNewMessage: (args: { formula: string; text: string }) => void;
 };
 
+const rollTypes = ["standard", "f20"] as const;
+type RollType = (typeof rollTypes)[number];
+
 export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const [formula, setFormula] = useState("");
   const [text, setText] = useState("");
+  const [rollType, setRollType] = useState<"standard" | "f20">("standard");
 
   const handleSubmit = useCallback(
     (event: SubmitEvent) => {
@@ -23,18 +43,19 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
         className="border-primary flex min-w-0 flex-1 flex-row flex-wrap
           overflow-hidden rounded-l-xl border shadow-sm"
       >
-        <input
-          className="bg-base-100 border-base-300
-            placeholder:text-base-content/40 min-w-100 flex-1 border-b px-4 py-2
-            outline-none sm:border-r sm:border-b-0"
-          value={formula}
-          onChange={(e) => setFormula(e.target.value)}
-          placeholder='Dice formula, e.g. "3d6"'
-        />
+        <select
+          value={rollType}
+          className="bg-base-100 field-sizing-content px-4 py-2 outline-none"
+          onChange={(e) => setRollType(e.target.value as RollType)}
+        >
+          <option value="standard">Standard</option>
+          <option value="f20">F20</option>
+        </select>
+        {rollType === "standard" && <StandardDieRollForm />}
         <textarea
           rows={1}
           className="bg-base-100 placeholder:text-base-content/40
-            field-sizing-content max-h-[30cqh] min-w-0 flex-1 resize-none
+            field-sizing-content max-h-[30cqh] min-w-100 flex-1 resize-none
             overflow-y-auto px-4 py-2 outline-none"
           value={text}
           onChange={(e) => setText(e.target.value)}
