@@ -1,4 +1,4 @@
-import { GENERIC_ROOM_TYPE, HAVOC_ROOM_TYPE } from "#/constants";
+import { GENERIC_ROOM_TYPE, HAVOC_ROOM_TYPE, ROOM_TYPES } from "#/constants";
 import { db } from "#/db";
 import { Rooms } from "#/schemas/chatDB-schema";
 import type { RoomType } from "#/types";
@@ -19,7 +19,7 @@ export const createChatWithDiceRoom = defineAction({
   input: z.object({
     roomName: z.string().min(MIN_ROOM_NAME_LENGTH).max(MAX_ROOM_NAME_LENGTH),
     description: z.string().optional(),
-    type: z.enum([HAVOC_ROOM_TYPE, GENERIC_ROOM_TYPE]),
+    type: z.enum(ROOM_TYPES),
   }),
   handler: async (input, context) => {
     const user = context.locals.user;
