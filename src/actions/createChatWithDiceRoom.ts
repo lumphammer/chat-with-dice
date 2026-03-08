@@ -1,7 +1,6 @@
-import { GENERIC_ROOM_TYPE, HAVOC_ROOM_TYPE, ROOM_TYPES } from "#/constants";
+import { ROOM_TYPES } from "#/constants";
 import { db } from "#/db";
 import { Rooms } from "#/schemas/chatDB-schema";
-import type { RoomType } from "#/types";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
