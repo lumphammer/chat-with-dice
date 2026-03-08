@@ -2,36 +2,12 @@ import { AppWrapper } from "#/components/AppWrapper";
 import { useStateWithRef } from "#/components/useStateWithRef";
 import { GENERIC_ROOM_TYPE } from "#/constants";
 import type { RoomType } from "#/types";
+import { RoomTypePicker } from "./RoomTypePicker";
 import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
 import { AlertTriangleIcon as AlertIcon } from "lucide-react";
 import { DicesIcon as DiceIcon } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
-
-// function init() {
-//   function showError(message: string) {
-//     if (errorBanner && errorMessage) {
-//       errorMessage.textContent = message;
-//       errorBanner.classList.remove("hidden");
-//       errorBanner.scrollIntoView({ behavior: "smooth", block: "nearest" });
-//     }
-//   }
-
-//   function hideError() {
-//     errorBanner?.classList.add("hidden");
-//   }
-
-//   function setLoading(loading: boolean) {
-//     if (submitBtn instanceof HTMLButtonElement) {
-//       submitBtn.disabled = loading;
-//       submitBtn.classList.toggle("loading", loading);
-//     }
-//   }
-
-//   formElement.addEventListener("submit");
-// }
-
-// init();
 
 export const NewRoomForm = () => {
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +33,7 @@ export const NewRoomForm = () => {
       try {
         const result = await actions.createChatWithDiceRoom({
           roomName: trimmed,
-          type: GENERIC_ROOM_TYPE,
+          type: roomType,
         });
         if (result.error) {
           setError(
@@ -71,7 +47,7 @@ export const NewRoomForm = () => {
         setLoading(false);
       }
     },
-    [roomNameRef],
+    [roomNameRef, roomType],
   );
 
   return (
@@ -119,6 +95,8 @@ export const NewRoomForm = () => {
               </span>
             </div>
           </label>
+
+          <RoomTypePicker value={roomType} onChange={setRoomType} />
 
           <button
             id="submitBtn"

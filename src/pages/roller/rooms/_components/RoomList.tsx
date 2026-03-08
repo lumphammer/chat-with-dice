@@ -1,3 +1,5 @@
+import { roomTypeOptionsByType } from "#/components/roomTypeOptions";
+import type { RoomType } from "#/types";
 import { useQuery } from "@tanstack/react-query";
 import { actions } from "astro:actions";
 import { CalendarDays, DoorOpen, Plus } from "lucide-react";
@@ -8,6 +10,7 @@ type Room = {
   description: string | null;
   created_by_user_id: string;
   created_time: number;
+  type: RoomType;
 };
 
 export const RoomList = () => {
@@ -101,6 +104,7 @@ function RoomCard({ room }: { room: Room }) {
             <CalendarDays size={12} />
             {formattedDate}
           </span>
+          <RoomTypeBadge type={room.type} />
           <a
             href={`/roller/rooms/${room.id}`}
             className="btn btn-primary btn-sm gap-2"
@@ -111,5 +115,17 @@ function RoomCard({ room }: { room: Room }) {
         </div>
       </div>
     </li>
+  );
+}
+
+function RoomTypeBadge({ type }: { type: RoomType }) {
+  const option = roomTypeOptionsByType[type];
+  if (!option) return null;
+  const { Icon, label } = option;
+  return (
+    <span className="flex items-center gap-1 text-xs opacity-50">
+      <Icon size={12} />
+      {label}
+    </span>
   );
 }

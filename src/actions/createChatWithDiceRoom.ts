@@ -10,11 +10,6 @@ import { nanoid } from "nanoid";
 const MIN_ROOM_NAME_LENGTH = 1;
 const MAX_ROOM_NAME_LENGTH = 128;
 
-const ROOM_TYPE_DESCRIPTIONS: Record<RoomType, string> = {
-  [GENERIC_ROOM_TYPE]: "Chat and roll dice",
-  [HAVOC_ROOM_TYPE]: "Streamlined for Havoc Engine games, with Threat tracking",
-};
-
 export const createChatWithDiceRoom = defineAction({
   input: z.object({
     roomName: z.string().min(MIN_ROOM_NAME_LENGTH).max(MAX_ROOM_NAME_LENGTH),
