@@ -96,6 +96,7 @@ export const NewRoomForm = () => {
           className="flex flex-col gap-6"
           noValidate
         >
+          {/*oxlint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label className="form-control w-full">
             <div className="label">
               <span className="label-text font-medium">Room name</span>
