@@ -1,0 +1,31 @@
+---
+import Layout from "#/layouts/HTML.astro";
+---
+
+<Layout title="Style Demo">
+  {
+    ["bg-base-100", "bg-base-200", "bg-base-300", "bg-black", "bg-white"].map(
+      (bg) => {
+        return (
+          <div class={`m-6 p-6 ${bg} rounded`}>
+            <h1 class="text-2xl font-bold">.{bg}</h1>
+            <p>Some text</p>
+            <p class="p text-primary">.text-primary</p>
+            <p class="p text-secondary">.text-secondary</p>
+            <p class="p text-accent">.text-accent</p>
+            <p class="p text-primary-text">.text-primary-text</p>
+            <p class="p text-secondary-text">.text-secondary-text</p>
+            <p class="p text-accent-text">.text-accent-text</p>
+            {["bg-base-100", "bg-base-200", "bg-base-300"].map((bg) => {
+              return (
+                <div class={`m-2 rounded p-2 ${bg} inline-block h-20 w-50`}>
+                  <h2 class="text-xl">.{bg}</h2>
+                </div>
+              );
+            })}
+          </div>
+        );
+      },
+    )
+  }
+</Layout>
