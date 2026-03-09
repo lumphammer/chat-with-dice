@@ -1,6 +1,6 @@
 import type { User } from "#/auth";
 import { db } from "#/db";
-import { users } from "#/schemas/chatDB-schema";
+import { users, Rooms } from "#/schemas/chatDB-schema";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { eq, sql } from "drizzle-orm";
@@ -34,6 +34,18 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
   const chatIdOkay = await validateChatId(user, chatId);
   if (!chatIdOkay)
     return new Response("chatId is not available", { status: 400 });
+
+  // confirm that room exists in d1
+  const roomExists =
+    (
+      await db
+        .select({ n: sql<number>`1` })
+        .from(Rooms)
+        .where(eq(Rooms.id, roomId))
+        .limit(1)
+        .all()
+    ).length > 0;
+  if (!roomExists) return new Response("room does not exist", { status: 400 });
 
   // Get the ChatRoom Durable Object namespace
   const RollerNamespace = env.DiceRollerRoom;
