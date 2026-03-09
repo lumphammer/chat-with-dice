@@ -14,12 +14,12 @@ type DiceRollerProps = {
   roomId: string;
 };
 
-export const DiceRoller = memo(({ roomId: roomName }: DiceRollerProps) => {
+export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   const { userIdentity, handleSetDisplayName, loggedIn } =
     useUserIdentityStorage();
 
   const { connectionStatus, messages, sendJSON } = useChatWebSocket({
-    roomName,
+    roomId: roomId,
     chatId: userIdentity.chatId,
   });
 

@@ -25,9 +25,9 @@ async function validateChatId(user: User | null, chatId: string) {
 }
 
 export const GET: APIRoute = async ({ url, request, locals }) => {
-  const roomName = url.searchParams.get("roomName");
+  const roomId = url.searchParams.get("roomId");
   const chatId = url.searchParams.get("chatId");
-  if (!roomName) return new Response("roomName is required", { status: 400 });
+  if (!roomId) return new Response("roomId is required", { status: 400 });
   if (!chatId) return new Response("chatId is required", { status: 400 });
 
   const user = locals.user;
@@ -41,7 +41,7 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
     return new Response("Roller binding not found", { status: 500 });
   // Get a Durable Object ID for this room
   // idFromName ensures the same room ID always maps to the same Durable Object
-  const durableObjectId = RollerNamespace.idFromName(roomName);
+  const durableObjectId = RollerNamespace.idFromName(roomId);
   // Get a stub (reference) to the Durable Object
   const durableObjectStub = RollerNamespace.get(durableObjectId);
   // request.url

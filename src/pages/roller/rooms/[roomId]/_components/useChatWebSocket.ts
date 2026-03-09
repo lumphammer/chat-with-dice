@@ -7,16 +7,13 @@ import type { ConnectionStatus } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type UseChatWebSocketArgs = {
-  roomName: string;
+  roomId: string;
   chatId: string;
 };
 
 const MAX_HISTORY_BUFFER_LENGTH = 100;
 
-export const useChatWebSocket = ({
-  roomName,
-  chatId,
-}: UseChatWebSocketArgs) => {
+export const useChatWebSocket = ({ roomId, chatId }: UseChatWebSocketArgs) => {
   const [messages, setMessages] = useState<RollerMessage[]>([]);
 
   const [connectionStatus, setConnectionStatus] =
@@ -29,7 +26,7 @@ export const useChatWebSocket = ({
       return;
     }
     // Build WebSocket URL
-    const wsUrl = `../ws/?roomName=${encodeURIComponent(roomName)}&chatId=${encodeURIComponent(chatId)}`;
+    const wsUrl = `../ws/?roomId=${encodeURIComponent(roomId)}&chatId=${encodeURIComponent(chatId)}`;
 
     // return;
     // Create WebSocket connection
@@ -78,7 +75,7 @@ export const useChatWebSocket = ({
       console.log("Closing websocket because effect re-ran");
       ws.close();
     };
-  }, [roomName, chatId]);
+  }, [roomId, chatId]);
 
   const sendJSON = useCallback((content: any) => {
     websocketRef.current?.json(content);
