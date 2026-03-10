@@ -16,6 +16,14 @@ import Layout from "#/layouts/HTML.astro";
             <p class="p text-primary-text">.text-primary-text</p>
             <p class="p text-secondary-text">.text-secondary-text</p>
             <p class="p text-accent-text">.text-accent-text</p>
+            <div class="btn btn-primary">.btn-primary</div>
+            <div class="btn btn-secondary">.btn-secondary</div>
+            <div class="btn btn-accent">.btn-accent</div>
+            <div class="btn btn-soft btn-outline btn-primary">.btn-primary</div>
+            <div class="btn btn-soft btn-outline btn-secondary">
+              .btn-secondary
+            </div>
+            <div class="btn btn-soft btn-outline btn-accent">.btn-accent</div>
             {["bg-base-100", "bg-base-200", "bg-base-300"].map((bg) => {
               return (
                 <div class={`m-2 rounded p-2 ${bg} inline-block h-20 w-50`}>

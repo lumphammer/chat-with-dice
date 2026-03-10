@@ -93,7 +93,7 @@ function RoomCard({ room }: { room: Room }) {
   }).format(new Date(room.created_time));
 
   return (
-    <li className="card bg-base-200 transition-shadow hover:shadow-md">
+    <li className="card bg-base-300 transition-shadow hover:shadow-md">
       <div className="card-body gap-2 py-4">
         <h3 className="card-title text-lg leading-tight">{room.name}</h3>
         {room.description && (

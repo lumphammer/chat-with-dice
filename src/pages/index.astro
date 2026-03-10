@@ -23,7 +23,6 @@ import { NavBarAccount } from "@/components/NavBarAccount";
     </div>
     <div class="navbar-end gap-3">
       <NavBarAccount client:only initialUser={null} />
-      <a href="/roller/new" class="btn btn-primary btn-sm">Create a room</a>
     </div>
   </header>
 
@@ -46,7 +45,7 @@ import { NavBarAccount } from "@/components/NavBarAccount";
             [&_.die-pips]:fill-[oklch(from_var(--color-primary)_0.5_c_h)]
             [&_.light-part]:fill-[oklch(from_var(--color-neutral)_1_c_h)]
             [&_.stroke]:fill-none
-            [&_.stroke]:stroke-[oklch(from_var(--color-neutral)_0.65_c_h)]
+            [&_.stroke]:stroke-[oklch(from_var(--color-primary)_0.65_c_h)]
             [&_.stroke]:stroke-4"
         />
       </div>
@@ -59,10 +58,24 @@ import { NavBarAccount } from "@/components/NavBarAccount";
         >
           Chat with Dice
         </h1>
-        <p class="text-base-content/70 text-lg sm:text-xl">
-          Roll dice and chat with your party — in real time, in the same room,
-          wherever you are.
+        <p class="text-base-content/70 text-xl sm:text-xl">
+          Roll dice and chat with your gaming group
         </p>
+        <ul class="text-base-content/70 [&_li]:inline">
+          <li class="inline">Players don't need to be logged in</li>
+          <li class="">
+            <span
+              class="text-muted aria-hidden align-middle text-3xl opacity-50"
+              >|</span
+            > Easy dice-rolling UI
+          </li>
+          <li class="">
+            <span
+              class="text-muted aria-hidden align-middle text-3xl opacity-50"
+              >|</span
+            > Specialised rooms for Havoc Engine
+          </li>
+        </ul>
       </div>
 
       <!-- CTA -->
@@ -84,22 +97,6 @@ import { NavBarAccount } from "@/components/NavBarAccount";
         </svg>
         Create a Room
       </a>
-
-      <!-- Feature pills -->
-      <div class="flex flex-wrap justify-center gap-3 text-sm">
-        {
-          [
-            { icon: "🎲", label: "Shared dice rolling" },
-            { icon: "💬", label: "Real-time chat" },
-            { icon: "🔗", label: "Instant room sharing" },
-          ].map(({ icon, label }) => (
-            <span class="badge badge-outline badge-lg gap-1.5 px-4 py-3">
-              <span aria-hidden="true">{icon}</span>
-              {label}
-            </span>
-          ))
-        }
-      </div>
     </div>
   </main>
 
