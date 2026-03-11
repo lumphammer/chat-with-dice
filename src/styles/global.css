@@ -33,8 +33,6 @@
 
   --l-colored-text: 0.7;
 
-  --btn-color: var(--color-primary-text);
-
   /* Daisy theme variables*/
 
   --color-primary: oklch(0.5 0.16 0);
@@ -309,6 +307,25 @@
 @utility link {
   @variant dark {
     color: oklch(from var(--color-primary) 80% c h);
+  }
+}
+
+@utility btn-primary {
+  --color-btn-soft: var(--color-primary-text);
+}
+
+@utility btn-secondary {
+  --color-btn-soft: var(--color-secondary-text);
+}
+
+@utility btn-accent {
+  --color-btn-soft: var(--color-accent-text);
+}
+
+@utility btn-soft {
+  color: var(--color-btn-soft);
+  &:hover {
+    color: var(--btn-fg);
   }
 }
 
