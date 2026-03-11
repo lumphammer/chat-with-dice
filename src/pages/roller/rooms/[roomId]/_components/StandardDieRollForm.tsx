@@ -1,3 +1,4 @@
+import { useFormulaContext } from "./formulaContext";
 import { Input } from "./inputs";
 import { useState } from "react";
 
@@ -10,11 +11,23 @@ const specials = [
 type Special = (typeof specials)[number];
 
 export const StandardDieRollForm = () => {
-  const [formula, setFormula] = useState("");
+  // const [formula, setFormula] = useState("");
   const [special, setSpecial] = useState<Special>("Normal");
+  const { formula, setFormula } = useFormulaContext();
 
   return (
     <div className="flex flex-1 flex-row">
+      <select
+        className="select select-soft bg-secondary/30 w-auto border-none
+          outline-none"
+        value={special}
+        onChange={(v) => setSpecial(v.target.value as Special)}
+      >
+        <option value="Normal">Normal</option>
+        <option value="With Advantage">With Advantage</option>
+        <option value="With Disadvantage">With Disadvantage</option>
+        <option value="Exploding">Exploding</option>
+      </select>
       <Input
         value={formula}
         onChange={setFormula}
@@ -24,17 +37,6 @@ export const StandardDieRollForm = () => {
         autoCapitalize="off"
         spellCheck="false"
       />
-      <select
-        className="select select-soft bg-base-100 my-1 h-3 w-auto px-4 py-1
-          text-sm outline-none"
-        value={special}
-        onChange={(v) => setSpecial(v.target.value as Special)}
-      >
-        <option value="Normal">Normal</option>
-        <option value="With Advantage">With Advantage</option>
-        <option value="With Disadvantage">With Disadvantage</option>
-        <option value="Exploding">Exploding</option>
-      </select>
     </div>
   );
 };

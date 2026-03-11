@@ -1,6 +1,7 @@
 import { StandardDieRollForm } from "./StandardDieRollForm";
+import { FormulaContextProvider } from "./formulaContext";
 import { Dices, SendHorizontal } from "lucide-react";
-import { type SubmitEvent, memo, useCallback, useState } from "react";
+import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
 
 // * Normal (X Y Z) => Total, success?
 //   * Normal
@@ -28,6 +29,13 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const [text, setText] = useState("");
   const [rollType, setRollType] = useState<"standard" | "f20">("standard");
 
+  const formulaContextValue = useMemo(() => {
+    return {
+      setFormula,
+      formula,
+    };
+  }, [formula, setFormula]);
+
   const handleSubmit = useCallback(
     (event: SubmitEvent) => {
       event.preventDefault();
@@ -37,56 +45,60 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   );
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-row flex-wrap p-4">
-      <div
-        className="border-primary flex min-w-0 flex-1 flex-row flex-wrap
-          overflow-hidden rounded-l-xl border shadow-sm"
-      >
-        <select
-          value={rollType}
-          className="select bg-primary/10 field-sizing-content w-30 rounded-none
-            border-none px-4 py-2 outline-none"
-          onChange={(e) => setRollType(e.target.value as RollType)}
+    <FormulaContextProvider value={formulaContextValue}>
+      <form onSubmit={handleSubmit} className="flex flex-row flex-wrap p-4">
+        <div
+          className="border-primary flex min-w-0 flex-1 flex-row flex-wrap
+            overflow-hidden rounded-l-xl border shadow-sm"
         >
-          <option value="standard">Dice</option>
-          <option value="f20">F20</option>
-        </select>
-        {rollType === "standard" && <StandardDieRollForm />}
-        <textarea
-          rows={1}
-          className="bg-base-100 placeholder:text-base-content/40
-            border-neutral/30 field-sizing-content max-h-[30cqh] min-w-full
-            flex-1 resize-none overflow-y-auto border-t-2 px-4 py-2
-            outline-none"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={formula.trim() ? "Annotation" : "Chat message"}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              e.currentTarget.form?.requestSubmit();
-            }
-          }}
-        />
-      </div>
-      <button
-        className="btn btn-primary h-auto self-stretch rounded-none rounded-r-xl
-          px-6"
-      >
-        <span className="relative flex h-5.5 w-5.5 items-center justify-center">
-          <SendHorizontal
-            size={22}
-            className={`absolute transition-opacity duration-300
-              ${formula.trim() ? "opacity-0" : "opacity-100"}`}
+          <select
+            value={rollType}
+            className="select bg-primary/10 field-sizing-content w-30
+              rounded-none border-none px-4 py-2 outline-none"
+            onChange={(e) => setRollType(e.target.value as RollType)}
+          >
+            <option value="standard">Dice</option>
+            <option value="f20">F20</option>
+          </select>
+          {rollType === "standard" && <StandardDieRollForm />}
+          <textarea
+            rows={1}
+            className="bg-base-100 placeholder:text-base-content/40
+              border-neutral/30 field-sizing-content max-h-[30cqh] min-w-full
+              flex-1 resize-none overflow-y-auto border-t-2 px-4 py-2
+              outline-none"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={formula.trim() ? "Annotation" : "Chat message"}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
           />
-          <Dices
-            size={22}
-            className={`absolute transition-opacity duration-300
-              ${formula.trim() ? "opacity-100" : "opacity-0"}`}
-          />
-        </span>
-      </button>
-    </form>
+        </div>
+        <button
+          className="btn btn-primary h-auto self-stretch rounded-none
+            rounded-r-xl px-6"
+        >
+          <span
+            className="relative flex h-5.5 w-5.5 items-center justify-center"
+          >
+            <SendHorizontal
+              size={22}
+              className={`absolute transition-opacity duration-300
+                ${formula.trim() ? "opacity-0" : "opacity-100"}`}
+            />
+            <Dices
+              size={22}
+              className={`absolute transition-opacity duration-300
+                ${formula.trim() ? "opacity-100" : "opacity-0"}`}
+            />
+          </span>
+        </button>
+      </form>
+    </FormulaContextProvider>
   );
 });
 
