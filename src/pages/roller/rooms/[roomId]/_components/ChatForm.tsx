@@ -44,18 +44,20 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
       >
         <select
           value={rollType}
-          className="bg-base-100 field-sizing-content px-4 py-2 outline-none"
+          className="select bg-primary/10 field-sizing-content w-30 rounded-none
+            border-none px-4 py-2 outline-none"
           onChange={(e) => setRollType(e.target.value as RollType)}
         >
-          <option value="standard">Standard</option>
+          <option value="standard">Dice</option>
           <option value="f20">F20</option>
         </select>
         {rollType === "standard" && <StandardDieRollForm />}
         <textarea
           rows={1}
           className="bg-base-100 placeholder:text-base-content/40
-            field-sizing-content max-h-[30cqh] min-w-100 flex-1 resize-none
-            overflow-y-auto px-4 py-2 outline-none"
+            border-neutral/30 field-sizing-content max-h-[30cqh] min-w-full
+            flex-1 resize-none overflow-y-auto border-t-2 px-4 py-2
+            outline-none"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={formula.trim() ? "Annotation" : "Chat message"}

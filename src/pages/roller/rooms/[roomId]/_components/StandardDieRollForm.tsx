@@ -19,9 +19,14 @@ export const StandardDieRollForm = () => {
         value={formula}
         onChange={setFormula}
         placeholder="E.g. 3d6, d100, 2d4+6 etc"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck="false"
       />
       <select
-        className="bg-base-100 flex-1 px-4 py-2 outline-none"
+        className="select select-soft bg-base-100 my-1 h-3 w-auto px-4 py-1
+          text-sm outline-none"
         value={special}
         onChange={(v) => setSpecial(v.target.value as Special)}
       >
