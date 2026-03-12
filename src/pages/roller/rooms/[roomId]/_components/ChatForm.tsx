@@ -57,7 +57,7 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
               rounded-none border-none px-4 py-2 outline-none"
             onChange={(e) => setRollType(e.target.value as RollType)}
           >
-            <option value="standard">Dice</option>
+            <option value="standard">Roll</option>
             <option value="f20">F20</option>
           </select>
           {rollType === "standard" && <StandardDieRollForm />}
