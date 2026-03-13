@@ -1,4 +1,4 @@
-import { StandardDieRollForm } from "./StandardDieRollForm";
+import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";
 import { FormulaContextProvider } from "./formulaContext";
 import { Dices, SendHorizontal } from "lucide-react";
 import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
