@@ -22,6 +22,9 @@ export const ArityPicker = memo(
             onGoToCardinality();
           }
         }}
+        onFocus={(e) => {
+          e.target.select();
+        }}
         placeholder="Number"
         autoComplete="off"
         autoCorrect="off"
