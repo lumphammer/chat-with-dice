@@ -1,12 +1,11 @@
 import { useFormulaContext } from "../formulaContext";
-import styles from "../inputs.module.css";
 import type { Operator, Special } from "../types";
 import { ArityPicker } from "./ArityPicker";
-import { DieSizePicker } from "./DieSizePicker";
+import { CardinalityPicker } from "./CardinalityPicker";
 import { ModifierPicker } from "./ModifierPicker";
 import { OperatorPicker } from "./OperatorPicker";
 import { SpecialPicker } from "./SpecialPIcker";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export const StandardDieRollForm = () => {
   // const [formula, setFormula] = useState("");
@@ -18,15 +17,26 @@ export const StandardDieRollForm = () => {
   const [operator, setOperator] = useState<Operator>("+");
   const [modifier, setModifier] = useState("0");
 
+  const cardinalityRef = useRef<{ focus: () => void }>(null);
+
+  const goToCardinality = useCallback(() => {
+    cardinalityRef.current?.focus();
+  }, []);
+
   return (
     <div className="flex flex-1 flex-row">
       {/*die count */}
-      <ArityPicker arity={arity} setArity={setArity} />
+      <ArityPicker
+        arity={arity}
+        setArity={setArity}
+        onGoToCardinality={goToCardinality}
+      />
 
       {/* die size */}
-      <DieSizePicker
+      <CardinalityPicker
         cardinality={cardinality}
         setCardinality={setCardinality}
+        ref={cardinalityRef}
       />
 
       {/* operator */}

@@ -5,22 +5,34 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import { memo } from "react";
+import { memo, useImperativeHandle, useRef } from "react";
 
 // oxlint-disable-next-line eslint/no-magic-numbers
 const PRESET_DICE_SIZES = [2, 3, 4, 6, 8, 10, 12, 20, 100];
 
-export const DieSizePicker = memo(
+export const CardinalityPicker = memo(
   ({
     cardinality,
     setCardinality,
+    ref,
   }: {
     cardinality: string;
     setCardinality: (val: string) => void;
+    ref?: React.Ref<{ focus: () => void }>;
   }) => {
     const handleKeyDown = (_event: React.KeyboardEvent<HTMLInputElement>) => {
       //
     };
+
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useImperativeHandle(ref, () => {
+      return {
+        focus() {
+          inputRef.current?.focus();
+        },
+      };
+    }, []);
 
     return (
       <Combobox
@@ -34,6 +46,7 @@ export const DieSizePicker = memo(
         }}
       >
         <ComboboxInput
+          ref={inputRef}
           className={styles.input}
           aria-label="Die Size"
           displayValue={(cardi: number) => `d${cardi}`}
