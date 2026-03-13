@@ -15,7 +15,7 @@ type DiceRollerProps = {
 };
 
 export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
-  const { userIdentity, handleSetDisplayName, loggedIn } =
+  const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
     useUserIdentityStorage();
 
   const { connectionStatus, messages, sendJSON } = useChatWebSocket({
@@ -61,9 +61,10 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
         <header className="bg-base-200 flex flex-row px-4">
           <div className="flex-1" />
           <DisplayNameDialog
-            initialDisplayName={userIdentity.displayName}
+            displayName={userIdentity.displayName}
             onSetDisplayName={handleSetDisplayName}
             loggedIn={loggedIn}
+            isPending={isPending}
           />
           <div
             className="text-middle ml-4 inline-flex h-(--size) flex-col

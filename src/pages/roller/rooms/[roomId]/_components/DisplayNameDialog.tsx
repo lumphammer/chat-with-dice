@@ -1,18 +1,18 @@
 import { generateRandomName } from "#/lib/generateRandomName";
 import { memo, useId, useLayoutEffect, useRef, useState } from "react";
 
-type DisplayNameDialogProps = {
-  initialDisplayName: string;
-  onSetDisplayName: ((newDisplayName: string) => void) | null;
-  loggedIn: boolean;
-};
-
 export const DisplayNameDialog = memo(
   ({
-    initialDisplayName,
+    displayName: initialDisplayName,
     onSetDisplayName,
     loggedIn,
-  }: DisplayNameDialogProps) => {
+    isPending,
+  }: {
+    displayName: string;
+    onSetDisplayName: ((newDisplayName: string) => void) | null;
+    loggedIn: boolean;
+    isPending: boolean;
+  }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const dialogId = useId();
     const [displayName, setDisplayName] = useState(
@@ -20,10 +20,10 @@ export const DisplayNameDialog = memo(
     );
 
     useLayoutEffect(() => {
-      if (dialogRef.current && initialDisplayName === "") {
+      if (dialogRef.current && initialDisplayName === "" && !isPending) {
         dialogRef.current.showModal();
       }
-    }, [initialDisplayName]);
+    }, [initialDisplayName, isPending]);
 
     return (
       <>

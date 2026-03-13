@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 type UseUserIdentityStorageReturn = {
   userIdentity: { displayName: string; chatId: string };
+  isPending: boolean;
 } & (
   | { loggedIn: false; handleSetDisplayName: (newDisplayName: string) => void }
   | { loggedIn: true; handleSetDisplayName: null }
@@ -18,9 +19,11 @@ export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
   const [localDisplayName, setLocalDislayName] = useState<string>(
     localStorage.getItem(DISPLAY_NAME_LOCAL_STORAGE_KEY) ?? "",
   );
+
   const [localChatId, setLocalChatId] = useState<string>(
     localStorage.getItem(CHAT_ID_LOCAL_STORAGE_KEY) ?? "",
   );
+
   useEffect(() => {
     if (localChatId === "" && !isPending && !sessionData) {
       const newUserId = crypto.randomUUID();
@@ -43,12 +46,13 @@ export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
     return {
       loggedIn: true,
       handleSetDisplayName: null,
+      isPending,
       userIdentity: {
         displayName: sessionData.user.name,
         chatId: sessionData.user.chatId,
       },
     };
   } else {
-    return { loggedIn: false, userIdentity, handleSetDisplayName };
+    return { loggedIn: false, userIdentity, handleSetDisplayName, isPending };
   }
 };
