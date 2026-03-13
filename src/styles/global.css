@@ -47,9 +47,7 @@
     from var(--color-secondary) var(--l-content) var(--c-content) h
   );
 
-  --color-accent: oklch(
-    from var(--color-secondary) l c calc(h + var(--h-delta))
-  );
+  --color-accent: oklch(from var(--color-primary) l c calc(h + 180));
   --color-accent-content: oklch(
     from var(--color-accent) var(--l-content) var(--c-content) h
   );
@@ -212,9 +210,7 @@
     from var(--color-secondary) var(--l-psa-content) var(--c-content) h
   );
 
-  --color-accent: oklch(
-    from var(--color-secondary) l c calc(h + var(--h-delta))
-  );
+  --color-accent: oklch(from var(--color-primary) l c calc(h + 180));
   --color-accent-content: oklch(
     from var(--color-accent) var(--l-psa-content) var(--c-content) h
   );

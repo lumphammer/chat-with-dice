@@ -1,5 +1,12 @@
 import { useFormulaContext } from "./formulaContext";
 import { Input } from "./inputs";
+import styles from "./inputs.module.css";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/react";
 import { useState } from "react";
 
 const specials = [
@@ -13,6 +20,8 @@ type Special = (typeof specials)[number];
 const operators = ["+", "-", "*", "/"] as const;
 type Operator = (typeof operators)[number];
 
+const presetDiceSizes = [2, 3, 4, 6, 8, 10, 12, 20, 100];
+
 export const StandardDieRollForm = () => {
   // const [formula, setFormula] = useState("");
   const [special, setSpecial] = useState<Special>("Normal");
@@ -20,23 +29,64 @@ export const StandardDieRollForm = () => {
     useFormulaContext();
   const [arity, setArity] = useState("1");
   const [cardinality, setCardinality] = useState("6");
-  const [operator, setOperator] = useState<Operator>("");
+  const [operator, setOperator] = useState<Operator>("+");
   const [modifier, setModifier] = useState("0");
 
   return (
     <div className="flex flex-1 flex-row">
-      <Input
+      {/*die count */}
+      <input
         value={arity}
-        onChange={setArity}
-        placeholder="E.g. 3d6, d100, 2d4+6 etc"
+        className={`${styles.input} text-right`}
+        onChange={(e) => setArity(e.target.value)}
+        placeholder="Number"
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
         type="number"
+        autoFocus
       />
 
-      <select
+      {/* die size */}
+      <Combobox
+        value={cardinality}
+        immediate
+        onChange={(val) => {
+          if (val !== null) {
+            console.log("Combobox#onChange", val);
+            setCardinality(val);
+          }
+        }}
+      >
+        <ComboboxInput
+          className={styles.input}
+          aria-label="Die Size"
+          displayValue={(cardi: number) => `d${cardi}`}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
+          onChange={(event) => {
+            const trimmed = event.target.value.replaceAll(/\D+/g, "");
+            console.log("ComboboxInput#onChange", trimmed);
+            setCardinality(trimmed);
+          }}
+        />
+        <ComboboxOptions anchor="bottom" className="border empty:invisible">
+          {presetDiceSizes.map((cardi) => (
+            <ComboboxOption
+              key={cardi}
+              value={cardi}
+              className="data-focus:bg-blue-100"
+            >
+              d{cardi}
+            </ComboboxOption>
+          ))}
+        </ComboboxOptions>
+      </Combobox>
+
+      {/*<select
         className="select w-auto border-none outline-none"
         value={cardinality}
         onChange={(v) => setCardinality(v.target.value)}
@@ -50,29 +100,38 @@ export const StandardDieRollForm = () => {
         <option value="12">d12</option>
         <option value="20">d20</option>
         <option value="100">d100</option>
-      </select>
+      </select>*/}
+
+      {/* operator */}
       <select
-        className="select w-auto border-none text-xl outline-none"
+        className={styles.input}
         value={operator}
         onChange={(v) => setOperator(v.target.value as Operator)}
       >
         <option value="+">+</option>
-        <option value="-">-</option>
-        <option value="*">*</option>
-        <option value="/">/</option>
+        <option value="-">&ndash;</option>
+        <option value="*">×</option>
+        <option value="/">÷</option>
       </select>
-      <Input
+      {/* modifier */}
+      <input
+        // className="bg-base-100 border-base-content/30 w-16 rounded-none border-r
+        //   text-center [&::-webkit-inner-spin-button]:-my-2
+        //   [&::-webkit-inner-spin-button]:me-1"
+        className={styles.input}
         value={modifier}
-        onChange={setModifier}
+        onChange={(e) => setModifier(e.target.value)}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
         type="number"
       />
-
+      {/* Special modes */}
       <select
-        className="select w-auto border-none outline-none"
+        // className="[&_option]:bg-base-100 bg-base-100 border-base-content/30
+        //   w-auto appearance-none border-r px-4 outline-none [&_option]:px-4"
+        className={`${styles.input} w-auto`}
         value={special}
         onChange={(v) => setSpecial(v.target.value as Special)}
       >
@@ -81,6 +140,12 @@ export const StandardDieRollForm = () => {
         <option value="With Disadvantage">With Disadvantage</option>
         <option value="Exploding">Exploding</option>
       </select>
+      <div
+        className="flex flex-col items-center justify-center px-4 text-sm
+          opacity-70"
+      >
+        Arity: {arity} Cardinality: {cardinality}
+      </div>
     </div>
   );
 };
