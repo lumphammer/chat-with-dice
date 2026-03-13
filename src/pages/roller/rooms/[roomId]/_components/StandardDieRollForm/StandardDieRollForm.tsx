@@ -20,6 +20,7 @@ export const StandardDieRollForm = () => {
   const cardinalityRef = useRef<{ focus: () => void }>(null);
   const operatorRef = useRef<{ focusAndSet: (op: Operator) => void }>(null);
   const modifierRef = useRef<{ focusAndSet: (mod: string) => void }>(null);
+  const specialRef = useRef<{ focusAndSet: (spec: Special) => void }>(null);
 
   const goToCardinality = useCallback(() => {
     cardinalityRef.current?.focus();
@@ -31,6 +32,10 @@ export const StandardDieRollForm = () => {
 
   const goToModifier = useCallback((mod: string) => {
     modifierRef.current?.focusAndSet(mod);
+  }, []);
+
+  const goToSpecial = useCallback((spec: Special) => {
+    specialRef.current?.focusAndSet(spec);
   }, []);
 
   return (
@@ -63,10 +68,15 @@ export const StandardDieRollForm = () => {
         ref={modifierRef}
         modifier={modifier}
         setModifier={setModifier}
+        onGoToSpecial={goToSpecial}
       />
 
       {/* Special modes */}
-      <SpecialPicker special={special} setSpecial={setSpecial} />
+      <SpecialPicker
+        ref={specialRef}
+        special={special}
+        setSpecial={setSpecial}
+      />
 
       <div
         className="flex flex-col items-center justify-center px-4 text-sm
