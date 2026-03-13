@@ -1,11 +1,12 @@
 import styles from "../inputs.module.css";
+import type { Operator } from "../types";
 import {
   Combobox,
   ComboboxInput,
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import { memo, useImperativeHandle, useRef } from "react";
+import { memo, useCallback, useImperativeHandle, useRef } from "react";
 
 // oxlint-disable-next-line eslint/no-magic-numbers
 const PRESET_DICE_SIZES = [2, 3, 4, 6, 8, 10, 12, 20, 100];
@@ -15,15 +16,13 @@ export const CardinalityPicker = memo(
     cardinality,
     setCardinality,
     ref,
+    onGoToOperator,
   }: {
     cardinality: string;
     setCardinality: (val: string) => void;
     ref?: React.Ref<{ focus: () => void }>;
+    onGoToOperator?: (op: Operator) => void;
   }) => {
-    const handleKeyDown = (_event: React.KeyboardEvent<HTMLInputElement>) => {
-      //
-    };
-
     const inputRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(ref, () => {
@@ -34,10 +33,30 @@ export const CardinalityPicker = memo(
       };
     }, []);
 
+    const handleKeyDown = useCallback(
+      (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "+") {
+          event.preventDefault();
+          onGoToOperator?.("+");
+        } else if (event.key === "-") {
+          event.preventDefault();
+          onGoToOperator?.("-");
+        } else if (["/", "÷"].includes(event.key)) {
+          event.preventDefault();
+          onGoToOperator?.("/");
+        } else if (["*", "x", "×"].includes(event.key)) {
+          event.preventDefault();
+          onGoToOperator?.("*");
+        }
+      },
+      [onGoToOperator],
+    );
+
     return (
       <Combobox
         value={cardinality}
-        immediate
+        // immediate
+
         onChange={(val) => {
           if (val !== null) {
             console.log("Combobox#onChange", val);
@@ -61,7 +80,11 @@ export const CardinalityPicker = memo(
             setCardinality(trimmed);
           }}
         />
-        <ComboboxOptions anchor="bottom" className="border empty:invisible">
+        <ComboboxOptions
+          anchor="bottom"
+          className="border empty:invisible"
+          modal={false}
+        >
           {PRESET_DICE_SIZES.map((cardi) => (
             <ComboboxOption
               key={cardi}

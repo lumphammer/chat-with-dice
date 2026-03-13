@@ -1,18 +1,33 @@
 import styles from "../inputs.module.css";
 import type { Operator } from "../types";
-import { memo } from "react";
+import { memo, useImperativeHandle, useRef } from "react";
 
 export const OperatorPicker = memo(
   ({
     operator,
     setOperator,
+    ref,
   }: {
     operator: Operator;
     setOperator: (val: Operator) => void;
+    ref?: React.Ref<{ focusAndSet: (operator: Operator) => void }>;
   }) => {
+    const selectRef = useRef<HTMLSelectElement>(null);
+
+    useImperativeHandle(ref, () => {
+      return {
+        focusAndSet(op: Operator) {
+          setOperator(op);
+          console.log("focusAndSet", op, "ref is", selectRef.current);
+          selectRef.current?.focus();
+        },
+      };
+    }, [setOperator]);
+
     return (
       <select
-        className={styles.input}
+        ref={selectRef}
+        className={`${styles.input} text-3xl`}
         value={operator}
         onChange={(v) => setOperator(v.target.value as Operator)}
       >
