@@ -5,7 +5,6 @@ import {
   memo,
   useCallback,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -61,6 +60,13 @@ export const SpecialPicker = memo(
     const inputRef = useRef<HTMLInputElement>(null);
     const [inputValue, setInputValue] = useState(special);
 
+    // highlightedValue is driven by two sources:
+    //   1. Text matching — snaps to best match as the user types.
+    //   2. onHighlightChange — lets keyboard nav and mouse hover move it freely.
+    // Without round-tripping onHighlightChange back into state, ArkUI's
+    // internal highlight updates are ignored and those interactions break.
+    const [highlightedValue, setHighlightedValue] = useState<string>(special);
+
     // Mutable ref so onBlur always reads the latest committed value without
     // the callback needing to be recreated on every render.
     const committedRef = useRef(special);
@@ -72,41 +78,48 @@ export const SpecialPicker = memo(
         focusAndSet(spec: Special) {
           setSpecial(spec);
           setInputValue(spec);
+          setHighlightedValue(spec);
           inputRef.current?.focus();
         },
       }),
       [setSpecial],
     );
 
-    const match = useMemo(() => bestMatch(inputValue), [inputValue]);
-
+    // On blur, commit whatever is currently highlighted (which reflects both
+    // text-match snapping and any keyboard/mouse navigation the user did).
+    // If the highlighted value is still the committed value and the input text
+    // doesn't match anything, this is a no-op on special and just reverts the
+    // displayed text.
     const handleBlur = useCallback(() => {
-      if (match != null) {
-        // Commit the best match the user was hovering over.
-        setSpecial(match);
-        setInputValue(match);
-      } else {
-        // Nothing matched — revert to whatever was last committed.
-        setInputValue(committedRef.current);
-      }
-    }, [match, setSpecial]);
+      setSpecial(highlightedValue as Special);
+      setInputValue(highlightedValue);
+    }, [highlightedValue, setSpecial]);
 
     return (
       <Combobox.Root
         collection={collection}
         value={[special]}
         inputValue={inputValue}
-        // Snap the dropdown highlight to the best match without committing.
-        highlightedValue={match ?? special}
+        highlightedValue={highlightedValue}
+        onHighlightChange={(e) => {
+          // Keep our state in sync so keyboard nav and hover work.
+          if (e.highlightedValue != null) {
+            setHighlightedValue(e.highlightedValue);
+          }
+        }}
         onValueChange={(e) => {
           if (e.value[0] != null) {
             const val = e.value[0] as Special;
             setSpecial(val);
             setInputValue(val);
+            setHighlightedValue(val);
           }
         }}
         onInputValueChange={(e) => {
           setInputValue(e.inputValue);
+          // Snap highlight to best text match; fall back to the last committed
+          // value so the highlight is never left on a stale item.
+          setHighlightedValue(bestMatch(e.inputValue) ?? committedRef.current);
         }}
         openOnClick
       >
