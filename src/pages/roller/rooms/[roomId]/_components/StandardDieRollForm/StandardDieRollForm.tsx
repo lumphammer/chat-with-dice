@@ -4,7 +4,7 @@ import { ArityPicker } from "./ArityPicker";
 import { CardinalityPicker } from "./CardinalityPicker";
 import { ModifierPicker } from "./ModifierPicker";
 import { OperatorPicker } from "./OperatorPicker";
-import { SpecialPicker } from "./SpecialPIcker";
+import { SpecialPicker } from "./SpecialPicker";
 import { useCallback, useRef, useState } from "react";
 
 export const StandardDieRollForm = () => {
