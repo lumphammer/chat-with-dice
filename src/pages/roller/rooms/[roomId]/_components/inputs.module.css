@@ -18,7 +18,7 @@
     border-right-style: var(--tw-border-style);
     border-right-width: 1px;
 
-    @apply outline-accent -outline-offset-2 outline-none focus:outline-2 focus:outline-solid;
+    /*@apply outline-accent -outline-offset-2 outline-none focus:outline-2 focus:outline-solid;*/
     outline-color: var(--color-accent);
     outline-offset: -2px;
     outline-width: 2px;

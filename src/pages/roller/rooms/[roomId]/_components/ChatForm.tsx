@@ -1,6 +1,8 @@
-import { RollTypePicker } from "./RollTypePicker";
+import { FormulaForm } from "./FormulaForm/FormulaForm";
+import { RollTypePicker, type RollType } from "./RollTypePicker";
 import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";
 import { FormulaContextProvider } from "./formulaContext";
+import styles from "./inputs.module.css";
 import { Dices, SendHorizontal } from "lucide-react";
 import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
 
@@ -25,7 +27,7 @@ type ChatFormProps = {
 export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const [formula, setFormula] = useState("");
   const [text, setText] = useState("");
-  const [rollType, setRollType] = useState<"standard" | "f20">("standard");
+  const [rollType, setRollType] = useState<RollType>("standard");
 
   const formulaContextValue = useMemo(() => {
     return {
@@ -51,12 +53,12 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
         >
           <RollTypePicker rollType={rollType} setRollType={setRollType} />
           {rollType === "standard" && <StandardDieRollForm />}
+          {rollType === "formula" && <FormulaForm />}
           <textarea
             rows={1}
-            className="bg-base-100 placeholder:text-base-content/40
-              border-neutral/30 field-sizing-content max-h-[30cqh] min-w-full
-              flex-1 resize-none overflow-y-auto border-t-2 px-4 py-2
-              outline-none"
+            className={`${styles.input} field-sizing-content max-h-[30cqh]
+              min-w-full flex-1 resize-none overflow-y-auto rounded-bl-xl
+              border-t px-4 py-2 text-left`}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={formula.trim() ? "Annotation" : "Chat message"}
