@@ -1,6 +1,29 @@
 import styles from "../inputs.module.css";
 import type { Operator } from "../types";
-import { memo, useImperativeHandle, useRef } from "react";
+import { Combobox, createListCollection } from "@ark-ui/react/combobox";
+import { memo, useCallback, useImperativeHandle, useMemo, useRef } from "react";
+
+type OperatorItem = { label: string; value: Operator };
+
+const OPERATOR_ITEMS: OperatorItem[] = [
+  { label: "+", value: "+" },
+  { label: "-", value: "-" },
+  { label: "×", value: "*" },
+  { label: "÷", value: "/" },
+];
+
+const DISPLAY: Record<Operator, string> = {
+  "+": "+",
+  "-": "-",
+  "*": "×",
+  "/": "÷",
+};
+
+const collection = createListCollection<OperatorItem>({
+  items: OPERATOR_ITEMS,
+  itemToString: (item) => item.label,
+  itemToValue: (item) => item.value,
+});
 
 export const OperatorPicker = memo(
   ({
@@ -14,38 +37,83 @@ export const OperatorPicker = memo(
     ref?: React.Ref<{ focusAndSet: (operator: Operator) => void }>;
     onGoToModifier?: (mod: string) => void;
   }) => {
-    const selectRef = useRef<HTMLSelectElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    useImperativeHandle(ref, () => {
-      return {
+    useImperativeHandle(
+      ref,
+      () => ({
         focusAndSet(op: Operator) {
           setOperator(op);
-          console.log("focusAndSet", op, "ref is", selectRef.current);
-          selectRef.current?.focus();
+          inputRef.current?.focus();
         },
-      };
-    }, [setOperator]);
+      }),
+      [setOperator],
+    );
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
-      if (["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].includes(e.key)) {
-        e.preventDefault();
-        onGoToModifier?.(e.key);
-      }
-    };
+    const handleKeyDown = useCallback(
+      (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "+") {
+          event.preventDefault();
+          setOperator("+");
+        } else if (event.key === "-") {
+          event.preventDefault();
+          setOperator("-");
+        } else if (["/", "÷"].includes(event.key)) {
+          event.preventDefault();
+          setOperator("/");
+        } else if (["*", "x", "×"].includes(event.key)) {
+          event.preventDefault();
+          setOperator("*");
+        } else if (/^\d$/.test(event.key)) {
+          event.preventDefault();
+          onGoToModifier?.(event.key);
+        }
+      },
+      [setOperator, onGoToModifier],
+    );
+
+    const valueArray = useMemo(() => [operator], [operator]);
 
     return (
-      <select
-        ref={selectRef}
-        className={`${styles.input} text-3xl`}
-        value={operator}
-        onChange={(v) => setOperator(v.target.value as Operator)}
-        onKeyDown={handleKeyDown}
+      <Combobox.Root
+        collection={collection}
+        value={valueArray}
+        inputValue={DISPLAY[operator]}
+        onValueChange={(e) => {
+          if (e.value[0] != null) {
+            setOperator(e.value[0] as Operator);
+          }
+        }}
+        onInputValueChange={() => {}}
+        openOnClick
       >
-        <option value="+">+</option>
-        <option value="-">&ndash;</option>
-        <option value="*">×</option>
-        <option value="/">÷</option>
-      </select>
+        <Combobox.Control className="h-full">
+          <Combobox.Input
+            ref={inputRef}
+            className={`${styles.input} h-full text-2xl`}
+            aria-label="Operator"
+            readOnly
+            onKeyDown={handleKeyDown}
+          />
+        </Combobox.Control>
+        <Combobox.Positioner>
+          <Combobox.Content
+            className="bg-base-200 border-accent border p-1 shadow-2xl
+              empty:invisible"
+          >
+            {OPERATOR_ITEMS.map((item) => (
+              <Combobox.Item
+                key={item.value}
+                item={item}
+                className="data-highlighted:bg-accent/30 cursor-pointer p-1
+                  text-2xl"
+              >
+                <Combobox.ItemText>{item.label}</Combobox.ItemText>
+              </Combobox.Item>
+            ))}
+          </Combobox.Content>
+        </Combobox.Positioner>
+      </Combobox.Root>
     );
   },
 );
