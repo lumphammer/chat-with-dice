@@ -5,17 +5,19 @@ import { CardinalityPicker } from "./CardinalityPicker";
 import { ModifierPicker } from "./ModifierPicker";
 import { OperatorPicker } from "./OperatorPicker";
 import { SpecialPicker } from "./SpecialPicker";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const StandardDieRollForm = () => {
-  // const [formula, setFormula] = useState("");
-  const { formula: upstreamFormula, setFormula: setUpstreamFormula } =
-    useFormulaContext();
+  const { setFormula: setUpstreamFormula } = useFormulaContext();
   const [special, setSpecial] = useState<Special>("Normal");
   const [arity, setArity] = useState("1");
   const [cardinality, setCardinality] = useState("6");
   const [operator, setOperator] = useState<Operator>("+");
   const [modifier, setModifier] = useState("0");
+
+  useEffect(() => {
+    setUpstreamFormula(`${arity}d${cardinality}${operator}${modifier}`);
+  }, [setUpstreamFormula, arity, cardinality, operator, modifier]);
 
   const cardinalityRef = useRef<{ focus: () => void }>(null);
   const operatorRef = useRef<{ focusAndSet: (op: Operator) => void }>(null);
