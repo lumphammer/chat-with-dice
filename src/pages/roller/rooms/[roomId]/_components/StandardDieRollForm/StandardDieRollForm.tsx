@@ -9,9 +9,9 @@ import { useCallback, useRef, useState } from "react";
 
 export const StandardDieRollForm = () => {
   // const [formula, setFormula] = useState("");
-  const [special, setSpecial] = useState<Special>("Normal");
   const { formula: upstreamFormula, setFormula: setUpstreamFormula } =
     useFormulaContext();
+  const [special, setSpecial] = useState<Special>("Normal");
   const [arity, setArity] = useState("1");
   const [cardinality, setCardinality] = useState("6");
   const [operator, setOperator] = useState<Operator>("+");
@@ -77,13 +77,13 @@ export const StandardDieRollForm = () => {
         special={special}
         setSpecial={setSpecial}
       />
-
+      {/*
       <div
         className="flex flex-col items-center justify-center px-4 text-sm
           opacity-70"
       >
         Arity: {arity} Cardinality: {cardinality}
-      </div>
+      </div>*/}
     </div>
   );
 };
