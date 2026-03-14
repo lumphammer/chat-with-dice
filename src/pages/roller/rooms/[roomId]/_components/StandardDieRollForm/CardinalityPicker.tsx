@@ -1,15 +1,11 @@
 import styles from "../inputs.module.css";
 import type { Operator } from "../types";
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxOption,
-  ComboboxOptions,
-} from "@headlessui/react";
-import { memo, useCallback, useImperativeHandle, useRef } from "react";
+import { Combobox, createListCollection } from "@ark-ui/react/combobox";
+import { memo, useCallback, useImperativeHandle, useMemo, useRef } from "react";
 
-// oxlint-disable-next-line eslint/no-magic-numbers
 const PRESET_DICE_SIZES = ["2", "3", "4", "6", "8", "10", "12", "20", "100"];
+
+type DiceItem = { label: string; value: string };
 
 export const CardinalityPicker = memo(
   ({
@@ -52,62 +48,83 @@ export const CardinalityPicker = memo(
       [onGoToOperator],
     );
 
+    // Rebuild the collection whenever cardinality changes so that a custom
+    // (non-preset) value appears as the first selectable option, mirroring the
+    // original HeadlessUI behaviour.
+    const collection = useMemo(() => {
+      const items: DiceItem[] = [
+        ...(!PRESET_DICE_SIZES.includes(cardinality) && cardinality !== ""
+          ? [{ label: `d${cardinality}`, value: cardinality }]
+          : []),
+        ...PRESET_DICE_SIZES.map((s) => ({ label: `d${s}`, value: s })),
+      ];
+
+      return createListCollection<DiceItem>({
+        items,
+        itemToString: (item) => item.label,
+        itemToValue: (item) => item.value,
+      });
+    }, [cardinality]);
+
+    const valueArray = useMemo(() => [cardinality], [cardinality]);
+
     return (
-      <Combobox
-        value={cardinality}
-        immediate
-        onChange={(val) => {
-          if (val !== null) {
-            console.log("Combobox#onChange", val);
-            setCardinality(val);
+      <Combobox.Root
+        collection={collection}
+        // Controlled selected value (array API)
+        value={valueArray}
+        // Controlled input text – always rendered as "d{number}"
+        inputValue={`d${cardinality}`}
+        // Allow values that aren't in the preset list
+        allowCustomValue
+        // Open the listbox when the user clicks into the input (mirrors
+        // HeadlessUI's `immediate` prop)
+        openOnClick
+        onValueChange={(e) => {
+          if (e.value[0] != null) {
+            setCardinality(e.value[0]);
           }
         }}
+        onInputValueChange={(e) => {
+          // Strip everything that isn't a digit, just like the original
+          const trimmed = e.inputValue.replaceAll(/\D+/g, "");
+          setCardinality(trimmed);
+        }}
       >
-        <ComboboxInput
-          ref={inputRef}
-          className={styles.input}
-          aria-label="Die Size"
-          displayValue={(cardi: number) => `d${cardi}`}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck="false"
-          onKeyDown={handleKeyDown}
-          onFocus={(e) => {
-            // preselect all the text except the first "d"
-            const input = e.target as HTMLInputElement | null;
-            input?.setSelectionRange(1, input.value.length);
-          }}
-          onChange={(event) => {
-            const trimmed = event.target.value.replaceAll(/\D+/g, "");
-            console.log("ComboboxInput#onChange", trimmed);
-            setCardinality(trimmed);
-          }}
-        />
-        <ComboboxOptions
-          anchor="bottom"
-          className="border empty:invisible"
-          modal={false}
-        >
-          {!PRESET_DICE_SIZES.includes(cardinality) && (
-            <ComboboxOption
-              value={cardinality}
-              // className="data-focus:bg-blue-100"
-            >
-              d{cardinality}
-            </ComboboxOption>
-          )}
-          {PRESET_DICE_SIZES.map((cardi) => (
-            <ComboboxOption
-              key={cardi}
-              value={cardi}
-              // className="data-focus:bg-blue-100"
-            >
-              d{cardi}
-            </ComboboxOption>
-          ))}
-        </ComboboxOptions>
-      </Combobox>
+        <Combobox.Control className="h-full">
+          <Combobox.Input
+            ref={inputRef}
+            className={`${styles.input} h-full`}
+            aria-label="Die Size"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            onKeyDown={handleKeyDown}
+            onFocus={(e) => {
+              // Pre-select all text after the leading "d"
+              const input = e.target as HTMLInputElement | null;
+              input?.setSelectionRange(1, input.value.length);
+            }}
+          />
+        </Combobox.Control>
+        <Combobox.Positioner>
+          <Combobox.Content
+            className="bg-base-200 border-accent border p-1 shadow-2xl
+              empty:invisible"
+          >
+            {collection.items.map((item) => (
+              <Combobox.Item
+                key={item.value}
+                item={item}
+                className="data-highlighted:bg-accent/30 cursor-pointer p-1"
+              >
+                <Combobox.ItemText>{item.label}</Combobox.ItemText>
+              </Combobox.Item>
+            ))}
+          </Combobox.Content>
+        </Combobox.Positioner>
+      </Combobox.Root>
     );
   },
 );
