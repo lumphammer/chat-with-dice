@@ -1,12 +1,13 @@
 import { MatchCombobox } from "./MatchCombobox";
 import { memo } from "react";
 
-export const rollTypes = ["standard", "f20"] as const;
+export const rollTypes = ["standard", "f20", "formula"] as const;
 export type RollType = (typeof rollTypes)[number];
 
 const ROLL_TYPE_ITEMS: Array<{ label: string; value: RollType }> = [
   { label: "Roll", value: "standard" },
   { label: "F20", value: "f20" },
+  { label: "Formula", value: "formula" },
 ];
 
 export const RollTypePicker = memo(
