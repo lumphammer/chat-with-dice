@@ -2,12 +2,8 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "main": "./src/workers/worker.ts",
   "name": "chat-with-dice",
-  "compatibility_date": "2025-12-04",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "disable_nodejs_process_v2",
-    "global_fetch_strictly_public",
-  ],
+  "compatibility_date": "2026-03-12",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",
