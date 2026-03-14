@@ -1,4 +1,4 @@
-import { RollTypePicker, type RollType } from "./RollTypePicker";
+import { RollTypePicker } from "./RollTypePicker";
 import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";
 import { FormulaContextProvider } from "./formulaContext";
 import { Dices, SendHorizontal } from "lucide-react";
