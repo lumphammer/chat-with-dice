@@ -49,7 +49,7 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
       <form onSubmit={handleSubmit} className="flex flex-row flex-wrap p-4">
         <div
           className="border-primary flex min-w-0 flex-1 flex-row flex-wrap
-            overflow-visible rounded-l-xl border shadow-sm"
+            overflow-hidden rounded-l-xl border shadow-sm"
         >
           <select
             value={rollType}
