@@ -1,3 +1,4 @@
+import { RollTypePicker, type RollType } from "./RollTypePicker";
 import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";
 import { FormulaContextProvider } from "./formulaContext";
 import { Dices, SendHorizontal } from "lucide-react";
@@ -20,9 +21,6 @@ import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
 type ChatFormProps = {
   onNewMessage: (args: { formula: string; text: string }) => void;
 };
-
-const rollTypes = ["standard", "f20"] as const;
-type RollType = (typeof rollTypes)[number];
 
 export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const [formula, setFormula] = useState("");
@@ -51,15 +49,7 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
           className="border-primary flex min-w-0 flex-1 flex-row flex-wrap
             overflow-hidden rounded-l-xl border shadow-sm"
         >
-          <select
-            value={rollType}
-            className="bg-primary/10 border-base-content/30 field-sizing-content
-              w-30 rounded-none border-r px-4 py-2 outline-none"
-            onChange={(e) => setRollType(e.target.value as RollType)}
-          >
-            <option value="standard">Roll</option>
-            <option value="f20">F20</option>
-          </select>
+          <RollTypePicker rollType={rollType} setRollType={setRollType} />
           {rollType === "standard" && <StandardDieRollForm />}
           <textarea
             rows={1}
