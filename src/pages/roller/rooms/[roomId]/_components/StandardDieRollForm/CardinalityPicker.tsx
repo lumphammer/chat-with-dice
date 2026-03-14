@@ -49,8 +49,7 @@ export const CardinalityPicker = memo(
     );
 
     // Rebuild the collection whenever cardinality changes so that a custom
-    // (non-preset) value appears as the first selectable option, mirroring the
-    // original HeadlessUI behaviour.
+    // (non-preset) value appears as the first selectable option
     const collection = useMemo(() => {
       const items: DiceItem[] = [
         ...(!PRESET_DICE_SIZES.includes(cardinality) && cardinality !== ""
