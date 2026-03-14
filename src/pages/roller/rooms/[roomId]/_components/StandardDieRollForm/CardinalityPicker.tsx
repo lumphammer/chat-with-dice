@@ -31,21 +31,60 @@ export const CardinalityPicker = memo(
 
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLInputElement>) => {
+        // Operator navigation shortcuts — consume and redirect
         if (event.key === "+") {
           event.preventDefault();
           onGoToOperator?.("+");
+          return;
         } else if (event.key === "-") {
           event.preventDefault();
           onGoToOperator?.("-");
+          return;
         } else if (["/", "÷"].includes(event.key)) {
           event.preventDefault();
           onGoToOperator?.("/");
-        } else if (["*", "x", "×"].includes(event.key)) {
+          return;
+        } else if (["*", "×", "x"].includes(event.key)) {
           event.preventDefault();
           onGoToOperator?.("*");
+          return;
         }
+
+        // Allow ctrl/meta combos (select-all, copy, cut, paste, undo…)
+        if (event.ctrlKey || event.metaKey) return;
+
+        // Allow digits
+        if (/^\d$/.test(event.key)) return;
+
+        // Allow navigation and editing keys
+        const allowedKeys = [
+          "Backspace",
+          "Delete",
+          "ArrowLeft",
+          "ArrowRight",
+          "ArrowUp",
+          "ArrowDown",
+          "Home",
+          "End",
+          "Tab",
+          "Enter",
+          "Escape",
+        ];
+        if (allowedKeys.includes(event.key)) return;
+
+        // Block everything else (letters, punctuation, etc.)
+        event.preventDefault();
       },
       [onGoToOperator],
+    );
+
+    const handlePaste = useCallback(
+      (event: React.ClipboardEvent<HTMLInputElement>) => {
+        event.preventDefault();
+        const digits = event.clipboardData.getData("text").replace(/\D+/g, "");
+        if (digits) setCardinality(digits);
+      },
+      [setCardinality],
     );
 
     // Rebuild the collection whenever cardinality changes so that a custom
@@ -100,6 +139,7 @@ export const CardinalityPicker = memo(
             autoCapitalize="off"
             spellCheck={false}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             onFocus={(e) => {
               // Pre-select all text after the leading "d"
               const input = e.target as HTMLInputElement | null;
