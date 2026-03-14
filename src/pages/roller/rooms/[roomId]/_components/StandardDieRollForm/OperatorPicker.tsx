@@ -1,7 +1,14 @@
 import styles from "../inputs.module.css";
 import type { Operator } from "../types";
 import { Combobox, createListCollection } from "@ark-ui/react/combobox";
-import { memo, useCallback, useImperativeHandle, useMemo, useRef } from "react";
+import {
+  memo,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type OperatorItem = { label: string; value: Operator };
 
@@ -38,12 +45,14 @@ export const OperatorPicker = memo(
     onGoToModifier?: (mod: string) => void;
   }) => {
     const inputRef = useRef<HTMLInputElement>(null);
+    const [highlightedValue, setHighlightedValue] = useState<string>(operator);
 
     useImperativeHandle(
       ref,
       () => ({
         focusAndSet(op: Operator) {
           setOperator(op);
+          setHighlightedValue(op);
           inputRef.current?.focus();
         },
       }),
@@ -55,15 +64,19 @@ export const OperatorPicker = memo(
         if (event.key === "+") {
           event.preventDefault();
           setOperator("+");
+          setHighlightedValue("+");
         } else if (event.key === "-") {
           event.preventDefault();
           setOperator("-");
+          setHighlightedValue("-");
         } else if (["/", "÷"].includes(event.key)) {
           event.preventDefault();
           setOperator("/");
+          setHighlightedValue("/");
         } else if (["*", "x", "×"].includes(event.key)) {
           event.preventDefault();
           setOperator("*");
+          setHighlightedValue("*");
         } else if (/^\d$/.test(event.key)) {
           event.preventDefault();
           onGoToModifier?.(event.key);
@@ -79,9 +92,17 @@ export const OperatorPicker = memo(
         collection={collection}
         value={valueArray}
         inputValue={DISPLAY[operator]}
+        highlightedValue={highlightedValue}
+        onHighlightChange={(e) => {
+          if (e.highlightedValue != null) {
+            setHighlightedValue(e.highlightedValue);
+          }
+        }}
         onValueChange={(e) => {
           if (e.value[0] != null) {
-            setOperator(e.value[0] as Operator);
+            const val = e.value[0] as Operator;
+            setOperator(val);
+            setHighlightedValue(val);
           }
         }}
         onInputValueChange={() => {}}
