@@ -121,7 +121,12 @@ export const SpecialPicker = memo(
             spellCheck={false}
             onBlur={handleBlur}
             onFocus={(e) => e.currentTarget.select()}
-            onClick={(e) => e.currentTarget.select()}
+            onClick={(e) => {
+              const input = e.currentTarget;
+              // Defer re-selection until after ArkUI's openOnClick handler has
+              // run — it resets the input internally, which clears the selection.
+              setTimeout(() => input.select(), 0);
+            }}
           />
         </Combobox.Control>
         <Combobox.Positioner>
