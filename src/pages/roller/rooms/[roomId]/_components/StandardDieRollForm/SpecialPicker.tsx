@@ -5,6 +5,7 @@ import {
   memo,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -58,14 +59,14 @@ export const SpecialPicker = memo(
     ref?: React.Ref<{ focusAndSet: (spec: Special) => void }>;
   }) => {
     const inputRef = useRef<HTMLInputElement>(null);
-    const [inputValue, setInputValue] = useState(special);
+    const [inputValue, setInputValue] = useState<string>(special);
 
     // highlightedValue is driven by two sources:
     //   1. Text matching — snaps to best match as the user types.
     //   2. onHighlightChange — lets keyboard nav and mouse hover move it freely.
     // Without round-tripping onHighlightChange back into state, ArkUI's
     // internal highlight updates are ignored and those interactions break.
-    const [highlightedValue, setHighlightedValue] = useState<string>(special);
+    const [highlightedValue, setHighlightedValue] = useState<Special>(special);
 
     // Mutable ref so onBlur always reads the latest committed value without
     // the callback needing to be recreated on every render.
@@ -91,20 +92,22 @@ export const SpecialPicker = memo(
     // doesn't match anything, this is a no-op on special and just reverts the
     // displayed text.
     const handleBlur = useCallback(() => {
-      setSpecial(highlightedValue as Special);
+      setSpecial(highlightedValue);
       setInputValue(highlightedValue);
     }, [highlightedValue, setSpecial]);
+
+    const valueArray = useMemo(() => [special], [special]);
 
     return (
       <Combobox.Root
         collection={collection}
-        value={[special]}
+        value={valueArray}
         inputValue={inputValue}
         highlightedValue={highlightedValue}
         onHighlightChange={(e) => {
           // Keep our state in sync so keyboard nav and hover work.
           if (e.highlightedValue != null) {
-            setHighlightedValue(e.highlightedValue);
+            setHighlightedValue(e.highlightedValue as Special);
           }
         }}
         onValueChange={(e) => {
