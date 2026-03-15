@@ -2,8 +2,8 @@
 import { db } from "#/db";
 import Layout from "#/layouts/Layout.astro";
 import { Rooms } from "#/schemas/chatDB-schema";
+import { DiceRoller } from "@/components/DiceRoller/DiceRoller";
 import { eq } from "drizzle-orm";
-import { DiceRoller } from "./_components/DiceRoller";
 
 export const prerender = false;
 const roomId = Astro.params["roomId"] ?? "";
