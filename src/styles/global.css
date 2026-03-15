@@ -75,7 +75,7 @@
   --color-success-content: oklch(98% 0.01 140);
   --color-warning: oklch(80% 0.25 80);
   --color-warning-content: oklch(20% 0.05 80);
-  --color-error: oklch(65% 0.3 30);
+  --color-error: oklch(40% 0.3 30);
   --color-error-content: oklch(98% 0.01 30);
 
   /* border radius */

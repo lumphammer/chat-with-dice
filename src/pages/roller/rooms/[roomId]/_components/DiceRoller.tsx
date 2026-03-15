@@ -8,19 +8,48 @@ import { useChatWebSocket } from "./useChatWebSocket";
 import { useSmartScroll } from "./useSmartScroll";
 import { useUserIdentityStorage } from "./useUserIdentityStorage";
 import { UserIdentityContextProvider } from "./userIdentityContext";
-import { memo, useCallback } from "react";
+import { Portal } from "@ark-ui/react/portal";
+import { Toast, Toaster, createToaster } from "@ark-ui/react/toast";
+import {
+  CircleAlertIcon,
+  TriangleAlertIcon,
+  CircleCheckIcon,
+  InfoIcon,
+  XIcon,
+} from "lucide-react";
+import { memo, useCallback, useMemo } from "react";
 
 type DiceRollerProps = {
   roomId: string;
 };
+const iconMap = {
+  success: CircleCheckIcon,
+  error: CircleAlertIcon,
+  warning: TriangleAlertIcon,
+  info: InfoIcon,
+};
+
+const TOAST_DURATION_MS = 10_000_000;
 
 export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
     useUserIdentityStorage();
 
+  const toaster = useMemo(() => createToaster({ placement: "top" }), []);
+
   const { connectionStatus, messages, sendJSON } = useChatWebSocket({
     roomId: roomId,
     chatId: userIdentity.chatId,
+    onError: useCallback(
+      (error: { errorMessage: string; detail: string }) => {
+        toaster.error({
+          title: error.errorMessage,
+          description: error.detail,
+          duration: TOAST_DURATION_MS,
+        });
+      },
+      [toaster],
+    ),
   });
 
   const hue = deriveHueFromUserId(userIdentity.chatId);
@@ -113,6 +142,35 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
         </div>
         <ChatForm onNewMessage={handleNewMessage} />
       </div>
+      <Portal>
+        <Toaster toaster={toaster}>
+          {(toast) => {
+            const ToastIcon = toast.type
+              ? iconMap[toast.type as keyof typeof iconMap]
+              : undefined;
+            return (
+              <Toast.Root
+                key={toast.id}
+                className="bg-base-100 data-[type=error]:bg-error flex rounded
+                  p-4"
+              >
+                {ToastIcon && <ToastIcon className="" />}
+                <details>
+                  <summary>
+                    <Toast.Title className="">{toast.title}</Toast.Title>
+                  </summary>
+                  <Toast.Description className="text-sm">
+                    {toast.description}
+                  </Toast.Description>
+                </details>
+                <Toast.CloseTrigger className="cursor-pointer">
+                  <XIcon />
+                </Toast.CloseTrigger>
+              </Toast.Root>
+            );
+          }}
+        </Toaster>
+      </Portal>
     </UserIdentityContextProvider>
   );
 });

@@ -110,6 +110,10 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("catchup"),
     payload: z.object({ messages: z.array(rollerMessageSchema) }),
   }),
+  z.object({
+    type: z.literal("error"),
+    payload: z.object({ errorMessage: z.string(), detail: z.string() }),
+  }),
 ]);
 
 export type WebSocketServerMessage = z.infer<

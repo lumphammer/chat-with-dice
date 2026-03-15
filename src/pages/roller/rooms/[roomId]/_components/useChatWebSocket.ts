@@ -5,16 +5,26 @@ import {
 } from "#/workers/types";
 import type { ConnectionStatus } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
+import z from "zod";
 
 type UseChatWebSocketArgs = {
   roomId: string;
   chatId: string;
+  onError: (error: { errorMessage: string; detail: string }) => void;
 };
 
 const MAX_HISTORY_BUFFER_LENGTH = 100;
 
-export const useChatWebSocket = ({ roomId, chatId }: UseChatWebSocketArgs) => {
+export const useChatWebSocket = ({
+  roomId,
+  chatId,
+  onError,
+}: UseChatWebSocketArgs) => {
   const [messages, setMessages] = useState<RollerMessage[]>([]);
+  // const [error, setError] = useState<{
+  //   errorMessage: string;
+  //   detail: string;
+  // } | null>(null);
 
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
@@ -45,10 +55,10 @@ export const useChatWebSocket = ({ roomId, chatId }: UseChatWebSocketArgs) => {
         const incomingWebsocketMessage =
           webSocketServerMessageSchema.safeParse(blob);
         if (!incomingWebsocketMessage.success) {
-          console.error(
-            "unknown incoming websocket message",
-            incomingWebsocketMessage.error,
-          );
+          onError({
+            errorMessage: "Unknown incoming websocket message",
+            detail: z.prettifyError(incomingWebsocketMessage.error),
+          });
           return;
         }
         const data = incomingWebsocketMessage.data;
@@ -58,6 +68,11 @@ export const useChatWebSocket = ({ roomId, chatId }: UseChatWebSocketArgs) => {
           );
         } else if (data.type === "catchup") {
           setMessages(data.payload.messages);
+        } else if (data.type === "error") {
+          onError({
+            errorMessage: data.payload.errorMessage,
+            detail: data.payload.detail,
+          });
         }
       },
       onclose: () => {
@@ -75,11 +90,15 @@ export const useChatWebSocket = ({ roomId, chatId }: UseChatWebSocketArgs) => {
       console.log("Closing websocket because effect re-ran");
       ws.close();
     };
-  }, [roomId, chatId]);
+  }, [roomId, chatId, onError]);
 
   const sendJSON = useCallback((content: any) => {
     websocketRef.current?.json(content);
   }, []);
+
+  // const clearError = useCallback(() => {
+  //   setError(null);
+  // }, []);
 
   return { connectionStatus, messages, sendJSON };
 };

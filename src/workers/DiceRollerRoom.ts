@@ -136,10 +136,25 @@ export class DiceRollerRoom extends DurableObject {
       }
       const data = parsed.data;
       if (data.type === "chat") {
-        await this.runFormula({
-          ...data.payload,
-          chatId: attachment.chatId,
-        });
+        try {
+          await this.runFormula({
+            ...data.payload,
+            chatId: attachment.chatId,
+          });
+        } catch (e: unknown) {
+          this.send(ws, {
+            type: "error",
+            payload: {
+              errorMessage: e instanceof Error ? e.message : String(e),
+              detail:
+                e instanceof Error && e.cause
+                  ? e.cause instanceof Error
+                    ? e.cause.message
+                    : JSON.stringify(e.cause)
+                  : "",
+            },
+          });
+        }
       }
     } catch (error) {
       console.error("Error handling message:", error);
@@ -178,7 +193,12 @@ export class DiceRollerRoom extends DurableObject {
     rollType: RollType;
     rollTypeVersion: number;
   }): Promise<void> {
-    const roll = formula ? new DiceRoll(formula) : null;
+    let roll: DiceRoll | null;
+    try {
+      roll = formula ? new DiceRoll(formula) : null;
+    } catch (e: unknown) {
+      throw new Error("Couldn't parse dice formula", { cause: e });
+    }
 
     // Store the full structured rolls from the library so the frontend can
     // render dropped, exploded, rerolled, etc. with proper visual treatment.
