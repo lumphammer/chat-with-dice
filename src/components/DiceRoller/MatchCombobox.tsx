@@ -32,6 +32,11 @@ function bestMatch<V extends string>(
   const q = query.trim().toLowerCase();
   if (!q) return null;
 
+  // Exact label match takes priority — handles multi-word labels like
+  // "With Advantage" where no single word starts with the full query.
+  const exact = items.find((item) => item.label.toLowerCase() === q);
+  if (exact) return exact.value;
+
   const scored = items
     .map((item) => ({
       item,
