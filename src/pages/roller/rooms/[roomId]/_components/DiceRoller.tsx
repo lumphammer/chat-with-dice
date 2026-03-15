@@ -3,6 +3,7 @@ import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
 import { deriveHueFromUserId } from "./deriveHueFromUserId";
+import toastStyles from "./toast.module.css";
 import type { UserHueStyle } from "./types";
 import { useChatWebSocket } from "./useChatWebSocket";
 import { useSmartScroll } from "./useSmartScroll";
@@ -29,14 +30,21 @@ const iconMap = {
   info: InfoIcon,
 };
 
-const TOAST_DURATION_MS = 10_000_000;
-
 export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
     useUserIdentityStorage();
 
-  const toaster = useMemo(() => createToaster({ placement: "top" }), []);
-
+  const toaster = useMemo(
+    () =>
+      createToaster({
+        placement: "top",
+        overlap: true,
+        gap: 8,
+        removeDelay: 250,
+        max: 10,
+      }),
+    [],
+  );
   const { connectionStatus, messages, sendJSON } = useChatWebSocket({
     roomId: roomId,
     chatId: userIdentity.chatId,
@@ -45,7 +53,6 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
         toaster.error({
           title: error.errorMessage,
           description: error.detail,
-          duration: TOAST_DURATION_MS,
         });
       },
       [toaster],
@@ -149,13 +156,7 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
               ? iconMap[toast.type as keyof typeof iconMap]
               : undefined;
             return (
-              <Toast.Root
-                key={toast.id}
-                className="bg-base-100 data-[type=error]:bg-error
-                  data-[type=warning]:bg-warning data-[type=success]:bg-success
-                  data-[type=info]:bg-info flex max-w-md min-w-80 items-start
-                  gap-3 rounded-xl p-4 shadow-lg"
-              >
+              <Toast.Root key={toast.id} className={toastStyles.toast}>
                 {ToastIcon && (
                   <div className="mt-0.5 shrink-0">
                     <ToastIcon className="h-5 w-5" />
