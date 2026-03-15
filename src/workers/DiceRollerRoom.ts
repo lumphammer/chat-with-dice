@@ -74,7 +74,7 @@ export class DiceRollerRoom extends DurableObject {
    * Blog post says the same thing but slower and louder:
    * https://flaredup.substack.com/i/161450113/synchronous-calls-with-fetch-and-rpc
    */
-  fetch(request: Request): Response {
+  async fetch(request: Request): Promise<Response> {
     const upgradeHeader = request.headers.get("Upgrade");
     if (upgradeHeader !== "websocket") {
       return new Response("Expected WebSocket upgrade", { status: 426 });
@@ -92,21 +92,10 @@ export class DiceRollerRoom extends DurableObject {
     // keeping the WebSocket connection open
     this.ctx.acceptWebSocket(server);
 
-    // not really grokking this but
-    // https://developers.cloudflare.com/workers/observability/errors/#cause-2-websocket-connections-that-are-never-closed
-    // we were seeing a lot of "The script will never generate a response"
-    // errors and I can't see any unhandled promises so far
-    server.addEventListener("close", () => {
-      server.close();
-    });
-
-    const attachment: SessionAttachment = {
-      chatId,
-    };
-
+    const attachment: SessionAttachment = { chatId };
     server.serializeAttachment(attachment);
 
-    void this.sendCatchUp(server);
+    await this.sendCatchUp(server);
 
     // Return the client WebSocket in the response
     // return new Response("splat", { status: 200 });
