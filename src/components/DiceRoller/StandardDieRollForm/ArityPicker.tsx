@@ -16,6 +16,7 @@ export const ArityPicker = memo(
         value={arity}
         className={`${styles.input} text-right`}
         onChange={(e) => setArity(e.target.value)}
+        min={1}
         onKeyDown={(e) => {
           if (e.key === "d") {
             e.preventDefault();

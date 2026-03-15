@@ -50,6 +50,7 @@ export const ModifierPicker = memo(
         autoCapitalize="off"
         spellCheck="false"
         type="number"
+        min={0}
       />
     );
   },
