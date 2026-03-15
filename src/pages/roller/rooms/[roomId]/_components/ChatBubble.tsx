@@ -32,9 +32,9 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
 
   const html = useMemo(() => {
     return addLinkTargets(
-      quikdown(message.text ?? "", { inline_styles: false }),
+      quikdown(message.chat ?? "", { inline_styles: false }),
     );
-  }, [message.text]);
+  }, [message.chat]);
 
   useLayoutEffect(() => {
     function checkHeight() {
@@ -69,7 +69,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
         className="w-fit rounded-lg bg-(--user-colour) px-4 pt-1 text-base
           group-data-is-mine:ml-auto"
       >
-        {message.text && (
+        {message.chat && (
           <>
             <p
               dangerouslySetInnerHTML={{ __html: html }}
@@ -81,7 +81,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
         )}
         <DiceRollResult
           formula={message.formula}
-          rolls={message.rolls}
+          rolls={message.results}
           total={message.total}
         />
       </div>

@@ -1,0 +1,1 @@
+ALTER TABLE `Messages` ADD `rollType` text DEFAULT 'formula' NOT NULL;

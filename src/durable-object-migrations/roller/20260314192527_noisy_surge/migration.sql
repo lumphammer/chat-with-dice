@@ -1,0 +1,1 @@
+ALTER TABLE `Messages` DROP COLUMN `result`;

@@ -1,3 +1,6 @@
+import { ROLL_TYPES } from "#/constants";
+import { Messages } from "../schemas/roller-schema";
+import { createSelectSchema } from "drizzle-orm/zod";
 import { z } from "zod/v4";
 
 const USERNAME_MAX_LENGTH = 128;
@@ -90,22 +93,11 @@ export type StructuredRolls = z.infer<typeof structuredRollsSchema>;
 
 export const sessionAttachmentSchema = z.object({
   chatId: z.uuid(),
-  // displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
 });
 
 export type SessionAttachment = z.infer<typeof sessionAttachmentSchema>;
 
-export const rollerMessageSchema = z.object({
-  id: z.string(),
-  displayName: z.string(),
-  chatId: z.string(),
-  created_time: z.number(),
-  formula: z.string().nullable(),
-  result: z.string().nullable(),
-  rolls: z.string().nullable(),
-  total: z.number().nullable(),
-  text: z.string().nullable(),
-});
+export const rollerMessageSchema = createSelectSchema(Messages);
 
 export type RollerMessage = z.infer<typeof rollerMessageSchema>;
 
@@ -128,6 +120,7 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("chat"),
     payload: z.object({
+      rollType: z.enum(ROLL_TYPES),
       formula: z.string().nullable(),
       text: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),

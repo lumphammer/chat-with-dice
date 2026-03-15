@@ -1,14 +1,19 @@
-import { MatchCombobox } from "./MatchCombobox";
+import type { RollType } from "#/types";
+import { MatchCombobox, type MatchItem } from "./MatchCombobox";
 import { memo } from "react";
 
-export const rollTypes = ["standard", "f20", "formula"] as const;
-export type RollType = (typeof rollTypes)[number];
+const rollTypeLabels: Record<RollType, string> = {
+  standard: "Roll",
+  f20: "F20",
+  formula: "Formula",
+  havoc: "Havoc",
+  fitd: "FITD",
+};
 
-const ROLL_TYPE_ITEMS: Array<{ label: string; value: RollType }> = [
-  { label: "Roll", value: "standard" },
-  { label: "F20", value: "f20" },
-  { label: "Formula", value: "formula" },
-];
+const rollTypeItems = Object.entries(rollTypeLabels).map(([value, label]) => ({
+  label,
+  value,
+})) as MatchItem<RollType>[];
 
 export const RollTypePicker = memo(
   ({
@@ -19,7 +24,7 @@ export const RollTypePicker = memo(
     setRollType: (val: RollType) => void;
   }) => (
     <MatchCombobox
-      items={ROLL_TYPE_ITEMS}
+      items={rollTypeItems}
       value={rollType}
       onValueChange={setRollType}
       inputClassName="bg-primary/10 border-base-content/30 field-sizing-content

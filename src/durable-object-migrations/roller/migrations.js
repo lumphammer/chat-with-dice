@@ -6,6 +6,11 @@ import m0004 from './20260223144242_fuzzy_kulan_gath/migration.sql';
 import m0005 from './20260223192408_motionless_catseye/migration.sql';
 import m0006 from './20260305141659_colorful_forge/migration.sql';
 import m0007 from './20260305141724_empty_captain_america/migration.sql';
+import m0008 from './20260314192527_noisy_surge/migration.sql';
+import m0009 from './20260314192957_quick_tyrannus/migration.sql';
+import m0010 from './20260314193040_pretty_swarm/migration.sql';
+import m0011 from './20260315090756_curious_nextwave/migration.sql';
+import m0012 from './20260315091432_modern_stellaris/migration.sql';
 
   export default {
     migrations: {
@@ -16,7 +21,12 @@ import m0007 from './20260305141724_empty_captain_america/migration.sql';
 "20260223144242_fuzzy_kulan_gath": m0004,
 "20260223192408_motionless_catseye": m0005,
 "20260305141659_colorful_forge": m0006,
-"20260305141724_empty_captain_america": m0007
+"20260305141724_empty_captain_america": m0007,
+"20260314192527_noisy_surge": m0008,
+"20260314192957_quick_tyrannus": m0009,
+"20260314193040_pretty_swarm": m0010,
+"20260315090756_curious_nextwave": m0011,
+"20260315091432_modern_stellaris": m0012
 }
   }
   

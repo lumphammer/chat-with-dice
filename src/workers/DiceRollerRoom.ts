@@ -1,5 +1,6 @@
 import migrations from "#/durable-object-migrations/roller/migrations";
 import * as dbSchema from "#/schemas/roller-schema";
+import type { RollType } from "#/types";
 import {
   type RollerMessage,
   type SessionAttachment,
@@ -136,6 +137,7 @@ export class DiceRollerRoom extends DurableObject {
       const data = parsed.data;
       if (data.type === "chat") {
         await this.runFormula(
+          data.payload.rollType,
           data.payload.formula,
           data.payload.text,
           data.payload.displayName,
@@ -165,8 +167,9 @@ export class DiceRollerRoom extends DurableObject {
   }
 
   async runFormula(
+    rollType: RollType,
     formula: string | null,
-    text: string | null,
+    chat: string | null,
     displayName: string,
     chatId: string,
   ): Promise<void> {
@@ -180,10 +183,11 @@ export class DiceRollerRoom extends DurableObject {
       created_time: Date.now(),
       formula: formula ?? "no formula",
       id: crypto.randomUUID(),
-      result: roll?.output ?? null,
-      rolls: structuredRolls ? JSON.stringify(structuredRolls) : null,
+      // result: roll?.output ?? null,
+      rollType,
+      results: structuredRolls ? JSON.stringify(structuredRolls) : null,
       total: roll?.total ?? null,
-      text,
+      chat,
       chatId,
       displayName,
     };
