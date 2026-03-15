@@ -151,20 +151,30 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
             return (
               <Toast.Root
                 key={toast.id}
-                className="bg-base-100 data-[type=error]:bg-error flex rounded
-                  p-4"
+                className="bg-base-100 data-[type=error]:bg-error
+                  data-[type=warning]:bg-warning data-[type=success]:bg-success
+                  data-[type=info]:bg-info flex max-w-md min-w-80 items-start
+                  gap-3 rounded-xl p-4 shadow-lg"
               >
-                {ToastIcon && <ToastIcon className="" />}
-                <details>
-                  <summary>
-                    <Toast.Title className="">{toast.title}</Toast.Title>
+                {ToastIcon && (
+                  <div className="mt-0.5 shrink-0">
+                    <ToastIcon className="h-5 w-5" />
+                  </div>
+                )}
+                <details className="flex min-w-0 flex-1 flex-col gap-1">
+                  <summary className="text-sm leading-snug font-semibold">
+                    {toast.title}
                   </summary>
-                  <Toast.Description className="text-sm">
+                  <Toast.Description className="text-xs leading-snug opacity-80">
                     {toast.description}
                   </Toast.Description>
                 </details>
-                <Toast.CloseTrigger className="cursor-pointer">
-                  <XIcon />
+
+                <Toast.CloseTrigger
+                  className="hover:bg-base-300 mt-0.5 shrink-0 cursor-pointer
+                    rounded-md p-0.5 transition-colors"
+                >
+                  <XIcon className="h-4 w-4" />
                 </Toast.CloseTrigger>
               </Toast.Root>
             );
