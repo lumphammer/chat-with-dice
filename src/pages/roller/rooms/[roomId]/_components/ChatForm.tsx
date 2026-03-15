@@ -1,5 +1,7 @@
+import { FORMULA_ROLL_TYPE } from "#/constants";
+import type { RollType } from "#/types";
 import { FormulaForm } from "./FormulaForm/FormulaForm";
-import { RollTypePicker, type RollType } from "./RollTypePicker";
+import { RollTypePicker } from "./RollTypePicker";
 import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";
 import { FormulaContextProvider } from "./formulaContext";
 import styles from "./inputs.module.css";
@@ -21,12 +23,17 @@ import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
 // * Formula (formula) => total
 
 type ChatFormProps = {
-  onNewMessage: (args: { formula: string; text: string }) => void;
+  onNewMessage: (args: {
+    rollType: RollType;
+    rollTypeVersion: number;
+    formula: string;
+    chat: string;
+  }) => void;
 };
 
 export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const [formula, setFormula] = useState("");
-  const [text, setText] = useState("");
+  const [chat, setChat] = useState("");
   const [rollType, setRollType] = useState<RollType>("standard");
 
   const formulaContextValue = useMemo(() => {
@@ -39,9 +46,14 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const handleSubmit = useCallback(
     (event: SubmitEvent) => {
       event.preventDefault();
-      onNewMessage({ formula, text });
+      onNewMessage({
+        formula,
+        chat,
+        rollType: FORMULA_ROLL_TYPE,
+        rollTypeVersion: 1,
+      });
     },
-    [formula, text, onNewMessage],
+    [formula, chat, onNewMessage],
   );
 
   return (
@@ -59,8 +71,8 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
             className={`${styles.input} field-sizing-content max-h-[30cqh]
               min-w-full flex-1 resize-none overflow-y-auto rounded-bl-xl
               border-t px-4 py-2 text-left`}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+            value={chat}
+            onChange={(e) => setChat(e.target.value)}
             placeholder={formula.trim() ? "Annotation" : "Chat message"}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {

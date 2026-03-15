@@ -136,13 +136,10 @@ export class DiceRollerRoom extends DurableObject {
       }
       const data = parsed.data;
       if (data.type === "chat") {
-        await this.runFormula(
-          data.payload.rollType,
-          data.payload.formula,
-          data.payload.text,
-          data.payload.displayName,
-          attachment.chatId,
-        );
+        await this.runFormula({
+          ...data.payload,
+          chatId: attachment.chatId,
+        });
       }
     } catch (error) {
       console.error("Error handling message:", error);
@@ -166,13 +163,21 @@ export class DiceRollerRoom extends DurableObject {
     await this.webSocketClose(ws, WEBSOCKET_INTERNAL_ERROR); //, "WebSocket error", false);
   }
 
-  async runFormula(
-    rollType: RollType,
-    formula: string | null,
-    chat: string | null,
-    displayName: string,
-    chatId: string,
-  ): Promise<void> {
+  async runFormula({
+    chat,
+    chatId,
+    displayName,
+    formula,
+    rollType,
+    rollTypeVersion,
+  }: {
+    chat: string | null;
+    chatId: string;
+    displayName: string;
+    formula: string | null;
+    rollType: RollType;
+    rollTypeVersion: number;
+  }): Promise<void> {
     const roll = formula ? new DiceRoll(formula) : null;
 
     // Store the full structured rolls from the library so the frontend can
@@ -185,6 +190,7 @@ export class DiceRollerRoom extends DurableObject {
       id: crypto.randomUUID(),
       // result: roll?.output ?? null,
       rollType,
+      rollTypeVersion,
       results: structuredRolls ? JSON.stringify(structuredRolls) : null,
       total: roll?.total ?? null,
       chat,

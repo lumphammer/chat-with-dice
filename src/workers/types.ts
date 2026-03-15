@@ -121,8 +121,9 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("chat"),
     payload: z.object({
       rollType: z.enum(ROLL_TYPES),
+      rollTypeVersion: z.int().min(1),
       formula: z.string().nullable(),
-      text: z.string().nullable(),
+      chat: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
     }),
   }),

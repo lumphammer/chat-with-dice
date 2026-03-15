@@ -34,12 +34,14 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   } = useSmartScroll({ messages });
 
   const handleNewMessage = useCallback(
-    ({ formula, text }: { formula: string; text: string }) => {
+    ({ formula, chat }: { formula: string; chat: string }) => {
       const msg: WebSocketClientMessage = {
         type: "chat",
         payload: {
+          rollType: "formula",
+          rollTypeVersion: 1,
           formula: formula.toLowerCase(),
-          text,
+          chat,
           displayName: userIdentity.displayName,
         },
       };
