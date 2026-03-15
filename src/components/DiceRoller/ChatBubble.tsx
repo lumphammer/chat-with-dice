@@ -1,4 +1,4 @@
-import type { RollerMessage } from "#/workers/types";
+import type { RollerMessage } from "#/validators/rollerMessageType";
 import { DiceRollResult } from "./DiceRollResult";
 import { ShowMoreDialog } from "./ShowMoreDialog";
 import { TimeDisplay } from "./TimeDisplay";

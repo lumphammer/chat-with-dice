@@ -1,4 +1,4 @@
-import { type WebSocketClientMessage } from "#/workers/types";
+import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";

@@ -1,11 +1,11 @@
-import {
-  type ResultGroup,
-  type RollEntry,
-  type RollResult,
-  type RollResults,
-  type StructuredRolls,
-  structuredRollsSchema,
-} from "#/workers/types";
+import { structuredRollsSchema } from "#/validators/rpgDieRollerResulsSchemas";
+import type {
+  ResultGroup,
+  RollEntry,
+  RollResult,
+  RollResults,
+  StructuredRolls,
+} from "#/validators/rpgDieRollerResulsTypes";
 import { memo } from "react";
 
 type DiceRollResultProps = {

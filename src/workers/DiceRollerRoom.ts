@@ -1,13 +1,12 @@
 import migrations from "#/durable-object-migrations/roller/migrations";
 import * as dbSchema from "#/schemas/roller-schema";
 import type { RollType } from "#/types";
+import type { RollerMessage } from "#/validators/rollerMessageType";
 import {
-  type RollerMessage,
-  type SessionAttachment,
-  type WebSocketServerMessage,
-  sessionAttachmentSchema,
   webSocketClientMessageSchema,
-} from "./types";
+  type WebSocketServerMessage,
+} from "#/validators/webSocketMessageSchemas";
+import { type SessionAttachment, sessionAttachmentSchema } from "./types";
 import { DiceRoll } from "@dice-roller/rpg-dice-roller";
 import { DurableObject } from "cloudflare:workers";
 import { desc } from "drizzle-orm";

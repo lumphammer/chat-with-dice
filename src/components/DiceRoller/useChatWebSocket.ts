@@ -1,8 +1,6 @@
 import { ReconnectingWebSocket } from "#/lib/ReconnectingWebSocket";
-import {
-  type RollerMessage,
-  webSocketServerMessageSchema,
-} from "#/workers/types";
+import type { RollerMessage } from "#/validators/rollerMessageType";
+import { webSocketServerMessageSchema } from "#/validators/webSocketMessageSchemas";
 import type { ConnectionStatus } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import z from "zod";
