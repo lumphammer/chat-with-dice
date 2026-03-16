@@ -13,8 +13,6 @@ export const Messages = sqliteTable("Messages", {
   created_time: int().notNull(),
   /** The type of the roll - none, formula, havoc etc */
   rollType: text().notNull(),
-  /** Differentiator for if we change how a rollType works */
-  rollTypeVersion: int().notNull().default(1),
   /** Either a dice formula or JSON */
   formula: text(),
   /** Structured JSON results, either from rpg die roller, or our own */
