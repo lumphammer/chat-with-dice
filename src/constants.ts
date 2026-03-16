@@ -19,3 +19,12 @@ export const ROLL_TYPES = [
   HAVOC_ROLL_TYPE,
   FITD_ROLL_TYPE,
 ] as const;
+
+export const FITD_FAILURE_DEGREE = 0;
+export const FITD_PARTIAL_DEGREE = 1;
+export const FITD_SUCCESS_DEGREE = 2;
+export const FITD_CRITICAL_DEGREE = 3;
+
+export const HAVOC_FAILURE_DEGREE = 0;
+export const HAVOC_SUCCESS_DEGREE = 1;
+export const HAVOC_CRITICAL_DEGREE = 2;
