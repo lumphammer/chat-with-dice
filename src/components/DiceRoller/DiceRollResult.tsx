@@ -1,4 +1,5 @@
-import { structuredRollsSchema } from "#/validators/rpgDieRollerResulsSchemas";
+import { rollFormulaValidators } from "#/validators/rollFormulaValidators";
+import { rollResultValidators } from "#/validators/rollResultValidators";
 import type {
   ResultGroup,
   RollEntry,
@@ -10,17 +11,8 @@ import { memo } from "react";
 
 type DiceRollResultProps = {
   formula: string | null;
-  rolls: string | null;
-  total: number | null;
+  result: string | null;
 };
-
-function parseRolls(rolls: string): StructuredRolls | null {
-  try {
-    return structuredRollsSchema.parse(JSON.parse(rolls));
-  } catch {
-    return null;
-  }
-}
 
 function isDicePool(group: RollResults): boolean {
   return group.rolls.some(
@@ -158,10 +150,18 @@ function isPoolRoll(structured: StructuredRolls): boolean {
 }
 
 export const DiceRollResult = memo(
-  ({ formula, rolls, total }: DiceRollResultProps) => {
-    if (!formula || total === null) return null;
+  ({ formula: rawFormula, result: rawResult }: DiceRollResultProps) => {
+    const { data: formula } =
+      rollFormulaValidators["formula"].safeParse(rawFormula);
+    if (!formula) return null;
 
-    const structured = rolls ? parseRolls(rolls) : null;
+    const { data: parsedResult } =
+      rollResultValidators["formula"].safeParse(rawResult);
+
+    const structured = parsedResult?.rolls;
+    const total = parsedResult?.total ?? 0;
+
+    // const structured = result ? parseRolls(result) : null;
 
     // Fall back to just showing formula = total if we can't parse rolls
     if (!structured) {

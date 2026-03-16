@@ -6,8 +6,8 @@ import {
   webSocketClientMessageSchema,
   type WebSocketServerMessage,
 } from "#/validators/webSocketMessageSchemas";
+import { rollHandlers } from "./rollHandlers";
 import { type SessionAttachment, sessionAttachmentSchema } from "./types";
-import { DiceRoll } from "@dice-roller/rpg-dice-roller";
 import { DurableObject } from "cloudflare:workers";
 import { desc } from "drizzle-orm";
 import { DrizzleSqliteDODatabase, drizzle } from "drizzle-orm/durable-sqlite";
@@ -120,7 +120,9 @@ export class DiceRollerRoom extends DurableObject {
       );
       if (!parsed.success) {
         console.error("Invalid message format:", parsed.error);
-        return;
+        throw new Error("Server received an unrecognized message", {
+          cause: parsed.error,
+        });
       }
       const { data: attachment, error } = sessionAttachmentSchema.safeParse(
         ws.deserializeAttachment(),
@@ -132,29 +134,30 @@ export class DiceRollerRoom extends DurableObject {
       }
       const data = parsed.data;
       if (data.type === "chat") {
-        try {
-          await this.runFormula({
-            ...data.payload,
-            chatId: attachment.chatId,
-          });
-        } catch (e: unknown) {
-          this.send(ws, {
-            type: "error",
-            payload: {
-              errorMessage: e instanceof Error ? e.message : String(e),
-              detail:
-                e instanceof Error && e.cause
-                  ? e.cause instanceof Error
-                    ? e.cause.message
-                    : JSON.stringify(e.cause)
-                  : "",
-            },
-          });
-        }
+        await this.runFormula({
+          ...data.payload,
+          chatId: attachment.chatId,
+        });
       }
     } catch (error) {
+      this.sendError(ws, error);
       console.error("Error handling message:", error);
     }
+  }
+
+  sendError(server: WebSocket, e: unknown): void {
+    this.send(server, {
+      type: "error",
+      payload: {
+        errorMessage: e instanceof Error ? e.message : String(e),
+        detail:
+          e instanceof Error && e.cause
+            ? e.cause instanceof Error
+              ? e.cause.message
+              : JSON.stringify(e.cause)
+            : "",
+      },
+    });
   }
 
   /**
@@ -178,49 +181,38 @@ export class DiceRollerRoom extends DurableObject {
     chat,
     chatId,
     displayName,
-    formula,
+    formula: rawFormula,
     rollType,
-    rollTypeVersion,
   }: {
     chat: string | null;
     chatId: string;
     displayName: string;
-    formula: string | null;
+    formula: unknown;
     rollType: RollType;
-    rollTypeVersion: number;
   }): Promise<void> {
-    let roll: DiceRoll | null;
-    try {
-      roll = formula ? new DiceRoll(formula) : null;
-    } catch (e: unknown) {
-      throw new Error("Couldn't parse dice formula", { cause: e });
-    }
+    const handler = rollHandlers[rollType];
 
-    // Store the full structured rolls from the library so the frontend can
-    // render dropped, exploded, rerolled, etc. with proper visual treatment.
-    const structuredRolls = roll ? roll.toJSON().rolls : null;
+    const { formula, result } = handler(rawFormula);
 
     const rollerMessage: RollerMessage = {
       created_time: Date.now(),
-      formula: formula ?? "no formula",
+      formula: formula,
       id: crypto.randomUUID(),
       // result: roll?.output ?? null,
       rollType,
-      rollTypeVersion,
-      results: structuredRolls ? JSON.stringify(structuredRolls) : null,
-      total: roll?.total ?? null,
+      results: result ? JSON.stringify(result) : null,
       chat,
       chatId,
       displayName,
     };
     await this.db.insert(dbSchema.Messages).values(rollerMessage);
     console.log("inserting into Messages", rollerMessage);
-    this.broadcastMessage(rollerMessage);
+    this.broadcastChatMessage(rollerMessage);
   }
 
-  broadcastMessage(message: RollerMessage): void {
+  broadcastChatMessage(message: RollerMessage): void {
     for (const server of this.ctx.getWebSockets()) {
-      this.sendMessage(server, message);
+      this.sendChatMessage(server, message);
     }
   }
 
@@ -228,7 +220,7 @@ export class DiceRollerRoom extends DurableObject {
     server.send(JSON.stringify(websocketMessage));
   }
 
-  sendMessage(server: WebSocket, message: RollerMessage): void {
+  sendChatMessage(server: WebSocket, message: RollerMessage): void {
     this.send(server, {
       type: "message",
       payload: {

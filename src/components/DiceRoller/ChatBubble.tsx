@@ -79,11 +79,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
             {showShowMore && <ShowMoreDialog html={html} />}
           </>
         )}
-        <DiceRollResult
-          formula={message.formula}
-          rolls={message.results}
-          total={message.total}
-        />
+        <DiceRollResult formula={message.formula} result={message.results} />
       </div>
     </article>
   );

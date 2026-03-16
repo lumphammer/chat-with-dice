@@ -75,7 +75,6 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
         type: "chat",
         payload: {
           rollType: "formula",
-          rollTypeVersion: 1,
           formula: formula.toLowerCase(),
           chat,
           displayName: userIdentity.displayName,

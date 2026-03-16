@@ -12,6 +12,7 @@ import m0010 from './20260314193040_pretty_swarm/migration.sql';
 import m0011 from './20260315090756_curious_nextwave/migration.sql';
 import m0012 from './20260315091432_modern_stellaris/migration.sql';
 import m0013 from './20260315235204_tricky_otto_octavius/migration.sql';
+import m0014 from './20260316134615_mute_vengeance/migration.sql';
 
   export default {
     migrations: {
@@ -28,7 +29,8 @@ import m0013 from './20260315235204_tricky_otto_octavius/migration.sql';
 "20260314193040_pretty_swarm": m0010,
 "20260315090756_curious_nextwave": m0011,
 "20260315091432_modern_stellaris": m0012,
-"20260315235204_tricky_otto_octavius": m0013
+"20260315235204_tricky_otto_octavius": m0013,
+"20260316134615_mute_vengeance": m0014
 }
   }
   

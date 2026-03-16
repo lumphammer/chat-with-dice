@@ -17,8 +17,6 @@ export const Messages = sqliteTable("Messages", {
   formula: text(),
   /** Structured JSON results, either from rpg die roller, or our own */
   results: text(),
-  /** The roll total, if applicable */
-  total: int(),
   /** Chat text */
   chat: text(),
 });

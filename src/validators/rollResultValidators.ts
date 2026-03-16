@@ -48,7 +48,7 @@ export const rollResultValidators = {
     isCritical: z.boolean(),
     isFumble: z.boolean(),
   }),
-  formula: structuredRollsSchema,
+  formula: z.object({ rolls: structuredRollsSchema, total: z.int() }),
   fitd: z.object({
     faces: z.array(
       z.object({
@@ -62,5 +62,5 @@ export const rollResultValidators = {
   havoc: z.object({
     faces: z.array(havocDieFaceSchema),
   }),
-  standard: structuredRollsSchema,
+  standard: z.object({ rolls: structuredRollsSchema, total: z.int() }),
 } satisfies Record<RollType, z.ZodTypeAny>;
