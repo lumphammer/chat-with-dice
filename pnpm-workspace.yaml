@@ -5,7 +5,7 @@ overrides:
   "@astrojs/cloudflare": $@astrojs/cloudflare
   astro: $astro
   wrangler: $wrangler
-  vite: 8.0.0
+  # vite: 8.0.0
 
 patchedDependencies:
   quikdown@1.1.1: patches/quikdown@1.1.1.patch

@@ -1,12 +1,12 @@
 import migrations from "#/durable-object-migrations/roller/migrations";
+import { assertRollType } from "#/rollTypes/isRollType";
+import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import * as dbSchema from "#/schemas/roller-schema";
-import type { RollType } from "#/types";
 import type { RollerMessage } from "#/validators/rollerMessageType";
 import {
   webSocketClientMessageSchema,
   type WebSocketServerMessage,
 } from "#/validators/webSocketMessageSchemas";
-import { rollHandlers } from "./rollHandlers";
 import { type SessionAttachment, sessionAttachmentSchema } from "./types";
 import { DurableObject } from "cloudflare:workers";
 import { desc } from "drizzle-orm";
@@ -188,11 +188,14 @@ export class DiceRollerRoom extends DurableObject {
     chatId: string;
     displayName: string;
     formula: unknown;
-    rollType: RollType;
+    rollType: string;
   }): Promise<void> {
-    const handler = rollHandlers[rollType];
+    assertRollType(rollType);
 
-    const { formula, result } = handler(rawFormula);
+    const formulaValidator = rollTypeRegistry[rollType].formulaValidator;
+    const formula = formulaValidator.parse(rawFormula);
+    const handler = rollTypeRegistry[rollType].handler;
+    const result = handler ? handler(formula) : null;
 
     const rollerMessage: RollerMessage = {
       created_time: Date.now(),

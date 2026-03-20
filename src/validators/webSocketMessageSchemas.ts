@@ -1,4 +1,3 @@
-import { ROLL_TYPES } from "#/constants";
 import { rollerMessageSchema } from "./rollerMessageSchema";
 import { z } from "zod/v4";
 
@@ -27,7 +26,8 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("chat"),
     payload: z.object({
-      rollType: z.enum(ROLL_TYPES),
+      // WRONG - make this use a list of known roll types
+      rollType: z.string(),
       formula: z.unknown(),
       chat: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),

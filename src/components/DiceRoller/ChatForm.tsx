@@ -1,6 +1,5 @@
-import { FORMULA_ROLL_TYPE } from "#/constants";
-import type { RollType } from "#/types";
-import { FormulaForm } from "./FormulaForm/FormulaForm";
+import type { RollType } from "#/rollTypes/types";
+// import { FormulaForm } from "./FormulaForm/FormulaForm";
 import { RollTypePicker } from "./RollTypePicker";
 import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";
 import { FormulaContextProvider } from "./formulaContext";
@@ -49,11 +48,11 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
       onNewMessage({
         formula,
         chat,
-        rollType: FORMULA_ROLL_TYPE,
+        rollType,
         rollTypeVersion: 1,
       });
     },
-    [formula, chat, onNewMessage],
+    [formula, chat, onNewMessage, rollType],
   );
 
   return (
@@ -65,7 +64,7 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
         >
           <RollTypePicker rollType={rollType} setRollType={setRollType} />
           {rollType === "standard" && <StandardDieRollForm />}
-          {rollType === "formula" && <FormulaForm />}
+          {/*{rollType === "formula" && <FormulaForm />}*/}
           <textarea
             rows={1}
             className={`${styles.input} field-sizing-content max-h-[30cqh]

@@ -1,13 +1,13 @@
-import type { RollType } from "#/types";
+import type { RollType } from "#/rollTypes/types";
 import { MatchCombobox, type MatchItem } from "./MatchCombobox";
 import { memo } from "react";
 
 const rollTypeLabels: Record<RollType, string> = {
   standard: "Roll",
-  f20: "F20",
-  formula: "Formula",
-  havoc: "Havoc",
-  fitd: "FITD",
+  // f20: "F20",
+  // formula: "Formula",
+  // havoc: "Havoc",
+  // fitd: "FITD",
 };
 
 const rollTypeItems = Object.entries(rollTypeLabels).map(([value, label]) => ({

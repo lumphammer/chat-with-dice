@@ -1,5 +1,6 @@
+import { isRollType } from "#/rollTypes/isRollType";
+import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import type { RollerMessage } from "#/validators/rollerMessageType";
-import { DiceRollResult } from "./DiceRollResult";
 import { ShowMoreDialog } from "./ShowMoreDialog";
 import { TimeDisplay } from "./TimeDisplay";
 import { deriveHueFromUserId } from "./deriveHueFromUserId";
@@ -52,6 +53,22 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
     }
   }, []);
 
+  let display;
+
+  if (
+    isRollType(message.rollType) &&
+    message.formula !== null &&
+    message.results !== null
+  ) {
+    const Component = rollTypeRegistry[message.rollType].ResultDisplay;
+    const formulaValidator =
+      rollTypeRegistry[message.rollType].formulaValidator;
+    const resultValidator = rollTypeRegistry[message.rollType].resultValidator;
+    const formula = formulaValidator.parse(JSON.parse(message.formula));
+    const result = resultValidator.parse(JSON.parse(message.results));
+    display = <Component formula={formula} result={result} />;
+  }
+
   return (
     <article
       data-is-mine={message.chatId === chatId ? "" : undefined}
@@ -79,7 +96,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
             {showShowMore && <ShowMoreDialog html={html} />}
           </>
         )}
-        <DiceRollResult formula={message.formula} result={message.results} />
+        {display}
       </div>
     </article>
   );
