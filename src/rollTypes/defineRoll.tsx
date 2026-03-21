@@ -30,7 +30,7 @@ export type RollDef = {
   InputComponent: ComponentType<{
     onChange: (formula: string) => void;
   }>;
-  handleRequest: (serializedFormula: string) => string;
+  handler: (rawFormula: unknown) => string;
 };
 
 export function defineRoll<
@@ -56,8 +56,8 @@ export function defineRoll<
       );
       return <def.InputComponent onChange={handleChange} />;
     },
-    handleRequest: (serializedFormula: string) => {
-      const formula = def.formulaValidator.parse(serializedFormula);
+    handler: (rawFormula: unknown) => {
+      const formula = def.formulaValidator.parse(rawFormula);
       const result = def.handler(formula);
       return JSON.stringify(result);
     },

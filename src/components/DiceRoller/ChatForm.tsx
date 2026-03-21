@@ -1,4 +1,4 @@
-import type { RollType } from "#/rollTypes/types";
+import type { RollType } from "#/rollTypes/rollTypeRegistry";
 // import { FormulaForm } from "./FormulaForm/FormulaForm";
 import { RollTypePicker } from "./RollTypePicker";
 import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";

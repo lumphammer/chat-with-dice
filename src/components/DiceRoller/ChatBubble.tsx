@@ -7,7 +7,14 @@ import { deriveHueFromUserId } from "./deriveHueFromUserId";
 import type { UserHueStyle } from "./types";
 import { useUserIdentityContext } from "./userIdentityContext";
 import quikdown from "quikdown";
-import { memo, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 type ChatBubbleProps = {
   message: RollerMessage;
@@ -53,20 +60,15 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
     }
   }, []);
 
-  let display;
+  let display: ReactNode = null;
 
   if (
     isRollType(message.rollType) &&
     message.formula !== null &&
     message.results !== null
   ) {
-    const Component = rollTypeRegistry[message.rollType].ResultDisplay;
-    const formulaValidator =
-      rollTypeRegistry[message.rollType].formulaValidator;
-    const resultValidator = rollTypeRegistry[message.rollType].resultValidator;
-    const formula = formulaValidator.parse(JSON.parse(message.formula));
-    const result = resultValidator.parse(JSON.parse(message.results));
-    display = <Component formula={formula} result={result} />;
+    const Component = rollTypeRegistry[message.rollType].DisplayComponent;
+    display = <Component formula={message.formula} result={message.results} />;
   }
 
   return (

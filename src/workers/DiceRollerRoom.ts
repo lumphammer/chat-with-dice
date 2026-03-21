@@ -181,7 +181,7 @@ export class DiceRollerRoom extends DurableObject {
     chat,
     chatId,
     displayName,
-    formula: rawFormula,
+    formula,
     rollType,
   }: {
     chat: string | null;
@@ -192,18 +192,16 @@ export class DiceRollerRoom extends DurableObject {
   }): Promise<void> {
     assertRollType(rollType);
 
-    const formulaValidator = rollTypeRegistry[rollType].formulaValidator;
-    const formula = formulaValidator.parse(rawFormula);
-    const handler = rollTypeRegistry[rollType].handler;
-    const result = handler ? handler(formula) : null;
+    const rollTypeDef = rollTypeRegistry[rollType];
+    const result = rollTypeDef.handler(formula);
 
     const rollerMessage: RollerMessage = {
       created_time: Date.now(),
-      formula: formula,
+      formula: JSON.stringify(formula),
       id: crypto.randomUUID(),
       // result: roll?.output ?? null,
       rollType,
-      results: result ? JSON.stringify(result) : null,
+      results: result,
       chat,
       chatId,
       displayName,

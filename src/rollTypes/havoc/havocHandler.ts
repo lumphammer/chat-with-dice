@@ -1,5 +1,5 @@
 import {
-  $6,
+  SIX,
   HAVOC_CRITICAL_DEGREE,
   HAVOC_CRITICAL_MIN,
   HAVOC_FAILURE_DEGREE,
@@ -14,7 +14,7 @@ function d(size: number): number {
 
 export const havocHandler = (formula: HavocFormula): HavocResult => {
   const faces = Array.from({ length: formula.numDice }).map<HavocFace>(() => {
-    const faceValue = d($6);
+    const faceValue = d(SIX);
     return faceValue < HAVOC_SUCCESS_MIN
       ? {
           faceValue,

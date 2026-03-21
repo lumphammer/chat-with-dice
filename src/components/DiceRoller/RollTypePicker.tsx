@@ -1,4 +1,4 @@
-import type { RollType } from "#/rollTypes/types";
+import type { RollType } from "#/rollTypes/rollTypeRegistry";
 import { MatchCombobox, type MatchItem } from "./MatchCombobox";
 import { memo } from "react";
 
@@ -6,7 +6,7 @@ const rollTypeLabels: Record<RollType, string> = {
   standard: "Roll",
   // f20: "F20",
   // formula: "Formula",
-  // havoc: "Havoc",
+  havoc: "Havoc",
   // fitd: "FITD",
 };
 
