@@ -9,4 +9,7 @@ export const havocRollType = defineRoll({
   DisplayComponent: HavocDisplay,
   InputComponent: HavocInputUI,
   handler: havocHandler,
+  defaultFormula: {
+    numDice: 1,
+  },
 });
