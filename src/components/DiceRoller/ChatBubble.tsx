@@ -1,6 +1,7 @@
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import type { RollerMessage } from "#/validators/rollerMessageType";
+import { RollResultErrorBoundary } from "../RollResultErrorBoundary";
 import { ShowMoreDialog } from "./ShowMoreDialog";
 import { TimeDisplay } from "./TimeDisplay";
 import { deriveHueFromUserId } from "./deriveHueFromUserId";
@@ -98,7 +99,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
             {showShowMore && <ShowMoreDialog html={html} />}
           </>
         )}
-        {display}
+        <RollResultErrorBoundary>{display}</RollResultErrorBoundary>
       </div>
     </article>
   );
