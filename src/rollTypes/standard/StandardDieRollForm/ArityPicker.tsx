@@ -1,4 +1,4 @@
-import styles from "../inputs.module.css";
+import styles from "@/styles/inputs.module.css";
 import { memo } from "react";
 
 export const ArityPicker = memo(

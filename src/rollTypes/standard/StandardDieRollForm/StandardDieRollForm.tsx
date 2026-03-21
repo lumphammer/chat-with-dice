@@ -1,10 +1,10 @@
 import type { StandardFormula } from "#/rollTypes/standard/standardRollValidators";
-import type { Operator, Special } from "../types";
 import { ArityPicker } from "./ArityPicker";
 import { CardinalityPicker } from "./CardinalityPicker";
 import { ModifierPicker } from "./ModifierPicker";
 import { OperatorPicker } from "./OperatorPicker";
 import { SpecialPicker } from "./SpecialPicker";
+import type { Operator, Special } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const StandardDieRollForm = ({

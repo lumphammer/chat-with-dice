@@ -1,5 +1,5 @@
 import type { RollType } from "#/rollTypes/rollTypeRegistry";
-import { MatchCombobox, type MatchItem } from "./MatchCombobox";
+import { MatchCombobox, type MatchItem } from "../MatchCombobox";
 import { memo } from "react";
 
 const rollTypeLabels: Record<RollType, string> = {

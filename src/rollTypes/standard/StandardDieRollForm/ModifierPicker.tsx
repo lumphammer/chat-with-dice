@@ -1,5 +1,5 @@
-import styles from "../inputs.module.css";
-import type { Special } from "../types";
+import type { Special } from "./types";
+import styles from "@/styles/inputs.module.css";
 import { memo, useImperativeHandle, useRef } from "react";
 
 export const ModifierPicker = memo(

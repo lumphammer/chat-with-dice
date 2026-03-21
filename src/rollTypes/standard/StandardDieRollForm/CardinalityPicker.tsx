@@ -1,5 +1,5 @@
-import styles from "../inputs.module.css";
-import type { Operator } from "../types";
+import type { Operator } from "./types";
+import styles from "@/styles/inputs.module.css";
 import { Combobox, createListCollection } from "@ark-ui/react/combobox";
 import { memo, useCallback, useImperativeHandle, useMemo, useRef } from "react";
 

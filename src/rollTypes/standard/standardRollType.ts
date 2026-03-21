@@ -1,6 +1,6 @@
 import { DiceRollResult } from "#/components/DiceRoller/DiceRollResult";
-import { StandardDieRollForm } from "#/components/DiceRoller/StandardDieRollForm/StandardDieRollForm";
 import { defineRoll } from "../defineRoll";
+import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";
 import { standardRollHandler } from "./standardRollHandler";
 import {
   standardFormulaValidator,

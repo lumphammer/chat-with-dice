@@ -2,7 +2,7 @@ import { rollTypeRegistry, type RollType } from "#/rollTypes/rollTypeRegistry";
 // import { FormulaForm } from "./FormulaForm/FormulaForm";
 import { RollTypePicker } from "./RollTypePicker";
 import { FormulaContextProvider } from "./formulaContext";
-import styles from "./inputs.module.css";
+import styles from "@/styles/inputs.module.css";
 import { Dices, SendHorizontal } from "lucide-react";
 import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
 

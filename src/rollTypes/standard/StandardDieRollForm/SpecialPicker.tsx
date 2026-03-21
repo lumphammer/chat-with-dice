@@ -1,6 +1,9 @@
-import { MatchCombobox, type MatchComboboxRef } from "../MatchCombobox";
-import styles from "../inputs.module.css";
-import type { Special } from "../types";
+import type { Special } from "./types";
+import {
+  MatchCombobox,
+  type MatchComboboxRef,
+} from "@/components/MatchCombobox";
+import styles from "@/styles/inputs.module.css";
 import { memo } from "react";
 
 const SPECIAL_ITEMS: Array<{ label: string; value: Special }> = [
