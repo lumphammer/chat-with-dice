@@ -197,7 +197,7 @@ export class DiceRollerRoom extends DurableObject {
 
     const rollerMessage: RollerMessage = {
       created_time: Date.now(),
-      formula: JSON.stringify(formula),
+      formula: formula,
       id: crypto.randomUUID(),
       // result: roll?.output ?? null,
       rollType,
