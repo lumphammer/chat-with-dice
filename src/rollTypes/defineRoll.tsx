@@ -30,7 +30,7 @@ export type RollDef = {
   InputComponent: ComponentType<{
     onChange: (formula: string) => void;
   }>;
-  handler: (rawFormula: unknown) => string;
+  handler: (rawFormula: string) => string;
 };
 
 export function defineRoll<
@@ -45,8 +45,8 @@ export function defineRoll<
       formula: string;
       result: string;
     }) => {
-      const formula = def.formulaValidator.parse(rawFormula);
-      const result = def.resultValidator.parse(rawResult);
+      const formula = def.formulaValidator.parse(JSON.parse(rawFormula));
+      const result = def.resultValidator.parse(JSON.parse(rawResult));
       return <def.DisplayComponent formula={formula} result={result} />;
     },
     InputComponent: ({ onChange }: { onChange: (formula: string) => void }) => {
@@ -56,8 +56,8 @@ export function defineRoll<
       );
       return <def.InputComponent onChange={handleChange} />;
     },
-    handler: (rawFormula: unknown) => {
-      const formula = def.formulaValidator.parse(rawFormula);
+    handler: (rawFormula: string) => {
+      const formula = def.formulaValidator.parse(JSON.parse(rawFormula));
       const result = def.handler(formula);
       return JSON.stringify(result);
     },

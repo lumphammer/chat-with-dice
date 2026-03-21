@@ -1,4 +1,4 @@
-import { useFormulaContext } from "../formulaContext";
+import type { StandardFormula } from "#/rollTypes/standard/standardRollValidators";
 import type { Operator, Special } from "../types";
 import { ArityPicker } from "./ArityPicker";
 import { CardinalityPicker } from "./CardinalityPicker";
@@ -7,8 +7,11 @@ import { OperatorPicker } from "./OperatorPicker";
 import { SpecialPicker } from "./SpecialPicker";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export const StandardDieRollForm = () => {
-  const { setFormula: setUpstreamFormula } = useFormulaContext();
+export const StandardDieRollForm = ({
+  onChange,
+}: {
+  onChange: (newFormula: StandardFormula) => void;
+}) => {
   const [special, setSpecial] = useState<Special>("Normal");
   const [arity, setArity] = useState("1");
   const [cardinality, setCardinality] = useState("6");
@@ -16,8 +19,8 @@ export const StandardDieRollForm = () => {
   const [modifier, setModifier] = useState("0");
 
   useEffect(() => {
-    setUpstreamFormula(`${arity}d${cardinality}${operator}${modifier}`);
-  }, [setUpstreamFormula, arity, cardinality, operator, modifier]);
+    onChange(`${arity}d${cardinality}${operator}${modifier}`);
+  }, [onChange, arity, cardinality, operator, modifier]);
 
   const cardinalityRef = useRef<{ focus: () => void }>(null);
   const operatorRef = useRef<{ focusAndSet: (op: Operator) => void }>(null);

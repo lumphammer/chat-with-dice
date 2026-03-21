@@ -1,3 +1,4 @@
+import type { RollType } from "#/rollTypes/rollTypeRegistry";
 import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
@@ -70,12 +71,20 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   } = useSmartScroll({ messages });
 
   const handleNewMessage = useCallback(
-    ({ formula, chat }: { formula: string; chat: string }) => {
+    ({
+      formula,
+      chat,
+      rollType,
+    }: {
+      formula: string;
+      chat: string;
+      rollType: RollType;
+    }) => {
       const msg: WebSocketClientMessage = {
         type: "chat",
         payload: {
-          rollType: "formula",
-          formula: formula.toLowerCase(),
+          rollType,
+          formula,
           chat,
           displayName: userIdentity.displayName,
         },

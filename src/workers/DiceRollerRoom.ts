@@ -187,7 +187,7 @@ export class DiceRollerRoom extends DurableObject {
     chat: string | null;
     chatId: string;
     displayName: string;
-    formula: unknown;
+    formula: string;
     rollType: string;
   }): Promise<void> {
     assertRollType(rollType);

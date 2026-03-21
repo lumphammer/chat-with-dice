@@ -28,7 +28,7 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
     payload: z.object({
       // WRONG - make this use a list of known roll types
       rollType: z.string(),
-      formula: z.unknown(),
+      formula: z.string(),
       chat: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
     }),

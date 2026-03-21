@@ -1,4 +1,5 @@
 import { DiceRollResult } from "#/components/DiceRoller/DiceRollResult";
+import { StandardDieRollForm } from "#/components/DiceRoller/StandardDieRollForm/StandardDieRollForm";
 import { defineRoll } from "../defineRoll";
 import { standardRollHandler } from "./standardRollHandler";
 import {
@@ -9,9 +10,7 @@ import {
 export const standardRollType = defineRoll({
   formulaValidator: standardFormulaValidator,
   resultValidator: standardResultValidator,
-  InputComponent() {
-    return null;
-  },
+  InputComponent: StandardDieRollForm,
   handler: standardRollHandler,
   DisplayComponent: DiceRollResult,
 });
