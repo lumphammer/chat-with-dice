@@ -75,7 +75,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
   return (
     <article
       data-is-mine={message.chatId === chatId ? "" : undefined}
-      className="group mb-2 w-full
+      className="group mb-2 w-full pb-1
         [--user-colour:oklch(var(--bubble-light-l)_var(--bubble-light-c)_var(--user-hue))]
         data-is-mine:text-right
         dark:[--user-colour:oklch(var(--bubble-dark-l)_var(--bubble-dark-c)_var(--user-hue))]"
@@ -86,7 +86,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
         <TimeDisplay timeStamp={message.created_time} />
       </header>
       <div
-        className="w-fit rounded-lg bg-(--user-colour) px-4 pt-1 text-base
+        className="w-fit rounded-xl bg-(--user-colour) px-4 pt-1 pb-1 text-base
           group-data-is-mine:ml-auto"
       >
         {message.chat && (

@@ -1,0 +1,23 @@
+.face {
+  width: 1.7em;
+  aspect-ratio: 1;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--face-border-color);
+  padding: 0em;
+  font-size: 1.3em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--radius-md);
+
+  &[data-degree="failure"] {
+    background-color: grey;
+  }
+  &[data-degree="success"] {
+    background-color: green;
+  }
+  &[data-degree="critical"] {
+    background-color: red;
+  }
+}

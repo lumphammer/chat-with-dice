@@ -1,3 +1,5 @@
+import { HAVOC_FAILURE_DEGREE } from "#/constants";
+import faceStyles from "./faces.module.css";
 import type { HavocFormula, HavocResult } from "./havocValidators";
 import styles from "@/styles/inputs.module.css";
 import { memo, useId } from "react";
@@ -31,9 +33,11 @@ export const HavocInputUI = memo(
 export const HavocDisplay = memo(
   ({ result }: { formula: HavocFormula; result: HavocResult }) => {
     return (
-      <div>
+      <div className="flex gap-2">
         {result.faces.map((face, i) => (
-          <span key={i}>{face.faceValue}</span>
+          <span data-degree={face.degree} key={i} className={faceStyles.face}>
+            {face.faceValue}
+          </span>
         ))}
       </div>
     );

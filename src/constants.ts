@@ -13,8 +13,8 @@ export const FITD_PARTIAL_DEGREE = 1;
 export const FITD_SUCCESS_DEGREE = 2;
 export const FITD_CRITICAL_DEGREE = 3;
 
-export const HAVOC_FAILURE_DEGREE = 0;
-export const HAVOC_SUCCESS_DEGREE = 1;
-export const HAVOC_CRITICAL_DEGREE = 2;
+export const HAVOC_FAILURE_DEGREE = "failure";
+export const HAVOC_SUCCESS_DEGREE = "success";
+export const HAVOC_CRITICAL_DEGREE = "critical";
 export const HAVOC_SUCCESS_MIN = 4;
 export const HAVOC_CRITICAL_MIN = 6;
