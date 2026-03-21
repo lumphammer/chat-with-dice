@@ -6,6 +6,8 @@ export const HAVOC_ROOM_TYPE = "havoc";
 // this is the golden source of truth about what room types exist
 export const ROOM_TYPES = [GENERIC_ROOM_TYPE, HAVOC_ROOM_TYPE] as const;
 
+export const $6 = 6;
+
 export const FITD_FAILURE_DEGREE = 0;
 export const FITD_PARTIAL_DEGREE = 1;
 export const FITD_SUCCESS_DEGREE = 2;
@@ -14,3 +16,5 @@ export const FITD_CRITICAL_DEGREE = 3;
 export const HAVOC_FAILURE_DEGREE = 0;
 export const HAVOC_SUCCESS_DEGREE = 1;
 export const HAVOC_CRITICAL_DEGREE = 2;
+export const HAVOC_SUCCESS_MIN = 4;
+export const HAVOC_CRITICAL_MIN = 6;

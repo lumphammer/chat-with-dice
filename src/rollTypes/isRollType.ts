@@ -1,5 +1,4 @@
-import { rollTypeRegistry } from "./rollTypeRegistry";
-import type { RollType } from "./types";
+import { rollTypeRegistry, type RollType } from "./rollTypeRegistry";
 
 export const isRollType = (x: string): x is RollType => {
   return x in rollTypeRegistry;
