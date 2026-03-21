@@ -32,13 +32,52 @@ export const HavocInputUI = memo(
 
 export const HavocDisplay = memo(
   ({ result }: { formula: HavocFormula; result: HavocResult }) => {
+    const successCount = result.faces.filter(
+      (f) => f.degree === "success",
+    ).length;
+    const critCount = result.faces.filter(
+      (f) => f.degree === "critical",
+    ).length;
+
+    const renderSummary = () => {
+      if (successCount === 0 && critCount === 0) {
+        return <span>No successes</span>;
+      }
+
+      const parts: React.ReactNode[] = [];
+
+      if (successCount > 0) {
+        parts.push(
+          <span key="success" className={faceStyles.successText}>
+            {successCount} success{successCount === 1 ? "" : "es"}
+          </span>,
+        );
+      }
+
+      if (critCount > 0) {
+        if (successCount > 0) {
+          parts.push(<span key="comma">, </span>);
+        }
+        parts.push(
+          <span key="crit" className={faceStyles.critText}>
+            {critCount} crit{critCount === 1 ? "" : "s"}
+          </span>,
+        );
+      }
+
+      return parts;
+    };
+
     return (
-      <div className="flex gap-2">
-        {result.faces.map((face, i) => (
-          <span data-degree={face.degree} key={i} className={faceStyles.face}>
-            {face.faceValue}
-          </span>
-        ))}
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-2">
+          {result.faces.map((face, i) => (
+            <span data-degree={face.degree} key={i} className={faceStyles.face}>
+              {face.faceValue}
+            </span>
+          ))}
+        </div>
+        <div className="text-sm">{renderSummary()}</div>
       </div>
     );
   },
