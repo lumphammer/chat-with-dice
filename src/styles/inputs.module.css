@@ -1,6 +1,7 @@
 @reference "@/styles/global.css";
 
 @layer components {
+  /* generic chat form input style */
   .input {
     /*@apply bg-base-100 border-base-content/30 text-center;*/
     background-color: var(--color-base-100);
@@ -31,5 +32,14 @@
     &::-webkit-inner-spin-button {
       margin-inline-end: var(--spacing-1);
     }
+  }
+  .label {
+    background-color: var(--color-base-100);
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: var(--spacing-2);
+    padding-right: var(--spacing-2);
+    color: oklch(from var(--color-base-content) l c h / 60%);
   }
 }
