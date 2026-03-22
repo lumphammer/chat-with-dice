@@ -52,8 +52,6 @@
     from var(--color-accent) var(--l-content) var(--c-content) h
   );
 
-  --color-accent-tint: oklch(from var(--color-accent) var(--l-base-100) c h);
-
   --color-base-100: oklch(
     from var(--color-primary) var(--l-base-100) var(--c-base)
       calc(h - var(--h-delta))
@@ -216,7 +214,6 @@
   --color-accent-content: oklch(
     from var(--color-accent) var(--l-psa-content) var(--c-content) h
   );
-  --color-accent-tint: oklch(from var(--color-accent) var(--l-base-100) c h);
 
   --color-base-100: oklch(
     from var(--color-primary) var(--l-base-100) var(--c-base)
@@ -279,6 +276,11 @@
   );
 
   --color-accent-tint: red;
+  --color-accent-tint: color-mix(
+    in oklch,
+    var(--color-accent) 50%,
+    var(--color-base-100)
+  );
 
   --spacing-1: 0.25rem;
   --spacing-2: 0.5rem;

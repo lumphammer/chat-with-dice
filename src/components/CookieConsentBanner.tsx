@@ -2,13 +2,13 @@ import {
   COOKIE_CONSENT_LOCAL_STORAGE_KEY,
   COOKIES_ACCEPTED,
   COOKIES_REJECTED,
+  DISPLAY_NAME_LOCAL_STORAGE_KEY,
 } from "#/constants";
 import { useEffect, useState } from "react";
 
 export const CookieConsentBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
 
-  // listen to localstorage and set isVisible accordingly
   useEffect(() => {
     if (localStorage.getItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY) === null) {
       setIsVisible(true);
@@ -21,7 +21,7 @@ export const CookieConsentBanner = () => {
   };
 
   const handleReject = () => {
-    localStorage.clear();
+    localStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
     localStorage.setItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY, COOKIES_REJECTED);
     setIsVisible(false);
   };
