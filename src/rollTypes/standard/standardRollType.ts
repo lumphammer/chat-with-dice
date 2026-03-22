@@ -1,4 +1,4 @@
-import { DiceRollResult } from "#/rollTypes/standard/DiceRollResult";
+import { DiceRollResult } from "#/rollTypes/notation/DiceRollResult";
 import { defineRoll } from "../defineRoll";
 import { StandardDieRollForm } from "./StandardDieRollForm/StandardDieRollForm";
 import { standardRollHandler } from "./standardRollHandler";
