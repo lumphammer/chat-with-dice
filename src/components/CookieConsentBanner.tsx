@@ -4,16 +4,12 @@ import {
   COOKIES_REJECTED,
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
 } from "#/constants";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export const CookieConsentBanner = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (localStorage.getItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY) === null) {
-      setIsVisible(true);
-    }
-  }, []);
+  const [isVisible, setIsVisible] = useState(
+    localStorage.getItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY) === null,
+  );
 
   const handleAccept = () => {
     localStorage.setItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY, COOKIES_ACCEPTED);

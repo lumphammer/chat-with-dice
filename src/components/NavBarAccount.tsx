@@ -1,6 +1,6 @@
 import { authClient } from "#/lib/auth-client";
 import { Dices, LogOut, Settings } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 
 type UserInfo = {
   name: string | null;
@@ -20,10 +20,7 @@ export function NavBarAccount({ initialUser }: Props) {
   // fade in once the client has resolved the session, to avoid flashing the
   // wrong state (e.g. "Sign in" briefly appearing for a logged-in user).
   const needsFade = initialUser === null;
-  const [revealed, setRevealed] = useState(!needsFade);
-  useEffect(() => {
-    if (!isPending && needsFade) setRevealed(true);
-  }, [isPending, needsFade]);
+  const revealed = !needsFade || !isPending;
 
   // While the client-side session is still loading, use the server-provided
   // initial state so there's no skeleton flash or layout shift.
