@@ -1,8 +1,4 @@
-import {
-  HAVOC_CRITICAL_DEGREE,
-  HAVOC_FAILURE_DEGREE,
-  HAVOC_SUCCESS_DEGREE,
-} from "#/constants";
+import { HAVOC_CRITICAL_DEGREE, HAVOC_SUCCESS_DEGREE } from "#/constants";
 import faceStyles from "./faces.module.css";
 import type { HavocFormula, HavocResult } from "./havocValidators";
 import styles from "@/styles/inputs.module.css";
