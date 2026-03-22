@@ -8,6 +8,7 @@ const rollTypeLabels: Record<RollType, string> = {
   // formula: "Formula",
   havoc: "Havoc",
   // fitd: "FITD",
+  notation: "Notation",
 };
 
 const rollTypeItems = Object.entries(rollTypeLabels).map(([value, label]) => ({

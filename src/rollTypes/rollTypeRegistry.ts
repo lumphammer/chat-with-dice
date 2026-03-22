@@ -1,4 +1,5 @@
 import { havocRollType } from "./havoc/havocRollType";
+import { notationRollType } from "./notation/notationRollType";
 import { standardRollType } from "./standard/standardRollType";
 
 export type RollType = keyof typeof rollTypeRegistry;
@@ -6,6 +7,7 @@ export type RollType = keyof typeof rollTypeRegistry;
 export const rollTypeRegistry = {
   standard: standardRollType,
   havoc: havocRollType,
+  notation: notationRollType,
   // f20: defineRoll({
   //   requestValidator: z.object({
   //     critOn: z.int().min(1),
