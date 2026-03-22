@@ -1,5 +1,10 @@
 export const CHAT_ID_LOCAL_STORAGE_KEY = "chatId";
 export const DISPLAY_NAME_LOCAL_STORAGE_KEY = "displayName";
+
+export const COOKIE_CONSENT_LOCAL_STORAGE_KEY = "cookie-consent";
+export const COOKIES_ACCEPTED = "accepted";
+export const COOKIES_REJECTED = "rejected";
+
 export const GENERIC_ROOM_TYPE = "generic";
 export const HAVOC_ROOM_TYPE = "havoc";
 

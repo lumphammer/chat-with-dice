@@ -275,6 +275,13 @@
     from var(--color-accent) var(--l-colored-text) clamp(0, c, 0.12) h
   );
 
+  --color-accent-tint: red;
+  --color-accent-tint: color-mix(
+    in oklch,
+    var(--color-accent) 50%,
+    var(--color-base-100)
+  );
+
   --spacing-1: 0.25rem;
   --spacing-2: 0.5rem;
   --spacing-3: 0.75rem;

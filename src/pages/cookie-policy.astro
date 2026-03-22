@@ -1,0 +1,67 @@
+---
+import Layout from "#/layouts/Layout.astro";
+
+const title = "Cookie Policy";
+---
+
+<Layout {title}>
+  <article class="prose mx-auto max-w-3xl py-4">
+    <button id="show-cookie-banner-button" class="btn btn-primary"
+      >Show cookie banner</button
+    >
+    <div>
+      <h2>What Are Cookies?</h2>
+      <p>
+        Cookies are small text files stored on your device that help us provide
+        and improve our services.
+      </p>
+
+      <h2>How We Use Cookies</h2>
+
+      <h3>Essential Cookies</h3>
+      <p>We use essential cookies to:</p>
+      <ul>
+        <li>Maintain your login session.</li>
+        <li>
+          Show which messages are from "you" when you're using the site withou a
+          login.
+        </li>
+      </ul>
+      These items represent core functionality, are necessary for the site to work
+      properly, and cannot be disabled.
+    </div>
+
+    <h3>Functional Cookies</h3>
+    <p>
+      We use functional cookies and local storage to remember your preferences,
+      such as recently used options and your display name when you're using the
+      site without a login.
+    </p>
+
+    <h3>What We Don't Use</h3>
+    <p>
+      We do <strong>not</strong> use advertising or tracking cookies. We do not sell
+      or share your data with third parties.
+    </p>
+
+    <h2>Your Control</h2>
+    <p>
+      You can accept or reject functional cookies using the consent banner.
+      Essential cookies cannot be rejected as they are required for the site to
+      function.
+    </p>
+  </article>
+</Layout>
+
+<script>
+  import { COOKIE_CONSENT_LOCAL_STORAGE_KEY } from "#/constants";
+
+  const showCookieBannerButton = document.getElementById(
+    "show-cookie-banner-button",
+  );
+  showCookieBannerButton?.addEventListener("click", () => {
+    localStorage.removeItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY);
+    // reload
+    window.location.reload();
+  });
+</script>

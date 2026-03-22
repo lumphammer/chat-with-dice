@@ -3,6 +3,7 @@ import {
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
 } from "#/constants";
 import { authClient } from "#/lib/auth-client";
+import { hasCookieConsent } from "#/lib/hasCookieConsent";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type UseUserIdentityStorageReturn = {
@@ -34,7 +35,9 @@ export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
 
   const handleSetDisplayName = useCallback((newDisplayName: string) => {
     setLocalDislayName(newDisplayName);
-    localStorage.setItem(DISPLAY_NAME_LOCAL_STORAGE_KEY, newDisplayName);
+    if (hasCookieConsent()) {
+      localStorage.setItem(DISPLAY_NAME_LOCAL_STORAGE_KEY, newDisplayName);
+    }
   }, []);
 
   const userIdentity = useMemo(
