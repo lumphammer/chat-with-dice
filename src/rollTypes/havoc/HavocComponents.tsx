@@ -1,4 +1,8 @@
-import { HAVOC_FAILURE_DEGREE } from "#/constants";
+import {
+  HAVOC_CRITICAL_DEGREE,
+  HAVOC_FAILURE_DEGREE,
+  HAVOC_SUCCESS_DEGREE,
+} from "#/constants";
 import faceStyles from "./faces.module.css";
 import type { HavocFormula, HavocResult } from "./havocValidators";
 import styles from "@/styles/inputs.module.css";
@@ -33,10 +37,10 @@ export const HavocInputUI = memo(
 export const HavocDisplay = memo(
   ({ result }: { formula: HavocFormula; result: HavocResult }) => {
     const successCount = result.faces.filter(
-      (f) => f.degree === "success",
+      (f) => f.degree === HAVOC_SUCCESS_DEGREE,
     ).length;
     const critCount = result.faces.filter(
-      (f) => f.degree === "critical",
+      (f) => f.degree === HAVOC_CRITICAL_DEGREE,
     ).length;
 
     const renderSummary = () => {
