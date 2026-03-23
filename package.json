@@ -8,6 +8,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "pnpm run build && astro preview",
+    "test": "vitest",
     "astro": "astro",
     "types:check": "astro check",
     "deploy": "pnpm run build && wrangler deploy",
