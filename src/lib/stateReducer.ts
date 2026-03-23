@@ -77,7 +77,7 @@ function buildCase<TState, TPayloadValidator extends z.ZodTypeAny>(
   type: string,
   { payloadValidator, reducer }: CaseDefinition<TState, TPayloadValidator>,
 ) {
-  const create = (payload: z.infer<TPayloadValidator>) => ({ type, payload });
+  const create = (payload?: z.infer<TPayloadValidator>) => ({ type, payload });
   const apply = (draft: Draft<TState>, action: AnyAction): void => {
     if (action.type !== type) return;
     const result = payloadValidator.safeParse(action.payload);
@@ -129,7 +129,9 @@ export const createStateReducer = <
       z.infer<TValidator>,
       infer V
     >
-      ? (payload: z.infer<V>) => { type: string; payload: z.infer<V> }
+      ? z.infer<V> extends undefined | void
+        ? (payload?: z.infer<V>) => { type: string; payload: z.infer<V> }
+        : (payload: z.infer<V>) => { type: string; payload: z.infer<V> }
       : never;
   }
 > => {
@@ -161,7 +163,9 @@ export const createStateReducer = <
       TState,
       infer V
     >
-      ? (payload: z.infer<V>) => { type: string; payload: z.infer<V> }
+      ? z.infer<V> extends undefined | void
+        ? (payload?: z.infer<V>) => { type: string; payload: z.infer<V> }
+        : (payload: z.infer<V>) => { type: string; payload: z.infer<V> }
       : never;
   };
 
