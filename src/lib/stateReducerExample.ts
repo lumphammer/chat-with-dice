@@ -51,12 +51,12 @@ const initialState: _ExampleState = {
 
 const state2 = exampleReducer.reducer(
   initialState,
-  exampleReducer.creators.createObjective({ displayName: "foo" }),
+  exampleReducer.actions.createObjective({ displayName: "foo" }),
 );
 
 const objectiveId = state2.objectives[0].id;
 
 const _state3 = exampleReducer.reducer(
   initialState,
-  exampleReducer.creators.increment({ objectiveId }),
+  exampleReducer.actions.increment({ objectiveId }),
 );

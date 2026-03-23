@@ -17,10 +17,10 @@ import type { z } from "zod";
  */
 export type StateReducer<
   TValidator extends z.ZodType,
-  TCreators extends Record<string, (...args: any[]) => any>,
+  TActions extends Record<string, (...args: any[]) => any>,
 > = {
   stateValidator: TValidator;
-  creators: TCreators;
+  actions: TActions;
   reducer: (
     state: z.infer<TValidator>,
     action: AnyAction,
@@ -50,7 +50,7 @@ export type AnyAction = {
  * The object returned by the `create` function inside a `createSlice` builder
  * callback. Pairs a Zod payload validator with its reducer.
  */
-type CaseDefinition<TState, TPayloadValidator extends z.ZodTypeAny> = {
+type ActionDefinition<TState, TPayloadValidator extends z.ZodTypeAny> = {
   payloadValidator: TPayloadValidator;
   reducer: (draft: Draft<TState>, payload: z.infer<TPayloadValidator>) => void;
 };
@@ -61,10 +61,10 @@ type CaseDefinition<TState, TPayloadValidator extends z.ZodTypeAny> = {
  * inferred per-call from the validator argument, `payload` in the reducer is
  * always correctly typed.
  */
-type CaseCreator<TState> = <TPayloadValidator extends z.ZodTypeAny>(
+type ActionCreator<TState> = <TPayloadValidator extends z.ZodTypeAny>(
   payloadValidator: TPayloadValidator,
   reducer: (draft: Draft<TState>, payload: z.infer<TPayloadValidator>) => void,
-) => CaseDefinition<TState, TPayloadValidator>;
+) => ActionDefinition<TState, TPayloadValidator>;
 
 /**
  * Internal: given a CaseDefinition and an action type string, produces:
@@ -75,7 +75,7 @@ type CaseCreator<TState> = <TPayloadValidator extends z.ZodTypeAny>(
  */
 function buildCase<TState, TPayloadValidator extends z.ZodTypeAny>(
   type: string,
-  { payloadValidator, reducer }: CaseDefinition<TState, TPayloadValidator>,
+  { payloadValidator, reducer }: ActionDefinition<TState, TPayloadValidator>,
 ) {
   const create = (payload?: z.infer<TPayloadValidator>) => ({ type, payload });
   const apply = (draft: Draft<TState>, action: AnyAction): void => {
@@ -117,15 +117,15 @@ export const createStateReducer = <
   TValidator extends z.ZodTypeAny,
   TReducers extends Record<
     string,
-    CaseDefinition<z.infer<TValidator>, z.ZodTypeAny>
+    ActionDefinition<z.infer<TValidator>, z.ZodTypeAny>
   >,
 >(
   stateValidator: TValidator,
-  buildReducers: (create: CaseCreator<z.infer<TValidator>>) => TReducers,
+  buildReducers: (create: ActionCreator<z.infer<TValidator>>) => TReducers,
 ): StateReducer<
   TValidator,
   {
-    [key in keyof TReducers]: TReducers[key] extends CaseDefinition<
+    [key in keyof TReducers]: TReducers[key] extends ActionDefinition<
       z.infer<TValidator>,
       infer V
     >
@@ -137,7 +137,7 @@ export const createStateReducer = <
 > => {
   type TState = z.infer<TValidator>;
 
-  const caseCreator: CaseCreator<TState> = (payloadValidator, reducer) => ({
+  const caseCreator: ActionCreator<TState> = (payloadValidator, reducer) => ({
     payloadValidator,
     reducer,
   });
@@ -156,10 +156,10 @@ export const createStateReducer = <
   // array loses per-key type information. The conditional extracts the
   // validator from each CaseDefinition in TReducers to derive the exact
   // creator signature per key.
-  const creators = Object.fromEntries(
+  const actions = Object.fromEntries(
     sliceCases.map(([key, { create }]) => [key, create]),
   ) as {
-    [key in keyof TReducers]: TReducers[key] extends CaseDefinition<
+    [key in keyof TReducers]: TReducers[key] extends ActionDefinition<
       TState,
       infer V
     >
@@ -186,7 +186,7 @@ export const createStateReducer = <
     /**
      * A dictionary of action creators, keyed by the name of the case.
      */
-    creators,
+    actions,
     /**
      * The reducer function for this slice.
      */

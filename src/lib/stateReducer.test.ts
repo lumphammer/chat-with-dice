@@ -38,32 +38,32 @@ describe("createStateReducer", () => {
     });
   });
 
-  describe("returned creators", () => {
+  describe("returned actions", () => {
     it("has a key for every case", () => {
-      expect(counterReducer.creators).toHaveProperty("increment");
-      expect(counterReducer.creators).toHaveProperty("setCount");
-      expect(counterReducer.creators).toHaveProperty("reset");
+      expect(counterReducer.actions).toHaveProperty("increment");
+      expect(counterReducer.actions).toHaveProperty("setCount");
+      expect(counterReducer.actions).toHaveProperty("reset");
     });
 
     it("uses the case key as the action type", () => {
-      const action = counterReducer.creators.increment({ by: 1 });
+      const action = counterReducer.actions.increment({ by: 1 });
       expect(action.type).toBe("increment");
     });
 
     it("includes the payload in the action", () => {
-      const action = counterReducer.creators.increment({ by: 5 });
+      const action = counterReducer.actions.increment({ by: 5 });
       expect(action.payload).toEqual({ by: 5 });
     });
 
     it("produces the correct action for each creator", () => {
-      expect(counterReducer.creators.setCount({ value: 99 })).toEqual({
+      expect(counterReducer.actions.setCount({ value: 99 })).toEqual({
         type: "setCount",
         payload: { value: 99 },
       });
     });
 
     it("includes an undefined payload for a z.undefined() case", () => {
-      expect(counterReducer.creators.reset()).toEqual({
+      expect(counterReducer.actions.reset()).toEqual({
         type: "reset",
         payload: undefined,
       });
@@ -84,7 +84,7 @@ describe("createStateReducer", () => {
         const state = { count: 10 };
         const result = counterReducer.reducer(
           state,
-          counterReducer.creators.increment({ by: 3 }),
+          counterReducer.actions.increment({ by: 3 }),
         );
         expect(result).toEqual({ count: 13 });
       });
@@ -93,7 +93,7 @@ describe("createStateReducer", () => {
         const state = Object.freeze({ count: 10 });
         const result = counterReducer.reducer(
           state,
-          counterReducer.creators.increment({ by: 1 }),
+          counterReducer.actions.increment({ by: 1 }),
         );
         // Original is untouched
         expect(state.count).toBe(10);
@@ -105,7 +105,7 @@ describe("createStateReducer", () => {
         const state = { count: 42 };
         const result = counterReducer.reducer(
           state,
-          counterReducer.creators.reset(),
+          counterReducer.actions.reset(),
         );
         expect(result).toEqual({ count: 0 });
       });
@@ -115,13 +115,13 @@ describe("createStateReducer", () => {
 
         const after = counterReducer.reducer(
           state,
-          counterReducer.creators.increment({ by: 10 }),
+          counterReducer.actions.increment({ by: 10 }),
         );
         expect(after).toEqual({ count: 15 });
 
         const reset = counterReducer.reducer(
           after,
-          counterReducer.creators.reset(),
+          counterReducer.actions.reset(),
         );
         expect(reset).toEqual({ count: 0 });
       });
@@ -130,19 +130,19 @@ describe("createStateReducer", () => {
         let state = { count: 0 };
         state = counterReducer.reducer(
           state,
-          counterReducer.creators.increment({ by: 1 }),
+          counterReducer.actions.increment({ by: 1 }),
         );
         state = counterReducer.reducer(
           state,
-          counterReducer.creators.increment({ by: 2 }),
+          counterReducer.actions.increment({ by: 2 }),
         );
         state = counterReducer.reducer(
           state,
-          counterReducer.creators.setCount({ value: 100 }),
+          counterReducer.actions.setCount({ value: 100 }),
         );
         state = counterReducer.reducer(
           state,
-          counterReducer.creators.increment({ by: -1 }),
+          counterReducer.actions.increment({ by: -1 }),
         );
         expect(state).toEqual({ count: 99 });
       });
