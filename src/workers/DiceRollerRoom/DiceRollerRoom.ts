@@ -1,26 +1,22 @@
-import migrations from "#/durable-object-migrations/roller/migrations";
 import { assertRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import * as dbSchema from "#/schemas/roller-schema";
 import type { RollerMessage } from "#/validators/rollerMessageType";
-import {
-  webSocketClientMessageSchema,
-  type WebSocketServerMessage,
-} from "#/validators/webSocketMessageSchemas";
-import { type SessionAttachment, sessionAttachmentSchema } from "./types";
+import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
+import { Broadcaster } from "./Broadcaster";
+import { MessageRepository } from "./MessageRepository";
+import { handleFetch } from "./handleFetch";
+import { setupDB } from "./setupDB";
+import { sessionAttachmentSchema } from "./types";
 import { DurableObject } from "cloudflare:workers";
-import { desc } from "drizzle-orm";
-import { DrizzleSqliteDODatabase, drizzle } from "drizzle-orm/durable-sqlite";
-import { migrate } from "drizzle-orm/durable-sqlite/migrator";
+import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
-const MESSAGE_CATCHUP_LENGTH = 100;
 const WEBSOCKET_INTERNAL_ERROR = 1101;
-
-const log = console.log.bind(console, "[Roller DO]");
-const logError = console.error.bind(console, "[Roller DO]");
 
 export class DiceRollerRoom extends DurableObject {
   private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
+  private messageRepository: MessageRepository;
+  private broadcaster: Broadcaster;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -31,32 +27,9 @@ export class DiceRollerRoom extends DurableObject {
       new WebSocketRequestResponsePair("ping", "pong"),
     );
 
-    this.db = drizzle(ctx.storage, { schema: dbSchema });
-
-    const tableNames = Object.keys(dbSchema);
-    const placeHolders = Array.from({ length: tableNames.length })
-      .fill("?")
-      .join(", ");
-    const query = `SELECT sql FROM sqlite_master WHERE name IN (${placeHolders})`;
-    log(query, tableNames);
-    const printedSchema = ctx.storage.sql
-      .exec(query, ...tableNames)
-      .toArray()
-      .map((row) =>
-        typeof row.sql === "string" ? row.sql : JSON.stringify(row.sql),
-      )
-      .join("\n");
-    log("DB schema:", printedSchema);
-
-    void this.ctx.blockConcurrencyWhile(async () => {
-      // migrate the db
-      try {
-        log("attempting migration");
-        await migrate(this.db, migrations);
-      } catch (e: unknown) {
-        logError("FAILED MIGRATION", e);
-      }
-    });
+    this.db = setupDB(ctx);
+    this.messageRepository = new MessageRepository(this.db);
+    this.broadcaster = new Broadcaster(ctx);
   }
 
   /**
@@ -74,34 +47,12 @@ export class DiceRollerRoom extends DurableObject {
    * https://flaredup.substack.com/i/161450113/synchronous-calls-with-fetch-and-rpc
    */
   async fetch(request: Request): Promise<Response> {
-    const upgradeHeader = request.headers.get("Upgrade");
-    if (upgradeHeader !== "websocket") {
-      return new Response("Expected WebSocket upgrade", { status: 426 });
-    }
-    const chatId = URL.parse(request.url)?.searchParams.get("chatId");
-    if (!chatId) {
-      return new Response("chatId is required", { status: 400 });
-    }
-    // Create a WebSocket pair (client and server)
-    const pair = new WebSocketPair();
-    const [client, server] = Object.values(pair);
-
-    // Accept the WebSocket connection using the Hibernation API
-    // Unlike server.accept(), this allows the DO to hibernate while
-    // keeping the WebSocket connection open
-    this.ctx.acceptWebSocket(server);
-
-    const attachment: SessionAttachment = { chatId };
-    server.serializeAttachment(attachment);
-
-    await this.sendCatchUp(server);
-
-    // Return the client WebSocket in the response
-    // return new Response("splat", { status: 200 });
-    return new Response(null, {
-      status: 101,
-      webSocket: client,
-    });
+    return handleFetch(
+      request,
+      this.ctx,
+      this.messageRepository,
+      this.broadcaster,
+    );
   }
 
   /**
@@ -140,24 +91,9 @@ export class DiceRollerRoom extends DurableObject {
         });
       }
     } catch (error) {
-      this.sendError(ws, error);
+      this.broadcaster.sendError(ws, error);
       console.error("Error handling message:", error);
     }
-  }
-
-  sendError(server: WebSocket, e: unknown): void {
-    this.send(server, {
-      type: "error",
-      payload: {
-        errorMessage: e instanceof Error ? e.message : String(e),
-        detail:
-          e instanceof Error && e.cause
-            ? e.cause instanceof Error
-              ? e.cause.message
-              : JSON.stringify(e.cause)
-            : "",
-      },
-    });
   }
 
   /**
@@ -206,45 +142,8 @@ export class DiceRollerRoom extends DurableObject {
       chatId,
       displayName,
     };
-    await this.db.insert(dbSchema.Messages).values(rollerMessage);
+    await this.messageRepository.insert(rollerMessage);
     console.log("inserting into Messages", rollerMessage);
-    this.broadcastChatMessage(rollerMessage);
-  }
-
-  broadcastChatMessage(message: RollerMessage): void {
-    for (const server of this.ctx.getWebSockets()) {
-      this.sendChatMessage(server, message);
-    }
-  }
-
-  send(server: WebSocket, websocketMessage: WebSocketServerMessage): void {
-    server.send(JSON.stringify(websocketMessage));
-  }
-
-  sendChatMessage(server: WebSocket, message: RollerMessage): void {
-    this.send(server, {
-      type: "message",
-      payload: {
-        message,
-      },
-    });
-  }
-
-  async sendCatchUp(server: WebSocket): Promise<void> {
-    const messages = (
-      await this.db
-        .select()
-        .from(dbSchema.Messages)
-        .orderBy(desc(dbSchema.Messages.created_time))
-        .limit(MESSAGE_CATCHUP_LENGTH)
-        .execute()
-    ).toReversed();
-
-    this.send(server, {
-      type: "catchup",
-      payload: {
-        messages,
-      },
-    });
+    this.broadcaster.broadcastChatMessage(rollerMessage);
   }
 }

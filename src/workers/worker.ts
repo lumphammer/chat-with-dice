@@ -1,6 +1,6 @@
 import handler from "@astrojs/cloudflare/entrypoints/server";
 
-export { DiceRollerRoom } from "./DiceRollerRoom";
+export { DiceRollerRoom } from "./DiceRollerRoom/DiceRollerRoom";
 
 const HTTP_SWITCHING_PROTOCOLS = 101;
 
