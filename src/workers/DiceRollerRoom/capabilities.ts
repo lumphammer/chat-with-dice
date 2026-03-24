@@ -4,7 +4,7 @@ import type {
   WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { DBHandle } from "./types";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 type ActionDefinition<TContext, TPayloadValidator extends z.ZodTypeAny> = {
   payloadValidator: TPayloadValidator;
@@ -12,7 +12,7 @@ type ActionDefinition<TContext, TPayloadValidator extends z.ZodTypeAny> = {
     doCtx: DurableObjectState,
     capCtx: TContext,
     payload: z.infer<TPayloadValidator>,
-  ) => void;
+  ) => Promise<void>;
 };
 
 type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
@@ -21,7 +21,7 @@ type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
     doCtx: DurableObjectState,
     capCtx: TContext,
     payload: z.infer<TPayloadValidator>,
-  ) => void,
+  ) => Promise<void>,
 ) => ActionDefinition<TContext, TPayloadValidator>;
 
 type CapabilityDef<
@@ -48,7 +48,12 @@ const createCapability = <
       return [
         action,
         (payload: unknown): WebSocketClientMessage => {
-          payloadValidator.parse(payload);
+          const parsedResult = payloadValidator.safeParse(payload);
+          if (parsedResult.error) {
+            throw new Error("Action payload failed client-side validation", {
+              cause: parsedResult,
+            });
+          }
           return {
             type: "action",
             payload: {
@@ -70,14 +75,15 @@ const createCapability = <
 
   return {
     initialise: def.initialise,
-    onMessage: (
+    onMessage: async (
       doCtx: DurableObjectState,
       capCtx: TContext,
       actionCall: ActionCall,
     ) => {
       const action = actions[actionCall.action];
+      if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
       const payload = action.payloadValidator.parse(actionCall.payload);
-      action.actionFn(doCtx, capCtx, payload);
+      await action.actionFn(doCtx, capCtx, payload);
     },
     creators,
   };
@@ -86,18 +92,16 @@ const createCapability = <
 const counterCapabilityStateValidator = z.object({ count: z.int() });
 
 const counterCapability = createCapability({
-  name: "Objectives",
-  initialise: async (_ctx, _db) => {
-    const storedState = _ctx.storage.kv.get("counter_capability");
+  name: "Counter",
+  initialise: async (ctx, _db) => {
+    const storedState = ctx.storage.kv.get("counter_capability");
     let state: z.infer<typeof counterCapabilityStateValidator>;
     if (storedState === undefined || typeof storedState !== "string") {
       state = { count: 0 };
-      _ctx.storage.kv.put("counter_capability", JSON.stringify(state));
+      ctx.storage.kv.put("counter_capability", JSON.stringify(state));
     } else
       try {
-        state = counterCapabilityStateValidator.parse(
-          JSON.parse(typeof storedState),
-        );
+        state = counterCapabilityStateValidator.parse(JSON.parse(storedState));
       } catch (e: unknown) {
         console.error(
           "failed to validate stored state for counter capability, defaulting",
@@ -111,7 +115,7 @@ const counterCapability = createCapability({
   buildActions: (createAction) => ({
     increment: createAction(
       z.object({ by: z.number() }),
-      (doCtx, capCtx, payload) => {
+      async (doCtx, capCtx, payload) => {
         capCtx.count += payload.by;
         doCtx.storage.put("counter_capability", JSON.stringify(capCtx));
       },
@@ -131,7 +135,7 @@ function _neverGetsCalled() {
   // this is roughly what would happen in the DO
   counterCapability.onMessage(
     null as unknown as DurableObjectState, // just to prove the types work
-    { count: 3 },
+    { count: 3 }, // DO would be tracking these state objects per capability
     actionCall,
   );
 }
