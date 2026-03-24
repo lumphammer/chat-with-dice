@@ -1,3 +1,15 @@
+# Notes for LLMs
+
+This is a tabletop RPG chat app which allows the users to make dice rolls alongside the chat.
+
+## Tech stack
+
+* Astro 6.0 + react islands
+* Cloudflare workers with Drizzle ORM over a D1 database
+* Cloudflare Durable Objects
+
+## Rules and gotchas
+
 Remember that `React.FormEvent` is deprecated. The deprecation notice is: 
 
 > FormEvent doesn’t actually exist. You probably meant to use ChangeEvent, InputEvent, SubmitEvent, or just SyntheticEvent instead depending on the event type.
