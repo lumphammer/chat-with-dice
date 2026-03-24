@@ -1,3 +1,5 @@
+import * as dbSchema from "#/schemas/roller-schema";
+import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 import { z } from "zod/v4";
 
 // Structured types for the `rolls` JSON column, matching the shape of
@@ -8,3 +10,5 @@ export const sessionAttachmentSchema = z.object({
 });
 
 export type SessionAttachment = z.infer<typeof sessionAttachmentSchema>;
+
+export type DBHandle = DrizzleSqliteDODatabase<typeof dbSchema>;

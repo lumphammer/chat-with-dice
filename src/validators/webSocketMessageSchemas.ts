@@ -22,6 +22,23 @@ export type WebSocketServerMessage = z.infer<
   typeof webSocketServerMessageSchema
 >;
 
+export const actionCallValidator = z.object({
+  action: z.string(),
+  payload: z.any(),
+});
+
+export type ActionCall = z.infer<typeof actionCallValidator>;
+
+export const actionCallMessageValidator = z.object({
+  type: z.literal("action"),
+  payload: z.object({
+    capability: z.string(),
+    payload: actionCallValidator,
+  }),
+});
+
+export type ActionCallMessage = z.infer<typeof actionCallMessageValidator>;
+
 export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("chat"),
@@ -33,6 +50,7 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
     }),
   }),
+  actionCallMessageValidator,
 ]);
 
 export type WebSocketClientMessage = z.infer<
