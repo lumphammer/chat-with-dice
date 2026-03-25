@@ -1,8 +1,9 @@
 // oxlint-disable no-shadow
 // oxlint-disable no-magic-numbers
+import type { RollerMessage } from "#/validators/rollerMessageType";
+import type { MessageRepository } from "./MessageRepository";
 import { createCapability } from "./capabilities";
 import { counterCapability } from "./counterCapability";
-import type { DBHandle } from "./types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod/v4";
 
@@ -39,7 +40,17 @@ function makeDoCtx(initialKv: Record<string, string> = {}) {
   return { doCtxMock, store };
 }
 
-const mockDb = null as unknown as DBHandle;
+const mockMessageRepository = {
+  async insert(_message: RollerMessage): Promise<void> {
+    //
+  },
+
+  async getRecent(_limit?: number): Promise<RollerMessage[]> {
+    return [];
+  },
+} as unknown as MessageRepository;
+
+// const mockDb = null as unknown as DBHandle;
 
 // ---------------------------------------------------------------------------
 // createCapability framework tests
@@ -124,7 +135,11 @@ describe("createCapability", () => {
 
   describe("mount", () => {
     it("returns a MountedCapability with the capability's name", async () => {
-      const mounted = await testCapability.mount(doCtxMock, mockDb, null);
+      const mounted = await testCapability.mount(
+        doCtxMock,
+        mockMessageRepository,
+        null,
+      );
       expect(mounted.name).toBe("TestCap");
     });
 
@@ -148,9 +163,13 @@ describe("createCapability", () => {
         }),
       });
 
-      const mounted = await accumulator.mount(doCtxMock, mockDb, {
-        initial: 0,
-      });
+      const mounted = await accumulator.mount(
+        doCtxMock,
+        mockMessageRepository,
+        {
+          initial: 0,
+        },
+      );
       await mounted.onMessage({ action: "add", payload: { amount: 3 } });
       await mounted.onMessage({ action: "add", payload: { amount: 4 } });
 
@@ -172,7 +191,7 @@ describe("counterCapability", () => {
       expect(
         await counterCapability.initialise({
           doCtx: doCtxMock,
-          db: mockDb,
+          messageRepository: mockMessageRepository,
           config: { startAt: 3 },
         }),
       ).toEqual({
@@ -184,7 +203,7 @@ describe("counterCapability", () => {
       const { doCtxMock, store } = makeDoCtx();
       await counterCapability.initialise({
         doCtx: doCtxMock,
-        db: mockDb,
+        messageRepository: mockMessageRepository,
         config: { startAt: 3 },
       });
       expect(JSON.parse(store["counter_capability"] as string)).toEqual({
@@ -199,7 +218,7 @@ describe("counterCapability", () => {
       expect(
         await counterCapability.initialise({
           doCtx: doCtxMock,
-          db: mockDb,
+          messageRepository: mockMessageRepository,
           config: { startAt: 10 },
         }),
       ).toEqual({
@@ -223,7 +242,7 @@ describe("counterCapability", () => {
         expect(
           await counterCapability.initialise({
             doCtx: doCtxMock,
-            db: mockDb,
+            messageRepository: mockMessageRepository,
             config: { startAt: 10 },
           }),
         ).toEqual({
@@ -238,7 +257,7 @@ describe("counterCapability", () => {
         expect(
           await counterCapability.initialise({
             doCtx: doCtxMock,
-            db: mockDb,
+            messageRepository: mockMessageRepository,
             config: { startAt: 10 },
           }),
         ).toEqual({
@@ -308,9 +327,13 @@ describe("counterCapability", () => {
       const { doCtxMock, store } = makeDoCtx({
         counter_capability: JSON.stringify({ count: 0 }),
       });
-      const mounted = await counterCapability.mount(doCtxMock, mockDb, {
-        startAt: 3,
-      });
+      const mounted = await counterCapability.mount(
+        doCtxMock,
+        mockMessageRepository,
+        {
+          startAt: 3,
+        },
+      );
 
       await mounted.onMessage({ action: "increment", payload: { by: 10 } });
       await mounted.onMessage({ action: "increment", payload: { by: 5 } });

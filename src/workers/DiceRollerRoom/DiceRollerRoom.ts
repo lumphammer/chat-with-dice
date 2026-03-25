@@ -70,7 +70,7 @@ export class DiceRollerRoom extends DurableObject {
         CAPABILITIES.map((cap) =>
           cap.mount(
             this.ctx,
-            this.db,
+            this.messageRepository,
             this.config.capabilities[cap.name]?.config,
           ),
         ),

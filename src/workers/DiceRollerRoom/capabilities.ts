@@ -3,7 +3,7 @@ import type {
   ActionCallMessage,
   WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
-import type { DBHandle } from "./types";
+import type { MessageRepository } from "./MessageRepository";
 import { z } from "zod/v4";
 
 export type MountedCapability = {
@@ -38,7 +38,8 @@ type CapabilityDefinition<
   configValidator: TConfigValidator;
   initialise: (tools: {
     doCtx: DurableObjectState;
-    db: DBHandle;
+    // db: DBHandle;
+    messageRepository: MessageRepository;
     config: z.infer<TConfigValidator>;
   }) => Promise<TContext>;
   buildActions: (createAction: CreateAction<TContext>) => TActions;
@@ -98,7 +99,7 @@ export const createCapability = <
 
   const mount = async (
     doCtx: DurableObjectState,
-    db: DBHandle,
+    messageRepository: MessageRepository,
     config: unknown,
   ): Promise<MountedCapability> => {
     const configParseResult = def.configValidator.safeParse(config);
@@ -109,7 +110,7 @@ export const createCapability = <
     }
     const capCtx = await def.initialise({
       doCtx: doCtx,
-      db,
+      messageRepository,
       config: configParseResult.data,
     });
     return {
