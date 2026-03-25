@@ -1,7 +1,7 @@
 // oxlint-disable no-shadow
 // oxlint-disable no-magic-numbers
 import type { RollerMessage } from "#/validators/rollerMessageType";
-import type { MessageRepository } from "./MessageRepository";
+import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
 import { createCapability } from "./capabilities";
 import { counterCapability } from "./counterCapability";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

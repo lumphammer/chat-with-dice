@@ -3,7 +3,7 @@ import type {
   ActionCallMessage,
   WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
-import type { MessageRepository } from "./MessageRepository";
+import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
 import { z } from "zod/v4";
 
 export type MountedCapability = {

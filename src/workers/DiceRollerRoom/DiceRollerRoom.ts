@@ -9,10 +9,10 @@ import {
   type RoomConfig,
 } from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
+import { type MountedCapability } from "../../capabilities/capabilities";
+import { counterCapability } from "../../capabilities/counterCapability";
 import { Broadcaster } from "./Broadcaster";
 import { MessageRepository } from "./MessageRepository";
-import { type MountedCapability } from "./capabilities";
-import { counterCapability } from "./counterCapability";
 import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
 import { setupDB } from "./setupDB";
