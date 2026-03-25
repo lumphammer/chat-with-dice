@@ -5,6 +5,7 @@ import type { RollerMessage } from "#/validators/rollerMessageType";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
 import { Broadcaster } from "./Broadcaster";
 import { MessageRepository } from "./MessageRepository";
+import { counterCapability, type MountedCapability } from "./capabilities";
 import { handleFetch } from "./handleFetch";
 import { setupDB } from "./setupDB";
 import { sessionAttachmentSchema } from "./types";
@@ -13,10 +14,14 @@ import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 const WEBSOCKET_INTERNAL_ERROR = 1101;
 
+// All capabilities mounted by this DO
+const CAPABILITIES = [counterCapability];
+
 export class DiceRollerRoom extends DurableObject {
   private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
   private messageRepository: MessageRepository;
   private broadcaster: Broadcaster;
+  private capabilities: Map<string, MountedCapability> = new Map();
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -30,6 +35,17 @@ export class DiceRollerRoom extends DurableObject {
     this.db = setupDB(ctx);
     this.messageRepository = new MessageRepository(this.db);
     this.broadcaster = new Broadcaster(ctx);
+
+    // Mount all capabilities before handling any events.
+    // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
+    this.ctx.blockConcurrencyWhile(async () => {
+      const mounted = await Promise.all(
+        CAPABILITIES.map((cap) => cap.mount(this.ctx, this.db)),
+      );
+      for (const cap of mounted) {
+        this.capabilities.set(cap.name, cap);
+      }
+    });
   }
 
   /**
@@ -89,6 +105,12 @@ export class DiceRollerRoom extends DurableObject {
           ...data.payload,
           chatId: attachment.chatId,
         });
+      } else if (data.type === "action") {
+        const cap = this.capabilities.get(data.payload.capability);
+        if (!cap) {
+          throw new Error(`Unknown capability: ${data.payload.capability}`);
+        }
+        await cap.onMessage(data.payload.payload);
       }
     } catch (error) {
       this.broadcaster.sendError(ws, error);

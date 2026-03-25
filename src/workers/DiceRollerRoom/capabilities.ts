@@ -6,6 +6,11 @@ import type {
 import type { DBHandle } from "./types";
 import { z } from "zod/v4";
 
+export type MountedCapability = {
+  name: string;
+  onMessage: (actionCall: ActionCall) => Promise<void>;
+};
+
 type ActionDefinition<TContext, TPayloadValidator extends z.ZodTypeAny> = {
   payloadValidator: TPayloadValidator;
   actionFn: (
@@ -73,25 +78,37 @@ const createCapability = <
     ) => ActionCallMessage;
   };
 
+  const dispatchAction = async (
+    doCtx: DurableObjectState,
+    capCtx: TContext,
+    actionCall: ActionCall,
+  ) => {
+    const action = actions[actionCall.action];
+    if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
+    const payload = action.payloadValidator.parse(actionCall.payload);
+    await action.actionFn(doCtx, capCtx, payload);
+  };
+
   return {
     initialise: def.initialise,
-    onMessage: async (
-      doCtx: DurableObjectState,
-      capCtx: TContext,
-      actionCall: ActionCall,
-    ) => {
-      const action = actions[actionCall.action];
-      if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
-      const payload = action.payloadValidator.parse(actionCall.payload);
-      await action.actionFn(doCtx, capCtx, payload);
-    },
+    onMessage: dispatchAction,
     creators,
+    mount: async (
+      doCtx: DurableObjectState,
+      db: DBHandle,
+    ): Promise<MountedCapability> => {
+      const capCtx = await def.initialise(doCtx, db);
+      return {
+        name: def.name,
+        onMessage: (actionCall) => dispatchAction(doCtx, capCtx, actionCall),
+      };
+    },
   };
 };
 
 const counterCapabilityStateValidator = z.object({ count: z.int() });
 
-const counterCapability = createCapability({
+export const counterCapability = createCapability({
   name: "Counter",
   initialise: async (ctx, _db) => {
     const storedState = ctx.storage.kv.get("counter_capability");
