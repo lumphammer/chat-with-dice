@@ -10,4 +10,6 @@ export const Rooms = sqliteTable("Rooms", {
   created_by_user_id: text().notNull(),
   created_time: int().notNull(),
   type: text({ enum: ROOM_TYPES }).notNull(),
+  config: text(),
+  durableObjectId: text(),
 });
