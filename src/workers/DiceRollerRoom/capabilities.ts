@@ -31,18 +31,25 @@ type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
 
 type CapabilityDef<
   TContext,
+  TConfigValidator extends z.ZodTypeAny,
   TActions extends Record<string, ActionDefinition<TContext, z.ZodTypeAny>>,
 > = {
   name: string;
-  initialise: (ctx: DurableObjectState, db: DBHandle) => Promise<TContext>;
+  configValidator: TConfigValidator;
+  initialise: (
+    ctx: DurableObjectState,
+    db: DBHandle,
+    config: z.infer<TConfigValidator>,
+  ) => Promise<TContext>;
   buildActions: (createAction: CreateAction<TContext>) => TActions;
 };
 
 export const createCapability = <
   TContext,
+  TConfigValidator extends z.ZodTypeAny,
   TActions extends Record<string, ActionDefinition<TContext, z.ZodTypeAny>>,
 >(
-  def: CapabilityDef<TContext, TActions>,
+  def: CapabilityDef<TContext, TConfigValidator, TActions>,
 ) => {
   const actions: TActions = def.buildActions((payloadValidator, actionFn) => ({
     payloadValidator,
@@ -78,7 +85,7 @@ export const createCapability = <
     ) => ActionCallMessage;
   };
 
-  const dispatchAction = async (
+  const onMessage = async (
     doCtx: DurableObjectState,
     capCtx: TContext,
     actionCall: ActionCall,
@@ -89,19 +96,29 @@ export const createCapability = <
     await action.actionFn(doCtx, capCtx, payload);
   };
 
+  const mount = async (
+    doCtx: DurableObjectState,
+    db: DBHandle,
+    config: unknown,
+  ): Promise<MountedCapability> => {
+    const configParseResult = def.configValidator.safeParse(config);
+    if (configParseResult.error) {
+      throw new Error("Capability config failed validation", {
+        cause: configParseResult,
+      });
+    }
+    const capCtx = await def.initialise(doCtx, db, configParseResult.data);
+    return {
+      name: def.name,
+      onMessage: (actionCall) => onMessage(doCtx, capCtx, actionCall),
+    };
+  };
+
   return {
+    name: def.name,
     initialise: def.initialise,
-    onMessage: dispatchAction,
+    onMessage,
     creators,
-    mount: async (
-      doCtx: DurableObjectState,
-      db: DBHandle,
-    ): Promise<MountedCapability> => {
-      const capCtx = await def.initialise(doCtx, db);
-      return {
-        name: def.name,
-        onMessage: (actionCall) => dispatchAction(doCtx, capCtx, actionCall),
-      };
-    },
+    mount,
   };
 };

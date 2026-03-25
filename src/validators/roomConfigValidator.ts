@@ -4,7 +4,8 @@ import { z } from "zod/v4";
 export const roomConfigValidator = maybeJSON(
   z.object({
     version: z.int().min(1),
-    capabilities: z.array(
+    capabilities: z.record(
+      z.string(),
       z.object({
         name: z.string(),
         config: z.any(),

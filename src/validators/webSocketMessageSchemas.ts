@@ -16,6 +16,13 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("error"),
     payload: z.object({ errorMessage: z.string(), detail: z.string() }),
   }),
+  z.object({
+    type: z.literal("capabilityUpdate"),
+    payload: z.object({
+      capability: z.string(),
+      payload: z.any(),
+    }),
+  }),
 ]);
 
 export type WebSocketServerMessage = z.infer<

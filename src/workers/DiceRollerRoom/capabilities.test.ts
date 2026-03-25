@@ -53,6 +53,7 @@ describe("createCapability", () => {
   const testCapability = createCapability({
     name: "TestCap",
     initialise: async (_ctx, _db) => ({ value: 0 }),
+    configValidator: z.null(),
     buildActions: (createAction) => ({
       setValue: createAction(
         z.object({ to: z.number() }),
@@ -122,7 +123,7 @@ describe("createCapability", () => {
 
   describe("mount", () => {
     it("returns a MountedCapability with the capability's name", async () => {
-      const mounted = await testCapability.mount(mockCtx, mockDb);
+      const mounted = await testCapability.mount(mockCtx, mockDb, null);
       expect(mounted.name).toBe("TestCap");
     });
 
@@ -134,6 +135,7 @@ describe("createCapability", () => {
       const accumulator = createCapability({
         name: "Accumulator",
         initialise: async () => ({ total: 0 }),
+        configValidator: z.object({ initial: z.int() }),
         buildActions: (createAction) => ({
           add: createAction(
             z.object({ amount: z.number() }),
@@ -145,7 +147,7 @@ describe("createCapability", () => {
         }),
       });
 
-      const mounted = await accumulator.mount(ctx, mockDb);
+      const mounted = await accumulator.mount(ctx, mockDb, { initial: 0 });
       await mounted.onMessage({ action: "add", payload: { amount: 3 } });
       await mounted.onMessage({ action: "add", payload: { amount: 4 } });
 
@@ -164,16 +166,18 @@ describe("counterCapability", () => {
   describe("initialise", () => {
     it("returns { count: 0 } when storage is empty", async () => {
       const { ctx } = makeDoCtx();
-      expect(await counterCapability.initialise(ctx, mockDb)).toEqual({
-        count: 0,
+      expect(
+        await counterCapability.initialise(ctx, mockDb, { startAt: 3 }),
+      ).toEqual({
+        count: 3,
       });
     });
 
     it("persists the default state to kv when storage is empty", async () => {
       const { ctx, store } = makeDoCtx();
-      await counterCapability.initialise(ctx, mockDb);
+      await counterCapability.initialise(ctx, mockDb, { startAt: 3 });
       expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-        count: 0,
+        count: 3,
       });
     });
 
@@ -181,7 +185,9 @@ describe("counterCapability", () => {
       const { ctx } = makeDoCtx({
         counter_capability: JSON.stringify({ count: 42 }),
       });
-      expect(await counterCapability.initialise(ctx, mockDb)).toEqual({
+      expect(
+        await counterCapability.initialise(ctx, mockDb, { startAt: 10 }),
+      ).toEqual({
         count: 42,
       });
     });
@@ -195,12 +201,14 @@ describe("counterCapability", () => {
         vi.restoreAllMocks();
       });
 
-      it("defaults to { count: 0 } when stored state fails schema validation", async () => {
+      it("defaults to config when stored state fails schema validation", async () => {
         const { ctx } = makeDoCtx({
           counter_capability: JSON.stringify({ count: "not-a-number" }),
         });
-        expect(await counterCapability.initialise(ctx, mockDb)).toEqual({
-          count: 0,
+        expect(
+          await counterCapability.initialise(ctx, mockDb, { startAt: 10 }),
+        ).toEqual({
+          count: 10,
         });
       });
 
@@ -208,8 +216,10 @@ describe("counterCapability", () => {
         const { ctx } = makeDoCtx({
           counter_capability: "this is {{{ not valid json",
         });
-        expect(await counterCapability.initialise(ctx, mockDb)).toEqual({
-          count: 0,
+        expect(
+          await counterCapability.initialise(ctx, mockDb, { startAt: 10 }),
+        ).toEqual({
+          count: 10,
         });
       });
     });
@@ -275,7 +285,9 @@ describe("counterCapability", () => {
       const { ctx, store } = makeDoCtx({
         counter_capability: JSON.stringify({ count: 0 }),
       });
-      const mounted = await counterCapability.mount(ctx, mockDb);
+      const mounted = await counterCapability.mount(ctx, mockDb, {
+        startAt: 3,
+      });
 
       await mounted.onMessage({ action: "increment", payload: { by: 10 } });
       await mounted.onMessage({ action: "increment", payload: { by: 5 } });

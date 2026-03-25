@@ -1,16 +1,24 @@
+import { db as d1 } from "#/db";
 import { assertRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
+import { Rooms } from "#/schemas/chatDB-schema";
 import * as dbSchema from "#/schemas/roller-schema";
 import type { RollerMessage } from "#/validators/rollerMessageType";
+import {
+  roomConfigValidator,
+  type RoomConfig,
+} from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
 import { Broadcaster } from "./Broadcaster";
 import { MessageRepository } from "./MessageRepository";
 import { type MountedCapability } from "./capabilities";
 import { counterCapability } from "./counterCapability";
+import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
 import { setupDB } from "./setupDB";
 import { sessionAttachmentSchema } from "./types";
 import { DurableObject } from "cloudflare:workers";
+import { eq } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 const WEBSOCKET_INTERNAL_ERROR = 1101;
@@ -23,6 +31,7 @@ export class DiceRollerRoom extends DurableObject {
   private messageRepository: MessageRepository;
   private broadcaster: Broadcaster;
   private capabilities: Map<string, MountedCapability> = new Map();
+  private config: RoomConfig = defaultRoomConfig;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -37,11 +46,34 @@ export class DiceRollerRoom extends DurableObject {
     this.messageRepository = new MessageRepository(this.db);
     this.broadcaster = new Broadcaster(ctx);
 
+    this.ctx.blockConcurrencyWhile(async () => {
+      const configRows = await d1
+        .select({ config: Rooms.config })
+        .from(Rooms)
+        .where(eq(Rooms.id, ctx.id.toString()))
+        .limit(1);
+      const rawConfig = configRows[0]?.config;
+      const parsedConfig = roomConfigValidator.safeParse(rawConfig);
+      if (parsedConfig.success) {
+        this.config = parsedConfig.data;
+      } else {
+        console.error(
+          "Room Config failed validation, falling back to defaults",
+        );
+      }
+    });
+
     // Mount all capabilities before handling any events.
     // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
     this.ctx.blockConcurrencyWhile(async () => {
       const mounted = await Promise.all(
-        CAPABILITIES.map((cap) => cap.mount(this.ctx, this.db)),
+        CAPABILITIES.map((cap) =>
+          cap.mount(
+            this.ctx,
+            this.db,
+            this.config.capabilities[cap.name]?.config,
+          ),
+        ),
       );
       for (const cap of mounted) {
         this.capabilities.set(cap.name, cap);
