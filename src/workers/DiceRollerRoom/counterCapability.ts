@@ -6,7 +6,7 @@ const counterCapabilityStateValidator = z.object({ count: z.int() });
 export const counterCapability = createCapability({
   name: "Counter",
   configValidator: z.object({ startAt: z.int() }),
-  initialise: async ({ ctx, config }) => {
+  initialise: async ({ doCtx: ctx, config }) => {
     const storedState = ctx.storage.kv.get("counter_capability");
     let state: z.infer<typeof counterCapabilityStateValidator>;
     if (storedState === undefined || typeof storedState !== "string") {

@@ -37,7 +37,7 @@ type CapabilityDefinition<
   name: string;
   configValidator: TConfigValidator;
   initialise: (tools: {
-    ctx: DurableObjectState;
+    doCtx: DurableObjectState;
     db: DBHandle;
     config: z.infer<TConfigValidator>;
   }) => Promise<TContext>;
@@ -108,7 +108,7 @@ export const createCapability = <
       });
     }
     const capCtx = await def.initialise({
-      ctx: doCtx,
+      doCtx: doCtx,
       db,
       config: configParseResult.data,
     });
