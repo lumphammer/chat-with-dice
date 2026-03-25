@@ -58,6 +58,21 @@ type CapabilityDefinition<
   buildActions: (createAction: CreateAction<TContext>) => TActions;
 };
 
+export type AnyCapability = {
+  name: string;
+  onMessage: (
+    doCtx: DurableObjectState,
+    capCtx: unknown,
+    actionCall: ActionCall,
+  ) => Promise<void>;
+  creators: Record<string, (payload: any) => ActionCallMessage>;
+  mount: (
+    doCtx: DurableObjectState,
+    messageRepository: MessageRepository,
+    config: unknown,
+  ) => Promise<MountedCapability>;
+};
+
 /**
  * Define a new capability
  * @param def The key parts of the capability
@@ -106,13 +121,15 @@ export const createCapability = <
 
   const onMessage = async (
     doCtx: DurableObjectState,
-    capCtx: TContext,
+    capCtx: unknown,
     actionCall: ActionCall,
   ) => {
     const action = actions[actionCall.action];
     if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
     const payload = action.payloadValidator.parse(actionCall.payload);
-    await action.actionFn({ doCtx, capCtx, payload });
+    // one annoying cast but otherwise we're validating the context on every
+    // call
+    await action.actionFn({ doCtx, capCtx: capCtx as TContext, payload });
   };
 
   const mount = async (
