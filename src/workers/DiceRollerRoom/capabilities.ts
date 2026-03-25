@@ -29,18 +29,18 @@ type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
   ) => Promise<void>,
 ) => ActionDefinition<TContext, TPayloadValidator>;
 
-type CapabilityDef<
+type CapabilityDefinition<
   TContext,
   TConfigValidator extends z.ZodTypeAny,
   TActions extends Record<string, ActionDefinition<TContext, z.ZodTypeAny>>,
 > = {
   name: string;
   configValidator: TConfigValidator;
-  initialise: (
-    ctx: DurableObjectState,
-    db: DBHandle,
-    config: z.infer<TConfigValidator>,
-  ) => Promise<TContext>;
+  initialise: (tools: {
+    ctx: DurableObjectState;
+    db: DBHandle;
+    config: z.infer<TConfigValidator>;
+  }) => Promise<TContext>;
   buildActions: (createAction: CreateAction<TContext>) => TActions;
 };
 
@@ -49,7 +49,7 @@ export const createCapability = <
   TConfigValidator extends z.ZodTypeAny,
   TActions extends Record<string, ActionDefinition<TContext, z.ZodTypeAny>>,
 >(
-  def: CapabilityDef<TContext, TConfigValidator, TActions>,
+  def: CapabilityDefinition<TContext, TConfigValidator, TActions>,
 ) => {
   const actions: TActions = def.buildActions((payloadValidator, actionFn) => ({
     payloadValidator,
@@ -107,7 +107,11 @@ export const createCapability = <
         cause: configParseResult,
       });
     }
-    const capCtx = await def.initialise(doCtx, db, configParseResult.data);
+    const capCtx = await def.initialise({
+      ctx: doCtx,
+      db,
+      config: configParseResult.data,
+    });
     return {
       name: def.name,
       onMessage: (actionCall) => onMessage(doCtx, capCtx, actionCall),

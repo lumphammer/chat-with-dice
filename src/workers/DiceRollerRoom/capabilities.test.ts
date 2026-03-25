@@ -52,7 +52,7 @@ describe("createCapability", () => {
 
   const testCapability = createCapability({
     name: "TestCap",
-    initialise: async (_ctx, _db) => ({ value: 0 }),
+    initialise: async () => ({ value: 0 }),
     configValidator: z.null(),
     buildActions: (createAction) => ({
       setValue: createAction(
@@ -167,7 +167,11 @@ describe("counterCapability", () => {
     it("returns { count: 0 } when storage is empty", async () => {
       const { ctx } = makeDoCtx();
       expect(
-        await counterCapability.initialise(ctx, mockDb, { startAt: 3 }),
+        await counterCapability.initialise({
+          ctx,
+          db: mockDb,
+          config: { startAt: 3 },
+        }),
       ).toEqual({
         count: 3,
       });
@@ -175,7 +179,11 @@ describe("counterCapability", () => {
 
     it("persists the default state to kv when storage is empty", async () => {
       const { ctx, store } = makeDoCtx();
-      await counterCapability.initialise(ctx, mockDb, { startAt: 3 });
+      await counterCapability.initialise({
+        ctx,
+        db: mockDb,
+        config: { startAt: 3 },
+      });
       expect(JSON.parse(store["counter_capability"] as string)).toEqual({
         count: 3,
       });
@@ -186,7 +194,11 @@ describe("counterCapability", () => {
         counter_capability: JSON.stringify({ count: 42 }),
       });
       expect(
-        await counterCapability.initialise(ctx, mockDb, { startAt: 10 }),
+        await counterCapability.initialise({
+          ctx,
+          db: mockDb,
+          config: { startAt: 10 },
+        }),
       ).toEqual({
         count: 42,
       });
@@ -206,7 +218,11 @@ describe("counterCapability", () => {
           counter_capability: JSON.stringify({ count: "not-a-number" }),
         });
         expect(
-          await counterCapability.initialise(ctx, mockDb, { startAt: 10 }),
+          await counterCapability.initialise({
+            ctx,
+            db: mockDb,
+            config: { startAt: 10 },
+          }),
         ).toEqual({
           count: 10,
         });
@@ -217,7 +233,11 @@ describe("counterCapability", () => {
           counter_capability: "this is {{{ not valid json",
         });
         expect(
-          await counterCapability.initialise(ctx, mockDb, { startAt: 10 }),
+          await counterCapability.initialise({
+            ctx,
+            db: mockDb,
+            config: { startAt: 10 },
+          }),
         ).toEqual({
           count: 10,
         });
