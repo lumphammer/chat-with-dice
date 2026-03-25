@@ -28,7 +28,7 @@ export const counterCapability = createCapability({
   buildActions: (createAction) => ({
     increment: createAction(
       z.object({ by: z.number() }),
-      async (doCtx, capCtx, payload) => {
+      async ({ doCtx, capCtx, payload }) => {
         capCtx.count += payload.by;
         doCtx.storage.put("counter_capability", JSON.stringify(capCtx));
       },

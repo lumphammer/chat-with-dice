@@ -69,7 +69,7 @@ describe("createCapability", () => {
     buildActions: (createAction) => ({
       setValue: createAction(
         z.object({ to: z.number() }),
-        async (_doCtx, capCtx, payload) => {
+        async ({ capCtx, payload }) => {
           capCtx.value = payload.to;
         },
       ),
@@ -155,7 +155,7 @@ describe("createCapability", () => {
         buildActions: (createAction) => ({
           add: createAction(
             z.object({ amount: z.number() }),
-            async (doCtx, capCtx, { amount }) => {
+            async ({ doCtx, capCtx, payload: { amount } }) => {
               capCtx.total += amount;
               await doCtx.storage.put("total", capCtx.total);
             },

@@ -13,20 +13,20 @@ export type MountedCapability = {
 
 type ActionDefinition<TContext, TPayloadValidator extends z.ZodTypeAny> = {
   payloadValidator: TPayloadValidator;
-  actionFn: (
-    doCtx: DurableObjectState,
-    capCtx: TContext,
-    payload: z.infer<TPayloadValidator>,
-  ) => Promise<void>;
+  actionFn: (tools: {
+    doCtx: DurableObjectState;
+    capCtx: TContext;
+    payload: z.infer<TPayloadValidator>;
+  }) => Promise<void>;
 };
 
 type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
   payloadValidator: TPayloadValidator,
-  action: (
-    doCtx: DurableObjectState,
-    capCtx: TContext,
-    payload: z.infer<TPayloadValidator>,
-  ) => Promise<void>,
+  action: (tools: {
+    doCtx: DurableObjectState;
+    capCtx: TContext;
+    payload: z.infer<TPayloadValidator>;
+  }) => Promise<void>,
 ) => ActionDefinition<TContext, TPayloadValidator>;
 
 type CapabilityDefinition<
@@ -94,7 +94,7 @@ export const createCapability = <
     const action = actions[actionCall.action];
     if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
     const payload = action.payloadValidator.parse(actionCall.payload);
-    await action.actionFn(doCtx, capCtx, payload);
+    await action.actionFn({ doCtx, capCtx, payload });
   };
 
   const mount = async (
