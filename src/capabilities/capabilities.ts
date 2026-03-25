@@ -6,29 +6,42 @@ import type {
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
 import { z } from "zod/v4";
 
+/**
+ * Represents what the server gets after mounting a capability
+ */
 export type MountedCapability = {
   name: string;
   onMessage: (actionCall: ActionCall) => Promise<void>;
 };
 
+/**
+ * An action function. Gets handed a bunch of tools, can do what it wants.
+ */
+type ActionFn<TContext, TPayloadValidator extends z.ZodTypeAny> = (tools: {
+  doCtx: DurableObjectState;
+  capCtx: TContext;
+  payload: z.infer<TPayloadValidator>;
+}) => Promise<void>;
+
+/**
+ * An action definition. Input validator plus function.
+ */
 type ActionDefinition<TContext, TPayloadValidator extends z.ZodTypeAny> = {
   payloadValidator: TPayloadValidator;
-  actionFn: (tools: {
-    doCtx: DurableObjectState;
-    capCtx: TContext;
-    payload: z.infer<TPayloadValidator>;
-  }) => Promise<void>;
+  actionFn: ActionFn<TContext, TPayloadValidator>;
 };
 
+/**
+ * Type for the builder function used when defining a capability
+ */
 type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
   payloadValidator: TPayloadValidator,
-  action: (tools: {
-    doCtx: DurableObjectState;
-    capCtx: TContext;
-    payload: z.infer<TPayloadValidator>;
-  }) => Promise<void>,
+  actionFn: ActionFn<TContext, TPayloadValidator>,
 ) => ActionDefinition<TContext, TPayloadValidator>;
 
+/**
+ * The full input definition for a capability
+ */
 type CapabilityDefinition<
   TContext,
   TConfigValidator extends z.ZodTypeAny,
@@ -45,6 +58,11 @@ type CapabilityDefinition<
   buildActions: (createAction: CreateAction<TContext>) => TActions;
 };
 
+/**
+ * Define a new capability
+ * @param def The key parts of the capability
+ * @returns
+ */
 export const createCapability = <
   TContext,
   TConfigValidator extends z.ZodTypeAny,
@@ -121,6 +139,7 @@ export const createCapability = <
 
   return {
     name: def.name,
+    // this is only exposed for testing
     initialise: def.initialise,
     onMessage,
     creators,
