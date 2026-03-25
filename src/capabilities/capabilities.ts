@@ -136,12 +136,11 @@ export const createCapability = <
     doCtx: DurableObjectState,
     messageRepository: MessageRepository,
     config: unknown,
-  ): Promise<MountedCapability> => {
+  ): Promise<MountedCapability | null> => {
     const configParseResult = def.configValidator.safeParse(config);
     if (configParseResult.error) {
-      throw new Error("Capability config failed validation", {
-        cause: configParseResult,
-      });
+      console.error("Capability config failed validation", configParseResult);
+      return null;
     }
     const capCtx = await def.initialise({
       doCtx: doCtx,

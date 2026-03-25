@@ -1,4 +1,9 @@
+import {
+  capabilityRegistry,
+  isCapabilityName,
+} from "#/capabilities/capabilityRegistry";
 import { db as d1 } from "#/db";
+import { maybeJSON } from "#/lib/maybeJSON";
 import { assertRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import { Rooms } from "#/schemas/chatDB-schema";
@@ -10,7 +15,7 @@ import {
 } from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
 import { type MountedCapability } from "../../capabilities/capabilities";
-import { counterCapability } from "../../capabilities/counterCapability";
+// import { counterCapability } from "../../capabilities/counterCapability";
 import { Broadcaster } from "./Broadcaster";
 import { MessageRepository } from "./MessageRepository";
 import { defaultRoomConfig } from "./defaultRoomConfig";
@@ -24,7 +29,7 @@ import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 const WEBSOCKET_INTERNAL_ERROR = 1101;
 
 // All capabilities mounted by this DO
-const CAPABILITIES = [counterCapability];
+// const CAPABILITIES = [counterCapability];
 
 export class DiceRollerRoom extends DurableObject {
   private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
@@ -46,19 +51,22 @@ export class DiceRollerRoom extends DurableObject {
     this.messageRepository = new MessageRepository(this.db);
     this.broadcaster = new Broadcaster(ctx);
 
+    console.log("Durable object id booting:", ctx.id.toString());
+
     this.ctx.blockConcurrencyWhile(async () => {
       const configRows = await d1
         .select({ config: Rooms.config })
         .from(Rooms)
-        .where(eq(Rooms.id, ctx.id.toString()))
+        .where(eq(Rooms.durableObjectId, ctx.id.toString()))
         .limit(1);
       const rawConfig = configRows[0]?.config;
-      const parsedConfig = roomConfigValidator.safeParse(rawConfig);
+      const parsedConfig = maybeJSON(roomConfigValidator).safeParse(rawConfig);
       if (parsedConfig.success) {
         this.config = parsedConfig.data;
       } else {
         console.error(
           "Room Config failed validation, falling back to defaults",
+          parsedConfig.error,
         );
       }
     });
@@ -66,18 +74,28 @@ export class DiceRollerRoom extends DurableObject {
     // Mount all capabilities before handling any events.
     // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
     this.ctx.blockConcurrencyWhile(async () => {
-      const mounted = await Promise.all(
-        CAPABILITIES.map((cap) =>
-          cap.mount(
-            this.ctx,
-            this.messageRepository,
-            this.config.capabilities[cap.name]?.config,
-          ),
+      await Promise.all(
+        Object.entries(this.config.capabilities).map(
+          async ([capName, { config }]) => {
+            console.log("mounting capability", capName);
+            if (!isCapabilityName(capName)) {
+              return;
+            }
+            const cap = capabilityRegistry[capName];
+            const mountedCap = await cap.mount(
+              this.ctx,
+              this.messageRepository,
+              config,
+            );
+            if (mountedCap) {
+              this.capabilities.set(capName, mountedCap);
+              console.log(capName, "mounted!");
+            } else {
+              console.log(capName, "failed to mount");
+            }
+          },
         ),
       );
-      for (const cap of mounted) {
-        this.capabilities.set(cap.name, cap);
-      }
     });
   }
 

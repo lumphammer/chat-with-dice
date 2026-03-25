@@ -1,6 +1,12 @@
 import type { AnyCapability } from "./capabilities";
 import { counterCapability } from "./counterCapability";
 
-export const capabilityRegistry: Record<string, AnyCapability> = {
+export const capabilityRegistry = {
   counter: counterCapability,
-};
+} satisfies Record<string, AnyCapability>;
+
+export type CapabilityName = keyof typeof capabilityRegistry;
+
+export function isCapabilityName(name: string): name is CapabilityName {
+  return name in capabilityRegistry;
+}
