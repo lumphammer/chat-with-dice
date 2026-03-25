@@ -51,11 +51,8 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
   const RollerNamespace = env.DiceRollerRoom;
   if (!RollerNamespace)
     return new Response("Roller binding not found", { status: 500 });
-  // Get a Durable Object ID for this room
-  // idFromName ensures the same room ID always maps to the same Durable Object
-  const durableObjectId = RollerNamespace.idFromName(roomId);
   // Get a stub (reference) to the Durable Object
-  const durableObjectStub = RollerNamespace.get(durableObjectId);
+  const durableObjectStub = RollerNamespace.getByName(roomId);
   // request.url
   return durableObjectStub.fetch(request);
 };
