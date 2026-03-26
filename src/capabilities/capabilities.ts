@@ -58,6 +58,11 @@ type CapabilityDefinition<
   buildActions: (createAction: CreateAction<TContext>) => TActions;
 };
 
+/**
+ * Used for the registry.
+ *
+ * Does not include all members, only the ones that are needed in prod
+ */
 export type AnyCapability = {
   name: string;
   onMessage: (
@@ -70,7 +75,7 @@ export type AnyCapability = {
     doCtx: DurableObjectState,
     messageRepository: MessageRepository,
     config: unknown,
-  ) => Promise<MountedCapability>;
+  ) => Promise<MountedCapability | null>;
 };
 
 /**
@@ -85,10 +90,19 @@ export const createCapability = <
 >(
   def: CapabilityDefinition<TContext, TConfigValidator, TActions>,
 ) => {
-  const actions: TActions = def.buildActions((payloadValidator, actionFn) => ({
+  // fn used to build typed actions
+  const createAction: CreateAction<TContext> = (
     payloadValidator,
     actionFn,
-  }));
+  ) => ({
+    payloadValidator,
+    actionFn,
+  });
+
+  // build the actions collection
+  const actions: TActions = def.buildActions(createAction);
+
+  // from actions, build message creators
   const creators = Object.fromEntries(
     Object.entries(actions).map(([action, { payloadValidator }]) => {
       return [
@@ -119,6 +133,7 @@ export const createCapability = <
     ) => ActionCallMessage;
   };
 
+  // server-side message handler
   const onMessage = async (
     doCtx: DurableObjectState,
     capCtx: unknown,
@@ -132,6 +147,7 @@ export const createCapability = <
     await action.actionFn({ doCtx, capCtx: capCtx as TContext, payload });
   };
 
+  // server-side mount handler
   const mount = async (
     doCtx: DurableObjectState,
     messageRepository: MessageRepository,
@@ -155,10 +171,11 @@ export const createCapability = <
 
   return {
     name: def.name,
-    // this is only exposed for testing
-    initialise: def.initialise,
     onMessage,
     creators,
     mount,
+
+    // this is only exposed for testing
+    initialise: def.initialise,
   };
 };
