@@ -83,11 +83,11 @@ export class DiceRollerRoom extends DurableObject {
               return;
             }
             const capability = capabilityRegistry[capName];
-            const mountedCap = await capability.mount(
-              this.ctx,
-              this.messageRepository,
+            const mountedCap = await capability.mount({
+              doCtx: this.ctx,
+              messageRepository: this.messageRepository,
               config,
-            );
+            });
             if (mountedCap) {
               this.capabilities.set(capName, mountedCap);
               console.log(capName, "mounted!");

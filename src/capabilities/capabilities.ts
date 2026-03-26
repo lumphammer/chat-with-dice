@@ -168,11 +168,15 @@ export const createCapability = <
   };
 
   // server-side mount handler
-  const mount = async (
-    doCtx: DurableObjectState,
-    messageRepository: MessageRepository,
-    config: unknown,
-  ): Promise<MountedCapability | null> => {
+  const mount = async ({
+    doCtx,
+    messageRepository,
+    config,
+  }: {
+    doCtx: DurableObjectState;
+    messageRepository: MessageRepository;
+    config: unknown;
+  }): Promise<MountedCapability | null> => {
     // get config
     const configParseResult = def.configValidator.safeParse(config);
     if (configParseResult.error) {
