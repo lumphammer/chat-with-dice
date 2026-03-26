@@ -148,7 +148,9 @@ export const createCapability = <
   ): Promise<MountedCapability | null> => {
     const configParseResult = def.configValidator.safeParse(config);
     if (configParseResult.error) {
-      console.error("Capability config failed validation", configParseResult);
+      if (process.env.NODE_ENV !== "test") {
+        console.error("Capability config failed validation", configParseResult);
+      }
       return null;
     }
     const capCtx = await def.initialise({
