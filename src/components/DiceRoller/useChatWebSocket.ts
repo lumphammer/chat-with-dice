@@ -9,6 +9,10 @@ type UseChatWebSocketArgs = {
   roomId: string;
   chatId: string;
   onError: (error: { errorMessage: string; detail: string }) => void;
+  capabilityStates: Record<string, unknown>;
+  setCapabilityStates: React.Dispatch<
+    React.SetStateAction<Record<string, unknown>>
+  >;
 };
 
 const MAX_HISTORY_BUFFER_LENGTH = 100;
@@ -17,6 +21,7 @@ export const useChatWebSocket = ({
   roomId,
   chatId,
   onError,
+  setCapabilityStates,
 }: UseChatWebSocketArgs) => {
   const [messages, setMessages] = useState<RollerMessage[]>([]);
   // const [error, setError] = useState<{
@@ -71,6 +76,16 @@ export const useChatWebSocket = ({
             errorMessage: data.payload.errorMessage,
             detail: data.payload.detail,
           });
+        } else if (data.type === "capabilityState") {
+          setCapabilityStates((oldStates) => {
+            const newStates = {
+              ...oldStates,
+              [data.payload.capability]: data.payload.payload.state,
+            };
+            console.log("newStates", newStates);
+            return newStates;
+          });
+          console.log();
         }
       },
       onclose: () => {
@@ -88,7 +103,7 @@ export const useChatWebSocket = ({
       console.log("Closing websocket because effect re-ran");
       ws.close();
     };
-  }, [roomId, chatId, onError]);
+  }, [roomId, chatId, onError, setCapabilityStates]);
 
   const sendJSON = useCallback((content: any) => {
     websocketRef.current?.json(content);
