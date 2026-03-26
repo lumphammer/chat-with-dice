@@ -3,6 +3,8 @@ import type { Broadcaster } from "./Broadcaster";
 import type { MessageRepository } from "./MessageRepository";
 import type { SessionAttachment } from "./types";
 
+const CATCHUP_DELAY_MS = 100;
+
 export async function handleFetch(
   request: Request,
   ctx: DurableObjectState,
@@ -30,12 +32,17 @@ export async function handleFetch(
   const attachment: SessionAttachment = { chatId };
   server.serializeAttachment(attachment);
 
-  await broadcaster.sendCatchUp(server, await messageRepository.getRecent());
-  await Promise.all(
-    capabilities.values().map((mountedCap) => {
-      mountedCap.sendState(server);
-    }),
-  );
+  // this is lame, but FF dev tools fails to show ws messages sent immediately
+  // when the socket is opened
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1719394
+  setTimeout(async () => {
+    await broadcaster.sendCatchUp(server, await messageRepository.getRecent());
+    await Promise.all(
+      capabilities.values().map((mountedCap) => {
+        mountedCap.sendState(server);
+      }),
+    );
+  }, CATCHUP_DELAY_MS);
 
   // Return the client WebSocket in the response
   // return new Response("splat", { status: 200 });
