@@ -1,3 +1,4 @@
+import type { MountedCapability } from "#/capabilities/capabilities";
 import type { Broadcaster } from "./Broadcaster";
 import type { MessageRepository } from "./MessageRepository";
 import type { SessionAttachment } from "./types";
@@ -7,6 +8,7 @@ export async function handleFetch(
   ctx: DurableObjectState,
   messageRepository: MessageRepository,
   broadcaster: Broadcaster,
+  capabilities: Map<string, MountedCapability>,
 ) {
   const upgradeHeader = request.headers.get("Upgrade");
   if (upgradeHeader !== "websocket") {
@@ -29,6 +31,11 @@ export async function handleFetch(
   server.serializeAttachment(attachment);
 
   await broadcaster.sendCatchUp(server, await messageRepository.getRecent());
+  await Promise.all(
+    capabilities.values().map((mountedCap) => {
+      mountedCap.sendState(server);
+    }),
+  );
 
   // Return the client WebSocket in the response
   // return new Response("splat", { status: 200 });

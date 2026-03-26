@@ -5,6 +5,7 @@ import type {
   ActionCallMessage,
   WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
+import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
 import { createDraft, finishDraft, type Draft } from "immer";
 import { z } from "zod/v4";
@@ -15,6 +16,7 @@ import { z } from "zod/v4";
 export type MountedCapability = {
   name: Alphanumeric;
   onMessage: (actionCall: ActionCall) => Promise<void>;
+  sendState: (server: WebSocket) => Promise<void>;
 };
 
 /**
@@ -148,23 +150,38 @@ export const createCapability = <
   };
 
   // server-side message handler
-  const handleMessage = async (
-    doCtx: DurableObjectState,
-    state: z.infer<TStateValidator>,
-    actionCall: ActionCall,
-  ) => {
+  const handleMessage = async ({
+    doCtx,
+    state,
+    actionCall,
+    broadcaster,
+  }: {
+    doCtx: DurableObjectState;
+    state: z.infer<TStateValidator>;
+    actionCall: ActionCall;
+    broadcaster: Broadcaster;
+  }) => {
     const action = actions[actionCall.action];
     if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
     const payload = action.payloadValidator.parse(actionCall.payload);
     const stateDraft = createDraft(state);
     await action.actionFn({ doCtx, stateDraft, payload });
-    const finalState = finishDraft(stateDraft);
+    const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
     doCtx.storage.kv.put(
       `capabilities.${def.name}.state`,
       JSON.stringify(finalState),
     );
+    broadcaster.broadcast({
+      type: "capabilityState",
+      payload: {
+        capability: name,
+        payload: {
+          state: finalState,
+        },
+      },
+    });
     // the need for this cast is odd
-    return finalState as z.infer<TStateValidator>;
+    return finalState;
   };
 
   // server-side mount handler
@@ -172,10 +189,12 @@ export const createCapability = <
     doCtx,
     messageRepository,
     config,
+    broadcaster,
   }: {
     doCtx: DurableObjectState;
     messageRepository: MessageRepository;
     config: unknown;
+    broadcaster: Broadcaster;
   }): Promise<MountedCapability | null> => {
     // get config
     const configParseResult = def.configValidator.safeParse(config);
@@ -221,7 +240,18 @@ export const createCapability = <
     return {
       name,
       onMessage: async (actionCall) => {
-        state = await handleMessage(doCtx, state, actionCall);
+        state = await handleMessage({ doCtx, state, actionCall, broadcaster });
+      },
+      sendState: async (ws: WebSocket) => {
+        broadcaster.send(ws, {
+          type: "capabilityState",
+          payload: {
+            capability: name,
+            payload: {
+              state,
+            },
+          },
+        });
       },
     };
   };

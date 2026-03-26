@@ -87,6 +87,7 @@ export class DiceRollerRoom extends DurableObject {
               doCtx: this.ctx,
               messageRepository: this.messageRepository,
               config,
+              broadcaster: this.broadcaster,
             });
             if (mountedCap) {
               this.capabilities.set(capName, mountedCap);
@@ -120,6 +121,7 @@ export class DiceRollerRoom extends DurableObject {
       this.ctx,
       this.messageRepository,
       this.broadcaster,
+      this.capabilities,
     );
   }
 

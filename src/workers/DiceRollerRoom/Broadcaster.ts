@@ -8,6 +8,12 @@ export class Broadcaster {
     ws.send(JSON.stringify(message));
   }
 
+  broadcast(message: WebSocketServerMessage): void {
+    for (const server of this.ctx.getWebSockets()) {
+      this.send(server, message);
+    }
+  }
+
   sendError(ws: WebSocket, error: unknown): void {
     this.send(ws, {
       type: "error",
@@ -24,17 +30,18 @@ export class Broadcaster {
   }
 
   broadcastChatMessage(message: RollerMessage): void {
-    for (const server of this.ctx.getWebSockets()) {
-      this.sendChatMessage(server, message);
-    }
-  }
-
-  private sendChatMessage(server: WebSocket, message: RollerMessage): void {
-    this.send(server, {
+    this.broadcast({
       type: "message",
       payload: { message },
     });
   }
+
+  // private sendChatMessage(server: WebSocket, message: RollerMessage): void {
+  //   this.send(server, {
+  //     type: "message",
+  //     payload: { message },
+  //   });
+  // }
 
   async sendCatchUp(ws: WebSocket, messages: RollerMessage[]): Promise<void> {
     this.send(ws, {

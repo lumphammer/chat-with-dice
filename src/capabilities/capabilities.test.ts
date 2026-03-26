@@ -1,6 +1,7 @@
 // oxlint-disable no-shadow
 // oxlint-disable no-magic-numbers
 import type { RollerMessage } from "#/validators/rollerMessageType";
+import { Broadcaster } from "../workers/DiceRollerRoom/Broadcaster";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
 import { createCapability } from "./capabilities";
 import { counterCapability } from "./counterCapability";
@@ -58,6 +59,12 @@ const mockMessageRepository = {
   },
 } as unknown as MessageRepository;
 
+function makeMockBroadcaster(): Broadcaster {
+  return {
+    broadcast: () => {},
+  } as unknown as Broadcaster;
+}
+
 // ---------------------------------------------------------------------------
 // createCapability framework tests
 //
@@ -106,9 +113,11 @@ describe("createCapability", () => {
 
   describe("mount", () => {
     it("returns a MountedCapability with the capability's name", async () => {
+      const broadcaster = makeMockBroadcaster();
       const mounted = await testCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: null,
       });
       assert(mounted);
@@ -117,9 +126,11 @@ describe("createCapability", () => {
 
     it("returns null when config fails validation", async () => {
       // configValidator is z.null(), so anything other than null should fail
+      const broadcaster = makeMockBroadcaster();
       const mounted = await testCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { unexpected: "value" },
       });
       expect(mounted).toBeNull();
@@ -146,9 +157,11 @@ describe("createCapability", () => {
         }),
       });
 
+      const broadcaster = makeMockBroadcaster();
       const mounted = await accumulator.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { initial: 0 },
       });
       assert(mounted);
@@ -178,9 +191,11 @@ describe("counterCapability", () => {
   describe("mount (initialise behaviour)", () => {
     it("uses startAt from config when storage is empty, and persists it to kv", async () => {
       const { doCtxMock, store } = makeDoCtx();
+      const broadcaster = makeMockBroadcaster();
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { startAt: 3 },
       });
       assert(mounted);
@@ -195,9 +210,11 @@ describe("counterCapability", () => {
       const { doCtxMock, store } = makeDoCtx({
         "capabilities.Counter.state": JSON.stringify({ count: 11 }),
       });
+      const broadcaster = makeMockBroadcaster();
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { startAt: 10 },
       });
       assert(mounted);
@@ -215,9 +232,11 @@ describe("counterCapability", () => {
 
     it("returns null when config is invalid", async () => {
       const { doCtxMock } = makeDoCtx();
+      const broadcaster = makeMockBroadcaster();
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { invalidField: true },
       });
       expect(mounted).toBeNull();
@@ -238,9 +257,11 @@ describe("counterCapability", () => {
             count: "not-a-number",
           }),
         });
+        const broadcaster = makeMockBroadcaster();
         const mounted = await counterCapability.mount({
           doCtx: doCtxMock,
           messageRepository: mockMessageRepository,
+          broadcaster,
           config: { startAt: 10 },
         });
         assert(mounted);
@@ -259,9 +280,11 @@ describe("counterCapability", () => {
         const { doCtxMock, store } = makeDoCtx({
           "capabilities.Counter.state": "this is {{{ not valid json",
         });
+        const broadcaster = makeMockBroadcaster();
         const mounted = await counterCapability.mount({
           doCtx: doCtxMock,
           messageRepository: mockMessageRepository,
+          broadcaster,
           config: { startAt: 10 },
         });
         assert(mounted);
@@ -312,9 +335,11 @@ describe("counterCapability", () => {
       const { doCtxMock, store } = makeDoCtx({
         "capabilities.Counter.state": JSON.stringify({ count: 10 }),
       });
+      const broadcaster = makeMockBroadcaster();
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { startAt: 0 },
       });
       assert(mounted);
@@ -330,9 +355,11 @@ describe("counterCapability", () => {
       const { doCtxMock, store } = makeDoCtx({
         "capabilities.Counter.state": JSON.stringify({ count: 10 }),
       });
+      const broadcaster = makeMockBroadcaster();
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { startAt: 0 },
       });
       assert(mounted);
@@ -348,9 +375,11 @@ describe("counterCapability", () => {
       const { doCtxMock, store } = makeDoCtx({
         "capabilities.Counter.state": JSON.stringify({ count: 10 }),
       });
+      const broadcaster = makeMockBroadcaster();
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { startAt: 0 },
       });
       assert(mounted);
@@ -366,9 +395,11 @@ describe("counterCapability", () => {
       const { doCtxMock, store } = makeDoCtx({
         "capabilities.Counter.state": JSON.stringify({ count: 0 }),
       });
+      const broadcaster = makeMockBroadcaster();
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        broadcaster,
         config: { startAt: 3 },
       });
       assert(mounted);
