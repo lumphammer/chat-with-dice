@@ -70,13 +70,15 @@ describe("createCapability", () => {
 
   const testCapability = createCapability({
     name: "TestCap",
-    initialise: async () => ({ value: 0 }),
+    initialise: async () => {},
     configValidator: z.null(),
+    stateValidator: z.object({ value: z.int() }),
+    getInitialState: () => ({ value: 0 }),
     buildActions: (createAction) => ({
       setValue: createAction(
         z.object({ to: z.number() }),
-        async ({ capCtx, payload }) => {
-          capCtx.value = payload.to;
+        async ({ stateDraft, payload }) => {
+          stateDraft.value = payload.to;
         },
       ),
     }),
@@ -130,14 +132,15 @@ describe("createCapability", () => {
       // whether the same capCtx reference is reused between calls.
       const accumulator = createCapability({
         name: "Accumulator",
-        initialise: async () => ({ total: 0 }),
+        initialise: async () => {},
         configValidator: z.object({ initial: z.int() }),
+        stateValidator: z.object({ total: z.int() }),
+        getInitialState: () => ({ total: 0 }),
         buildActions: (createAction) => ({
           add: createAction(
             z.object({ amount: z.number() }),
-            async ({ doCtx, capCtx, payload: { amount } }) => {
-              capCtx.total += amount;
-              await doCtx.storage.put("total", capCtx.total);
+            async ({ stateDraft, payload: { amount } }) => {
+              stateDraft.total += amount;
             },
           ),
         }),
@@ -154,7 +157,11 @@ describe("createCapability", () => {
 
       // If the same capCtx is reused: 0 + 3 + 4 = 7
       // If it were re-initialised each call it would be 4
-      expect(store["total"]).toBe(7);
+      expect(store).toMatchInlineSnapshot(`
+        {
+          "capabilities.Accumulator.state": "{"total":7}",
+        }
+      `);
     });
   });
 });
@@ -177,14 +184,16 @@ describe("counterCapability", () => {
         { startAt: 3 },
       );
       assert(mounted);
-      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-        count: 3,
-      });
+      expect(store).toMatchInlineSnapshot(`
+        {
+          "capabilities.Counter.state": "{"count":3}",
+        }
+      `);
     });
 
     it("loads a previously persisted count from kv, ignoring startAt", async () => {
       const { doCtxMock, store } = makeDoCtx({
-        counter_capability: JSON.stringify({ count: 42 }),
+        "capabilities.Counter.state": JSON.stringify({ count: 11 }),
       });
       const mounted = await counterCapability.mount(
         doCtxMock,
@@ -197,9 +206,11 @@ describe("counterCapability", () => {
       // If count was loaded as 42, the result will be 43.
       // If startAt: 10 was incorrectly used instead, the result would be 11.
       await mounted.onMessage({ action: "increment", payload: { by: 1 } });
-      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-        count: 43,
-      });
+      expect(store).toMatchInlineSnapshot(`
+        {
+          "capabilities.Counter.state": "{"count":12}",
+        }
+      `);
     });
 
     it("returns null when config is invalid", async () => {
@@ -223,7 +234,9 @@ describe("counterCapability", () => {
 
       it("falls back to startAt when stored state fails schema validation", async () => {
         const { doCtxMock, store } = makeDoCtx({
-          counter_capability: JSON.stringify({ count: "not-a-number" }),
+          "capabilities.Counter.state": JSON.stringify({
+            count: "not-a-number",
+          }),
         });
         const mounted = await counterCapability.mount(
           doCtxMock,
@@ -235,14 +248,16 @@ describe("counterCapability", () => {
         // Increment by 0 as a probe: forces the current capCtx.count to be
         // written to storage without changing its value.
         await mounted.onMessage({ action: "increment", payload: { by: 0 } });
-        expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-          count: 10,
-        });
+        expect(store).toMatchInlineSnapshot(`
+          {
+            "capabilities.Counter.state": "{"count":10}",
+          }
+        `);
       });
 
       it("falls back to startAt when stored state is invalid JSON", async () => {
         const { doCtxMock, store } = makeDoCtx({
-          counter_capability: "this is {{{ not valid json",
+          "capabilities.Counter.state": "this is {{{ not valid json",
         });
         const mounted = await counterCapability.mount(
           doCtxMock,
@@ -252,9 +267,11 @@ describe("counterCapability", () => {
         assert(mounted);
 
         await mounted.onMessage({ action: "increment", payload: { by: 0 } });
-        expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-          count: 10,
-        });
+        expect(store).toMatchInlineSnapshot(`
+          {
+            "capabilities.Counter.state": "{"count":10}",
+          }
+        `);
       });
     });
   });
@@ -293,7 +310,7 @@ describe("counterCapability", () => {
   describe("increment action", () => {
     it("increases count by the given amount", async () => {
       const { doCtxMock, store } = makeDoCtx({
-        counter_capability: JSON.stringify({ count: 10 }),
+        "capabilities.Counter.state": JSON.stringify({ count: 10 }),
       });
       const mounted = await counterCapability.mount(
         doCtxMock,
@@ -302,14 +319,16 @@ describe("counterCapability", () => {
       );
       assert(mounted);
       await mounted.onMessage({ action: "increment", payload: { by: 5 } });
-      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-        count: 15,
-      });
+      expect(store).toMatchInlineSnapshot(`
+        {
+          "capabilities.Counter.state": "{"count":15}",
+        }
+      `);
     });
 
     it("accepts negative amounts (decrement)", async () => {
       const { doCtxMock, store } = makeDoCtx({
-        counter_capability: JSON.stringify({ count: 10 }),
+        "capabilities.Counter.state": JSON.stringify({ count: 10 }),
       });
       const mounted = await counterCapability.mount(
         doCtxMock,
@@ -318,14 +337,16 @@ describe("counterCapability", () => {
       );
       assert(mounted);
       await mounted.onMessage({ action: "increment", payload: { by: -3 } });
-      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-        count: 7,
-      });
+      expect(store).toMatchInlineSnapshot(`
+        {
+          "capabilities.Counter.state": "{"count":7}",
+        }
+      `);
     });
 
     it("persists the updated count to kv via storage.put", async () => {
       const { doCtxMock, store } = makeDoCtx({
-        counter_capability: JSON.stringify({ count: 10 }),
+        "capabilities.Counter.state": JSON.stringify({ count: 10 }),
       });
       const mounted = await counterCapability.mount(
         doCtxMock,
@@ -334,14 +355,12 @@ describe("counterCapability", () => {
       );
       assert(mounted);
       await mounted.onMessage({ action: "increment", payload: { by: 3 } });
-      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-        count: 13,
-      });
+      expect(store).toMatchInlineSnapshot();
     });
 
     it("accumulates correctly across multiple mounted calls", async () => {
       const { doCtxMock, store } = makeDoCtx({
-        counter_capability: JSON.stringify({ count: 0 }),
+        "capabilities.Counter.state": JSON.stringify({ count: 0 }),
       });
       const mounted = await counterCapability.mount(
         doCtxMock,
@@ -354,9 +373,11 @@ describe("counterCapability", () => {
       await mounted.onMessage({ action: "increment", payload: { by: -2 } });
 
       // 0 + 10 + 5 - 2 = 13
-      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
-        count: 13,
-      });
+      expect(store).toMatchInlineSnapshot(`
+        {
+          "capabilities.Counter.state": "{"count":13}",
+        }
+      `);
     });
   });
 });

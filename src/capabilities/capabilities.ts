@@ -1,10 +1,12 @@
 import { toAlphanumeric, type Alphanumeric } from "#/lib/alphanumeric";
+import { maybeJSON } from "#/lib/maybeJSON";
 import type {
   ActionCall,
   ActionCallMessage,
   WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
+import { createDraft, finishDraft, type Draft } from "immer";
 import { z } from "zod/v4";
 
 /**
@@ -20,7 +22,7 @@ export type MountedCapability = {
  */
 type ActionFn<TContext, TPayloadValidator extends z.ZodTypeAny> = (tools: {
   doCtx: DurableObjectState;
-  capCtx: TContext;
+  stateDraft: Draft<TContext>;
   payload: z.infer<TPayloadValidator>;
 }) => Promise<void>;
 
@@ -44,19 +46,30 @@ type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
  * The full input definition for a capability
  */
 type CapabilityDefinition<
-  TContext,
   TConfigValidator extends z.ZodTypeAny,
-  TActions extends Record<string, ActionDefinition<TContext, z.ZodTypeAny>>,
+  TStateValidator extends z.ZodObject,
+  // TContext extends z.infer<TContextValidator>, // xxx can we get rid of this one
+  TActions extends Record<
+    string,
+    ActionDefinition<z.infer<TStateValidator>, z.ZodTypeAny>
+  >,
 > = {
   name: string;
   configValidator: TConfigValidator;
+  stateValidator: TStateValidator;
+  getInitialState: (tools: {
+    config: z.infer<TConfigValidator>;
+  }) => z.infer<TStateValidator>;
   initialise: (tools: {
     doCtx: DurableObjectState;
+    draftState: Draft<z.infer<TStateValidator>>;
     // db: DBHandle;
     messageRepository: MessageRepository;
     config: z.infer<TConfigValidator>;
-  }) => Promise<TContext>;
-  buildActions: (createAction: CreateAction<TContext>) => TActions;
+  }) => Promise<void>;
+  buildActions: (
+    createAction: CreateAction<z.infer<TStateValidator>>,
+  ) => TActions;
 };
 
 /**
@@ -80,16 +93,19 @@ export type AnyCapability = {
  * @returns
  */
 export const createCapability = <
-  TContext,
   TConfigValidator extends z.ZodTypeAny,
-  TActions extends Record<string, ActionDefinition<TContext, z.ZodTypeAny>>,
+  TStateValidator extends z.ZodObject,
+  TActions extends Record<
+    string,
+    ActionDefinition<z.infer<TStateValidator>, z.ZodTypeAny>
+  >,
 >(
-  def: CapabilityDefinition<TContext, TConfigValidator, TActions>,
+  def: CapabilityDefinition<TConfigValidator, TStateValidator, TActions>,
 ) => {
   const name = toAlphanumeric(def.name);
 
   // fn used to build typed actions
-  const createAction: CreateAction<TContext> = (
+  const createAction: CreateAction<z.infer<TStateValidator>> = (
     payloadValidator,
     actionFn,
   ) => ({
@@ -134,13 +150,21 @@ export const createCapability = <
   // server-side message handler
   const handleMessage = async (
     doCtx: DurableObjectState,
-    capCtx: TContext,
+    state: z.infer<TStateValidator>,
     actionCall: ActionCall,
   ) => {
     const action = actions[actionCall.action];
     if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
     const payload = action.payloadValidator.parse(actionCall.payload);
-    await action.actionFn({ doCtx, capCtx, payload });
+    const stateDraft = createDraft(state);
+    await action.actionFn({ doCtx, stateDraft, payload });
+    const finalState = finishDraft(stateDraft);
+    doCtx.storage.kv.put(
+      `capabilities.${def.name}.state`,
+      JSON.stringify(finalState),
+    );
+    // the need for this cast is odd
+    return finalState as z.infer<TStateValidator>;
   };
 
   // server-side mount handler
@@ -149,6 +173,7 @@ export const createCapability = <
     messageRepository: MessageRepository,
     config: unknown,
   ): Promise<MountedCapability | null> => {
+    // get config
     const configParseResult = def.configValidator.safeParse(config);
     if (configParseResult.error) {
       if (process.env.NODE_ENV !== "test") {
@@ -156,14 +181,44 @@ export const createCapability = <
       }
       return null;
     }
-    const capCtx = await def.initialise({
+
+    // get state
+    let state: z.infer<TStateValidator>;
+    const parseStoredStateResult = maybeJSON(def.stateValidator).safeParse(
+      doCtx.storage.kv.get(`capabilities.${def.name}.state`),
+    );
+    if (parseStoredStateResult.success) {
+      state = parseStoredStateResult.data;
+    } else {
+      state = def.getInitialState({ config: configParseResult.data });
+      doCtx.storage.kv.put(
+        `capabilities.${def.name}.state`,
+        JSON.stringify(state),
+      );
+    }
+
+    // run initialise
+    const draftState = createDraft(state);
+    await def.initialise({
       doCtx: doCtx,
+      draftState: draftState,
       messageRepository,
       config: configParseResult.data,
     });
+    // the need for this cast is odd
+    const finalState = finishDraft(draftState) as z.infer<TStateValidator>;
+    if (finalState !== state) {
+      state = finalState;
+      doCtx.storage.kv.put(
+        `capabilities.${def.name}.state`,
+        JSON.stringify(state),
+      );
+    }
     return {
       name,
-      onMessage: (actionCall) => handleMessage(doCtx, capCtx, actionCall),
+      onMessage: async (actionCall) => {
+        state = await handleMessage(doCtx, state, actionCall);
+      },
     };
   };
 
