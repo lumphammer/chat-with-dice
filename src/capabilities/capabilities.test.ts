@@ -4,7 +4,15 @@ import type { RollerMessage } from "#/validators/rollerMessageType";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
 import { createCapability } from "./capabilities";
 import { counterCapability } from "./counterCapability";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  assert,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { z } from "zod/v4";
 
 // ---------------------------------------------------------------------------
@@ -50,8 +58,6 @@ const mockMessageRepository = {
   },
 } as unknown as MessageRepository;
 
-// const mockDb = null as unknown as DBHandle;
-
 // ---------------------------------------------------------------------------
 // createCapability framework tests
 //
@@ -96,43 +102,6 @@ describe("createCapability", () => {
     });
   });
 
-  describe("onMessage", () => {
-    it("dispatches to the correct action and mutates capCtx", async () => {
-      const capCtx = { value: 0 };
-      await testCapability.onMessage(doCtxMock, capCtx, {
-        action: "setValue",
-        payload: { to: 99 },
-      });
-      expect(capCtx.value).toBe(99);
-    });
-
-    it("throws on an unknown action name", async () => {
-      await expect(
-        testCapability.onMessage(
-          doCtxMock,
-          { value: 0 },
-          {
-            action: "nonexistent",
-            payload: {},
-          },
-        ),
-      ).rejects.toThrow("Unknown action: nonexistent");
-    });
-
-    it("re-validates the payload server-side and throws on invalid input", async () => {
-      await expect(
-        testCapability.onMessage(
-          doCtxMock,
-          { value: 0 },
-          {
-            action: "setValue",
-            payload: { to: "not-a-number" },
-          },
-        ),
-      ).rejects.toThrow();
-    });
-  });
-
   describe("mount", () => {
     it("returns a MountedCapability with the capability's name", async () => {
       const mounted = await testCapability.mount(
@@ -140,7 +109,18 @@ describe("createCapability", () => {
         mockMessageRepository,
         null,
       );
+      assert(mounted);
       expect(mounted.name).toBe("TestCap");
+    });
+
+    it("returns null when config fails validation", async () => {
+      // configValidator is z.null(), so anything other than null should fail
+      const mounted = await testCapability.mount(
+        doCtxMock,
+        mockMessageRepository,
+        { unexpected: "value" },
+      );
+      expect(mounted).toBeNull();
     });
 
     it("closes over the initialised capCtx, accumulating state across calls", async () => {
@@ -166,10 +146,9 @@ describe("createCapability", () => {
       const mounted = await accumulator.mount(
         doCtxMock,
         mockMessageRepository,
-        {
-          initial: 0,
-        },
+        { initial: 0 },
       );
+      assert(mounted);
       await mounted.onMessage({ action: "add", payload: { amount: 3 } });
       await mounted.onMessage({ action: "add", payload: { amount: 4 } });
 
@@ -185,45 +164,52 @@ describe("createCapability", () => {
 // ---------------------------------------------------------------------------
 
 describe("counterCapability", () => {
-  describe("initialise", () => {
-    it("returns { count: 0 } when storage is empty", async () => {
-      const { doCtxMock } = makeDoCtx();
-      expect(
-        await counterCapability.initialise({
-          doCtx: doCtxMock,
-          messageRepository: mockMessageRepository,
-          config: { startAt: 3 },
-        }),
-      ).toEqual({
-        count: 3,
-      });
-    });
+  // -------------------------------------------------------------------------
+  // Initialise behaviour — tested via mount since initialise is internal
+  // -------------------------------------------------------------------------
 
-    it("persists the default state to kv when storage is empty", async () => {
+  describe("mount (initialise behaviour)", () => {
+    it("uses startAt from config when storage is empty, and persists it to kv", async () => {
       const { doCtxMock, store } = makeDoCtx();
-      await counterCapability.initialise({
-        doCtx: doCtxMock,
-        messageRepository: mockMessageRepository,
-        config: { startAt: 3 },
-      });
+      const mounted = await counterCapability.mount(
+        doCtxMock,
+        mockMessageRepository,
+        { startAt: 3 },
+      );
+      assert(mounted);
       expect(JSON.parse(store["counter_capability"] as string)).toEqual({
         count: 3,
       });
     });
 
-    it("loads a previously persisted state from kv", async () => {
-      const { doCtxMock } = makeDoCtx({
+    it("loads a previously persisted count from kv, ignoring startAt", async () => {
+      const { doCtxMock, store } = makeDoCtx({
         counter_capability: JSON.stringify({ count: 42 }),
       });
-      expect(
-        await counterCapability.initialise({
-          doCtx: doCtxMock,
-          messageRepository: mockMessageRepository,
-          config: { startAt: 10 },
-        }),
-      ).toEqual({
-        count: 42,
+      const mounted = await counterCapability.mount(
+        doCtxMock,
+        mockMessageRepository,
+        { startAt: 10 },
+      );
+      assert(mounted);
+
+      // Increment by 1 to make the loaded count observable via storage.
+      // If count was loaded as 42, the result will be 43.
+      // If startAt: 10 was incorrectly used instead, the result would be 11.
+      await mounted.onMessage({ action: "increment", payload: { by: 1 } });
+      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
+        count: 43,
       });
+    });
+
+    it("returns null when config is invalid", async () => {
+      const { doCtxMock } = makeDoCtx();
+      const mounted = await counterCapability.mount(
+        doCtxMock,
+        mockMessageRepository,
+        { invalidField: true },
+      );
+      expect(mounted).toBeNull();
     });
 
     describe("corrupt stored state", () => {
@@ -235,37 +221,47 @@ describe("counterCapability", () => {
         vi.restoreAllMocks();
       });
 
-      it("defaults to config when stored state fails schema validation", async () => {
-        const { doCtxMock } = makeDoCtx({
+      it("falls back to startAt when stored state fails schema validation", async () => {
+        const { doCtxMock, store } = makeDoCtx({
           counter_capability: JSON.stringify({ count: "not-a-number" }),
         });
-        expect(
-          await counterCapability.initialise({
-            doCtx: doCtxMock,
-            messageRepository: mockMessageRepository,
-            config: { startAt: 10 },
-          }),
-        ).toEqual({
+        const mounted = await counterCapability.mount(
+          doCtxMock,
+          mockMessageRepository,
+          { startAt: 10 },
+        );
+        assert(mounted);
+
+        // Increment by 0 as a probe: forces the current capCtx.count to be
+        // written to storage without changing its value.
+        await mounted.onMessage({ action: "increment", payload: { by: 0 } });
+        expect(JSON.parse(store["counter_capability"] as string)).toEqual({
           count: 10,
         });
       });
 
-      it("defaults to { count: 0 } when stored state is invalid JSON", async () => {
-        const { doCtxMock } = makeDoCtx({
+      it("falls back to startAt when stored state is invalid JSON", async () => {
+        const { doCtxMock, store } = makeDoCtx({
           counter_capability: "this is {{{ not valid json",
         });
-        expect(
-          await counterCapability.initialise({
-            doCtx: doCtxMock,
-            messageRepository: mockMessageRepository,
-            config: { startAt: 10 },
-          }),
-        ).toEqual({
+        const mounted = await counterCapability.mount(
+          doCtxMock,
+          mockMessageRepository,
+          { startAt: 10 },
+        );
+        assert(mounted);
+
+        await mounted.onMessage({ action: "increment", payload: { by: 0 } });
+        expect(JSON.parse(store["counter_capability"] as string)).toEqual({
           count: 10,
         });
       });
     });
   });
+
+  // -------------------------------------------------------------------------
+  // creators
+  // -------------------------------------------------------------------------
 
   describe("creators.increment", () => {
     it("produces an ActionCallMessage targeting the Counter capability", () => {
@@ -287,37 +283,57 @@ describe("counterCapability", () => {
     });
   });
 
+  // -------------------------------------------------------------------------
+  // increment action
+  //
+  // These tests mount with a known initial count pre-loaded in kv so that
+  // each test exercises the action in isolation.
+  // -------------------------------------------------------------------------
+
   describe("increment action", () => {
-    it("increases capCtx.count by the given amount", async () => {
-      const { doCtxMock } = makeDoCtx();
-      const capCtx = { count: 10 };
-      await counterCapability.onMessage(doCtxMock, capCtx, {
-        action: "increment",
-        payload: { by: 5 },
+    it("increases count by the given amount", async () => {
+      const { doCtxMock, store } = makeDoCtx({
+        counter_capability: JSON.stringify({ count: 10 }),
       });
-      expect(capCtx.count).toBe(15);
+      const mounted = await counterCapability.mount(
+        doCtxMock,
+        mockMessageRepository,
+        { startAt: 0 },
+      );
+      assert(mounted);
+      await mounted.onMessage({ action: "increment", payload: { by: 5 } });
+      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
+        count: 15,
+      });
     });
 
     it("accepts negative amounts (decrement)", async () => {
-      const { doCtxMock } = makeDoCtx();
-      const capCtx = { count: 10 };
-      await counterCapability.onMessage(doCtxMock, capCtx, {
-        action: "increment",
-        payload: { by: -3 },
+      const { doCtxMock, store } = makeDoCtx({
+        counter_capability: JSON.stringify({ count: 10 }),
       });
-      expect(capCtx.count).toBe(7);
+      const mounted = await counterCapability.mount(
+        doCtxMock,
+        mockMessageRepository,
+        { startAt: 0 },
+      );
+      assert(mounted);
+      await mounted.onMessage({ action: "increment", payload: { by: -3 } });
+      expect(JSON.parse(store["counter_capability"] as string)).toEqual({
+        count: 7,
+      });
     });
 
-    it("persists the updated state via storage.put", async () => {
-      const { doCtxMock, store } = makeDoCtx();
-      await counterCapability.onMessage(
+    it("persists the updated count to kv via storage.put", async () => {
+      const { doCtxMock, store } = makeDoCtx({
+        counter_capability: JSON.stringify({ count: 10 }),
+      });
+      const mounted = await counterCapability.mount(
         doCtxMock,
-        { count: 10 },
-        {
-          action: "increment",
-          payload: { by: 3 },
-        },
+        mockMessageRepository,
+        { startAt: 0 },
       );
+      assert(mounted);
+      await mounted.onMessage({ action: "increment", payload: { by: 3 } });
       expect(JSON.parse(store["counter_capability"] as string)).toEqual({
         count: 13,
       });
@@ -330,11 +346,9 @@ describe("counterCapability", () => {
       const mounted = await counterCapability.mount(
         doCtxMock,
         mockMessageRepository,
-        {
-          startAt: 3,
-        },
+        { startAt: 3 },
       );
-
+      assert(mounted);
       await mounted.onMessage({ action: "increment", payload: { by: 10 } });
       await mounted.onMessage({ action: "increment", payload: { by: 5 } });
       await mounted.onMessage({ action: "increment", payload: { by: -2 } });

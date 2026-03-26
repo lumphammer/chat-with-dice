@@ -65,11 +65,6 @@ type CapabilityDefinition<
  */
 export type AnyCapability = {
   name: string;
-  onMessage: (
-    doCtx: DurableObjectState,
-    capCtx: unknown,
-    actionCall: ActionCall,
-  ) => Promise<void>;
   creators: Record<string, (payload: any) => ActionCallMessage>;
   mount: (
     doCtx: DurableObjectState,
@@ -134,17 +129,15 @@ export const createCapability = <
   };
 
   // server-side message handler
-  const onMessage = async (
+  const handleMessage = async (
     doCtx: DurableObjectState,
-    capCtx: unknown,
+    capCtx: TContext,
     actionCall: ActionCall,
   ) => {
     const action = actions[actionCall.action];
     if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
     const payload = action.payloadValidator.parse(actionCall.payload);
-    // one annoying cast but otherwise we're validating the context on every
-    // call
-    await action.actionFn({ doCtx, capCtx: capCtx as TContext, payload });
+    await action.actionFn({ doCtx, capCtx, payload });
   };
 
   // server-side mount handler
@@ -165,17 +158,13 @@ export const createCapability = <
     });
     return {
       name: def.name,
-      onMessage: (actionCall) => onMessage(doCtx, capCtx, actionCall),
+      onMessage: (actionCall) => handleMessage(doCtx, capCtx, actionCall),
     };
   };
 
   return {
     name: def.name,
-    onMessage,
     creators,
     mount,
-
-    // this is only exposed for testing
-    initialise: def.initialise,
   };
 };
