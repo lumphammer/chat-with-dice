@@ -3,6 +3,7 @@ import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchema
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
+import { SidebarCounter } from "./SidebarCounter";
 import { CapabilityStateContextProvider } from "./capabilityStateContext";
 import { deriveHueFromUserId } from "./deriveHueFromUserId";
 import toastStyles from "./toast.module.css";
@@ -112,7 +113,7 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
             dark:[--user-colour:oklch(var(--bubble-dark-l)_var(--bubble-dark-c)_var(--user-hue))]"
           style={{ "--user-hue": hue } satisfies UserHueStyle as UserHueStyle}
         >
-          <header className="bg-base-200 flex flex-row px-4">
+          <header className="flex flex-row px-4">
             <div className="flex-1" />
             <DisplayNameDialog
               displayName={userIdentity.displayName}
@@ -139,31 +140,44 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
               ></span>
             </div>
           </header>
-          <div className="relative flex-1 basis-0">
-            <div
-              ref={scrollContainerRef}
-              onScroll={handleScroll}
-              className="absolute inset-0 overflow-auto px-4"
-            >
-              {messages.map((message) => (
-                <ChatBubble key={message.id} message={message}></ChatBubble>
-              ))}
-              {messages.length === 0 && (
-                <div className="font-italic">No messages yet</div>
-              )}
-              <div ref={bottomRef} />
+          <div
+            data-part="outer expander"
+            className="gap- flex flex-1 flex-row justify-start"
+          >
+            <div className="bg-base-100 w-sm">
+              <SidebarCounter />
             </div>
-            {hasNewMessages && (
-              <button
-                onClick={scrollToBottom}
-                className="btn btn-primary btn-sm absolute bottom-4 left-1/2
-                  -translate-x-1/2 shadow-lg"
-              >
-                ↓ New messages
-              </button>
-            )}
+            <div
+              data-part="main"
+              className="mx-auto flex max-w-4xl flex-1 flex-col"
+            >
+              <div className="relative flex-1 basis-0">
+                <div
+                  ref={scrollContainerRef}
+                  onScroll={handleScroll}
+                  className="absolute inset-0 overflow-auto px-4"
+                >
+                  {messages.map((message) => (
+                    <ChatBubble key={message.id} message={message}></ChatBubble>
+                  ))}
+                  {messages.length === 0 && (
+                    <div className="font-italic">No messages yet</div>
+                  )}
+                  <div ref={bottomRef} />
+                </div>
+                {hasNewMessages && (
+                  <button
+                    onClick={scrollToBottom}
+                    className="btn btn-primary btn-sm absolute bottom-4 left-1/2
+                      -translate-x-1/2 shadow-lg"
+                  >
+                    ↓ New messages
+                  </button>
+                )}
+              </div>
+              <ChatForm onNewMessage={handleNewMessage} />
+            </div>
           </div>
-          <ChatForm onNewMessage={handleNewMessage} />
         </div>
         <Portal>
           <Toaster toaster={toaster}>

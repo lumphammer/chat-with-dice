@@ -1,3 +1,4 @@
+import { useCapabilityState } from "#/components/DiceRoller/capabilityStateContext";
 import { toAlphanumeric, type Alphanumeric } from "#/lib/alphanumeric";
 import { maybeJSON } from "#/lib/maybeJSON";
 import type {
@@ -90,6 +91,27 @@ export type AnyCapability = {
   }) => Promise<MountedCapability | null>;
 };
 
+export type Capability<
+  TConfig extends z.infer<z.ZodTypeAny>,
+  TState extends z.infer<z.ZodObject>,
+  TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
+> = {
+  name: Alphanumeric;
+  creators: {
+    [K in keyof TActions]: (
+      payload: z.infer<TActions[K]["payloadValidator"]>,
+    ) => ActionCallMessage;
+  };
+  mount: (tools: {
+    doCtx: DurableObjectState;
+    messageRepository: MessageRepository;
+    config: unknown;
+    broadcaster: Broadcaster;
+  }) => Promise<MountedCapability | null>;
+  useMount: () => { state: TState | undefined };
+  setConfig: (config: TConfig) => void;
+};
+
 /**
  * Define a new capability
  * @param def The key parts of the capability
@@ -104,7 +126,11 @@ export const createCapability = <
   >,
 >(
   def: CapabilityDefinition<TConfigValidator, TStateValidator, TActions>,
-) => {
+): Capability<
+  z.infer<TConfigValidator>,
+  z.infer<TStateValidator>,
+  TActions
+> => {
   const name = toAlphanumeric(def.name);
 
   // fn used to build typed actions
@@ -257,9 +283,23 @@ export const createCapability = <
     };
   };
 
+  const useMount = () => {
+    const rawState = useCapabilityState()[name];
+    const parsedState = def.stateValidator.safeParse(rawState);
+    if (parsedState.success) {
+      return { state: parsedState.data };
+    } else {
+      return { state: undefined };
+    }
+  };
+
   return {
     name,
     creators,
     mount,
+    useMount,
+    setConfig: (_config: z.infer<TConfigValidator>) => {
+      //
+    },
   };
 };
