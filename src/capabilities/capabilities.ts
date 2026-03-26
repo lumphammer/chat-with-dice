@@ -1,3 +1,4 @@
+import { toAlphanumeric, type Alphanumeric } from "#/lib/alphanumeric";
 import type {
   ActionCall,
   ActionCallMessage,
@@ -10,7 +11,7 @@ import { z } from "zod/v4";
  * Represents what the server gets after mounting a capability
  */
 export type MountedCapability = {
-  name: string;
+  name: Alphanumeric;
   onMessage: (actionCall: ActionCall) => Promise<void>;
 };
 
@@ -85,6 +86,8 @@ export const createCapability = <
 >(
   def: CapabilityDefinition<TContext, TConfigValidator, TActions>,
 ) => {
+  const name = toAlphanumeric(def.name);
+
   // fn used to build typed actions
   const createAction: CreateAction<TContext> = (
     payloadValidator,
@@ -159,13 +162,13 @@ export const createCapability = <
       config: configParseResult.data,
     });
     return {
-      name: def.name,
+      name,
       onMessage: (actionCall) => handleMessage(doCtx, capCtx, actionCall),
     };
   };
 
   return {
-    name: def.name,
+    name,
     creators,
     mount,
   };
