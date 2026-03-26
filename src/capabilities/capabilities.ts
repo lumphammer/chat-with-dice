@@ -82,11 +82,12 @@ type CapabilityDefinition<
 export type AnyCapability = {
   name: string;
   creators: Record<string, (payload: any) => ActionCallMessage>;
-  mount: (
-    doCtx: DurableObjectState,
-    messageRepository: MessageRepository,
-    config: unknown,
-  ) => Promise<MountedCapability | null>;
+  mount: (tools: {
+    doCtx: DurableObjectState;
+    messageRepository: MessageRepository;
+    config: unknown;
+    broadcaster: Broadcaster;
+  }) => Promise<MountedCapability | null>;
 };
 
 /**
