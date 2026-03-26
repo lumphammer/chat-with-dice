@@ -53,6 +53,7 @@ export class DiceRollerRoom extends DurableObject {
 
     console.log("Durable object id booting:", ctx.id.toString());
 
+    // load config from d1
     this.ctx.blockConcurrencyWhile(async () => {
       const configRows = await d1
         .select({ config: Rooms.config })
@@ -81,8 +82,8 @@ export class DiceRollerRoom extends DurableObject {
             if (!isCapabilityName(capName)) {
               return;
             }
-            const cap = capabilityRegistry[capName];
-            const mountedCap = await cap.mount(
+            const capability = capabilityRegistry[capName];
+            const mountedCap = await capability.mount(
               this.ctx,
               this.messageRepository,
               config,
@@ -152,11 +153,13 @@ export class DiceRollerRoom extends DurableObject {
       }
       const data = parsed.data;
       if (data.type === "chat") {
+        // handle chat
         await this.runFormula({
           ...data.payload,
           chatId: attachment.chatId,
         });
       } else if (data.type === "action") {
+        // handle actions
         const cap = this.capabilities.get(data.payload.capability);
         if (!cap) {
           throw new Error(`Unknown capability: ${data.payload.capability}`);
