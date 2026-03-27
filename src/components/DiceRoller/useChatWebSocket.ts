@@ -1,6 +1,9 @@
 import { ReconnectingWebSocket } from "#/lib/ReconnectingWebSocket";
 import type { RollerMessage } from "#/validators/rollerMessageType";
-import { webSocketServerMessageSchema } from "#/validators/webSocketMessageSchemas";
+import {
+  webSocketServerMessageSchema,
+  type WebSocketClientMessage,
+} from "#/validators/webSocketMessageSchemas";
 import type { ConnectionStatus } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import z from "zod";
@@ -105,7 +108,7 @@ export const useChatWebSocket = ({
     };
   }, [roomId, chatId, onError, setCapabilityStates]);
 
-  const sendJSON = useCallback((content: any) => {
+  const sendMessage = useCallback((content: WebSocketClientMessage) => {
     websocketRef.current?.json(content);
   }, []);
 
@@ -113,5 +116,5 @@ export const useChatWebSocket = ({
   //   setError(null);
   // }, []);
 
-  return { connectionStatus, messages, sendJSON };
+  return { connectionStatus, messages, sendMessage };
 };

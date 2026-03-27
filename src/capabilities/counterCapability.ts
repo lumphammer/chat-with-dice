@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 const counterCapabilityStateValidator = z.object({ count: z.int() });
 
 export const counterCapability = createCapability({
-  name: "Counter",
+  name: "counter",
   configValidator: z.object({ startAt: z.int() }),
   stateValidator: counterCapabilityStateValidator,
   getInitialState: ({ config }) => ({ count: config.startAt }),

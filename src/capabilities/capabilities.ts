@@ -1,4 +1,5 @@
 import { useCapabilityState } from "#/components/DiceRoller/capabilityStateContext";
+import { useSendMessageContext } from "#/components/DiceRoller/sendMessageContext";
 import { toAlphanumeric, type Alphanumeric } from "#/lib/alphanumeric";
 import { maybeJSON } from "#/lib/maybeJSON";
 import type {
@@ -108,7 +109,14 @@ export type Capability<
     config: unknown;
     broadcaster: Broadcaster;
   }) => Promise<MountedCapability | null>;
-  useMount: () => { state: TState | undefined };
+  useMount: () => {
+    state: TState | undefined;
+    actions: {
+      [K in keyof TActions]: (
+        payload: z.infer<TActions[K]["payloadValidator"]>,
+      ) => void;
+    };
+  };
   setConfig: (config: TConfig) => void;
 };
 
@@ -284,12 +292,29 @@ export const createCapability = <
   };
 
   const useMount = () => {
+    const sendMessage = useSendMessageContext();
+    // map creators, wrapping the return of each one in a call to sendMessage
+    const creatorsWithSendMessage = Object.fromEntries(
+      Object.entries(creators).map(([key, value]) => [
+        key,
+        (...args: Parameters<typeof value>) => {
+          const result = value(...args);
+          if (result) {
+            sendMessage(result);
+          }
+        },
+      ]),
+    ) as {
+      [K in keyof TActions]: (
+        payload: z.infer<TActions[K]["payloadValidator"]>,
+      ) => void;
+    };
     const rawState = useCapabilityState()[name];
     const parsedState = def.stateValidator.safeParse(rawState);
     if (parsedState.success) {
-      return { state: parsedState.data };
+      return { state: parsedState.data, actions: creatorsWithSendMessage };
     } else {
-      return { state: undefined };
+      return { state: undefined, actions: creatorsWithSendMessage };
     }
   };
 
