@@ -1,5 +1,5 @@
-import { authClient } from "#/lib/auth-client";
-import { generateRandomName } from "#/lib/generateRandomName";
+import { authClient } from "#/utils/auth-client";
+import { generateRandomName } from "#/utils/generateRandomName";
 import { Dice6, User } from "lucide-react";
 import { useState } from "react";
 

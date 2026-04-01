@@ -1,6 +1,6 @@
 import { GENERIC_ROOM_TYPE, HAVOC_ROOM_TYPE } from "#/constants";
-import { typeSafeObjectFromEntries } from "#/lib/typeSafeObjectFromEntries";
 import type { RoomType } from "#/types";
+import { typeSafeObjectFromEntries } from "#/utils/typeSafeObjectFromEntries";
 import { DicesIcon, FlameIcon } from "lucide-react";
 import type { ComponentType } from "react";
 

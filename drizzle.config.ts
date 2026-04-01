@@ -1,4 +1,4 @@
-import { envOrDie } from "#/lib/envOrDie";
+import { envOrDie } from "#/utils/envOrDie";
 import {
   getIdForD1Binding,
   getLocalPathForD1Binding,

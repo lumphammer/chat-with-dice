@@ -1,7 +1,7 @@
 import { db } from "#/db";
-import { sendEmail } from "#/lib/sendEmail";
 import * as schema from "#/schemas/chatDB-schema";
-import { envOrDie } from "./lib/envOrDie";
+import { sendEmail } from "#/utils/sendEmail";
+import { envOrDie } from "./utils/envOrDie";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
 import { getOAuthState } from "better-auth/api";

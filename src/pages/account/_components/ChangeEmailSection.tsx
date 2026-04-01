@@ -1,4 +1,4 @@
-import { authClient } from "#/lib/auth-client";
+import { authClient } from "#/utils/auth-client";
 import { Mail } from "lucide-react";
 import { useState } from "react";
 

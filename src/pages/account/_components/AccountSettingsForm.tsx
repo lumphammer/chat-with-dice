@@ -1,8 +1,8 @@
+import { authClient } from "#/utils/auth-client";
 import { ChangeEmailSection } from "./ChangeEmailSection";
 import { ChangeImageSection } from "./ChangeImageSection";
 import { ChangeNameSection } from "./ChangeNameSection";
 import { ChangePasswordSection } from "./ChangePasswordSection";
-import { authClient } from "#/lib/auth-client";
 
 type InitialUser = {
   name: string | null;

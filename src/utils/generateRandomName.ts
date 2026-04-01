@@ -1,4 +1,4 @@
-import { adjectives, nouns } from "#/lib/words";
+import { adjectives, nouns } from "#/utils/words";
 
 export function generateRandomName() {
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];

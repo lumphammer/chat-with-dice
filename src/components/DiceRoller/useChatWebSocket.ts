@@ -1,4 +1,4 @@
-import { ReconnectingWebSocket } from "#/lib/ReconnectingWebSocket";
+import { ReconnectingWebSocket } from "#/utils/ReconnectingWebSocket";
 import type { RollerMessage } from "#/validators/rollerMessageType";
 import {
   webSocketServerMessageSchema,

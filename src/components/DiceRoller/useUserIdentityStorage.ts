@@ -2,8 +2,8 @@ import {
   CHAT_ID_LOCAL_STORAGE_KEY,
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
 } from "#/constants";
-import { authClient } from "#/lib/auth-client";
-import { hasCookieConsent } from "#/lib/hasCookieConsent";
+import { authClient } from "#/utils/auth-client";
+import { hasCookieConsent } from "#/utils/hasCookieConsent";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type UseUserIdentityStorageReturn = {

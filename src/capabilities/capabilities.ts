@@ -1,7 +1,7 @@
 import { useCapabilityState } from "#/components/DiceRoller/capabilityStateContext";
 import { useSendMessageContext } from "#/components/DiceRoller/sendMessageContext";
-import { toAlphanumeric, type Alphanumeric } from "#/lib/alphanumeric";
-import { maybeJSON } from "#/lib/maybeJSON";
+import { toAlphanumeric, type Alphanumeric } from "#/utils/alphanumeric";
+import { maybeJSON } from "#/utils/maybeJSON";
 import type {
   ActionCall,
   ActionCallMessage,

@@ -1,4 +1,4 @@
-import { authClient } from "#/lib/auth-client";
+import { authClient } from "#/utils/auth-client";
 import { Camera, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 

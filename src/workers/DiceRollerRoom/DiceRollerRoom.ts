@@ -3,11 +3,11 @@ import {
   isCapabilityName,
 } from "#/capabilities/capabilityRegistry";
 import { db as d1 } from "#/db";
-import { maybeJSON } from "#/lib/maybeJSON";
 import { assertRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import { Rooms } from "#/schemas/chatDB-schema";
 import * as dbSchema from "#/schemas/roller-schema";
+import { maybeJSON } from "#/utils/maybeJSON";
 import type { RollerMessage } from "#/validators/rollerMessageType";
 import {
   roomConfigValidator,
