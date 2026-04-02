@@ -44,16 +44,16 @@ export const createCapability = <
   const name = toAlphanumeric(def.name);
 
   // fn used to build typed actions
-  const createAction: CreateAction<z.infer<TStateValidator>> = (
+  const createAction: CreateAction<z.infer<TStateValidator>> = ({
     payloadValidator,
     actionFn,
-  ) => ({
+  }) => ({
     payloadValidator,
     actionFn,
   });
 
   // build the actions collection
-  const actions: TActions = def.buildActions(createAction);
+  const actions: TActions = def.buildActions({ createAction });
 
   // from actions, build message creators
   const creators = Object.fromEntries(
@@ -108,15 +108,15 @@ export const createCapability = <
     await action.actionFn({ doCtx, stateDraft, payload });
     const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
     stateRepository.set(def.name, finalState);
-    // setTimeout(() => {
-    broadcaster.broadcast({
-      type: "capabilityState",
-      payload: {
-        capability: name,
-        state: finalState,
-      },
-    });
-    // }, ARTIFICIAL_LAG_MS);
+    setTimeout(() => {
+      broadcaster.broadcast({
+        type: "capabilityState",
+        payload: {
+          capability: name,
+          state: finalState,
+        },
+      });
+    }, ARTIFICIAL_LAG_MS);
     return finalState;
   };
 
@@ -173,9 +173,11 @@ export const createCapability = <
       name,
       onMessage: async (actionCall) => {
         // XXX just for testing
-        // if (ARTIFICIAL_LAG_MS > 0) {
-        await new Promise((resolve) => setTimeout(resolve, ARTIFICIAL_LAG_MS));
-        // }
+        if (ARTIFICIAL_LAG_MS > 0) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, ARTIFICIAL_LAG_MS),
+          );
+        }
 
         state = await handleMessage({
           doCtx,

@@ -54,10 +54,12 @@ export type ActionDefinition<
 /**
  * Type for the builder function used when defining a capability
  */
-export type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
-  payloadValidator: TPayloadValidator,
-  actionFn: ActionFn<TContext, TPayloadValidator>,
-) => ActionDefinition<TContext, TPayloadValidator>;
+export type CreateAction<TContext> = <
+  TPayloadValidator extends z.ZodTypeAny,
+>(def: {
+  payloadValidator: TPayloadValidator;
+  actionFn: ActionFn<TContext, TPayloadValidator>;
+}) => ActionDefinition<TContext, TPayloadValidator>;
 
 /**
  * The full input definition for a capability
@@ -65,7 +67,6 @@ export type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
 export type CapabilityDefinition<
   TConfigValidator extends z.ZodTypeAny,
   TStateValidator extends z.ZodObject,
-  // TContext extends z.infer<TContextValidator>, // xxx can we get rid of this one
   TActions extends Record<
     string,
     ActionDefinition<z.infer<TStateValidator>, z.ZodTypeAny>
@@ -85,9 +86,9 @@ export type CapabilityDefinition<
     messageRepository: MessageRepository;
     config: z.infer<TConfigValidator>;
   }) => Promise<void>;
-  buildActions: (
-    createAction: CreateAction<z.infer<TStateValidator>>,
-  ) => TActions;
+  buildActions: (tools: {
+    createAction: CreateAction<z.infer<TStateValidator>>;
+  }) => TActions;
 };
 
 /**
