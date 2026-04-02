@@ -1,4 +1,4 @@
-import { createCapability } from "./capabilities";
+import { createCapability } from "./createCapability";
 import { z } from "zod/v4";
 
 const counterCapabilityStateValidator = z.object({ count: z.int() });

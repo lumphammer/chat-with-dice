@@ -1,6 +1,6 @@
 import { useCapabilityInfo } from "#/components/DiceRoller/capabilityStateContext";
 import { useSendMessageContext } from "#/components/DiceRoller/sendMessageContext";
-import { toAlphanumeric, type Alphanumeric } from "#/utils/alphanumeric";
+import { toAlphanumeric } from "#/utils/alphanumeric";
 import type {
   ActionCall,
   ActionCallMessage,
@@ -9,120 +9,18 @@ import type {
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
-import { createDraft, finishDraft, type Draft } from "immer";
+import type {
+  ActionDefinition,
+  Capability,
+  CapabilityDefinition,
+  ClientMountedCapability,
+  CreateAction,
+  ServerMountedCapability,
+} from "./types";
+import { createDraft, finishDraft } from "immer";
 import { z } from "zod/v4";
 
-/**
- * Represents what the server gets after mounting a capability
- */
-export type ServerMountedCapability = {
-  name: Alphanumeric;
-  onMessage: (actionCall: ActionCall) => Promise<void>;
-  sendInit: (server: WebSocket) => Promise<void>;
-};
-
-export type ClientMountedCapability<
-  TState extends z.infer<z.ZodObject> = z.infer<z.ZodObject>,
-  TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>> =
-    Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
-> =
-  | { initialised: false }
-  | {
-      initialised: true;
-      state: TState;
-      actions: {
-        [K in keyof TActions]: (
-          payload: z.core.output<TActions[K]["payloadValidator"]>,
-        ) => void;
-      };
-    };
-
-/**
- * An action function. Gets handed a bunch of tools, can do what it wants.
- */
-type ActionFn<TContext, TPayloadValidator extends z.ZodTypeAny> = (tools: {
-  doCtx: DurableObjectState;
-  stateDraft: Draft<TContext>;
-  payload: z.infer<TPayloadValidator>;
-}) => Promise<void>;
-
-/**
- * An action definition. Input validator plus function.
- */
-type ActionDefinition<TContext, TPayloadValidator extends z.ZodTypeAny> = {
-  payloadValidator: TPayloadValidator;
-  actionFn: ActionFn<TContext, TPayloadValidator>;
-};
-
-/**
- * Type for the builder function used when defining a capability
- */
-type CreateAction<TContext> = <TPayloadValidator extends z.ZodTypeAny>(
-  payloadValidator: TPayloadValidator,
-  actionFn: ActionFn<TContext, TPayloadValidator>,
-) => ActionDefinition<TContext, TPayloadValidator>;
-
-/**
- * The full input definition for a capability
- */
-type CapabilityDefinition<
-  TConfigValidator extends z.ZodTypeAny,
-  TStateValidator extends z.ZodObject,
-  // TContext extends z.infer<TContextValidator>, // xxx can we get rid of this one
-  TActions extends Record<
-    string,
-    ActionDefinition<z.infer<TStateValidator>, z.ZodTypeAny>
-  >,
-> = {
-  name: string;
-  configValidator: TConfigValidator;
-  defaultConfig: z.infer<TConfigValidator>;
-  stateValidator: TStateValidator;
-  getInitialState: (tools: {
-    config: z.infer<TConfigValidator>;
-  }) => z.infer<TStateValidator>;
-  initialise: (tools: {
-    doCtx: DurableObjectState;
-    draftState: Draft<z.infer<TStateValidator>>;
-    // db: DBHandle;
-    messageRepository: MessageRepository;
-    config: z.infer<TConfigValidator>;
-  }) => Promise<void>;
-  buildActions: (
-    createAction: CreateAction<z.infer<TStateValidator>>,
-  ) => TActions;
-};
-
-/**
- * Used for the registry.
- *
- * Does not include all members, only the ones that are needed in prod
- */
-export type AnyCapability = {
-  name: string;
-  mount: (tools: {
-    doCtx: DurableObjectState;
-    messageRepository: MessageRepository;
-    config: unknown;
-    broadcaster: Broadcaster;
-  }) => Promise<ServerMountedCapability | null>;
-};
-
-export type Capability<
-  // TConfig extends z.infer<z.ZodTypeAny>,
-  TState extends z.infer<z.ZodObject>,
-  TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
-> = {
-  name: Alphanumeric;
-  mount: (tools: {
-    doCtx: DurableObjectState;
-    messageRepository: MessageRepository;
-    stateRepository: CapabilityStateRepository;
-    config: unknown;
-    broadcaster: Broadcaster;
-  }) => Promise<ServerMountedCapability | null>;
-  useMount: () => ClientMountedCapability<TState, TActions>;
-};
+const ARTIFICIAL_LAG_MS = 0;
 
 /**
  * Define a new capability
@@ -191,11 +89,14 @@ export const createCapability = <
   // server-side message handler
   const handleMessage = async ({
     doCtx,
+    stateRepository,
     state,
     actionCall,
     broadcaster,
   }: {
     doCtx: DurableObjectState;
+    stateRepository: CapabilityStateRepository;
+
     state: z.infer<TStateValidator>;
     actionCall: ActionCall;
     broadcaster: Broadcaster;
@@ -206,7 +107,8 @@ export const createCapability = <
     const stateDraft = createDraft(state);
     await action.actionFn({ doCtx, stateDraft, payload });
     const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
-    doCtx.storage.kv.put(`capabilities.${def.name}.state`, finalState);
+    stateRepository.set(def.name, finalState);
+    // setTimeout(() => {
     broadcaster.broadcast({
       type: "capabilityState",
       payload: {
@@ -214,22 +116,22 @@ export const createCapability = <
         state: finalState,
       },
     });
-    // the need for this cast is odd
+    // }, ARTIFICIAL_LAG_MS);
     return finalState;
   };
 
   // server-side mount handler
   const mount = async ({
+    broadcaster,
+    config,
     doCtx,
     messageRepository,
-    config,
-    broadcaster,
     stateRepository,
   }: {
+    broadcaster: Broadcaster;
+    config: unknown;
     doCtx: DurableObjectState;
     messageRepository: MessageRepository;
-    config: unknown;
-    broadcaster: Broadcaster;
     stateRepository: CapabilityStateRepository;
   }): Promise<ServerMountedCapability | null> => {
     // get config
@@ -270,7 +172,18 @@ export const createCapability = <
     return {
       name,
       onMessage: async (actionCall) => {
-        state = await handleMessage({ doCtx, state, actionCall, broadcaster });
+        // XXX just for testing
+        // if (ARTIFICIAL_LAG_MS > 0) {
+        await new Promise((resolve) => setTimeout(resolve, ARTIFICIAL_LAG_MS));
+        // }
+
+        state = await handleMessage({
+          doCtx,
+          stateRepository,
+          state,
+          actionCall,
+          broadcaster,
+        });
       },
       sendInit: async (ws: WebSocket) => {
         broadcaster.send(ws, {

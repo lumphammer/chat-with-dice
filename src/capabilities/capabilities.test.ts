@@ -1,10 +1,11 @@
 // oxlint-disable no-shadow
 // oxlint-disable no-magic-numbers
 import type { RollerMessage } from "#/validators/rollerMessageType";
+import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import { Broadcaster } from "../workers/DiceRollerRoom/Broadcaster";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
-import { createCapability } from "./capabilities";
 import { counterCapability } from "./counterCapability";
+import { createCapability } from "./createCapability";
 import {
   afterEach,
   assert,
@@ -28,25 +29,23 @@ import { z } from "zod/v4";
  * Both `storage.kv.put` and `storage.put` write to the same `store` map,
  * mirroring how the real implementation uses a single SQLite backing store.
  */
-function makeDoCtx(initialKv: Record<string, unknown> = {}) {
-  const store: Record<string, unknown> = { ...initialKv };
+function makeDoCtx() {
+  // const store: Record<string, unknown> = { ...initialKv };
 
   const doCtxMock = {
     storage: {
       kv: {
-        get: (key: string): unknown => store[key],
-        put: (key: string, value: unknown): void => {
-          store[key] = value;
+        get: () => {
+          throw new Error("doCtx used in test");
         },
-      },
-      put: (key: string, value: unknown): Promise<void> => {
-        store[key] = value;
-        return Promise.resolve();
+        put: () => {
+          throw new Error("doCtx used in test");
+        },
       },
     },
   } as unknown as DurableObjectState;
 
-  return { doCtxMock, store };
+  return { doCtxMock };
 }
 
 const mockMessageRepository = {
@@ -63,6 +62,21 @@ function makeMockBroadcaster(): Broadcaster {
   return {
     broadcast: () => {},
   } as unknown as Broadcaster;
+}
+
+function makeMockStateRepository(initialState: Record<string, unknown> = {}) {
+  const store: Record<string, unknown> = { ...initialState };
+  return {
+    store,
+    stateRepository: {
+      get: (key: string): unknown => {
+        return store[key];
+      },
+      set: (key: string, value: unknown): void => {
+        store[key] = value;
+      },
+    } as unknown as CapabilityStateRepository,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -95,10 +109,12 @@ describe("createCapability", () => {
   describe("mount", () => {
     it("returns a MountedCapability with the capability's name", async () => {
       const broadcaster = makeMockBroadcaster();
+      const { stateRepository } = makeMockStateRepository();
       const mounted = await testCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
         broadcaster,
+        stateRepository,
         config: null,
       });
       assert(mounted);
@@ -108,57 +124,15 @@ describe("createCapability", () => {
     it("returns null when config fails validation", async () => {
       // configValidator is z.null(), so anything other than null should fail
       const broadcaster = makeMockBroadcaster();
+      const { stateRepository } = makeMockStateRepository();
       const mounted = await testCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
         broadcaster,
+        stateRepository,
         config: { unexpected: "value" },
       });
       expect(mounted).toBeNull();
-    });
-
-    it("closes over the initialised capCtx, accumulating state across calls", async () => {
-      const { doCtxMock, store } = makeDoCtx();
-
-      // This capability writes its running total to storage so we can observe
-      // whether the same capCtx reference is reused between calls.
-      const accumulator = createCapability({
-        name: "Accumulator",
-        initialise: async () => {},
-        configValidator: z.object({ initial: z.int() }),
-        defaultConfig: { initial: 0 },
-        stateValidator: z.object({ total: z.int() }),
-        getInitialState: () => ({ total: 0 }),
-        buildActions: (createAction) => ({
-          add: createAction(
-            z.object({ amount: z.number() }),
-            async ({ stateDraft, payload: { amount } }) => {
-              stateDraft.total += amount;
-            },
-          ),
-        }),
-      });
-
-      const broadcaster = makeMockBroadcaster();
-      const mounted = await accumulator.mount({
-        doCtx: doCtxMock,
-        messageRepository: mockMessageRepository,
-        broadcaster,
-        config: { initial: 0 },
-      });
-      assert(mounted);
-      await mounted.onMessage({ action: "add", payload: { amount: 3 } });
-      await mounted.onMessage({ action: "add", payload: { amount: 4 } });
-
-      // If the same capCtx is reused: 0 + 3 + 4 = 7
-      // If it were re-initialised each call it would be 4
-      expect(store).toMatchInlineSnapshot(`
-        {
-          "capabilities.Accumulator.state": {
-            "total": 7,
-          },
-        }
-      `);
     });
   });
 });
@@ -174,18 +148,21 @@ describe("counterCapability", () => {
 
   describe("mount (initialise behaviour)", () => {
     it("uses startAt from config when storage is empty, and persists it to kv", async () => {
-      const { doCtxMock, store } = makeDoCtx();
+      const { doCtxMock } = makeDoCtx();
       const broadcaster = makeMockBroadcaster();
+      const { stateRepository, store } = makeMockStateRepository();
+
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
         broadcaster,
+        stateRepository,
         config: { startAt: 3 },
       });
       assert(mounted);
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": {
+          "counter": {
             "count": 3,
           },
         }
@@ -193,26 +170,28 @@ describe("counterCapability", () => {
     });
 
     it("loads a previously persisted count from kv, ignoring startAt", async () => {
-      const { doCtxMock, store } = makeDoCtx({
-        "capabilities.counter.state": { count: 11 },
-      });
+      const { doCtxMock } = makeDoCtx();
       const broadcaster = makeMockBroadcaster();
+      const { stateRepository, store } = makeMockStateRepository({
+        counter: { count: 10 },
+      });
+
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        stateRepository,
         broadcaster,
         config: { startAt: 0 },
       });
       assert(mounted);
 
       // Increment by 1 to make the loaded count observable via storage.
-      // If count was loaded as 42, the result will be 43.
-      // If startAt: 10 was incorrectly used instead, the result would be 11.
+      // If startAt: 0 was incorrectly used instead, the result would be 1.
       await mounted.onMessage({ action: "increment", payload: { by: 1 } });
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": {
-            "count": 12,
+          "counter": {
+            "count": 11,
           },
         }
       `);
@@ -221,9 +200,12 @@ describe("counterCapability", () => {
     it("returns null when config is invalid", async () => {
       const { doCtxMock } = makeDoCtx();
       const broadcaster = makeMockBroadcaster();
+      const { stateRepository } = makeMockStateRepository();
+
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        stateRepository,
         broadcaster,
         config: { invalidField: true },
       });
@@ -240,15 +222,18 @@ describe("counterCapability", () => {
       });
 
       it("falls back to startAt when stored state fails schema validation", async () => {
-        const { doCtxMock, store } = makeDoCtx({
-          "capabilities.counter.state": {
+        const { doCtxMock } = makeDoCtx();
+        const broadcaster = makeMockBroadcaster();
+        const { stateRepository, store } = makeMockStateRepository({
+          counter: {
             count: "not-a-number",
           },
         });
-        const broadcaster = makeMockBroadcaster();
+
         const mounted = await counterCapability.mount({
           doCtx: doCtxMock,
           messageRepository: mockMessageRepository,
+          stateRepository,
           broadcaster,
           config: { startAt: 10 },
         });
@@ -259,7 +244,7 @@ describe("counterCapability", () => {
         await mounted.onMessage({ action: "increment", payload: { by: 0 } });
         expect(store).toMatchInlineSnapshot(`
           {
-            "capabilities.counter.state": {
+            "counter": {
               "count": 10,
             },
           }
@@ -267,13 +252,16 @@ describe("counterCapability", () => {
       });
 
       it("falls back to startAt when stored state is invalid JSON", async () => {
-        const { doCtxMock, store } = makeDoCtx({
-          "capabilities.counter.state": "this is {{{ not valid json",
-        });
+        const { doCtxMock } = makeDoCtx();
         const broadcaster = makeMockBroadcaster();
+        const { stateRepository, store } = makeMockStateRepository({
+          counter: "this is {{{ not valid json",
+        });
+
         const mounted = await counterCapability.mount({
           doCtx: doCtxMock,
           messageRepository: mockMessageRepository,
+          stateRepository,
           broadcaster,
           config: { startAt: 10 },
         });
@@ -282,7 +270,7 @@ describe("counterCapability", () => {
         await mounted.onMessage({ action: "increment", payload: { by: 0 } });
         expect(store).toMatchInlineSnapshot(`
           {
-            "capabilities.counter.state": {
+            "counter": {
               "count": 10,
             },
           }
@@ -300,13 +288,16 @@ describe("counterCapability", () => {
 
   describe("increment action", () => {
     it("increases count by the given amount", async () => {
-      const { doCtxMock, store } = makeDoCtx({
-        "capabilities.counter.state": { count: 10 },
-      });
+      const { doCtxMock } = makeDoCtx();
       const broadcaster = makeMockBroadcaster();
+      const { stateRepository, store } = makeMockStateRepository({
+        counter: { count: 10 },
+      });
+
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        stateRepository,
         broadcaster,
         config: { startAt: 0 },
       });
@@ -314,7 +305,7 @@ describe("counterCapability", () => {
       await mounted.onMessage({ action: "increment", payload: { by: 5 } });
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": {
+          "counter": {
             "count": 15,
           },
         }
@@ -322,13 +313,15 @@ describe("counterCapability", () => {
     });
 
     it("accepts negative amounts (decrement)", async () => {
-      const { doCtxMock, store } = makeDoCtx({
-        "capabilities.counter.state": { count: 10 },
+      const { doCtxMock } = makeDoCtx();
+      const { stateRepository, store } = makeMockStateRepository({
+        counter: { count: 10 },
       });
       const broadcaster = makeMockBroadcaster();
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        stateRepository,
         broadcaster,
         config: { startAt: 0 },
       });
@@ -336,7 +329,7 @@ describe("counterCapability", () => {
       await mounted.onMessage({ action: "increment", payload: { by: -3 } });
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": {
+          "counter": {
             "count": 7,
           },
         }
@@ -344,13 +337,17 @@ describe("counterCapability", () => {
     });
 
     it("accumulates correctly across multiple mounted calls", async () => {
-      const { doCtxMock, store } = makeDoCtx({
-        "capabilities.counter.state": { count: 0 },
-      });
+      const { doCtxMock } = makeDoCtx();
+
       const broadcaster = makeMockBroadcaster();
+      const { stateRepository, store } = makeMockStateRepository({
+        counter: { count: 0 },
+      });
+
       const mounted = await counterCapability.mount({
         doCtx: doCtxMock,
         messageRepository: mockMessageRepository,
+        stateRepository,
         broadcaster,
         config: { startAt: 3 },
       });
@@ -362,7 +359,7 @@ describe("counterCapability", () => {
       // 0 + 10 + 5 - 2 = 13
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": {
+          "counter": {
             "count": 13,
           },
         }

@@ -1,5 +1,5 @@
-import type { AnyCapability } from "./capabilities";
 import { counterCapability } from "./counterCapability";
+import type { AnyCapability } from "./createCapability";
 
 export const capabilityRegistry = {
   counter: counterCapability,

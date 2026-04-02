@@ -1,4 +1,4 @@
-import type { ServerMountedCapability } from "#/capabilities/capabilities";
+import type { ServerMountedCapability } from "#/capabilities/createCapability";
 import type { Broadcaster } from "./Broadcaster";
 import type { MessageRepository } from "./MessageRepository";
 import type { SessionAttachment } from "./types";

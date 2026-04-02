@@ -13,7 +13,7 @@ import {
   type RoomConfig,
 } from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
-import { type ServerMountedCapability } from "../../capabilities/capabilities";
+import { type ServerMountedCapability } from "../../capabilities/types";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
 import { MessageRepository } from "./MessageRepository";
