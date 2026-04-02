@@ -1,7 +1,6 @@
 import { useCapabilityState } from "#/components/DiceRoller/capabilityStateContext";
 import { useSendMessageContext } from "#/components/DiceRoller/sendMessageContext";
 import { toAlphanumeric, type Alphanumeric } from "#/utils/alphanumeric";
-import { maybeJSON } from "#/utils/maybeJSON";
 import type {
   ActionCall,
   ActionCallMessage,
@@ -242,17 +241,14 @@ export const createCapability = <
 
     // get state
     let state: z.infer<TStateValidator>;
-    const parseStoredStateResult = maybeJSON(def.stateValidator).safeParse(
+    const parseStoredStateResult = def.stateValidator.safeParse(
       doCtx.storage.kv.get(`capabilities.${def.name}.state`),
     );
     if (parseStoredStateResult.success) {
       state = parseStoredStateResult.data;
     } else {
       state = def.getInitialState({ config: configParseResult.data });
-      doCtx.storage.kv.put(
-        `capabilities.${def.name}.state`,
-        JSON.stringify(state),
-      );
+      doCtx.storage.kv.put(`capabilities.${def.name}.state`, state);
     }
 
     // run initialise

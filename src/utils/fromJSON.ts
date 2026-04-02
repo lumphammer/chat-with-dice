@@ -7,19 +7,14 @@ import { z } from "zod";
  * @param validator
  * @returns
  */
-export const maybeJSON = <TValidator extends z.ZodType>(
+export const fromJSON = <TValidator extends z.ZodObject>(
   validator: TValidator,
 ) => {
   return z.preprocess((input) => {
-    if (typeof input === "string") {
-      try {
-        return JSON.parse(input);
-      } catch {
-        return input;
-      }
-    } else {
-      return input;
+    if (typeof input !== "string") {
+      throw new Error("Input must be a string");
     }
+    return JSON.parse(input);
   }, validator);
 };
 
