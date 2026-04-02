@@ -201,10 +201,7 @@ export const createCapability = <
     const stateDraft = createDraft(state);
     await action.actionFn({ doCtx, stateDraft, payload });
     const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
-    doCtx.storage.kv.put(
-      `capabilities.${def.name}.state`,
-      JSON.stringify(finalState),
-    );
+    doCtx.storage.kv.put(`capabilities.${def.name}.state`, finalState);
     broadcaster.broadcast({
       type: "capabilityState",
       payload: {
