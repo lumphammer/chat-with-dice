@@ -79,6 +79,7 @@ describe("createCapability", () => {
     name: "TestCap",
     initialise: async () => {},
     configValidator: z.null(),
+    defaultConfig: null,
     stateValidator: z.object({ value: z.int() }),
     getInitialState: () => ({ value: 0 }),
     buildActions: (createAction) => ({
@@ -125,6 +126,7 @@ describe("createCapability", () => {
         name: "Accumulator",
         initialise: async () => {},
         configValidator: z.object({ initial: z.int() }),
+        defaultConfig: { initial: 0 },
         stateValidator: z.object({ total: z.int() }),
         getInitialState: () => ({ total: 0 }),
         buildActions: (createAction) => ({

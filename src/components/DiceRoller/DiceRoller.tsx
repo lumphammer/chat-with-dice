@@ -4,7 +4,10 @@ import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
 import { SidebarCounter } from "./SidebarCounter";
-import { CapabilityStateContextProvider } from "./capabilityStateContext";
+import {
+  CapabilityInfoContextProvider,
+  type CapabilityInfoContextValue,
+} from "./capabilityStateContext";
 import { deriveHueFromUserId } from "./deriveHueFromUserId";
 import { SendMessageContextProvider } from "./sendMessageContext";
 import toastStyles from "./toast.module.css";
@@ -38,9 +41,8 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
     useUserIdentityStorage();
 
-  const [capabilityStates, setCapabilityStates] = useState<
-    Record<string, unknown>
-  >({});
+  const [capabilityInfos, setCapabilityInfos] =
+    useState<CapabilityInfoContextValue>({});
 
   const toaster = useMemo(
     () =>
@@ -53,6 +55,7 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
       }),
     [],
   );
+
   const { connectionStatus, messages, sendMessage } = useChatWebSocket({
     roomId: roomId,
     chatId: userIdentity.chatId,
@@ -65,8 +68,7 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
       },
       [toaster],
     ),
-    capabilityStates,
-    setCapabilityStates,
+    setCapabilityInfos,
   });
 
   const hue = deriveHueFromUserId(userIdentity.chatId);
@@ -104,7 +106,7 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   );
 
   return (
-    <CapabilityStateContextProvider value={capabilityStates}>
+    <CapabilityInfoContextProvider value={capabilityInfos}>
       <SendMessageContextProvider value={sendMessage}>
         <UserIdentityContextProvider value={userIdentity}>
           <div
@@ -221,7 +223,7 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
           </Portal>
         </UserIdentityContextProvider>
       </SendMessageContextProvider>
-    </CapabilityStateContextProvider>
+    </CapabilityInfoContextProvider>
   );
 });
 

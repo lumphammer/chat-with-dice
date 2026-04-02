@@ -1,4 +1,4 @@
-import type { MountedCapability } from "#/capabilities/capabilities";
+import type { ServerMountedCapability } from "#/capabilities/capabilities";
 import type { Broadcaster } from "./Broadcaster";
 import type { MessageRepository } from "./MessageRepository";
 import type { SessionAttachment } from "./types";
@@ -10,7 +10,7 @@ export async function handleFetch(
   ctx: DurableObjectState,
   messageRepository: MessageRepository,
   broadcaster: Broadcaster,
-  capabilities: Map<string, MountedCapability>,
+  capabilities: Map<string, ServerMountedCapability>,
 ) {
   const upgradeHeader = request.headers.get("Upgrade");
   if (upgradeHeader !== "websocket") {
@@ -39,7 +39,7 @@ export async function handleFetch(
     await broadcaster.sendCatchUp(server, await messageRepository.getRecent());
     await Promise.all(
       capabilities.values().map((mountedCap) => {
-        mountedCap.sendState(server);
+        mountedCap.sendInit(server);
       }),
     );
   }, CATCHUP_DELAY_MS);

@@ -1,4 +1,4 @@
-import { useCapabilityState } from "#/components/DiceRoller/capabilityStateContext";
+import { useCapabilityInfo } from "#/components/DiceRoller/capabilityStateContext";
 import { useSendMessageContext } from "#/components/DiceRoller/sendMessageContext";
 import { toAlphanumeric, type Alphanumeric } from "#/utils/alphanumeric";
 import type {
@@ -14,11 +14,27 @@ import { z } from "zod/v4";
 /**
  * Represents what the server gets after mounting a capability
  */
-export type MountedCapability = {
+export type ServerMountedCapability = {
   name: Alphanumeric;
   onMessage: (actionCall: ActionCall) => Promise<void>;
-  sendState: (server: WebSocket) => Promise<void>;
+  sendInit: (server: WebSocket) => Promise<void>;
 };
+
+export type ClientMountedCapability<
+  TState extends z.infer<z.ZodObject> = z.infer<z.ZodObject>,
+  TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>> =
+    Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
+> =
+  | { initialised: false }
+  | {
+      initialised: true;
+      state: TState;
+      actions: {
+        [K in keyof TActions]: (
+          payload: z.core.output<TActions[K]["payloadValidator"]>,
+        ) => void;
+      };
+    };
 
 /**
  * An action function. Gets handed a bunch of tools, can do what it wants.
@@ -59,6 +75,7 @@ type CapabilityDefinition<
 > = {
   name: string;
   configValidator: TConfigValidator;
+  defaultConfig: z.infer<TConfigValidator>;
   stateValidator: TStateValidator;
   getInitialState: (tools: {
     config: z.infer<TConfigValidator>;
@@ -82,17 +99,16 @@ type CapabilityDefinition<
  */
 export type AnyCapability = {
   name: string;
-  creators: Record<string, (payload: any) => ActionCallMessage>;
   mount: (tools: {
     doCtx: DurableObjectState;
     messageRepository: MessageRepository;
     config: unknown;
     broadcaster: Broadcaster;
-  }) => Promise<MountedCapability | null>;
+  }) => Promise<ServerMountedCapability | null>;
 };
 
 export type Capability<
-  TConfig extends z.infer<z.ZodTypeAny>,
+  // TConfig extends z.infer<z.ZodTypeAny>,
   TState extends z.infer<z.ZodObject>,
   TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
 > = {
@@ -102,16 +118,8 @@ export type Capability<
     messageRepository: MessageRepository;
     config: unknown;
     broadcaster: Broadcaster;
-  }) => Promise<MountedCapability | null>;
-  useMount: () => {
-    state: TState | undefined;
-    actions: {
-      [K in keyof TActions]: (
-        payload: z.infer<TActions[K]["payloadValidator"]>,
-      ) => void;
-    };
-  };
-  setConfig: (config: TConfig) => void;
+  }) => Promise<ServerMountedCapability | null>;
+  useMount: () => ClientMountedCapability<TState, TActions>;
 };
 
 /**
@@ -129,7 +137,7 @@ export const createCapability = <
 >(
   def: CapabilityDefinition<TConfigValidator, TStateValidator, TActions>,
 ): Capability<
-  z.infer<TConfigValidator>,
+  // z.infer<TConfigValidator>,
   z.infer<TStateValidator>,
   TActions
 > => {
@@ -201,9 +209,7 @@ export const createCapability = <
       type: "capabilityState",
       payload: {
         capability: name,
-        payload: {
-          state: finalState,
-        },
+        state: finalState,
       },
     });
     // the need for this cast is odd
@@ -221,7 +227,7 @@ export const createCapability = <
     messageRepository: MessageRepository;
     config: unknown;
     broadcaster: Broadcaster;
-  }): Promise<MountedCapability | null> => {
+  }): Promise<ServerMountedCapability | null> => {
     // get config
     const configParseResult = def.configValidator.safeParse(config);
     if (configParseResult.error) {
@@ -265,21 +271,23 @@ export const createCapability = <
       onMessage: async (actionCall) => {
         state = await handleMessage({ doCtx, state, actionCall, broadcaster });
       },
-      sendState: async (ws: WebSocket) => {
+      sendInit: async (ws: WebSocket) => {
         broadcaster.send(ws, {
-          type: "capabilityState",
+          type: "capabilityInit",
           payload: {
             capability: name,
-            payload: {
-              state,
-            },
+            state,
+            config,
           },
         });
       },
     };
   };
 
-  const useMount = () => {
+  const useMount = (): ClientMountedCapability<
+    z.infer<TStateValidator>,
+    TActions
+  > => {
     const sendMessage = useSendMessageContext();
     // map creators, wrapping the return of each one in a call to sendMessage
     const creatorsWithSendMessage = Object.fromEntries(
@@ -297,21 +305,31 @@ export const createCapability = <
         payload: z.infer<TActions[K]["payloadValidator"]>,
       ) => void;
     };
-    const rawState = useCapabilityState()[name];
-    const parsedState = def.stateValidator.safeParse(rawState);
-    if (parsedState.success) {
-      return { state: parsedState.data, actions: creatorsWithSendMessage };
-    } else {
-      return { state: undefined, actions: creatorsWithSendMessage };
+    const info = useCapabilityInfo(name);
+    if (!info.initialised) {
+      return { initialised: false };
     }
+    const parsedState = def.stateValidator.safeParse(info.state);
+    const parsedConfig = def.configValidator.safeParse(info.config);
+    const config = parsedConfig.success ? parsedConfig.data : def.defaultConfig;
+    const state = parsedState.success
+      ? parsedState.data
+      : def.getInitialState({ config });
+
+    if (parsedConfig.success === false) {
+      console.error("Received a corrupt config for capability " + name);
+    }
+    if (parsedState.success === false) {
+      console.error("Received a corrupt state for capability " + name);
+    }
+
+    return { initialised: true, state, actions: creatorsWithSendMessage };
   };
 
+  // return a defined capability
   return {
     name,
     mount,
     useMount,
-    setConfig: (_config: z.infer<TConfigValidator>) => {
-      //
-    },
   };
 };

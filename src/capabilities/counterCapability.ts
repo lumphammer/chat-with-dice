@@ -6,6 +6,7 @@ const counterCapabilityStateValidator = z.object({ count: z.int() });
 export const counterCapability = createCapability({
   name: "counter",
   configValidator: z.object({ startAt: z.int() }),
+  defaultConfig: { startAt: 0 },
   stateValidator: counterCapabilityStateValidator,
   getInitialState: ({ config }) => ({ count: config.startAt }),
   initialise: async () => {},

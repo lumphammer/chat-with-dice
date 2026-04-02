@@ -1,29 +1,46 @@
 import { createContext, useContext } from "react";
 
-const capabilityStateContext = createContext<Record<string, unknown> | null>(
+type InitialisedCapabilityInfo = {
+  initialised: true;
+  state: unknown;
+  config: unknown;
+};
+
+type UninitialisedCapabilityInfo = {
+  initialised: false;
+};
+
+type CapabilityInfo = UninitialisedCapabilityInfo | InitialisedCapabilityInfo;
+
+export type CapabilityInfoContextValue = Record<
+  string,
+  InitialisedCapabilityInfo
+>;
+
+const capabilityInfoContext = createContext<CapabilityInfoContextValue | null>(
   null,
 );
 
-export const CapabilityStateContextProvider = ({
+export const CapabilityInfoContextProvider = ({
   children,
   value,
 }: {
   children: React.ReactNode;
-  value: Record<string, unknown>;
+  value: Record<string, InitialisedCapabilityInfo>;
 }) => {
   return (
-    <capabilityStateContext.Provider value={value}>
+    <capabilityInfoContext.Provider value={value}>
       {children}
-    </capabilityStateContext.Provider>
+    </capabilityInfoContext.Provider>
   );
 };
 
-export const useCapabilityState = () => {
-  const context = useContext(capabilityStateContext);
+export const useCapabilityInfo = (name: string): CapabilityInfo => {
+  const context = useContext(capabilityInfoContext);
   if (context === null) {
     throw new Error(
-      "useCapabilityState must be used within a CapabilityStateContextProvider",
+      "useCapabilityInfo must be used within a CapabilityStateContextProvider",
     );
   }
-  return context;
+  return context[name] ?? { initialised: false };
 };

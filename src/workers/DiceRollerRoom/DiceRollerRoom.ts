@@ -13,7 +13,7 @@ import {
   type RoomConfig,
 } from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
-import { type MountedCapability } from "../../capabilities/capabilities";
+import { type ServerMountedCapability } from "../../capabilities/capabilities";
 // import { counterCapability } from "../../capabilities/counterCapability";
 import { Broadcaster } from "./Broadcaster";
 import { MessageRepository } from "./MessageRepository";
@@ -34,7 +34,7 @@ export class DiceRollerRoom extends DurableObject {
   private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
   private messageRepository: MessageRepository;
   private broadcaster: Broadcaster;
-  private capabilities: Map<string, MountedCapability> = new Map();
+  private capabilities: Map<string, ServerMountedCapability> = new Map();
   private config: RoomConfig = defaultRoomConfig;
 
   constructor(ctx: DurableObjectState, env: Env) {

@@ -16,11 +16,20 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("error"),
     payload: z.object({ errorMessage: z.string(), detail: z.string() }),
   }),
+  // we can add capabilityPatch here too
   z.object({
     type: z.literal("capabilityState"),
     payload: z.object({
       capability: z.string(),
-      payload: z.object({ state: z.any() }),
+      state: z.any(),
+    }),
+  }),
+  z.object({
+    type: z.literal("capabilityInit"),
+    payload: z.object({
+      capability: z.string(),
+      state: z.any(),
+      config: z.any(),
     }),
   }),
 ]);

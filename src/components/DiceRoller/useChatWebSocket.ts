@@ -4,18 +4,26 @@ import {
   webSocketServerMessageSchema,
   type WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
+import type { CapabilityInfoContextValue } from "./capabilityStateContext";
 import type { ConnectionStatus } from "./types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { produce } from "immer";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import z from "zod";
 
 type UseChatWebSocketArgs = {
   roomId: string;
   chatId: string;
   onError: (error: { errorMessage: string; detail: string }) => void;
-  capabilityStates: Record<string, unknown>;
-  setCapabilityStates: React.Dispatch<
-    React.SetStateAction<Record<string, unknown>>
-  >;
+  // capabilityStates: Record<string, unknown>;
+  // setCapabilityState: (name: string, state: unknown, config?: unknown) => void;
+  setCapabilityInfos: Dispatch<SetStateAction<CapabilityInfoContextValue>>;
 };
 
 const MAX_HISTORY_BUFFER_LENGTH = 100;
@@ -24,14 +32,9 @@ export const useChatWebSocket = ({
   roomId,
   chatId,
   onError,
-  setCapabilityStates,
+  setCapabilityInfos,
 }: UseChatWebSocketArgs) => {
   const [messages, setMessages] = useState<RollerMessage[]>([]);
-  // const [error, setError] = useState<{
-  //   errorMessage: string;
-  //   detail: string;
-  // } | null>(null);
-
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
 
@@ -44,7 +47,6 @@ export const useChatWebSocket = ({
     // Build WebSocket URL
     const wsUrl = `../ws/?roomId=${encodeURIComponent(roomId)}&chatId=${encodeURIComponent(chatId)}`;
 
-    // return;
     // Create WebSocket connection
     const ws = new ReconnectingWebSocket(wsUrl, {
       onopen: () => {
@@ -80,15 +82,23 @@ export const useChatWebSocket = ({
             detail: data.payload.detail,
           });
         } else if (data.type === "capabilityState") {
-          setCapabilityStates((oldStates) => {
-            const newStates = {
-              ...oldStates,
-              [data.payload.capability]: data.payload.payload.state,
-            };
-            console.log("newStates", newStates);
-            return newStates;
+          setCapabilityInfos((oldInfos) => {
+            return produce(oldInfos, (draft) => {
+              if (draft[data.payload.capability]) {
+                draft[data.payload.capability].state = data.payload.state;
+              }
+            });
           });
-          console.log();
+        } else if (data.type === "capabilityInit") {
+          setCapabilityInfos((oldInfos) => {
+            return produce(oldInfos, (draft) => {
+              draft[data.payload.capability] = {
+                initialised: true,
+                state: data.payload.state,
+                config: data.payload.config,
+              };
+            });
+          });
         }
       },
       onclose: () => {
@@ -106,7 +116,7 @@ export const useChatWebSocket = ({
       console.log("Closing websocket because effect re-ran");
       ws.close();
     };
-  }, [roomId, chatId, onError, setCapabilityStates]);
+  }, [roomId, chatId, onError, setCapabilityInfos]);
 
   const sendMessage = useCallback((content: WebSocketClientMessage) => {
     websocketRef.current?.json(content);
