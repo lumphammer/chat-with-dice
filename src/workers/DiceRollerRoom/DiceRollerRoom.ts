@@ -14,8 +14,8 @@ import {
 } from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
 import { type ServerMountedCapability } from "../../capabilities/capabilities";
-// import { counterCapability } from "../../capabilities/counterCapability";
 import { Broadcaster } from "./Broadcaster";
+import { CapabilityStateRepository } from "./CapabilityStateRepository";
 import { MessageRepository } from "./MessageRepository";
 import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
@@ -27,15 +27,13 @@ import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 const WEBSOCKET_INTERNAL_ERROR = 1101;
 
-// All capabilities mounted by this DO
-// const CAPABILITIES = [counterCapability];
-
 export class DiceRollerRoom extends DurableObject {
   private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
   private messageRepository: MessageRepository;
   private broadcaster: Broadcaster;
   private capabilities: Map<string, ServerMountedCapability> = new Map();
   private config: RoomConfig = defaultRoomConfig;
+  private stateRepository: CapabilityStateRepository;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -49,6 +47,7 @@ export class DiceRollerRoom extends DurableObject {
     this.db = setupDB(ctx);
     this.messageRepository = new MessageRepository(this.db);
     this.broadcaster = new Broadcaster(ctx);
+    this.stateRepository = new CapabilityStateRepository(ctx.storage.kv);
 
     console.log("Durable object id booting:", ctx.id.toString());
 
@@ -85,6 +84,7 @@ export class DiceRollerRoom extends DurableObject {
             const mountedCap = await capability.mount({
               doCtx: this.ctx,
               messageRepository: this.messageRepository,
+              stateRepository: this.stateRepository,
               config,
               broadcaster: this.broadcaster,
             });

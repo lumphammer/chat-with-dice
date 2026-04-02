@@ -7,6 +7,7 @@ import type {
   WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
+import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
 import { createDraft, finishDraft, type Draft } from "immer";
 import { z } from "zod/v4";
@@ -116,6 +117,7 @@ export type Capability<
   mount: (tools: {
     doCtx: DurableObjectState;
     messageRepository: MessageRepository;
+    stateRepository: CapabilityStateRepository;
     config: unknown;
     broadcaster: Broadcaster;
   }) => Promise<ServerMountedCapability | null>;
@@ -222,11 +224,13 @@ export const createCapability = <
     messageRepository,
     config,
     broadcaster,
+    stateRepository,
   }: {
     doCtx: DurableObjectState;
     messageRepository: MessageRepository;
     config: unknown;
     broadcaster: Broadcaster;
+    stateRepository: CapabilityStateRepository;
   }): Promise<ServerMountedCapability | null> => {
     // get config
     const configParseResult = def.configValidator.safeParse(config);
@@ -240,19 +244,19 @@ export const createCapability = <
     // get state
     let state: z.infer<TStateValidator>;
     const parseStoredStateResult = def.stateValidator.safeParse(
-      doCtx.storage.kv.get(`capabilities.${def.name}.state`),
+      stateRepository.get(def.name),
     );
     if (parseStoredStateResult.success) {
       state = parseStoredStateResult.data;
     } else {
       state = def.getInitialState({ config: configParseResult.data });
-      doCtx.storage.kv.put(`capabilities.${def.name}.state`, state);
+      stateRepository.set(def.name, state);
     }
 
     // run initialise
     const draftState = createDraft(state);
     await def.initialise({
-      doCtx: doCtx,
+      doCtx,
       draftState: draftState,
       messageRepository,
       config: configParseResult.data,
@@ -261,10 +265,7 @@ export const createCapability = <
     const finalState = finishDraft(draftState) as z.infer<TStateValidator>;
     if (finalState !== state) {
       state = finalState;
-      doCtx.storage.kv.put(
-        `capabilities.${def.name}.state`,
-        JSON.stringify(state),
-      );
+      stateRepository.set(def.name, state);
     }
     return {
       name,
