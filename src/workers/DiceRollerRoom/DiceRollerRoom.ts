@@ -7,7 +7,6 @@ import { assertRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import { Rooms } from "#/schemas/chatDB-schema";
 import * as dbSchema from "#/schemas/roller-schema";
-import { fromJSON } from "#/utils/fromJSON";
 import type { RollerMessage } from "#/validators/rollerMessageType";
 import {
   roomConfigValidator,
@@ -61,7 +60,7 @@ export class DiceRollerRoom extends DurableObject {
         .where(eq(Rooms.durableObjectId, ctx.id.toString()))
         .limit(1);
       const rawConfig = configRows[0]?.config;
-      const parsedConfig = fromJSON(roomConfigValidator).safeParse(rawConfig);
+      const parsedConfig = roomConfigValidator.safeParse(rawConfig);
       if (parsedConfig.success) {
         this.config = parsedConfig.data;
       } else {
