@@ -91,26 +91,6 @@ describe("createCapability", () => {
     }),
   });
 
-  describe("creators", () => {
-    it("produces a correctly shaped ActionCallMessage for a valid payload", () => {
-      expect(testCapability.creators.setValue({ to: 42 })).toEqual({
-        type: "action",
-        payload: {
-          capability: "TestCap",
-          payload: { action: "setValue", payload: { to: 42 } },
-        },
-      });
-    });
-
-    it("throws when the payload fails client-side validation", () => {
-      expect(() =>
-        testCapability.creators.setValue({ to: "not-a-number" } as unknown as {
-          to: number;
-        }),
-      ).toThrow();
-    });
-  });
-
   describe("mount", () => {
     it("returns a MountedCapability with the capability's name", async () => {
       const broadcaster = makeMockBroadcaster();
@@ -172,7 +152,9 @@ describe("createCapability", () => {
       // If it were re-initialised each call it would be 4
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.Accumulator.state": "{"total":7}",
+          "capabilities.Accumulator.state": {
+            "total": 7,
+          },
         }
       `);
     });
@@ -227,7 +209,9 @@ describe("counterCapability", () => {
       await mounted.onMessage({ action: "increment", payload: { by: 1 } });
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": "{"count":12}",
+          "capabilities.counter.state": {
+            "count": 12,
+          },
         }
       `);
     });
@@ -273,7 +257,9 @@ describe("counterCapability", () => {
         await mounted.onMessage({ action: "increment", payload: { by: 0 } });
         expect(store).toMatchInlineSnapshot(`
           {
-            "capabilities.counter.state": "{"count":10}",
+            "capabilities.counter.state": {
+              "count": 10,
+            },
           }
         `);
       });
@@ -294,34 +280,12 @@ describe("counterCapability", () => {
         await mounted.onMessage({ action: "increment", payload: { by: 0 } });
         expect(store).toMatchInlineSnapshot(`
           {
-            "capabilities.counter.state": "{"count":10}",
+            "capabilities.counter.state": {
+              "count": 10,
+            },
           }
         `);
       });
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // creators
-  // -------------------------------------------------------------------------
-
-  describe("creators.increment", () => {
-    it("produces an ActionCallMessage targeting the Counter capability", () => {
-      expect(counterCapability.creators.increment({ by: 5 })).toEqual({
-        type: "action",
-        payload: {
-          capability: "counter",
-          payload: { action: "increment", payload: { by: 5 } },
-        },
-      });
-    });
-
-    it("throws when the payload is not a number", () => {
-      expect(() =>
-        counterCapability.creators.increment({ by: "bad" } as unknown as {
-          by: number;
-        }),
-      ).toThrow();
     });
   });
 
@@ -348,7 +312,9 @@ describe("counterCapability", () => {
       await mounted.onMessage({ action: "increment", payload: { by: 5 } });
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": "{"count":15}",
+          "capabilities.counter.state": {
+            "count": 15,
+          },
         }
       `);
     });
@@ -368,7 +334,9 @@ describe("counterCapability", () => {
       await mounted.onMessage({ action: "increment", payload: { by: -3 } });
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": "{"count":7}",
+          "capabilities.counter.state": {
+            "count": 7,
+          },
         }
       `);
     });
@@ -392,7 +360,9 @@ describe("counterCapability", () => {
       // 0 + 10 + 5 - 2 = 13
       expect(store).toMatchInlineSnapshot(`
         {
-          "capabilities.counter.state": "{"count":13}",
+          "capabilities.counter.state": {
+            "count": 13,
+          },
         }
       `);
     });

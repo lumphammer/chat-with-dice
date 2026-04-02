@@ -97,11 +97,6 @@ export type Capability<
   TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
 > = {
   name: Alphanumeric;
-  creators: {
-    [K in keyof TActions]: (
-      payload: z.infer<TActions[K]["payloadValidator"]>,
-    ) => ActionCallMessage;
-  };
   mount: (tools: {
     doCtx: DurableObjectState;
     messageRepository: MessageRepository;
@@ -313,7 +308,6 @@ export const createCapability = <
 
   return {
     name,
-    creators,
     mount,
     useMount,
     setConfig: (_config: z.infer<TConfigValidator>) => {
