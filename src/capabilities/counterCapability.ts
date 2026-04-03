@@ -10,8 +10,8 @@ export const counterCapability = createCapability({
   stateValidator: counterCapabilityStateValidator,
   getInitialState: ({ config }) => ({ count: config.startAt }),
   initialise: async () => {},
-  buildActions: ({ createAction }) => ({
-    increment: createAction({
+  buildActions: ({ createSimpleAction }) => ({
+    increment: createSimpleAction({
       payloadValidator: z.object({ by: z.number() }),
       actionFn: async ({ stateDraft, payload }) => {
         stateDraft.count += payload.by;

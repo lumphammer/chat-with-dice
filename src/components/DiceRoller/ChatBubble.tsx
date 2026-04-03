@@ -4,9 +4,9 @@ import type { RollerMessage } from "#/validators/rollerMessageType";
 import { RollResultErrorBoundary } from "../RollResultErrorBoundary";
 import { ShowMoreDialog } from "./ShowMoreDialog";
 import { TimeDisplay } from "./TimeDisplay";
+import { useUserIdentityContext } from "./contexts/userIdentityContext";
 import { deriveHueFromUserId } from "./deriveHueFromUserId";
 import type { UserHueStyle } from "./types";
-import { useUserIdentityContext } from "./userIdentityContext";
 import quikdown from "quikdown";
 import {
   memo,

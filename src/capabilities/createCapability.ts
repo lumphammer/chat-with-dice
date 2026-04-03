@@ -1,26 +1,25 @@
-import { useCapabilityInfo } from "#/components/DiceRoller/capabilityStateContext";
-import { useSendMessageContext } from "#/components/DiceRoller/sendMessageContext";
+import { useCapabilityInfo } from "#/components/DiceRoller/contexts/capabilityInfoContext";
+import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
+import { useSetCapabilityStateContext } from "#/components/DiceRoller/contexts/setCapabilityStateContext";
 import { toAlphanumeric } from "#/utils/alphanumeric";
-import type {
-  ActionCall,
-  ActionCallMessage,
-  WebSocketClientMessage,
-} from "#/validators/webSocketMessageSchemas";
+import type { ActionCall } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
 import type {
-  ActionDefinition,
   Capability,
   CapabilityDefinition,
   ClientMountedCapability,
-  CreateAction,
+  CreateSimpleAction,
   ServerMountedCapability,
+  CreateComplexAction,
+  ActionDefinition,
+  AnyActionDefinition,
 } from "./types";
-import { createDraft, finishDraft } from "immer";
+import { createDraft, finishDraft, produce } from "immer";
 import { z } from "zod/v4";
 
-const ARTIFICIAL_LAG_MS = 0;
+const ARTIFICIAL_LAG_MS = 500;
 
 /**
  * Define a new capability
@@ -44,47 +43,31 @@ export const createCapability = <
   const name = toAlphanumeric(def.name);
 
   // fn used to build typed actions
-  const createAction: CreateAction<z.infer<TStateValidator>> = ({
+  const createSimpleAction: CreateSimpleAction<z.infer<TStateValidator>> = ({
     payloadValidator,
     actionFn,
   }) => ({
+    type: "simple",
     payloadValidator,
     actionFn,
   });
 
-  // build the actions collection
-  const actions: TActions = def.buildActions({ createAction });
+  const createComplexAction: CreateComplexAction<z.infer<TStateValidator>> = ({
+    payloadValidator,
+    optimisticFn,
+    complexFn,
+  }) => ({
+    type: "complex",
+    payloadValidator,
+    optimisticFn,
+    complexFn,
+  });
 
-  // from actions, build message creators
-  const creators = Object.fromEntries(
-    Object.entries(actions).map(([action, { payloadValidator }]) => {
-      return [
-        action,
-        (payload: unknown): WebSocketClientMessage => {
-          const parsedResult = payloadValidator.safeParse(payload);
-          if (parsedResult.error) {
-            throw new Error("Action payload failed client-side validation", {
-              cause: parsedResult,
-            });
-          }
-          return {
-            type: "action",
-            payload: {
-              capability: def.name,
-              payload: {
-                action,
-                payload,
-              },
-            },
-          };
-        },
-      ];
-    }),
-  ) as {
-    [K in keyof TActions]: (
-      payload: z.infer<TActions[K]["payloadValidator"]>,
-    ) => ActionCallMessage;
-  };
+  // build the actions collection
+  const actions: TActions = def.buildActions({
+    createSimpleAction,
+    createComplexAction,
+  });
 
   // server-side message handler
   const handleMessage = async ({
@@ -105,7 +88,16 @@ export const createCapability = <
     if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
     const payload = action.payloadValidator.parse(actionCall.payload);
     const stateDraft = createDraft(state);
-    await action.actionFn({ doCtx, stateDraft, payload });
+    if (action.type === "simple") {
+      await action.actionFn({ stateDraft, payload });
+    } else {
+      await action.complexFn({
+        doCtx,
+        stateDraft,
+        payload,
+        optimisticFn: action.optimisticFn,
+      });
+    }
     const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
     stateRepository.set(def.name, finalState);
     setTimeout(() => {
@@ -205,23 +197,50 @@ export const createCapability = <
     TActions
   > => {
     const sendMessage = useSendMessageContext();
-    // map creators, wrapping the return of each one in a call to sendMessage
-    const creatorsWithSendMessage = Object.fromEntries(
-      Object.entries(creators).map(([key, value]) => [
-        key,
-        (...args: Parameters<typeof value>) => {
-          const result = value(...args);
-          if (result) {
-            sendMessage(result);
-          }
+    const setCapabilityState = useSetCapabilityStateContext();
+    const info = useCapabilityInfo(name);
+
+    // when we map over the actions, TS gives up on typing the value side,
+    // presumably because it's a mapped type? Anyway, this is the type of the
+    // tuple we get inside the callback to Object.entries.
+    type CreatorsEntiesTuple = [string, AnyActionDefinition];
+
+    // XXX this should be memoised
+    const spicyCreators = Object.fromEntries(
+      Object.entries(actions).map(
+        ([action, actionDefinition]: CreatorsEntiesTuple) => {
+          return [
+            action,
+            (payload: any): void => {
+              // construct and send the message
+              sendMessage({
+                type: "action",
+                payload: {
+                  capability: def.name,
+                  payload: {
+                    action,
+                    payload,
+                  },
+                },
+              });
+
+              // run optimistic updates
+              if (actionDefinition.type === "simple" && info.initialised) {
+                const newState = produce(info.state, (draft) => {
+                  actionDefinition.actionFn({ stateDraft: draft, payload });
+                });
+                setCapabilityState(def.name, newState);
+              }
+            },
+          ];
         },
-      ]),
+      ),
     ) as {
       [K in keyof TActions]: (
         payload: z.infer<TActions[K]["payloadValidator"]>,
       ) => void;
     };
-    const info = useCapabilityInfo(name);
+
     if (!info.initialised) {
       return { initialised: false };
     }
@@ -239,7 +258,7 @@ export const createCapability = <
       console.error("Received a corrupt state for capability " + name);
     }
 
-    return { initialised: true, state, actions: creatorsWithSendMessage };
+    return { initialised: true, state, actions: spicyCreators };
   };
 
   // return a defined capability

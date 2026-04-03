@@ -4,7 +4,7 @@ import {
   webSocketServerMessageSchema,
   type WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
-import type { CapabilityInfoContextValue } from "./capabilityStateContext";
+import type { CapabilityInfoContextValue } from "./contexts/capabilityInfoContext";
 import type { ConnectionStatus } from "./types";
 import { produce } from "immer";
 import {
@@ -39,6 +39,19 @@ export const useChatWebSocket = ({
     useState<ConnectionStatus>("disconnected");
 
   const websocketRef = useRef<ReconnectingWebSocket>(null);
+
+  const setCapabilityState = useCallback(
+    (name: string, state: any) => {
+      setCapabilityInfos((oldInfos) => {
+        return produce(oldInfos, (draft) => {
+          if (draft[name] && draft[name].initialised) {
+            draft[name].state = state;
+          }
+        });
+      });
+    },
+    [setCapabilityInfos],
+  );
 
   useEffect(() => {
     if (!chatId) {
@@ -82,13 +95,7 @@ export const useChatWebSocket = ({
             detail: data.payload.detail,
           });
         } else if (data.type === "capabilityState") {
-          setCapabilityInfos((oldInfos) => {
-            return produce(oldInfos, (draft) => {
-              if (draft[data.payload.capability]) {
-                draft[data.payload.capability].state = data.payload.state;
-              }
-            });
-          });
+          setCapabilityState(data.payload.capability, data.payload.state);
         } else if (data.type === "capabilityInit") {
           setCapabilityInfos((oldInfos) => {
             return produce(oldInfos, (draft) => {
@@ -116,15 +123,11 @@ export const useChatWebSocket = ({
       console.log("Closing websocket because effect re-ran");
       ws.close();
     };
-  }, [roomId, chatId, onError, setCapabilityInfos]);
+  }, [roomId, chatId, onError, setCapabilityInfos, setCapabilityState]);
 
   const sendMessage = useCallback((content: WebSocketClientMessage) => {
     websocketRef.current?.json(content);
   }, []);
 
-  // const clearError = useCallback(() => {
-  //   setError(null);
-  // }, []);
-
-  return { connectionStatus, messages, sendMessage };
+  return { connectionStatus, messages, sendMessage, setCapabilityState };
 };

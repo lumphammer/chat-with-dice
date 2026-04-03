@@ -96,7 +96,7 @@ describe("createCapability", () => {
     defaultConfig: null,
     stateValidator: z.object({ value: z.int() }),
     getInitialState: () => ({ value: 0 }),
-    buildActions: ({ createAction }) => ({
+    buildActions: ({ createSimpleAction: createAction }) => ({
       setValue: createAction({
         payloadValidator: z.object({ to: z.number() }),
         actionFn: async ({ stateDraft, payload }) => {
