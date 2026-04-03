@@ -12,13 +12,14 @@ import { SendMessageContextProvider } from "./contexts/sendMessageContext";
 import { SetCapabilityStateContextProvider } from "./contexts/setCapabilityStateContext";
 import { UserIdentityContextProvider } from "./contexts/userIdentityContext";
 import { deriveHueFromUserId } from "./deriveHueFromUserId";
+import { useChatWebSocket } from "./hooks/useChatWebSocket";
+import { useSmartScroll } from "./hooks/useSmartScroll";
+import { useUserIdentityStorage } from "./hooks/useUserIdentityStorage";
 import toastStyles from "./toast.module.css";
 import type { UserHueStyle } from "./types";
-import { useChatWebSocket } from "./useChatWebSocket";
-import { useSmartScroll } from "./useSmartScroll";
-import { useUserIdentityStorage } from "./useUserIdentityStorage";
 import { Portal } from "@ark-ui/react/portal";
 import { Toast, Toaster, createToaster } from "@ark-ui/react/toast";
+import { produce } from "immer";
 import {
   CircleAlertIcon,
   TriangleAlertIcon,
@@ -26,6 +27,7 @@ import {
   InfoIcon,
   XIcon,
 } from "lucide-react";
+import { nanoid } from "nanoid";
 import { memo, useCallback, useMemo, useState } from "react";
 
 type DiceRollerProps = {
@@ -45,6 +47,23 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   const [capabilityInfos, setCapabilityInfos] =
     useState<CapabilityInfoContextValue>({});
 
+  const setCapabilityState = useCallback(
+    (name: string, state: any) => {
+      setCapabilityInfos((oldInfos) => {
+        return produce(
+          oldInfos,
+          (draft) => {
+            if (draft[name] && draft[name].initialised) {
+              draft[name].state = state;
+            }
+          },
+          (_patches) => {},
+        );
+      });
+    },
+    [setCapabilityInfos],
+  );
+
   const toaster = useMemo(
     () =>
       createToaster({
@@ -57,21 +76,20 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
     [],
   );
 
-  const { connectionStatus, messages, sendMessage, setCapabilityState } =
-    useChatWebSocket({
-      roomId: roomId,
-      chatId: userIdentity.chatId,
-      onError: useCallback(
-        (error: { errorMessage: string; detail: string }) => {
-          toaster.error({
-            title: error.errorMessage,
-            description: error.detail,
-          });
-        },
-        [toaster],
-      ),
-      setCapabilityInfos,
-    });
+  const { connectionStatus, messages, sendMessage } = useChatWebSocket({
+    roomId: roomId,
+    chatId: userIdentity.chatId,
+    onError: useCallback(
+      (error: { errorMessage: string; detail: string }) => {
+        toaster.error({
+          title: error.errorMessage,
+          description: error.detail,
+        });
+      },
+      [toaster],
+    ),
+    setCapabilityInfos,
+  });
 
   const hue = deriveHueFromUserId(userIdentity.chatId);
 
@@ -93,9 +111,11 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
       chat: string;
       rollType: RollType;
     }) => {
+      const correlation = nanoid();
       const msg: WebSocketClientMessage = {
         type: "chat",
         payload: {
+          correlation,
           rollType,
           formula,
           chat,
