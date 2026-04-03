@@ -74,28 +74,26 @@ export class DiceRollerRoom extends DurableObject {
     // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
     this.ctx.blockConcurrencyWhile(async () => {
       await Promise.all(
-        Object.entries(this.config.capabilities).map(
-          async ([capName, { config }]) => {
-            console.log("mounting capability", capName);
-            if (!isCapabilityName(capName)) {
-              return;
-            }
-            const capability = capabilityRegistry[capName];
-            const mountedCap = await capability.mount({
-              doCtx: this.ctx,
-              messageRepository: this.messageRepository,
-              stateRepository: this.stateRepository,
-              config,
-              broadcaster: this.broadcaster,
-            });
-            if (mountedCap) {
-              this.capabilities.set(capName, mountedCap);
-              console.log(capName, "mounted!");
-            } else {
-              console.log(capName, "failed to mount");
-            }
-          },
-        ),
+        this.config.capabilities.map(async ({ name, config }) => {
+          console.log("mounting capability", name);
+          if (!isCapabilityName(name)) {
+            return;
+          }
+          const capability = capabilityRegistry[name];
+          const mountedCap = await capability.mount({
+            doCtx: this.ctx,
+            messageRepository: this.messageRepository,
+            stateRepository: this.stateRepository,
+            config,
+            broadcaster: this.broadcaster,
+          });
+          if (mountedCap) {
+            this.capabilities.set(name, mountedCap);
+            console.log(name, "mounted!");
+          } else {
+            console.log(name, "failed to mount");
+          }
+        }),
       );
     });
   }
