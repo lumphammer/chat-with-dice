@@ -6,7 +6,7 @@ import {
 } from "#/validators/webSocketMessageSchemas";
 import type { CapabilityInfoContextValue } from "../contexts/capabilityInfoContext";
 import type { ConnectionStatus } from "../types";
-import { produce } from "immer";
+import { applyPatches, produce } from "immer";
 import {
   useCallback,
   useEffect,
@@ -84,12 +84,23 @@ export const useChatWebSocket = ({
         } else if (data.type === "capabilityState") {
           setCapabilityInfos((oldInfos) => {
             return produce(oldInfos, (draft) => {
-              if (
-                draft[data.payload.capability] &&
-                draft[data.payload.capability].initialised
-              ) {
-                draft[data.payload.capability].state = data.payload.state;
+              const info = draft[data.payload.capability];
+              // drop out if we're somehow getting state for an uninitialised
+              // capability
+              if (!(info && info.initialised)) {
+                return;
               }
+
+              // remove patches that pertain to this update
+              info.patches = info.patches.filter(
+                ([correlation]) => correlation !== data.payload.correlation,
+              );
+              // replay remaining patches onto the arrived state
+              const newState = applyPatches(
+                data.payload.state,
+                info.patches.flatMap(([_, patches]) => patches),
+              );
+              info.state = newState;
             });
           });
         } else if (data.type === "capabilityInit") {

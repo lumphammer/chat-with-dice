@@ -13,4 +13,4 @@ export type ConnectionStatus = "connected" | "disconnected" | "error";
  */
 export type UserHueStyle = React.CSSProperties & { "--user-hue": number };
 
-export type PatchRecord = [string, Patch];
+export type PatchRecord = [string, Patch[]];

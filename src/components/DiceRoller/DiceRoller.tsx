@@ -19,7 +19,7 @@ import toastStyles from "./toast.module.css";
 import type { UserHueStyle } from "./types";
 import { Portal } from "@ark-ui/react/portal";
 import { Toast, Toaster, createToaster } from "@ark-ui/react/toast";
-import { enablePatches, produce } from "immer";
+import { enablePatches, produce, type Patch } from "immer";
 import {
   CircleAlertIcon,
   TriangleAlertIcon,
@@ -48,14 +48,15 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
   const [capabilityInfos, setCapabilityInfos] =
     useState<CapabilityInfoContextValue>({});
 
-  const setCapabilityState = useCallback(
-    (name: string, state: any) => {
+  const optimisticallySetCapabilityState = useCallback(
+    (name: string, state: any, correlation: string, patches: Patch[] = []) => {
       setCapabilityInfos((oldInfos) => {
         return produce(
           oldInfos,
           (draft) => {
             if (draft[name] && draft[name].initialised) {
               draft[name].state = state;
+              draft[name].patches.push([correlation, patches]);
             }
           },
           (_patches) => {},
@@ -128,7 +129,9 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
 
   return (
     <CapabilityInfoContextProvider value={capabilityInfos}>
-      <SetCapabilityStateContextProvider value={setCapabilityState}>
+      <SetCapabilityStateContextProvider
+        value={optimisticallySetCapabilityState}
+      >
         <SendMessageContextProvider value={sendMessage}>
           <UserIdentityContextProvider value={userIdentity}>
             <div

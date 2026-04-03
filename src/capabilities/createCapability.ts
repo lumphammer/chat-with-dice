@@ -16,7 +16,7 @@ import type {
   ActionDefinition,
   AnyActionDefinition,
 } from "./types";
-import { createDraft, finishDraft, produce } from "immer";
+import { createDraft, finishDraft, produceWithPatches } from "immer";
 import { nanoid } from "nanoid";
 import { z } from "zod/v4";
 
@@ -214,13 +214,14 @@ export const createCapability = <
           return [
             action,
             (payload: any): void => {
+              const correlation = nanoid();
               // construct and send the message
               sendMessage({
                 type: "action",
                 payload: {
                   capabilityName: def.name,
                   actionCall: {
-                    correlation: nanoid(),
+                    correlation,
                     actionName: action,
                     params: payload,
                   },
@@ -229,10 +230,13 @@ export const createCapability = <
 
               // run optimistic updates
               if (actionDefinition.type === "simple" && info.initialised) {
-                const newState = produce(info.state, (draft) => {
-                  actionDefinition.actionFn({ stateDraft: draft, payload });
-                });
-                setCapabilityState(def.name, newState);
+                const [newState, patches] = produceWithPatches(
+                  info.state,
+                  (draft) => {
+                    actionDefinition.actionFn({ stateDraft: draft, payload });
+                  },
+                );
+                setCapabilityState(def.name, newState, correlation, patches);
               }
             },
           ];
