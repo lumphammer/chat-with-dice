@@ -85,9 +85,9 @@ export const createCapability = <
     actionCall: ActionCall;
     broadcaster: Broadcaster;
   }) => {
-    const action = actions[actionCall.action];
-    if (!action) throw new Error(`Unknown action: ${actionCall.action}`);
-    const payload = action.payloadValidator.parse(actionCall.payload);
+    const action = actions[actionCall.actionName];
+    if (!action) throw new Error(`Unknown action: ${actionCall.actionName}`);
+    const payload = action.payloadValidator.parse(actionCall.params);
     const stateDraft = createDraft(state);
     if (action.type === "simple") {
       await action.actionFn({ stateDraft, payload });
@@ -217,11 +217,11 @@ export const createCapability = <
               sendMessage({
                 type: "action",
                 payload: {
-                  capability: def.name,
+                  capabilityName: def.name,
                   correlation: nanoid(),
-                  payload: {
-                    action,
-                    payload,
+                  actionCall: {
+                    actionName: action,
+                    params: payload,
                   },
                 },
               });

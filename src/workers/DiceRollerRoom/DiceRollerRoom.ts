@@ -161,11 +161,11 @@ export class DiceRollerRoom extends DurableObject {
         });
       } else if (data.type === "action") {
         // handle actions
-        const cap = this.capabilities.get(data.payload.capability);
+        const cap = this.capabilities.get(data.payload.capabilityName);
         if (!cap) {
-          throw new Error(`Unknown capability: ${data.payload.capability}`);
+          throw new Error(`Unknown capability: ${data.payload.capabilityName}`);
         }
-        await cap.onMessage(data.payload.payload);
+        await cap.onMessage(data.payload.actionCall);
       }
     } catch (error) {
       this.broadcaster.sendError(ws, error);

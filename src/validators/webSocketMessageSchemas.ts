@@ -39,8 +39,8 @@ export type WebSocketServerMessage = z.infer<
 >;
 
 export const actionCallValidator = z.object({
-  action: z.string(),
-  payload: z.any(),
+  actionName: z.string(),
+  params: z.any(),
 });
 
 export type ActionCall = z.infer<typeof actionCallValidator>;
@@ -48,9 +48,9 @@ export type ActionCall = z.infer<typeof actionCallValidator>;
 export const actionCallMessageValidator = z.object({
   type: z.literal("action"),
   payload: z.object({
-    capability: z.string(),
+    capabilityName: z.string(),
     correlation: z.string(),
-    payload: actionCallValidator,
+    actionCall: actionCallValidator,
   }),
 });
 
