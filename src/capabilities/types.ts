@@ -1,3 +1,4 @@
+import type { PatchRecord } from "#/components/DiceRoller/types";
 import type { Alphanumeric } from "#/utils/alphanumeric";
 import type { ActionCall } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
@@ -24,6 +25,7 @@ export type ClientMountedCapability<
   | {
       initialised: true;
       state: TState;
+      patches: PatchRecord[];
       actions: {
         [K in keyof TActions]: (
           payload: z.core.output<TActions[K]["payloadValidator"]>,

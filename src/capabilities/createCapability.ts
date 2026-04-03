@@ -20,7 +20,7 @@ import { createDraft, finishDraft, produceWithPatches } from "immer";
 import { nanoid } from "nanoid";
 import { z } from "zod/v4";
 
-const ARTIFICIAL_LAG_MS = 500;
+const ARTIFICIAL_LAG_MS = 0;
 
 /**
  * Define a new capability
@@ -265,7 +265,12 @@ export const createCapability = <
       console.error("Received a corrupt state for capability " + name);
     }
 
-    return { initialised: true, state, actions: spicyCreators };
+    return {
+      initialised: true,
+      state,
+      patches: info.patches,
+      actions: spicyCreators,
+    };
   };
 
   // return a defined capability

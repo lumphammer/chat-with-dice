@@ -92,6 +92,8 @@ export const useChatWebSocket = ({
               }
 
               // remove patches that pertain to this update
+              // we may eventually need to make this so that it trims any and
+              // all patches prior to this correlation
               info.patches = info.patches.filter(
                 ([correlation]) => correlation !== data.payload.correlation,
               );
