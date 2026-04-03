@@ -97,6 +97,7 @@ export const useChatWebSocket = ({
             return produce(oldInfos, (draft) => {
               draft[data.payload.capability] = {
                 initialised: true,
+                patches: [],
                 state: data.payload.state,
                 config: data.payload.config,
               };

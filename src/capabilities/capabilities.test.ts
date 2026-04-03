@@ -187,7 +187,11 @@ describe("counterCapability", () => {
 
       // Increment by 1 to make the loaded count observable via storage.
       // If startAt: 0 was incorrectly used instead, the result would be 1.
-      await mounted.onMessage({ actionName: "increment", params: { by: 1 } });
+      await mounted.onMessage({
+        actionName: "increment",
+        correlation: "",
+        params: { by: 1 },
+      });
       expect(store).toMatchInlineSnapshot(`
         {
           "counter": {
@@ -241,7 +245,11 @@ describe("counterCapability", () => {
 
         // Increment by 0 as a probe: forces the current capCtx.count to be
         // written to storage without changing its value.
-        await mounted.onMessage({ actionName: "increment", params: { by: 0 } });
+        await mounted.onMessage({
+          actionName: "increment",
+          correlation: "",
+          params: { by: 0 },
+        });
         expect(store).toMatchInlineSnapshot(`
           {
             "counter": {
@@ -267,7 +275,11 @@ describe("counterCapability", () => {
         });
         assert(mounted);
 
-        await mounted.onMessage({ actionName: "increment", params: { by: 0 } });
+        await mounted.onMessage({
+          actionName: "increment",
+          correlation: "",
+          params: { by: 0 },
+        });
         expect(store).toMatchInlineSnapshot(`
           {
             "counter": {
@@ -302,7 +314,11 @@ describe("counterCapability", () => {
         config: { startAt: 0 },
       });
       assert(mounted);
-      await mounted.onMessage({ actionName: "increment", params: { by: 5 } });
+      await mounted.onMessage({
+        actionName: "increment",
+        correlation: "",
+        params: { by: 5 },
+      });
       expect(store).toMatchInlineSnapshot(`
         {
           "counter": {
@@ -326,7 +342,11 @@ describe("counterCapability", () => {
         config: { startAt: 0 },
       });
       assert(mounted);
-      await mounted.onMessage({ actionName: "increment", params: { by: -3 } });
+      await mounted.onMessage({
+        actionName: "increment",
+        correlation: "",
+        params: { by: -3 },
+      });
       expect(store).toMatchInlineSnapshot(`
         {
           "counter": {
@@ -352,9 +372,21 @@ describe("counterCapability", () => {
         config: { startAt: 3 },
       });
       assert(mounted);
-      await mounted.onMessage({ actionName: "increment", params: { by: 10 } });
-      await mounted.onMessage({ actionName: "increment", params: { by: 5 } });
-      await mounted.onMessage({ actionName: "increment", params: { by: -2 } });
+      await mounted.onMessage({
+        actionName: "increment",
+        correlation: "",
+        params: { by: 10 },
+      });
+      await mounted.onMessage({
+        actionName: "increment",
+        correlation: "",
+        params: { by: 5 },
+      });
+      await mounted.onMessage({
+        actionName: "increment",
+        correlation: "",
+        params: { by: -2 },
+      });
 
       // 0 + 10 + 5 - 2 = 13
       expect(store).toMatchInlineSnapshot(`

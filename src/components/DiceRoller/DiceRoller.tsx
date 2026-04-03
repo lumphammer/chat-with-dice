@@ -19,7 +19,7 @@ import toastStyles from "./toast.module.css";
 import type { UserHueStyle } from "./types";
 import { Portal } from "@ark-ui/react/portal";
 import { Toast, Toaster, createToaster } from "@ark-ui/react/toast";
-import { produce } from "immer";
+import { enablePatches, produce } from "immer";
 import {
   CircleAlertIcon,
   TriangleAlertIcon,
@@ -28,6 +28,8 @@ import {
   XIcon,
 } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
+
+enablePatches();
 
 type DiceRollerProps = {
   roomId: string;

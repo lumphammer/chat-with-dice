@@ -106,6 +106,7 @@ export const createCapability = <
         type: "capabilityState",
         payload: {
           capability: name,
+          correlation: actionCall.correlation,
           state: finalState,
         },
       });
@@ -218,8 +219,8 @@ export const createCapability = <
                 type: "action",
                 payload: {
                   capabilityName: def.name,
-                  correlation: nanoid(),
                   actionCall: {
+                    correlation: nanoid(),
                     actionName: action,
                     params: payload,
                   },

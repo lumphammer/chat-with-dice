@@ -1,8 +1,10 @@
+import type { PatchRecord } from "../types";
 import { createContext, useContext } from "react";
 
 type InitialisedCapabilityInfo = {
   initialised: true;
   state: unknown;
+  patches: PatchRecord[];
   config: unknown;
 };
 

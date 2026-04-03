@@ -20,6 +20,7 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("capabilityState"),
     payload: z.object({
+      correlation: z.string(),
       capability: z.string(),
       state: z.any(),
     }),
@@ -40,6 +41,7 @@ export type WebSocketServerMessage = z.infer<
 
 export const actionCallValidator = z.object({
   actionName: z.string(),
+  correlation: z.string(),
   params: z.any(),
 });
 
@@ -49,7 +51,6 @@ export const actionCallMessageValidator = z.object({
   type: z.literal("action"),
   payload: z.object({
     capabilityName: z.string(),
-    correlation: z.string(),
     actionCall: actionCallValidator,
   }),
 });
