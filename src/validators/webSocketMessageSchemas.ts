@@ -49,6 +49,7 @@ export const actionCallMessageValidator = z.object({
   type: z.literal("action"),
   payload: z.object({
     capability: z.string(),
+    correlation: z.string(),
     payload: actionCallValidator,
   }),
 });
@@ -59,7 +60,6 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("chat"),
     payload: z.object({
-      correlation: z.string(),
       // WRONG - make this use a list of known roll types
       rollType: z.string(),
       formula: z.string(),

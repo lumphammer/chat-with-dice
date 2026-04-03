@@ -17,6 +17,7 @@ import type {
   AnyActionDefinition,
 } from "./types";
 import { createDraft, finishDraft, produce } from "immer";
+import { nanoid } from "nanoid";
 import { z } from "zod/v4";
 
 const ARTIFICIAL_LAG_MS = 500;
@@ -217,6 +218,7 @@ export const createCapability = <
                 type: "action",
                 payload: {
                   capability: def.name,
+                  correlation: nanoid(),
                   payload: {
                     action,
                     payload,

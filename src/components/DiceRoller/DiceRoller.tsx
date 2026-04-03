@@ -27,7 +27,6 @@ import {
   InfoIcon,
   XIcon,
 } from "lucide-react";
-import { nanoid } from "nanoid";
 import { memo, useCallback, useMemo, useState } from "react";
 
 type DiceRollerProps = {
@@ -111,11 +110,9 @@ export const DiceRoller = memo(({ roomId }: DiceRollerProps) => {
       chat: string;
       rollType: RollType;
     }) => {
-      const correlation = nanoid();
       const msg: WebSocketClientMessage = {
         type: "chat",
         payload: {
-          correlation,
           rollType,
           formula,
           chat,
