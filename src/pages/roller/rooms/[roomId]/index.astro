@@ -2,6 +2,8 @@
 import { db } from "#/db";
 import Layout from "#/layouts/Layout.astro";
 import { Rooms } from "#/schemas/chatDB-schema";
+import { roomConfigValidator } from "#/validators/roomConfigValidator";
+import { defaultRoomConfig } from "#/workers/DiceRollerRoom/defaultRoomConfig";
 import { DiceRoller } from "@/components/DiceRoller/DiceRoller";
 import { eq } from "drizzle-orm";
 
@@ -13,8 +15,15 @@ const room = (
 if (!room) {
   return Astro.redirect("/roller");
 }
+const configParseResult = roomConfigValidator.safeParse(room.config);
+const config = configParseResult.success
+  ? configParseResult.data
+  : defaultRoomConfig;
+if (configParseResult.success === false) {
+  console.error("Room failed config validation");
+}
 ---
 
 <Layout title={room?.name ?? "(room not found)"}>
-  <DiceRoller client:only roomId={roomId ?? ""} />
+  <DiceRoller client:only roomId={roomId ?? ""} config={config} />
 </Layout>
