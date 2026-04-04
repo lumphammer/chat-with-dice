@@ -38,7 +38,7 @@ export const createChatWithDiceRoom = defineAction({
       created_time: Date.now(),
       name: input.roomName,
       description: input.description,
-      id: durableObjectId,
+      id: roomId,
       type: input.type,
       config: {
         version: 1,
