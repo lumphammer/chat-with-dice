@@ -40,7 +40,17 @@ export const createChatWithDiceRoom = defineAction({
       description: input.description,
       id: durableObjectId,
       type: input.type,
-      config: defaultRoomConfig,
+      config: {
+        version: 1,
+        capabilities: [
+          {
+            name: "counter",
+            config: {
+              startAt: 100,
+            },
+          },
+        ],
+      },
       durableObjectId,
     });
     return { roomId };
