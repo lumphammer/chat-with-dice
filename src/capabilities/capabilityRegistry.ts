@@ -1,5 +1,5 @@
 import { SidebarCounter } from "#/components/capabilityComponents/SidebarCounter";
-import { SidebarObjectives } from "#/components/capabilityComponents/SidebarObjectives";
+import { SidebarObjectives } from "#/components/capabilityComponents/SidebarObjectives/SidebarObjectives";
 import { counterCapability } from "./counterCapability";
 import { objectivesCapability } from "./objectivesCapability";
 import type { AnyCapability } from "./types";

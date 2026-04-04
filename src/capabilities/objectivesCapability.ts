@@ -5,7 +5,7 @@ import { z } from "zod/v4";
 // const stateValidator = ;
 
 export const objectivesCapability = createCapability({
-  name: "counter",
+  name: "objectives",
   configValidator: z.object({}),
   defaultConfig: {},
   stateValidator: z.object({
