@@ -1,7 +1,6 @@
 import { AppWrapper } from "#/components/AppWrapper";
 import { useStateWithRef } from "#/components/useStateWithRef";
-import { GENERIC_ROOM_TYPE } from "#/constants";
-import type { RoomType } from "#/types";
+import { GENERIC_ROOM_TYPE_NAME, type RoomTypeName } from "#/roomTypes";
 import { RoomTypePicker } from "./RoomTypePicker";
 import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
@@ -13,7 +12,9 @@ export const NewRoomForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [roomName, setRoomName, roomNameRef] = useStateWithRef<string>("");
-  const [roomType, setRoomType] = useState<RoomType>(GENERIC_ROOM_TYPE);
+  const [roomType, setRoomType] = useState<RoomTypeName>(
+    GENERIC_ROOM_TYPE_NAME,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = useCallback(

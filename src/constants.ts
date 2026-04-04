@@ -5,12 +5,6 @@ export const COOKIE_CONSENT_LOCAL_STORAGE_KEY = "cookie-consent";
 export const COOKIES_ACCEPTED = "accepted";
 export const COOKIES_REJECTED = "rejected";
 
-export const GENERIC_ROOM_TYPE = "generic";
-export const HAVOC_ROOM_TYPE = "havoc";
-
-// this is the golden source of truth about what room types exist
-export const ROOM_TYPES = [GENERIC_ROOM_TYPE, HAVOC_ROOM_TYPE] as const;
-
 export const SIX = 6;
 
 export const FITD_FAILURE_DEGREE = 0;

@@ -1,5 +1,4 @@
-import { roomTypeOptionsByType } from "#/components/roomTypeOptions";
-import type { RoomType } from "#/types";
+import { roomTypes, type RoomTypeName } from "#/roomTypes";
 import { useQuery } from "@tanstack/react-query";
 import { actions } from "astro:actions";
 import { CalendarDays, DoorOpen, Plus } from "lucide-react";
@@ -10,7 +9,7 @@ type Room = {
   description: string | null;
   created_by_user_id: string;
   created_time: number;
-  type: RoomType;
+  type: RoomTypeName;
 };
 
 export const RoomList = () => {
@@ -118,8 +117,8 @@ function RoomCard({ room }: { room: Room }) {
   );
 }
 
-function RoomTypeBadge({ type }: { type: RoomType }) {
-  const option = roomTypeOptionsByType[type];
+function RoomTypeBadge({ type }: { type: RoomTypeName }) {
+  const option = roomTypes[type];
   if (!option) return null;
   const { Icon, label } = option;
   return (

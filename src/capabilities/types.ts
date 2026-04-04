@@ -38,7 +38,7 @@ export type ClientMountedCapability<
 type SimpleActionFn<TState, TPayload> = (tools: {
   stateDraft: Draft<TState>;
   payload: TPayload;
-}) => Promise<void>;
+}) => void | Promise<void>;
 
 type ComplexActionFn<TState, TPayload> = (tools: {
   doCtx: DurableObjectState;
