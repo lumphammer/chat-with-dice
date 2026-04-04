@@ -26,6 +26,7 @@ export const SidebarObjectives = memo(() => {
         <ObjectiveDisplay
           key={objective.id}
           objective={objective}
+          onDelete={() => capInfo.actions.deleteObjective({ id: objective.id })}
           onSetResilience={(resilience) =>
             capInfo.actions.setResilience({ id: objective.id, resilience })
           }

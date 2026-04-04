@@ -3,18 +3,35 @@ import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 
 const DEFAULT_STARTING_RESILIENCE = 3;
+const DEFAULT_DIFFICULTY = 0;
 
 export const CreateObjectiveForm = () => {
   const capInfo = objectivesCapability.useMount();
+
+  const [name, setName] = useState("");
+  const [isPrimary, setIsPrimary] = useState(false);
+  const [difficulty, setDifficulty] = useState(DEFAULT_DIFFICULTY);
+  const [startingResilience, setStartingResilience] = useState(
+    DEFAULT_STARTING_RESILIENCE,
+  );
+
   if (!capInfo.initialised) {
     return null;
   }
 
-  const [newObjectiveName, setNewObjectiveName] = useState("");
-  const [newIsPrimary, setNewIsPrimary] = useState(false);
-  const [newStartingResilience, setNewStartingResilience] = useState(
-    DEFAULT_STARTING_RESILIENCE,
-  );
+  const handleSubmit = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    capInfo.actions.createObjective({
+      name,
+      isPrimary,
+      difficulty,
+      startingResilience,
+    });
+    setName("");
+    setIsPrimary(false);
+    setDifficulty(DEFAULT_DIFFICULTY);
+    setStartingResilience(DEFAULT_STARTING_RESILIENCE);
+  };
 
   return (
     <details
@@ -32,52 +49,54 @@ export const CreateObjectiveForm = () => {
             duration-200 group-open:rotate-180"
         />
       </summary>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          capInfo.actions.createObjective({
-            isPrimary: newIsPrimary,
-            name: newObjectiveName,
-            startingResilience: newStartingResilience,
-          });
-          setNewIsPrimary(false);
-          setNewObjectiveName("");
-          setNewStartingResilience(DEFAULT_STARTING_RESILIENCE);
-        }}
-      >
-        {/*<legend className="fieldset-legend">Add objective</legend>*/}
 
+      <form onSubmit={handleSubmit}>
         <label className="floating-label">
           <span>Name</span>
           <input
-            className="input input-md w-full"
-            value={newObjectiveName}
-            onChange={(e) => setNewObjectiveName(e.target.value)}
-          ></input>
+            className="input input-primary w-full"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </label>
-        <label className="floating-label mt-4">
-          <span>Resilience</span>
-          <input
-            className="input input-md w-full"
-            type="number"
-            value={newStartingResilience}
-            onChange={(e) => setNewStartingResilience(Number(e.target.value))}
-          ></input>
-        </label>
-        <label className="label mt-4">
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <label className="floating-label">
+            <span>Difficulty</span>
+            <input
+              className="input input-primary w-full"
+              type="number"
+              min={0}
+              value={difficulty}
+              onChange={(e) => setDifficulty(Number(e.target.value))}
+            />
+          </label>
+          <label className="floating-label">
+            <span>Starting Resilience</span>
+            <input
+              className="input input-primary w-full"
+              type="number"
+              min={1}
+              value={startingResilience}
+              onChange={(e) => setStartingResilience(Number(e.target.value))}
+            />
+          </label>
+        </div>
+
+        <label className="label mt-4 cursor-pointer justify-start gap-2">
           <input
             className="checkbox"
             type="checkbox"
-            checked={newIsPrimary}
-            onChange={(e) => setNewIsPrimary(e.target.checked)}
-          ></input>
-          <span className="text-base-content text-sm">Primary?</span>
+            checked={isPrimary}
+            onChange={(e) => setIsPrimary(e.target.checked)}
+          />
+          <span className="text-base-content text-sm">Primary</span>
         </label>
 
         <button
-          className="btn btn-primary mt-2 w-full"
+          className="btn btn-primary btn-sm mt-4 w-full"
           type="submit"
-          disabled={!newObjectiveName}
+          disabled={!name}
         >
           Add
         </button>

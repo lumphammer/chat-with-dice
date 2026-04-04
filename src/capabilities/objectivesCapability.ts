@@ -28,12 +28,13 @@ export const objectivesCapability = createCapability({
         name: z.string(),
         startingResilience: z.int(),
         isPrimary: z.boolean(),
+        difficulty: z.int().min(0),
       }),
       actionFn: ({ stateDraft, payload }) => {
         stateDraft.objectives.push({
           id: nanoid(),
           name: payload.name,
-          difficulty: 0,
+          difficulty: payload.difficulty,
           resilience: payload.startingResilience,
           startingResilience: payload.startingResilience,
           isPrimary: payload.isPrimary,

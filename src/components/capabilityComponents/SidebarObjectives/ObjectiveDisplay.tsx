@@ -1,4 +1,5 @@
 import { objectivesCapability } from "#/capabilities/objectivesCapability";
+import { DeleteButton } from "./DeleteButton";
 import { ObjectiveEditForm } from "./ObjectiveEditForm";
 import { ResilienceTracker } from "./ResilienceTracker";
 import { PencilIcon } from "lucide-react";
@@ -12,6 +13,7 @@ export type Objective = MountedCapInfo["state"]["objectives"][number];
 
 interface Props {
   objective: Objective;
+  onDelete: () => void;
   onSetResilience: (resilience: number) => void;
   onUpdateObjective: (update: {
     name: string;
@@ -23,6 +25,7 @@ interface Props {
 
 export const ObjectiveDisplay = ({
   objective,
+  onDelete,
   onSetResilience,
   onUpdateObjective,
 }: Props) => {
@@ -42,12 +45,14 @@ export const ObjectiveDisplay = ({
       ) : (
         <>
           <div className="mb-2 flex items-start gap-2">
-            {objective.isPrimary && (
-              <span className="badge badge-primary badge-sm mt-0.5 shrink-0">
-                Primary
-              </span>
-            )}
-            <h3 className="grow font-semibold">
+            <h3 className="min-w-0 grow font-semibold">
+              {objective.isPrimary && (
+                <span
+                  className="badge badge-primary badge-sm mr-1.5 align-middle"
+                >
+                  Primary
+                </span>
+              )}
               {objective.name}
               {objective.difficulty > 0 && (
                 <span className="text-base-content/60 ml-1.5 font-normal">
@@ -55,6 +60,7 @@ export const ObjectiveDisplay = ({
                 </span>
               )}
             </h3>
+            <DeleteButton onDelete={onDelete} />
             <button
               type="button"
               onClick={() => setIsEditing(true)}

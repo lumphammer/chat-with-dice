@@ -20,7 +20,7 @@ import { createDraft, finishDraft, produceWithPatches } from "immer";
 import { nanoid } from "nanoid";
 import { z } from "zod/v4";
 
-const ARTIFICIAL_LAG_MS = 0;
+const ARTIFICIAL_LAG_MS = 500;
 
 /**
  * Define a new capability
