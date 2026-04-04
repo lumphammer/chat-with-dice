@@ -1,6 +1,8 @@
 import { objectivesCapability } from "#/capabilities/objectivesCapability";
 import { CreateObjectiveForm } from "./CreateObjectiveForm";
-import { memo, useState } from "react";
+import { ObjectiveDisplay } from "./ObjectiveDisplay";
+import { LoaderCircleIcon } from "lucide-react";
+import { memo } from "react";
 
 export const SidebarObjectives = memo(() => {
   const capInfo = objectivesCapability.useMount();
@@ -10,21 +12,25 @@ export const SidebarObjectives = memo(() => {
   }
 
   return (
-    <div className="p-4">
+    <div className="relative p-4">
+      {capInfo.patches.length > 0 && (
+        <LoaderCircleIcon
+          className="text-base-content/40 absolute top-4 right-4 h-5 w-5
+            animate-spin"
+          aria-label="Saving…"
+        />
+      )}
       <h2 className="text-3xl">Objectives</h2>
       <CreateObjectiveForm />
-      {capInfo.state.objectives.map((objective) => {
-        return (
-          <div key={objective.id}>
-            <h3>{objective.name}</h3>
-            <p>Difficulty: {objective.difficulty}</p>
-            <p>
-              Resilience: {objective.resilience} /{" "}
-              {objective.startingResilience}
-            </p>
-          </div>
-        );
-      })}
+      {capInfo.state.objectives.map((objective) => (
+        <ObjectiveDisplay
+          key={objective.id}
+          objective={objective}
+          onSetResilience={(resilience) =>
+            capInfo.actions.setResilience({ id: objective.id, resilience })
+          }
+        />
+      ))}
     </div>
   );
 });
