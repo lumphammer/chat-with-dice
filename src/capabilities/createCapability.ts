@@ -1,6 +1,6 @@
-import { useCapabilityInfo } from "#/components/DiceRoller/contexts/capabilityInfoContext";
+import { useCapabilityInfo } from "#/capabilities/reactContexts/capabilityInfoContext";
+import { useSetCapabilityStateContext } from "#/capabilities/reactContexts/setCapabilityStateContext";
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
-import { useSetCapabilityStateContext } from "#/components/DiceRoller/contexts/setCapabilityStateContext";
 import { toAlphanumeric } from "#/utils/alphanumeric";
 import type { ActionCall } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";

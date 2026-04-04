@@ -4,7 +4,7 @@ import {
   webSocketServerMessageSchema,
   type WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
-import type { CapabilityInfoContextValue } from "../contexts/capabilityInfoContext";
+import type { CapabilityInfoContextValue } from "../../../capabilities/reactContexts/capabilityInfoContext";
 import type { ConnectionStatus } from "../types";
 import { applyPatches, produce } from "immer";
 import {

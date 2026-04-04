@@ -1,4 +1,4 @@
-import type { PatchRecord } from "../types";
+import type { PatchRecord } from "#/capabilities/types";
 import { createContext, useContext } from "react";
 
 type InitialisedCapabilityInfo = {

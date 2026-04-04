@@ -1,10 +1,9 @@
-import type { PatchRecord } from "#/components/DiceRoller/types";
 import type { Alphanumeric } from "#/utils/alphanumeric";
 import type { ActionCall } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import type { MessageRepository } from "#/workers/DiceRollerRoom/MessageRepository";
-import type { Draft } from "immer";
+import type { Draft, Patch } from "immer";
 import type { z } from "zod";
 
 /**
@@ -168,3 +167,11 @@ export type Capability<
   }) => Promise<ServerMountedCapability | null>;
   useMount: () => ClientMountedCapability<TState, TActions>;
 };
+
+/**
+ * Used in the optimistic update system. One Patch record is added every time a
+ * user makes a local change; it's removed when the corresponding update comes
+ * back from the server, and the remaining patch records are played back on top
+ * of the server response.
+ */
+export type PatchRecord = [string, Patch[]];

@@ -1,11 +1,11 @@
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import type { RollerMessage } from "#/validators/rollerMessageType";
+import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { RollResultErrorBoundary } from "../RollResultErrorBoundary";
 import { ShowMoreDialog } from "./ShowMoreDialog";
 import { TimeDisplay } from "./TimeDisplay";
 import { useUserIdentityContext } from "./contexts/userIdentityContext";
-import { deriveHueFromUserId } from "./deriveHueFromUserId";
 import type { UserHueStyle } from "./types";
 import quikdown from "quikdown";
 import {

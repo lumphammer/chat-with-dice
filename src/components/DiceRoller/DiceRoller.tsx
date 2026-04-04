@@ -5,17 +5,17 @@ import {
 import type { RollType } from "#/rollTypes/rollTypeRegistry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
-import { ChatBubble } from "./ChatBubble";
-import { ChatForm } from "./ChatForm";
-import { DisplayNameDialog } from "./DisplayNameDialog";
 import {
   CapabilityInfoContextProvider,
   type CapabilityInfoContextValue,
-} from "./contexts/capabilityInfoContext";
+} from "../../capabilities/reactContexts/capabilityInfoContext";
+import { SetCapabilityStateContextProvider } from "../../capabilities/reactContexts/setCapabilityStateContext";
+import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
+import { ChatBubble } from "./ChatBubble";
+import { ChatForm } from "./ChatForm";
+import { DisplayNameDialog } from "./DisplayNameDialog";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
-import { SetCapabilityStateContextProvider } from "./contexts/setCapabilityStateContext";
 import { UserIdentityContextProvider } from "./contexts/userIdentityContext";
-import { deriveHueFromUserId } from "./deriveHueFromUserId";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
 import { useSmartScroll } from "./hooks/useSmartScroll";
 import { useUserIdentityStorage } from "./hooks/useUserIdentityStorage";
