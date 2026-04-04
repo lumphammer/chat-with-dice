@@ -1,7 +1,6 @@
 import { ROOM_TYPES } from "#/constants";
 import { db } from "#/db";
 import { Rooms } from "#/schemas/chatDB-schema";
-import { defaultRoomConfig } from "#/workers/DiceRollerRoom/defaultRoomConfig";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
