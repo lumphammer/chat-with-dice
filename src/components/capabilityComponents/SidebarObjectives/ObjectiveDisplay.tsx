@@ -1,31 +1,77 @@
 import { objectivesCapability } from "#/capabilities/objectivesCapability";
+import { ObjectiveEditForm } from "./ObjectiveEditForm";
 import { ResilienceTracker } from "./ResilienceTracker";
+import { PencilIcon } from "lucide-react";
+import { useState } from "react";
 
 type MountedCapInfo = Extract<
   ReturnType<typeof objectivesCapability.useMount>,
   { initialised: true }
 >;
-type Objective = MountedCapInfo["state"]["objectives"][number];
+export type Objective = MountedCapInfo["state"]["objectives"][number];
 
 interface Props {
   objective: Objective;
   onSetResilience: (resilience: number) => void;
+  onUpdateObjective: (update: {
+    name: string;
+    isPrimary: boolean;
+    difficulty: number;
+    startingResilience: number;
+  }) => void;
 }
 
-export const ObjectiveDisplay = ({ objective, onSetResilience }: Props) => {
+export const ObjectiveDisplay = ({
+  objective,
+  onSetResilience,
+  onUpdateObjective,
+}: Props) => {
+  const [isEditing, setIsEditing] = useState(false);
+
   return (
     <div className="border-base-content/20 rounded-box my-2 border p-3">
-      <div className="mb-2 flex items-center gap-2">
-        <h3 className="grow font-semibold">{objective.name}</h3>
-        {objective.isPrimary && (
-          <span className="badge badge-primary badge-sm">Primary</span>
-        )}
-      </div>
-      <ResilienceTracker
-        startingResilience={objective.startingResilience}
-        resilience={objective.resilience}
-        onSetResilience={onSetResilience}
-      />
+      {isEditing ? (
+        <ObjectiveEditForm
+          objective={objective}
+          onSave={(update) => {
+            onUpdateObjective(update);
+            setIsEditing(false);
+          }}
+          onCancel={() => setIsEditing(false)}
+        />
+      ) : (
+        <>
+          <div className="mb-2 flex items-start gap-2">
+            {objective.isPrimary && (
+              <span className="badge badge-primary badge-sm mt-0.5 shrink-0">
+                Primary
+              </span>
+            )}
+            <h3 className="grow font-semibold">
+              {objective.name}
+              {objective.difficulty > 0 && (
+                <span className="text-base-content/60 ml-1.5 font-normal">
+                  (Difficulty: {objective.difficulty})
+                </span>
+              )}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="text-base-content/50 hover:text-base-content -mr-1
+                shrink-0 rounded p-1 transition-colors"
+              aria-label="Edit objective"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </button>
+          </div>
+          <ResilienceTracker
+            startingResilience={objective.startingResilience}
+            resilience={objective.resilience}
+            onSetResilience={onSetResilience}
+          />
+        </>
+      )}
     </div>
   );
 };

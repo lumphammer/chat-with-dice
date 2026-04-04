@@ -40,6 +40,33 @@ export const objectivesCapability = createCapability({
         });
       },
     }),
+    updateObjective: createSimpleAction({
+      payloadValidator: z.object({
+        id: z.nanoid(),
+        name: z.string(),
+        isPrimary: z.boolean(),
+        difficulty: z.int().min(0),
+        startingResilience: z.int().min(1),
+      }),
+      actionFn: ({ stateDraft, payload }) => {
+        const objective = stateDraft.objectives.find(
+          (o) => o.id === payload.id,
+        );
+        if (objective) {
+          const damageTaken =
+            objective.startingResilience - objective.resilience;
+          const newDamageTaken = Math.min(
+            damageTaken,
+            payload.startingResilience,
+          );
+          objective.name = payload.name;
+          objective.isPrimary = payload.isPrimary;
+          objective.difficulty = payload.difficulty;
+          objective.startingResilience = payload.startingResilience;
+          objective.resilience = payload.startingResilience - newDamageTaken;
+        }
+      },
+    }),
     renameObjective: createSimpleAction({
       payloadValidator: z.object({
         id: z.nanoid(),

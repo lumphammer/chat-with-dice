@@ -29,6 +29,9 @@ export const SidebarObjectives = memo(() => {
           onSetResilience={(resilience) =>
             capInfo.actions.setResilience({ id: objective.id, resilience })
           }
+          onUpdateObjective={(update) =>
+            capInfo.actions.updateObjective({ id: objective.id, ...update })
+          }
         />
       ))}
     </div>
