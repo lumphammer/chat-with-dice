@@ -40,7 +40,7 @@ const iconMap = {
 };
 
 export const DiceRoller = memo(
-  ({ roomId, config }: { roomId: string; config: RoomConfig }) => {
+  ({ roomId, config: _config }: { roomId: string; config: RoomConfig }) => {
     const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
       useUserIdentityStorage();
 
