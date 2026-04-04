@@ -18,4 +18,4 @@ Favour keeping component files short by breaking out subcomponents, even if they
 
 In our `pages/` tree, any page with more than trivial complexity should be expressed as a React component, located nearby under a `_components` folder.
 
-SVGs should not be inlined, but stored in .svg files in the _components folder.
+Icons in react components should come from lucide-react where possible.
