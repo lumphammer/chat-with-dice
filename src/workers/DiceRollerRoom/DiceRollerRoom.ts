@@ -80,8 +80,8 @@ export class DiceRollerRoom extends DurableObject {
           if (!isCapabilityName(name)) {
             return;
           }
-          const capability = capabilityRegistry[name];
-          const mountedCap = await capability.mount({
+          const capabilityInfo = capabilityRegistry[name];
+          const mountedCap = await capabilityInfo.capability.mount({
             doCtx: this.ctx,
             messageRepository: this.messageRepository,
             stateRepository: this.stateRepository,

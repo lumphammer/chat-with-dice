@@ -1,10 +1,13 @@
+import {
+  capabilityRegistry,
+  isCapabilityName,
+} from "#/capabilities/capabilityRegistry";
 import type { RollType } from "#/rollTypes/rollTypeRegistry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
-import { SidebarCounter } from "./SidebarCounter";
 import {
   CapabilityInfoContextProvider,
   type CapabilityInfoContextValue,
@@ -40,7 +43,7 @@ const iconMap = {
 };
 
 export const DiceRoller = memo(
-  ({ roomId, config: _config }: { roomId: string; config: RoomConfig }) => {
+  ({ roomId, config }: { roomId: string; config: RoomConfig }) => {
     const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
       useUserIdentityStorage();
 
@@ -180,7 +183,15 @@ export const DiceRoller = memo(
                   className="gap- flex flex-1 flex-row justify-start"
                 >
                   <div className="bg-base-100 w-sm">
-                    <SidebarCounter />
+                    {/*<SidebarCounter />*/}
+                    {config.capabilities.map(({ name }) => {
+                      if (!isCapabilityName(name)) {
+                        return null;
+                      }
+                      const Component =
+                        capabilityRegistry[name].sidebarComponent;
+                      return <Component key={name} />;
+                    })}
                   </div>
                   <div
                     data-part="main"

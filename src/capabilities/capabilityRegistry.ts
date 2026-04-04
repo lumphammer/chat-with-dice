@@ -1,9 +1,16 @@
+import { SidebarCounter } from "#/components/DiceRoller/SidebarCounter";
 import { counterCapability } from "./counterCapability";
 import type { AnyCapability } from "./types";
+import type { ComponentType } from "react";
+
+type CapabilityInfo = {
+  capability: AnyCapability;
+  sidebarComponent: ComponentType;
+};
 
 export const capabilityRegistry = {
-  counter: counterCapability,
-} satisfies Record<string, AnyCapability>;
+  counter: { capability: counterCapability, sidebarComponent: SidebarCounter },
+} satisfies Record<string, CapabilityInfo>;
 
 export type CapabilityName = keyof typeof capabilityRegistry;
 
