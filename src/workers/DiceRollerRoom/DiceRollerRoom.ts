@@ -58,6 +58,7 @@ export class DiceRollerRoom extends DurableObject {
         .from(Rooms)
         .where(eq(Rooms.durableObjectId, ctx.id.toString()))
         .limit(1);
+      console.log("configRows loaded", configRows);
       const rawConfig = configRows[0]?.config;
       const parsedConfig = roomConfigValidator.safeParse(rawConfig);
       if (parsedConfig.success) {
