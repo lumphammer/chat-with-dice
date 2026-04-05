@@ -67,22 +67,21 @@ export const ResilienceTracker = ({
       className="flex flex-wrap items-center gap-1"
       onMouseLeave={() => setHoveredTarget(null)}
     >
-      <button
-        type="button"
-        disabled={isAtFullResilience}
-        onClick={() => onSetResilience(startingResilience)}
-        onMouseEnter={() => setHoveredTarget("reset")}
-        className={`flex h-7 w-7 cursor-pointer items-center justify-center
-          rounded transition-colors ${
-            isAtFullResilience
-              ? "text-base-content/20 cursor-default"
-              : "text-base-content/50 hover:text-base-content"
-          }`}
-      >
-        <RotateCcwIcon className="h-4 w-4" />
-      </button>
-
       <div className="relative flex flex-wrap gap-1">
+        <button
+          type="button"
+          disabled={isAtFullResilience}
+          onClick={() => onSetResilience(startingResilience)}
+          onMouseEnter={() => setHoveredTarget("reset")}
+          className={`flex h-7 w-7 cursor-pointer items-center justify-center
+            rounded transition-colors ${
+              isAtFullResilience
+                ? "text-base-content/20 cursor-default"
+                : "text-base-content/50 hover:text-base-content"
+            }`}
+        >
+          <RotateCcwIcon className="h-4 w-4" />
+        </button>
         {Array.from({ length: startingResilience }, (_, i) => {
           const isCrossed = i < crossedCount;
           const previewCrossed = i < previewCrossedCount;
@@ -99,7 +98,7 @@ export const ResilienceTracker = ({
         })}
         {resilience <= 0 && (
           <svg
-            className="text-accent/60 pointer-events-none absolute inset-0
+            className="text-base-content/40 pointer-events-none absolute inset-0
               h-full w-full"
             aria-hidden="true"
             preserveAspectRatio="none"
@@ -110,7 +109,7 @@ export const ResilienceTracker = ({
               x2="100%"
               y2="100%"
               stroke="currentColor"
-              strokeWidth="3"
+              strokeWidth="4"
               strokeLinecap="round"
             />
             <line
@@ -119,7 +118,7 @@ export const ResilienceTracker = ({
               x2="0"
               y2="100%"
               stroke="currentColor"
-              strokeWidth="3"
+              strokeWidth="4"
               strokeLinecap="round"
             />
           </svg>

@@ -1,6 +1,6 @@
 import { objectivesCapability } from "#/capabilities/objectivesCapability";
 import { ChevronDownIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const DEFAULT_STARTING_RESILIENCE = 3;
 const DEFAULT_DIFFICULTY = 0;
@@ -33,11 +33,18 @@ export const CreateObjectiveForm = () => {
     setStartingResilience(DEFAULT_STARTING_RESILIENCE);
   };
 
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <details
       className="bg-base-100 border-base-content/50 open:border-primary
         rounded-box group has-[summary:hover]:border-primary my-4 w-full border
         p-2 transition-colors duration-200"
+      onToggle={(e) => {
+        if (e.currentTarget.open) {
+          nameInputRef.current?.focus();
+        }
+      }}
     >
       <summary
         className="flex cursor-pointer list-none items-center justify-between
@@ -54,6 +61,7 @@ export const CreateObjectiveForm = () => {
         <label className="floating-label">
           <span>Name</span>
           <input
+            ref={nameInputRef}
             className="input w-full"
             value={name}
             onChange={(e) => setName(e.target.value)}

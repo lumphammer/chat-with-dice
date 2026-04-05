@@ -2,7 +2,7 @@ import { objectivesCapability } from "#/capabilities/objectivesCapability";
 import { DeleteButton } from "./DeleteButton";
 import { ObjectiveEditForm } from "./ObjectiveEditForm";
 import { ResilienceTracker } from "./ResilienceTracker";
-import { PencilIcon } from "lucide-react";
+import { PencilIcon, Check } from "lucide-react";
 import { useState } from "react";
 
 type MountedCapInfo = Extract<
@@ -33,9 +33,10 @@ export const ObjectiveDisplay = ({
 
   return (
     <div
-      className="border-base-content/20 data-editing:border-primary rounded-box
-        my-4 border p-3"
+      className="border-base-content/60 data-editing:border-primary rounded-box
+        my-4 border p-3 data-completed:opacity-50"
       data-editing={isEditing ? "" : undefined}
+      data-completed={!isEditing && objective.resilience <= 0 ? "" : undefined}
     >
       {isEditing ? (
         <ObjectiveEditForm
@@ -48,28 +49,10 @@ export const ObjectiveDisplay = ({
         />
       ) : (
         <>
-          <div className="mb-2 flex items-start gap-2">
+          <div className="mb-1 flex items-start gap-2">
             <h3 className="min-w-0 grow font-semibold">
-              {objective.isPrimary && (
-                <span
-                  className="badge badge-secondary badge-sm mr-1.5 align-middle"
-                >
-                  Primary
-                </span>
-              )}
               {objective.name}
-              {objective.resilience <= 0 && (
-                <span
-                  className="badge badge-accent badge-sm ml-1.5 align-middle"
-                >
-                  Completed
-                </span>
-              )}
-              {objective.difficulty > 0 && (
-                <span className="text-base-content/60 ml-1.5 font-normal">
-                  (Difficulty: {objective.difficulty})
-                </span>
-              )}
+              {objective.resilience <= 0 ? <Check className="inline" /> : null}
             </h3>
             <DeleteButton onDelete={onDelete} />
             <button
@@ -81,6 +64,23 @@ export const ObjectiveDisplay = ({
             >
               <PencilIcon className="h-4 w-4" />
             </button>
+          </div>
+          <div className="mb-2 flex gap-1">
+            {objective.isPrimary && (
+              <span className="badge badge-secondary badge-sm align-middle">
+                Primary
+              </span>
+            )}
+            {objective.difficulty > 0 && (
+              <span className="badge badge-primary badge-sm">
+                Difficulty {objective.difficulty}
+              </span>
+            )}
+            {/*{objective.resilience <= 0 && (
+              <span className="badge badge-accent badge-sm align-middle">
+                Completed
+              </span>
+            )}*/}
           </div>
           <ResilienceTracker
             startingResilience={objective.startingResilience}
