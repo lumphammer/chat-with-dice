@@ -232,17 +232,19 @@ const GeesePassDisplay = memo(({ result }: GeesePassDisplayProps) => {
       </div>
       {passedSuccesses > 0 && (
         <div className="flex items-center gap-2">
-          <label className="text-base-content/60 text-xs">Dice to add:</label>
-          <input
-            type="number"
-            min={1}
-            value={numDice}
-            disabled={commitDisabled}
-            onChange={(e) =>
-              setNumDice(Math.max(1, parseInt(e.target.value, 10) || 1))
-            }
-            className={`${styles.input} w-20 px-2 py-1 text-center text-sm`}
-          />
+          <label className="text-base-content/60 text-xs">
+            Dice to add:
+            <input
+              type="number"
+              min={1}
+              value={numDice}
+              disabled={commitDisabled}
+              onChange={(e) =>
+                setNumDice(Math.max(1, parseInt(e.target.value, 10) || 1))
+              }
+              className={`${styles.input} w-20 px-2 py-1 text-center text-sm`}
+            />
+          </label>
           <button
             disabled={commitDisabled}
             onClick={handleCommit}
