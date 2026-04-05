@@ -54,6 +54,13 @@ export const ObjectiveDisplay = ({
                 </span>
               )}
               {objective.name}
+              {objective.resilience <= 0 && (
+                <span
+                  className="badge badge-success badge-sm ml-1.5 align-middle"
+                >
+                  Completed
+                </span>
+              )}
               {objective.difficulty > 0 && (
                 <span className="text-base-content/60 ml-1.5 font-normal">
                   (Difficulty: {objective.difficulty})

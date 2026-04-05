@@ -82,20 +82,49 @@ export const ResilienceTracker = ({
         <RotateCcwIcon className="h-4 w-4" />
       </button>
 
-      {Array.from({ length: startingResilience }, (_, i) => {
-        const isCrossed = i < crossedCount;
-        const previewCrossed = i < previewCrossedCount;
+      <div className="relative flex flex-wrap gap-1">
+        {Array.from({ length: startingResilience }, (_, i) => {
+          const isCrossed = i < crossedCount;
+          const previewCrossed = i < previewCrossedCount;
 
-        return (
-          <ResilienceBox
-            key={i}
-            isCrossed={isCrossed}
-            previewCrossed={previewCrossed}
-            onClick={() => onSetResilience(startingResilience - (i + 1))}
-            onMouseEnter={() => setHoveredTarget(i)}
-          />
-        );
-      })}
+          return (
+            <ResilienceBox
+              key={i}
+              isCrossed={isCrossed}
+              previewCrossed={previewCrossed}
+              onClick={() => onSetResilience(startingResilience - (i + 1))}
+              onMouseEnter={() => setHoveredTarget(i)}
+            />
+          );
+        })}
+        {resilience <= 0 && (
+          <svg
+            className="text-success/60 pointer-events-none absolute inset-0
+              h-full w-full"
+            aria-hidden="true"
+            preserveAspectRatio="none"
+          >
+            <line
+              x1="0"
+              y1="0"
+              x2="100%"
+              y2="100%"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            <line
+              x1="100%"
+              y1="0"
+              x2="0"
+              y2="100%"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+        )}
+      </div>
     </div>
   );
 };
