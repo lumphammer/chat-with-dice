@@ -179,7 +179,6 @@ export const DiceRoller = memo(
                   data-part="outer expander"
                   className="flex flex-1 flex-row justify-start overflow-hidden"
                 >
-                  <Sidebar config={config} />
                   <div
                     data-part="main"
                     className="mx-auto flex max-w-4xl flex-1 flex-col"
@@ -213,6 +212,7 @@ export const DiceRoller = memo(
                     </div>
                     <ChatForm onNewMessage={handleNewMessage} />
                   </div>
+                  <Sidebar config={config} />
                 </div>
               </div>
               <Portal>

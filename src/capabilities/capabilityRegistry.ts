@@ -3,18 +3,25 @@ import { SidebarObjectives } from "#/components/capabilityComponents/SidebarObje
 import { counterCapability } from "./counterCapability";
 import { objectivesCapability } from "./objectivesCapability";
 import type { AnyCapability } from "./types";
+import { Check, SquarePlus } from "lucide-react";
 import type { ComponentType } from "react";
 
 type CapabilityInfo = {
   capability: AnyCapability;
   sidebarComponent: ComponentType;
+  iconComponent: ComponentType;
 };
 
 export const capabilityRegistry = {
-  counter: { capability: counterCapability, sidebarComponent: SidebarCounter },
+  counter: {
+    capability: counterCapability,
+    sidebarComponent: SidebarCounter,
+    iconComponent: SquarePlus,
+  },
   objectives: {
     capability: objectivesCapability,
     sidebarComponent: SidebarObjectives,
+    iconComponent: Check,
   },
 } satisfies Record<string, CapabilityInfo>;
 
