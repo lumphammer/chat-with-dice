@@ -35,13 +35,13 @@ export const CreateObjectiveForm = () => {
 
   return (
     <details
-      className="bg-base-100 border-base-content/50 rounded-box group my-4
-        w-full border p-2"
+      className="bg-base-100 border-base-content/50 open:border-primary
+        rounded-box group has-[summary:hover]:border-primary my-4 w-full border
+        p-2 transition-colors duration-200"
     >
       <summary
-        className="hover:bg-base-200 flex cursor-pointer list-none items-center
-          justify-between rounded px-1 py-0.5 text-lg transition-colors
-          group-open:mb-4"
+        className="flex cursor-pointer list-none items-center justify-between
+          rounded px-1 py-0.5 text-lg transition-colors group-open:mb-4"
       >
         Add objective
         <ChevronDownIcon
@@ -54,7 +54,7 @@ export const CreateObjectiveForm = () => {
         <label className="floating-label">
           <span>Name</span>
           <input
-            className="input input-primary w-full"
+            className="input w-full"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -64,7 +64,7 @@ export const CreateObjectiveForm = () => {
           <label className="floating-label">
             <span>Difficulty</span>
             <input
-              className="input input-primary w-full"
+              className="input w-full"
               type="number"
               min={0}
               value={difficulty}
@@ -74,7 +74,7 @@ export const CreateObjectiveForm = () => {
           <label className="floating-label">
             <span>Starting Resilience</span>
             <input
-              className="input input-primary w-full"
+              className="input w-full"
               type="number"
               min={1}
               value={startingResilience}

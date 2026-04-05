@@ -32,7 +32,11 @@ export const ObjectiveDisplay = ({
   const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <div className="border-base-content/20 rounded-box my-2 border p-3">
+    <div
+      className="border-base-content/20 data-editing:border-primary rounded-box
+        my-4 border p-3"
+      data-editing={isEditing ? "" : undefined}
+    >
       {isEditing ? (
         <ObjectiveEditForm
           objective={objective}
@@ -48,7 +52,7 @@ export const ObjectiveDisplay = ({
             <h3 className="min-w-0 grow font-semibold">
               {objective.isPrimary && (
                 <span
-                  className="badge badge-primary badge-sm mr-1.5 align-middle"
+                  className="badge badge-secondary badge-sm mr-1.5 align-middle"
                 >
                   Primary
                 </span>
@@ -56,7 +60,7 @@ export const ObjectiveDisplay = ({
               {objective.name}
               {objective.resilience <= 0 && (
                 <span
-                  className="badge badge-success badge-sm ml-1.5 align-middle"
+                  className="badge badge-accent badge-sm ml-1.5 align-middle"
                 >
                   Completed
                 </span>

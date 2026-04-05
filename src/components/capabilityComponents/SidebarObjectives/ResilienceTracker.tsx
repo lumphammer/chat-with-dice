@@ -99,7 +99,7 @@ export const ResilienceTracker = ({
         })}
         {resilience <= 0 && (
           <svg
-            className="text-success/60 pointer-events-none absolute inset-0
+            className="text-accent/60 pointer-events-none absolute inset-0
               h-full w-full"
             aria-hidden="true"
             preserveAspectRatio="none"

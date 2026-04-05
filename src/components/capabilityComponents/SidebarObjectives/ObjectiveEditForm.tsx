@@ -32,7 +32,7 @@ export const ObjectiveEditForm = ({ objective, onSave, onCancel }: Props) => {
       <label className="floating-label">
         <span>Name</span>
         <input
-          className="input input-sm input-primary w-full"
+          className="input input-sm w-full"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -42,7 +42,7 @@ export const ObjectiveEditForm = ({ objective, onSave, onCancel }: Props) => {
         <label className="floating-label">
           <span>Difficulty</span>
           <input
-            className="input input-sm input-primary w-full"
+            className="input input-sm w-full"
             type="number"
             min={0}
             value={difficulty}
@@ -52,7 +52,7 @@ export const ObjectiveEditForm = ({ objective, onSave, onCancel }: Props) => {
         <label className="floating-label">
           <span>Starting Resilience</span>
           <input
-            className="input input-sm input-primary w-full"
+            className="input input-sm w-full"
             type="number"
             min={1}
             value={startingResilience}
