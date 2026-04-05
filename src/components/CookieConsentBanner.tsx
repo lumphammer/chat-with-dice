@@ -13,6 +13,19 @@ export const CookieConsentBanner = () => {
 
   const handleAccept = () => {
     localStorage.setItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY, COOKIES_ACCEPTED);
+    const localStorageDisplayName = localStorage.getItem(
+      DISPLAY_NAME_LOCAL_STORAGE_KEY,
+    );
+    const sessionStorageDisplayName = sessionStorage.getItem(
+      DISPLAY_NAME_LOCAL_STORAGE_KEY,
+    );
+    if (sessionStorageDisplayName && !localStorageDisplayName) {
+      localStorage.setItem(
+        DISPLAY_NAME_LOCAL_STORAGE_KEY,
+        sessionStorageDisplayName,
+      );
+      sessionStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
+    }
     setIsVisible(false);
   };
 

@@ -80,7 +80,10 @@ export const DisplayNameDialog = memo(
                 >
                   Generate random
                 </button>
-                <button className="btn btn-primary join-item flex-1 basis-auto">
+                <button
+                  disabled={displayName.length === 0}
+                  className="btn btn-primary join-item flex-1 basis-auto"
+                >
                   Save display name
                 </button>
                 {initialDisplayName && (

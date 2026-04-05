@@ -18,7 +18,9 @@ export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
   const { data: sessionData, isPending } = authClient.useSession();
 
   const [localDisplayName, setLocalDislayName] = useState<string>(
-    localStorage.getItem(DISPLAY_NAME_LOCAL_STORAGE_KEY) ?? "",
+    localStorage.getItem(DISPLAY_NAME_LOCAL_STORAGE_KEY) ??
+      sessionStorage.getItem(DISPLAY_NAME_LOCAL_STORAGE_KEY) ??
+      "",
   );
 
   const [localChatId, setLocalChatId] = useState<string>(
@@ -37,6 +39,8 @@ export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
     setLocalDislayName(newDisplayName);
     if (hasCookieConsent()) {
       localStorage.setItem(DISPLAY_NAME_LOCAL_STORAGE_KEY, newDisplayName);
+    } else {
+      sessionStorage.setItem(DISPLAY_NAME_LOCAL_STORAGE_KEY, newDisplayName);
     }
   }, []);
 
