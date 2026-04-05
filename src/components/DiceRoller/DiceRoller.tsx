@@ -177,7 +177,7 @@ export const DiceRoller = memo(
                 </header>
                 <div
                   data-part="outer expander"
-                  className="flex flex-1 flex-row justify-start"
+                  className="flex flex-1 flex-row justify-start overflow-hidden"
                 >
                   <Sidebar config={config} />
                   <div

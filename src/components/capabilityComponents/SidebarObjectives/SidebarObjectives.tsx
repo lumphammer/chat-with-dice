@@ -12,7 +12,7 @@ export const SidebarObjectives = memo(() => {
   }
 
   return (
-    <div className="relative p-4">
+    <div className="relative h-full overflow-scroll p-4">
       {capInfo.patches.length > 0 && (
         <LoaderCircleIcon
           className="text-base-content/40 absolute top-4 right-4 h-5 w-5

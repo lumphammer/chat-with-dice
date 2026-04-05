@@ -7,7 +7,7 @@ import { memo } from "react";
 
 export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
   return (
-    <div className="bg-base-100 w-sm">
+    <div className="bg-base-100 w-sm overflow-hidden">
       {config.capabilities.map(({ name }) => {
         if (!isCapabilityName(name)) {
           return null;
