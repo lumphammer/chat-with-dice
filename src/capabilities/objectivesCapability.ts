@@ -81,7 +81,7 @@ export const objectivesCapability = createCapability({
     setResilience: createSimpleAction({
       payloadValidator: z.object({
         id: z.nanoid(),
-        resilience: z.int(),
+        resilience: z.int().min(0),
       }),
       actionFn: ({ stateDraft, payload }) => {
         const objective = stateDraft.objectives.find(

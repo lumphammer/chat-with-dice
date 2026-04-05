@@ -1,7 +1,3 @@
-import {
-  capabilityRegistry,
-  isCapabilityName,
-} from "#/capabilities/capabilityRegistry";
 import type { RollType } from "#/rollTypes/rollTypeRegistry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
@@ -14,6 +10,7 @@ import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
+import { Sidebar } from "./Sidebar";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
 import { UserIdentityContextProvider } from "./contexts/userIdentityContext";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
@@ -180,19 +177,9 @@ export const DiceRoller = memo(
                 </header>
                 <div
                   data-part="outer expander"
-                  className="gap- flex flex-1 flex-row justify-start"
+                  className="flex flex-1 flex-row justify-start"
                 >
-                  <div className="bg-base-100 w-sm">
-                    {/*<SidebarCounter />*/}
-                    {config.capabilities.map(({ name }) => {
-                      if (!isCapabilityName(name)) {
-                        return null;
-                      }
-                      const Component =
-                        capabilityRegistry[name].sidebarComponent;
-                      return <Component key={name} />;
-                    })}
-                  </div>
+                  <Sidebar config={config} />
                   <div
                     data-part="main"
                     className="mx-auto flex max-w-4xl flex-1 flex-col"
