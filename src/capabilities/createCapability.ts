@@ -10,9 +10,8 @@ import type {
   Capability,
   CapabilityDefinition,
   ClientMountedCapability,
-  CreateSimpleAction,
   ServerMountedCapability,
-  CreateComplexAction,
+  CreateAction,
   ActionDefinition,
   AnyActionDefinition,
 } from "./types";
@@ -43,31 +42,20 @@ export const createCapability = <
 > => {
   const name = toAlphanumeric(def.name);
 
-  // fn used to build typed actions
-  const createSimpleAction: CreateSimpleAction<z.infer<TStateValidator>> = ({
+  const createAction: CreateAction<z.infer<TStateValidator>> = ({
     payloadValidator,
-    actionFn,
-  }) => ({
-    type: "simple",
-    payloadValidator,
-    actionFn,
-  });
-
-  const createComplexAction: CreateComplexAction<z.infer<TStateValidator>> = ({
-    payloadValidator,
-    optimisticFn,
-    complexFn,
+    pureFn,
+    effectfulFn: complexFn,
   }) => ({
     type: "complex",
     payloadValidator,
-    optimisticFn,
-    complexFn,
+    pureFn: pureFn,
+    effectfulFn: complexFn,
   });
 
   // build the actions collection
   const actions: TActions = def.buildActions({
-    createSimpleAction,
-    createComplexAction,
+    createAction,
   });
 
   // server-side message handler
@@ -89,16 +77,19 @@ export const createCapability = <
     if (!action) throw new Error(`Unknown action: ${actionCall.actionName}`);
     const payload = action.payloadValidator.parse(actionCall.params);
     const stateDraft = createDraft(state);
-    if (action.type === "simple") {
-      await action.actionFn({ stateDraft, payload });
-    } else {
-      await action.complexFn({
+    if (action.effectfulFn) {
+      // if we have an effectful function, call it
+      await action.effectfulFn({
         doCtx,
         stateDraft,
         payload,
-        optimisticFn: action.optimisticFn,
+        pureFn: action.pureFn ?? (() => {}),
       });
+    } else if (action.pureFn) {
+      // if pure and not effectful, call pure
+      await action.pureFn({ stateDraft, payload });
     }
+    // if neither, noop
     const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
     stateRepository.set(def.name, finalState);
     setTimeout(() => {
@@ -229,11 +220,11 @@ export const createCapability = <
               });
 
               // run optimistic updates
-              if (actionDefinition.type === "simple" && info.initialised) {
+              if (info.initialised) {
                 const [newState, patches] = produceWithPatches(
                   info.state,
                   (draft) => {
-                    actionDefinition.actionFn({ stateDraft: draft, payload });
+                    actionDefinition.pureFn?.({ stateDraft: draft, payload });
                   },
                 );
                 setCapabilityState(def.name, newState, correlation, patches);

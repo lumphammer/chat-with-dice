@@ -22,15 +22,15 @@ export const objectivesCapability = createCapability({
   }),
   getInitialState: () => ({ objectives: [] }),
   initialise: async () => {},
-  buildActions: ({ createSimpleAction }) => ({
-    createObjective: createSimpleAction({
+  buildActions: ({ createAction }) => ({
+    createObjective: createAction({
       payloadValidator: z.object({
         name: z.string(),
         startingResilience: z.int(),
         isPrimary: z.boolean(),
         difficulty: z.int().min(0),
       }),
-      actionFn: ({ stateDraft, payload }) => {
+      pureFn: ({ stateDraft, payload }) => {
         stateDraft.objectives.push({
           id: nanoid(),
           name: payload.name,
@@ -41,7 +41,7 @@ export const objectivesCapability = createCapability({
         });
       },
     }),
-    updateObjective: createSimpleAction({
+    updateObjective: createAction({
       payloadValidator: z.object({
         id: z.nanoid(),
         name: z.string(),
@@ -49,7 +49,7 @@ export const objectivesCapability = createCapability({
         difficulty: z.int().min(0),
         startingResilience: z.int().min(1),
       }),
-      actionFn: ({ stateDraft, payload }) => {
+      pureFn: ({ stateDraft, payload }) => {
         const objective = stateDraft.objectives.find(
           (o) => o.id === payload.id,
         );
@@ -68,28 +68,31 @@ export const objectivesCapability = createCapability({
         }
       },
     }),
-    deleteObjective: createSimpleAction({
+    deleteObjective: createAction({
       payloadValidator: z.object({
         id: z.nanoid(),
       }),
-      actionFn: ({ stateDraft, payload }) => {
+      pureFn: ({ stateDraft, payload }) => {
         stateDraft.objectives = stateDraft.objectives.filter(
           (o) => o.id !== payload.id,
         );
       },
     }),
-    setResilience: createSimpleAction({
+    setResilience: createAction({
       payloadValidator: z.object({
         id: z.nanoid(),
         resilience: z.int().min(0),
       }),
-      actionFn: ({ stateDraft, payload }) => {
+      pureFn: ({ stateDraft, payload }) => {
         const objective = stateDraft.objectives.find(
           (o) => o.id === payload.id,
         );
         if (objective) {
           objective.resilience = payload.resilience;
         }
+      },
+      effectfulFn: ({ pureFn, payload, stateDraft }) => {
+        pureFn({ payload, stateDraft });
       },
     }),
   }),

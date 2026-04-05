@@ -18,7 +18,7 @@ export type ServerMountedCapability = {
 export type ClientMountedCapability<
   TState extends z.infer<z.ZodObject> = z.infer<z.ZodObject>,
   TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>> =
-    Record<string, SimpleActionDefinition<TState, z.ZodTypeAny>>,
+    Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
 > =
   | { initialised: false }
   | {
@@ -35,74 +35,37 @@ export type ClientMountedCapability<
 /**
  * An action function. Gets handed a bunch of tools, can do what it wants.
  */
-type SimpleActionFn<TState, TPayload> = (tools: {
+type PureActionFn<TState, TPayload> = (tools: {
   stateDraft: Draft<TState>;
   payload: TPayload;
 }) => void | Promise<void>;
 
-type ComplexActionFn<TState, TPayload> = (tools: {
+type EffectfulActionFn<TState, TPayload> = (tools: {
   doCtx: DurableObjectState;
-  optimisticFn: SimpleActionFn<TState, TPayload>;
+  pureFn: PureActionFn<TState, TPayload>;
   stateDraft: Draft<TState>;
   payload: TPayload;
-}) => Promise<void>;
-
-type foo = string;
-
-type notA = Exclude<foo, "a">;
-
-function thing(_x: notA) {}
-
-thing("b");
-thing("a");
+}) => void | Promise<void>;
 
 /**
  * An action definition. Input validator plus function.
  */
-export type SimpleActionDefinition<
-  TState,
-  TPayloadValidator extends z.ZodType,
-> = {
-  type: "simple";
+export type ActionDefinition<TState, TPayloadValidator extends z.ZodType> = {
   payloadValidator: TPayloadValidator;
-  actionFn: SimpleActionFn<TState, z.infer<TPayloadValidator>>;
+  pureFn?: PureActionFn<TState, z.infer<TPayloadValidator>>;
+  effectfulFn?: EffectfulActionFn<TState, z.infer<TPayloadValidator>>;
 };
-
-export type ComplexActionDefinition<
-  TState,
-  TPayloadValidator extends z.ZodType,
-> = {
-  type: "complex";
-  payloadValidator: TPayloadValidator;
-  optimisticFn: SimpleActionFn<TState, z.infer<TPayloadValidator>>;
-  complexFn: ComplexActionFn<TState, z.infer<TPayloadValidator>>;
-};
-
-export type ActionDefinition<TState, TPayloadValidator extends z.ZodType> =
-  | SimpleActionDefinition<TState, TPayloadValidator>
-  | ComplexActionDefinition<TState, TPayloadValidator>;
 
 export type AnyActionDefinition = ActionDefinition<any, z.ZodType>;
 
 /**
  * Type for the builder function used when defining a capability
  */
-export type CreateSimpleAction<TState> = <
-  TPayloadValidator extends z.ZodType,
->(def: {
+export type CreateAction<TState> = <TPayloadValidator extends z.ZodType>(def: {
   payloadValidator: TPayloadValidator;
-  actionFn: SimpleActionFn<TState, z.infer<TPayloadValidator>>;
-}) => SimpleActionDefinition<TState, TPayloadValidator>;
-
-export type CreateComplexAction<TState> = <
-  TPayloadValidator extends z.ZodType,
->(def: {
-  payloadValidator: TPayloadValidator;
-  optimisticFn: SimpleActionFn<TState, z.infer<TPayloadValidator>>;
-  complexFn: ComplexActionFn<TState, z.infer<TPayloadValidator>>;
-}) => ComplexActionDefinition<TState, TPayloadValidator>;
-
-// optimistic
+  pureFn?: PureActionFn<TState, z.infer<TPayloadValidator>>;
+  effectfulFn?: EffectfulActionFn<TState, z.infer<TPayloadValidator>>;
+}) => ActionDefinition<TState, TPayloadValidator>;
 
 /**
  * The full input definition for a capability
@@ -130,8 +93,7 @@ export type CapabilityDefinition<
     config: z.infer<TConfigValidator>;
   }) => Promise<void>;
   buildActions: (tools: {
-    createSimpleAction: CreateSimpleAction<z.infer<TStateValidator>>;
-    createComplexAction: CreateComplexAction<z.infer<TStateValidator>>;
+    createAction: CreateAction<z.infer<TStateValidator>>;
   }) => TActions;
 };
 
