@@ -8,7 +8,7 @@ import type { ComponentType } from "react";
 
 type CapabilityInfo = {
   capability: AnyCapability;
-  sidebarComponent: ComponentType;
+  sidebarComponent?: ComponentType;
   iconComponent: ComponentType;
 };
 
