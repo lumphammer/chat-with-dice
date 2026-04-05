@@ -42,6 +42,8 @@ type PureActionFn<TState, TPayload> = (tools: {
 
 type EffectfulActionFn<TState, TPayload> = (tools: {
   doCtx: DurableObjectState;
+  messageRepository: MessageRepository;
+  broadcaster: Broadcaster;
   pureFn: PureActionFn<TState, TPayload>;
   stateDraft: Draft<TState>;
   payload: TPayload;

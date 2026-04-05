@@ -61,12 +61,14 @@ export const createCapability = <
   // server-side message handler
   const handleMessage = async ({
     doCtx,
+    messageRepository,
+    broadcaster,
     stateRepository,
     state,
     actionCall,
-    broadcaster,
   }: {
     doCtx: DurableObjectState;
+    messageRepository: MessageRepository;
     stateRepository: CapabilityStateRepository;
 
     state: z.infer<TStateValidator>;
@@ -84,6 +86,8 @@ export const createCapability = <
         stateDraft,
         payload,
         pureFn: action.pureFn ?? (() => {}),
+        messageRepository,
+        broadcaster,
       });
     } else if (action.pureFn) {
       // if pure and not effectful, call pure
@@ -166,6 +170,7 @@ export const createCapability = <
 
         state = await handleMessage({
           doCtx,
+          messageRepository,
           stateRepository,
           state,
           actionCall,
