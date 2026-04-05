@@ -1,3 +1,4 @@
+import { geeseRollType } from "./geese/geeseRollType";
 import { havocRollType } from "./havoc/havocRollType";
 import { notationRollType } from "./notation/notationRollType";
 import { standardRollType } from "./standard/standardRollType";
@@ -8,6 +9,7 @@ export const rollTypeRegistry = {
   standard: standardRollType,
   havoc: havocRollType,
   notation: notationRollType,
+  geese: geeseRollType,
   // f20: defineRoll({
   //   requestValidator: z.object({
   //     critOn: z.int().min(1),
