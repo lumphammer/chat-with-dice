@@ -8,7 +8,10 @@ import { memo } from "react";
 
 export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
   return (
-    <Tabs.Root className="bg-base-100 w-sm overflow-hidden">
+    <Tabs.Root
+      className="bg-base-100 w-sm overflow-hidden"
+      defaultValue={config.capabilities[0]?.name}
+    >
       <Tabs.List>
         {config.capabilities.map(({ name }) => {
           if (!isCapabilityName(name)) {
@@ -27,7 +30,14 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
           return null;
         }
         const Component = capabilityRegistry[name].sidebarComponent;
-        return <Component key={name} />;
+
+        return (
+          Component && (
+            <Tabs.Content key={name} value={name}>
+              <Component />
+            </Tabs.Content>
+          )
+        );
       })}
     </Tabs.Root>
   );
