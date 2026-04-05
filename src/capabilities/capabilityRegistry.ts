@@ -12,7 +12,7 @@ type CapabilityInfo = {
   iconComponent: ComponentType;
 };
 
-export const capabilityRegistry = {
+export const capabilityRegistry: Record<string, CapabilityInfo> = {
   counter: {
     capability: counterCapability,
     sidebarComponent: SidebarCounter,
@@ -23,7 +23,7 @@ export const capabilityRegistry = {
     sidebarComponent: SidebarObjectives,
     iconComponent: Check,
   },
-} satisfies Record<string, CapabilityInfo>;
+};
 
 export type CapabilityName = keyof typeof capabilityRegistry;
 
