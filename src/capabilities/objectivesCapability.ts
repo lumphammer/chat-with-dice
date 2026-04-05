@@ -68,34 +68,6 @@ export const objectivesCapability = createCapability({
         }
       },
     }),
-    renameObjective: createSimpleAction({
-      payloadValidator: z.object({
-        id: z.nanoid(),
-        newName: z.string(),
-      }),
-      actionFn: ({ stateDraft, payload }) => {
-        const objective = stateDraft.objectives.find(
-          (o) => o.id === payload.id,
-        );
-        if (objective) {
-          objective.name = payload.newName;
-        }
-      },
-    }),
-    setObjectivePrimary: createSimpleAction({
-      payloadValidator: z.object({
-        id: z.nanoid(),
-        isPrimary: z.boolean(),
-      }),
-      actionFn: ({ stateDraft, payload }) => {
-        const objective = stateDraft.objectives.find(
-          (o) => o.id === payload.id,
-        );
-        if (objective) {
-          objective.isPrimary = payload.isPrimary;
-        }
-      },
-    }),
     deleteObjective: createSimpleAction({
       payloadValidator: z.object({
         id: z.nanoid(),
@@ -117,34 +89,6 @@ export const objectivesCapability = createCapability({
         );
         if (objective) {
           objective.resilience = payload.resilience;
-        }
-      },
-    }),
-    setStartingResilience: createSimpleAction({
-      payloadValidator: z.object({
-        id: z.nanoid(),
-        startingResilience: z.int(),
-      }),
-      actionFn: ({ stateDraft, payload }) => {
-        const objective = stateDraft.objectives.find(
-          (o) => o.id === payload.id,
-        );
-        if (objective) {
-          objective.startingResilience = payload.startingResilience;
-        }
-      },
-    }),
-    setDifficulty: createSimpleAction({
-      payloadValidator: z.object({
-        id: z.nanoid(),
-        difficulty: z.int(),
-      }),
-      actionFn: ({ stateDraft, payload }) => {
-        const objective = stateDraft.objectives.find(
-          (o) => o.id === payload.id,
-        );
-        if (objective) {
-          objective.difficulty = payload.difficulty;
         }
       },
     }),
