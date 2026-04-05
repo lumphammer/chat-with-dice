@@ -9,6 +9,10 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     payload: z.object({ message: rollerMessageSchema }),
   }),
   z.object({
+    type: z.literal("messageUpdate"),
+    payload: z.object({ messageId: z.string(), message: rollerMessageSchema }),
+  }),
+  z.object({
     type: z.literal("catchup"),
     payload: z.object({ messages: z.array(rollerMessageSchema) }),
   }),
