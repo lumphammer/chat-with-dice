@@ -14,5 +14,6 @@ export const geeseRollType = defineRoll({
     action: "roll" as const,
     numDice: 1,
     previousRounds: [],
+    inheritedSuccesses: 0,
   },
 });

@@ -1,6 +1,6 @@
+import type { GeeseFormula } from "./geeseValidators";
 import styles from "@/styles/inputs.module.css";
 import { memo, useId } from "react";
-import type { GeeseFormula } from "./geeseValidators";
 
 export const GeeseInputUI = memo(
   ({ onChange }: { onChange: (formula: GeeseFormula) => void }) => {
@@ -23,6 +23,7 @@ export const GeeseInputUI = memo(
               action: "roll",
               numDice: parseInt(e.target.value, 10),
               previousRounds: [],
+              inheritedSuccesses: 0,
             });
           }}
         />
