@@ -1,6 +1,6 @@
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
-import type { RollerMessage } from "#/validators/rollerMessageType";
+import type { RollerMessage } from "#/validators/webSocketMessageSchemas";
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { RollResultErrorBoundary } from "../RollResultErrorBoundary";
 import { ShowMoreDialog } from "./ShowMoreDialog";

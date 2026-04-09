@@ -1,6 +1,9 @@
-import type { RollType } from "#/rollTypes/rollTypeRegistry";
+import type { RollTypeName } from "#/rollTypes/rollTypeRegistry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
-import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
+import type {
+  JsonData,
+  WebSocketClientMessage,
+} from "#/validators/webSocketMessageSchemas";
 import {
   CapabilityInfoContextProvider,
   type CapabilityInfoContextValue,
@@ -113,9 +116,9 @@ export const DiceRoller = memo(
         chat,
         rollType,
       }: {
-        formula: string;
+        formula: JsonData;
         chat: string;
-        rollType: RollType;
+        rollType: RollTypeName;
       }) => {
         const msg: WebSocketClientMessage = {
           type: "chat",

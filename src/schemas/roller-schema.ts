@@ -14,9 +14,9 @@ export const Messages = sqliteTable("Messages", {
   /** The type of the roll - none, formula, havoc etc */
   rollType: text().notNull(),
   /** Either a dice formula or JSON */
-  formula: text(),
+  formula: text({ mode: "json" }),
   /** Structured JSON results, either from rpg die roller, or our own */
-  results: text(),
+  results: text({ mode: "json" }),
   /** Chat text */
   chat: text(),
 });

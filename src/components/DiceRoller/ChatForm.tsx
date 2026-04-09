@@ -1,4 +1,8 @@
-import { rollTypeRegistry, type RollType } from "#/rollTypes/rollTypeRegistry";
+import {
+  rollTypeRegistry,
+  type RollTypeName,
+} from "#/rollTypes/rollTypeRegistry";
+import type { JsonData } from "#/validators/webSocketMessageSchemas";
 // import { FormulaForm } from "./FormulaForm/FormulaForm";
 import { RollTypePicker } from "./RollTypePicker";
 import { FormulaContextProvider } from "./contexts/formulaContext";
@@ -22,16 +26,16 @@ import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
 
 type ChatFormProps = {
   onNewMessage: (args: {
-    rollType: RollType;
-    formula: string;
+    rollType: RollTypeName;
+    formula: JsonData;
     chat: string;
   }) => void;
 };
 
 export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
-  const [formula, setFormula] = useState("");
+  const [formula, setFormula] = useState<JsonData>({});
   const [chat, setChat] = useState("");
-  const [rollType, setRollType] = useState<RollType>("standard");
+  const [rollType, setRollType] = useState<RollTypeName>("standard");
 
   const formulaContextValue = useMemo(() => {
     return {
@@ -54,6 +58,9 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
 
   const InputComponent = rollTypeRegistry[rollType].InputComponent;
 
+  const hasFormula =
+    typeof formula === "string" ? formula.trim().length > 0 : !!formula;
+
   return (
     <FormulaContextProvider value={formulaContextValue}>
       <form onSubmit={handleSubmit} className="flex flex-row flex-wrap p-4">
@@ -70,7 +77,7 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
               border-t px-4 py-2 text-left`}
             value={chat}
             onChange={(e) => setChat(e.target.value)}
-            placeholder={formula.trim() ? "Annotation" : "Chat message"}
+            placeholder={hasFormula ? "Annotation" : "Chat message"}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -89,12 +96,12 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
             <SendHorizontal
               size={22}
               className={`absolute transition-opacity duration-300
-                ${formula.trim() ? "opacity-0" : "opacity-100"}`}
+                ${hasFormula ? "opacity-0" : "opacity-100"}`}
             />
             <Dices
               size={22}
               className={`absolute transition-opacity duration-300
-                ${formula.trim() ? "opacity-100" : "opacity-0"}`}
+                ${hasFormula ? "opacity-100" : "opacity-0"}`}
             />
           </span>
         </button>

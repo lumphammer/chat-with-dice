@@ -1,11 +1,12 @@
+import type { AnyRollType } from "./createRollType";
 import { geeseRollType } from "./geese/geeseRollType";
 import { havocRollType } from "./havoc/havocRollType";
 import { notationRollType } from "./notation/notationRollType";
 import { standardRollType } from "./standard/standardRollType";
 
-export type RollType = keyof typeof rollTypeRegistry;
+export type RollTypeName = keyof typeof rollTypeRegistry;
 
-export const rollTypeRegistry = {
+export const rollTypeRegistry: Record<string, AnyRollType> = {
   standard: standardRollType,
   havoc: havocRollType,
   notation: notationRollType,
@@ -43,3 +44,7 @@ export const rollTypeRegistry = {
   // havoc: defineRoll({}),
   // fitd: defineRoll({}),
 };
+
+export function isRollTypeName(type: string): type is RollTypeName {
+  return type in rollTypeRegistry;
+}

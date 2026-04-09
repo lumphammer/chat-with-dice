@@ -1,5 +1,5 @@
 import { DiceRollResult } from "#/rollTypes/notation/DiceRollResult";
-import { defineRoll } from "../defineRoll";
+import { createRollType } from "../createRollType";
 import { NotationInput } from "./NotationInput";
 import { notationRollHandler } from "./notationRollHandler";
 import {
@@ -7,7 +7,7 @@ import {
   notationResultValidator,
 } from "./notationRollValidators";
 
-export const notationRollType = defineRoll({
+export const notationRollType = createRollType({
   formulaValidator: notationFormulaValidator,
   resultValidator: notationResultValidator,
   InputComponent: NotationInput,

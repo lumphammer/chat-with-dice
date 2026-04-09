@@ -35,11 +35,7 @@ export const createCapability = <
   >,
 >(
   def: CapabilityDefinition<TConfigValidator, TStateValidator, TActions>,
-): Capability<
-  // z.infer<TConfigValidator>,
-  z.infer<TStateValidator>,
-  TActions
-> => {
+): Capability<z.infer<TStateValidator>, TActions> => {
   const name = toAlphanumeric(def.name);
 
   const createAction: CreateAction<z.infer<TStateValidator>> = ({

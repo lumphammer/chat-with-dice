@@ -1,8 +1,9 @@
+import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { createContext, useContext, type PropsWithChildren } from "react";
 
 type FormulaContextValue = {
-  formula: string;
-  setFormula: (formula: string) => void;
+  formula: JsonData;
+  setFormula: (formula: JsonData) => void;
 };
 
 const FormulaContext = createContext<FormulaContextValue | null>(null);

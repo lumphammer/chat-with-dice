@@ -7,12 +7,15 @@ import { assertRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import { Rooms } from "#/schemas/chatDB-schema";
 import * as dbSchema from "#/schemas/roller-schema";
-import type { RollerMessage } from "#/validators/rollerMessageType";
 import {
   roomConfigValidator,
   type RoomConfig,
 } from "#/validators/roomConfigValidator";
-import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
+import {
+  webSocketClientMessageSchema,
+  type JsonData,
+  type RollerMessage,
+} from "#/validators/webSocketMessageSchemas";
 import { type ServerMountedCapability } from "../../capabilities/types";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
@@ -199,7 +202,7 @@ export class DiceRollerRoom extends DurableObject {
     chat: string | null;
     chatId: string;
     displayName: string;
-    formula: string;
+    formula: JsonData;
     rollType: string;
   }): Promise<void> {
     assertRollType(rollType);

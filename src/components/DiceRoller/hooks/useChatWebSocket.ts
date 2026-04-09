@@ -1,7 +1,7 @@
 import { ReconnectingWebSocket } from "#/utils/ReconnectingWebSocket";
-import type { RollerMessage } from "#/validators/rollerMessageType";
 import {
   webSocketServerMessageSchema,
+  type RollerMessage,
   type WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { CapabilityInfoContextValue } from "../../../capabilities/reactContexts/capabilityInfoContext";

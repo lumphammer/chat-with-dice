@@ -1,10 +1,10 @@
-import { defineRoll } from "../defineRoll";
+import { createRollType } from "../createRollType";
 import { GeeseDisplay } from "./GeeseDisplay";
 import { GeeseInputUI } from "./GeeseInputUI";
 import { geeseHandler } from "./geeseHandler";
 import { geeseFormulaValidator, geeseResultValidator } from "./geeseValidators";
 
-export const geeseRollType = defineRoll({
+export const geeseRollType = createRollType({
   formulaValidator: geeseFormulaValidator,
   resultValidator: geeseResultValidator,
   DisplayComponent: GeeseDisplay,

@@ -1,3 +1,4 @@
+// import { geeseRollType } from "#/rollTypes/geese/geeseRollType";
 import { createCapability } from "./createCapability";
 import { z } from "zod/v4";
 
@@ -18,6 +19,7 @@ export const geeseCapability = createCapability({
           broadcaster,
         }) => {
           const message = await messageRepository.getById(messageId);
+          // geeseRollType.
           if (message === undefined) return;
           broadcaster.broadcast({
             type: "messageUpdate",

@@ -1,6 +1,6 @@
 // oxlint-disable no-shadow
 // oxlint-disable no-magic-numbers
-import type { RollerMessage } from "#/validators/rollerMessageType";
+import type { RollerMessage } from "#/validators/webSocketMessageSchemas";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import { Broadcaster } from "../workers/DiceRollerRoom/Broadcaster";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
