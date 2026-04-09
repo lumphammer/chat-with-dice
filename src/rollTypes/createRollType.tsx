@@ -28,15 +28,22 @@ export type RollTypeDefinition<
   handler: (formula: z.infer<TFormulaValidator>) => z.infer<TResultValidator>;
 };
 
-export type RollType<TFormula extends JsonData, TResult extends JsonData> = {
+export type RollType<
+  TFormulaValidator extends JsonValidator,
+  TResultValidator extends JsonValidator,
+> = {
   DisplayComponent: ComponentType<{
-    formula: TFormula;
-    result: TResult;
+    formula: z.infer<TFormulaValidator>;
+    result: z.infer<TResultValidator>;
   }>;
   InputComponent: ComponentType<{
-    onChange: (formula: JsonData) => void;
+    onChange: (formula: z.infer<TFormulaValidator>) => void;
   }>;
-  handler: (rawFormula: TFormula) => TResult;
+  handler: (
+    rawFormula: z.infer<TFormulaValidator>,
+  ) => z.infer<TResultValidator>;
+  formulaValidator: TFormulaValidator;
+  resultValidator: TResultValidator;
 };
 
 export type AnyRollType = RollType<any, any>;
@@ -46,7 +53,7 @@ export function createRollType<
   TResultValidator extends JsonValidator,
 >(
   def: RollTypeDefinition<TFormulaValidator, TResultValidator>,
-): RollType<z.infer<TFormulaValidator>, z.infer<TResultValidator>> {
+): RollType<TFormulaValidator, TResultValidator> {
   return {
     // outwardly visible display ui
     DisplayComponent: ({
@@ -81,5 +88,7 @@ export function createRollType<
       const result = def.handler(formula);
       return result;
     },
+    formulaValidator: def.formulaValidator,
+    resultValidator: def.resultValidator,
   };
 }

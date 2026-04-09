@@ -1,6 +1,7 @@
 import { useCapabilityInfo } from "#/capabilities/reactContexts/capabilityInfoContext";
 import { useSetCapabilityStateContext } from "#/capabilities/reactContexts/setCapabilityStateContext";
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
+import { useUserIdentityContext } from "#/components/DiceRoller/contexts/userIdentityContext";
 import { toAlphanumeric } from "#/utils/alphanumeric";
 import type { ActionCall } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
@@ -62,14 +63,17 @@ export const createCapability = <
     stateRepository,
     state,
     actionCall,
+    chatId,
+    displayName,
   }: {
     doCtx: DurableObjectState;
     messageRepository: MessageRepository;
     stateRepository: CapabilityStateRepository;
-
+    chatId: string;
     state: z.infer<TStateValidator>;
     actionCall: ActionCall;
     broadcaster: Broadcaster;
+    displayName: string;
   }) => {
     const action = actions[actionCall.actionName];
     if (!action) throw new Error(`Unknown action: ${actionCall.actionName}`);
@@ -84,6 +88,8 @@ export const createCapability = <
         pureFn: action.pureFn ?? (() => {}),
         messageRepository,
         broadcaster,
+        chatId,
+        displayName,
       });
     } else if (action.pureFn) {
       // if pure and not effectful, call pure
@@ -156,7 +162,7 @@ export const createCapability = <
     }
     return {
       name,
-      onMessage: async (actionCall) => {
+      onMessage: async ({ actionCall, chatId, displayName }) => {
         // XXX just for testing
         if (ARTIFICIAL_LAG_MS > 0) {
           await new Promise((resolve) =>
@@ -171,6 +177,8 @@ export const createCapability = <
           state,
           actionCall,
           broadcaster,
+          chatId,
+          displayName,
         });
       },
       sendInit: async (ws: WebSocket) => {
@@ -193,6 +201,7 @@ export const createCapability = <
     const sendMessage = useSendMessageContext();
     const setCapabilityState = useSetCapabilityStateContext();
     const info = useCapabilityInfo(name);
+    const userIdentity = useUserIdentityContext();
 
     // when we map over the actions, TS gives up on typing the value side,
     // presumably because it's a mapped type? Anyway, this is the type of the
@@ -217,6 +226,7 @@ export const createCapability = <
                     actionName: action,
                     params: payload,
                   },
+                  displayName: userIdentity.displayName,
                 },
               });
 

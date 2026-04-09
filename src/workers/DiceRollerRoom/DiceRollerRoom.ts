@@ -167,7 +167,11 @@ export class DiceRollerRoom extends DurableObject {
         if (!cap) {
           throw new Error(`Unknown capability: ${data.payload.capabilityName}`);
         }
-        await cap.onMessage(data.payload.actionCall);
+        await cap.onMessage({
+          actionCall: data.payload.actionCall,
+          chatId: attachment.chatId,
+          displayName: data.payload.displayName,
+        });
       }
     } catch (error) {
       this.broadcaster.sendError(ws, error);

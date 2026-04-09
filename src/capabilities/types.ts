@@ -11,7 +11,11 @@ import type { z } from "zod";
  */
 export type ServerMountedCapability = {
   name: Alphanumeric;
-  onMessage: (actionCall: ActionCall) => Promise<void>;
+  onMessage: (tools: {
+    actionCall: ActionCall;
+    chatId: string;
+    displayName: string;
+  }) => Promise<void>;
   sendInit: (server: WebSocket) => Promise<void>;
 };
 
@@ -47,6 +51,8 @@ type EffectfulActionFn<TState, TPayload> = (tools: {
   pureFn: PureActionFn<TState, TPayload>;
   stateDraft: Draft<TState>;
   payload: TPayload;
+  chatId: string;
+  displayName: string;
 }) => void | Promise<void>;
 
 /**

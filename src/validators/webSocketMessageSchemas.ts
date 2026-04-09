@@ -8,31 +8,6 @@ const USERNAME_MAX_LENGTH = 128;
 export type JsonData = z.core.util.JSONType;
 export type JsonValidator = z.ZodType<JsonData>;
 
-function _consumesAValidator<TVal extends JsonValidator>(_validator: TVal) {
-  return;
-}
-
-_consumesAValidator(z.string());
-_consumesAValidator(z.int());
-_consumesAValidator(
-  z.object({
-    apple: z.int(),
-    banana: z.array(z.int()),
-  }),
-);
-
-_consumesAValidator(
-  // @ts-expect-error
-  z.object({
-    banana: z.array(z.function()),
-  }),
-);
-
-_consumesAValidator(
-  // @ts-expect-error
-  z.function(),
-);
-
 /**
  * This should correspond to the Messages table, but we are defining separately
  * to avoid having a WS type that is basically "SELECT * FROM". While that would
@@ -59,15 +34,6 @@ export const chatMessageValidator = z.object({
 });
 
 export type RollerMessage = z.infer<typeof chatMessageValidator>;
-
-// export type MessagesTableInferredSelectType = typeof Messages.$inferSelect;
-// export type MessagesTableInferredInsertType = typeof Messages.$inferInsert;
-
-// export const messagesTableSelectValidator = createSelectSchema(Messages);
-
-// export type MessageTableInferredSelectValidatorType = z.infer<
-//   typeof messagesTableSelectValidator
-// >;
 
 export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
@@ -121,6 +87,7 @@ export const actionCallMessageValidator = z.object({
   type: z.literal("action"),
   payload: z.object({
     capabilityName: z.string(),
+    displayName: z.string(),
     actionCall: actionCallValidator,
   }),
 });
