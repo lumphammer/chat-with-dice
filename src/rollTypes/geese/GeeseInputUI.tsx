@@ -20,10 +20,8 @@ export const GeeseInputUI = memo(
           placeholder="Number of dice"
           onChange={(e) => {
             onChange({
-              action: "roll",
+              action: "start",
               numDice: parseInt(e.target.value, 10),
-              previousRounds: [],
-              inheritedSuccesses: 0,
             });
           }}
         />
