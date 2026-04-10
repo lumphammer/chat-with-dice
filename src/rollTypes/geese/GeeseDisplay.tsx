@@ -303,6 +303,35 @@ const CommitSection = memo(({ messageId }: { messageId: string }) => {
 });
 CommitSection.displayName = "CommitSection";
 
+// ── Resolve button for pass owner ─────────────────────────────────────────────
+
+const PassResolveButton = memo(({ messageId }: { messageId: string }) => {
+  const sendMessage = useSendMessageContext();
+  const { displayName } = useUserIdentityContext();
+
+  const handleResolve = useCallback(() => {
+    sendMessage({
+      type: "chat",
+      payload: {
+        rollType: "geese",
+        formula: {
+          action: "resolve",
+          previousMessageId: messageId,
+        } satisfies GeeseFormula,
+        chat: null,
+        displayName,
+      },
+    });
+  }, [messageId, sendMessage, displayName]);
+
+  return (
+    <button onClick={handleResolve} className="btn btn-success btn-sm">
+      Resolve
+    </button>
+  );
+});
+PassResolveButton.displayName = "PassResolveButton";
+
 // ── Pass result (with Commit section) ─────────────────────────────────────────
 
 const GeesePassDisplay = memo(
@@ -318,16 +347,21 @@ const GeesePassDisplay = memo(
       faces,
       totalSuccesses,
       problemCount,
+      consumed,
       consumedBy,
       previousContributors,
     } = result;
 
+    const isOwner =
+      previousContributors.length > 0 &&
+      previousContributors[previousContributors.length - 1].chatId === chatId;
     const currentUserContributed = previousContributors.some(
       (c) => c.chatId === chatId,
     );
-    const showCommitSection = consumedBy == null && !currentUserContributed;
+    const showCommitSection =
+      consumedBy == null && consumed == null && !currentUserContributed;
 
-    const isFaded = consumedBy != null;
+    const isFaded = consumedBy != null || consumed != null;
 
     return (
       <div className={`flex flex-col gap-3${isFaded ? " opacity-50" : ""}`}>
@@ -343,12 +377,19 @@ const GeesePassDisplay = memo(
             : `${totalSuccesses} success${totalSuccesses === 1 ? "" : "es"} to claim`}
         </div>
         <ProblemsDisplay problemCount={problemCount} />
-        {consumedBy != null ? (
+        {consumed === "resolve" ? (
+          <div className="text-base-content/60 text-sm font-medium">
+            ✓ Resolved
+          </div>
+        ) : consumedBy != null ? (
           <div className="text-base-content/60 text-sm font-medium">
             Committed by {consumedBy.displayName} ✓
           </div>
         ) : (
-          showCommitSection && <CommitSection messageId={messageId} />
+          <>
+            {isOwner && <PassResolveButton messageId={messageId} />}
+            {showCommitSection && <CommitSection messageId={messageId} />}
+          </>
         )}
       </div>
     );

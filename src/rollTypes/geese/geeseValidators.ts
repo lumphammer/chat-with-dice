@@ -68,6 +68,7 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
         displayName: z.string(),
       })
       .optional(),
+    consumed: z.literal("resolve").optional(),
   }),
 ]);
 

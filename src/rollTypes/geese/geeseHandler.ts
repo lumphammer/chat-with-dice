@@ -60,6 +60,29 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
     } satisfies GeeseResult;
   }
 
+  // resolve — can follow a roll OR a pass
+  if (formula.action === "resolve") {
+    if (
+      previous.results.action !== "roll" &&
+      previous.results.action !== "pass"
+    ) {
+      throw new Error("Can only resolve a roll or a pass");
+    }
+    if (previous.results.action === "roll") {
+      previous.results.consumed = "resolve";
+    } else {
+      previous.results.consumed = "resolve";
+    }
+    updateMessage(previous);
+    return {
+      action: "resolve",
+      faces: previous.results.faces,
+      totalSuccesses: previous.results.totalSuccesses,
+      problemCount: previous.results.problemCount,
+      previousContributors: [...previous.results.previousContributors],
+    } satisfies GeeseResult;
+  }
+
   // everything else requires a roll, so we check that here
   if (previous.results.action !== "roll") {
     throw new Error("Previous message did not result in a roll");
@@ -78,19 +101,6 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       totalSuccesses: previous.results.totalSuccesses + successCount,
       problemCount: previous.results.problemCount + problemCount,
       explodableCount: successCount,
-      previousContributors: [...previous.results.previousContributors],
-    } satisfies GeeseResult;
-  }
-
-  // resolve
-  if (formula.action === "resolve") {
-    previous.results.consumed = "resolve";
-    updateMessage(previous);
-    return {
-      action: "resolve",
-      faces: previous.results.faces,
-      totalSuccesses: previous.results.totalSuccesses,
-      problemCount: previous.results.problemCount,
       previousContributors: [...previous.results.previousContributors],
     } satisfies GeeseResult;
   }
