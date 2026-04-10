@@ -1,7 +1,7 @@
 import * as dbSchema from "#/schemas/roller-schema";
 import {
   anyChatMessageValidator,
-  type AnyChatMessage,
+  type ChatMessage,
 } from "#/validators/webSocketMessageSchemas";
 import { desc, eq } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
@@ -11,7 +11,7 @@ const MESSAGE_CATCHUP_LENGTH = 100;
 export class MessageRepository {
   constructor(private db: DrizzleSqliteDODatabase<typeof dbSchema>) {}
 
-  async getById(id: string): Promise<AnyChatMessage | undefined> {
+  async getById(id: string): Promise<ChatMessage | undefined> {
     const dbRow = (
       await this.db
         .select()
@@ -23,15 +23,15 @@ export class MessageRepository {
     return parsed;
   }
 
-  async updateMessage(_message: AnyChatMessage) {}
+  async updateMessage(_message: ChatMessage) {}
 
-  async insert(message: AnyChatMessage): Promise<void> {
+  async insert(message: ChatMessage): Promise<void> {
     await this.db.insert(dbSchema.Messages).values(message);
   }
 
   async getRecent(
     limit: number = MESSAGE_CATCHUP_LENGTH,
-  ): Promise<AnyChatMessage[]> {
+  ): Promise<ChatMessage[]> {
     return (
       await this.db
         .select()

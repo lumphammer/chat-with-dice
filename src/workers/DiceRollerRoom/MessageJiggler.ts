@@ -1,12 +1,13 @@
 import type { RollType } from "#/rollTypes/createRollType";
 import {
-  chatMessageValidator,
+  parseChatMessage,
   type JsonValidator,
   type ChatMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "./Broadcaster";
 import type { MessageRepository } from "./MessageRepository";
 import { produce, type Draft } from "immer";
+import type { z } from "zod/v4";
 
 /**
  * A tool which combines the message repository and the broadcaster, for
@@ -27,21 +28,23 @@ export class MessageJiggler {
     id: string,
     rollType: RollType<TFormulaValidator, TResultValidator>,
     callback: (tools: {
-      draft: Draft<ChatMessage<TFormulaValidator, TResultValidator>>;
+      draft: Draft<
+        ChatMessage<z.infer<TFormulaValidator>, z.infer<TResultValidator>>
+      >;
     }) => void,
   ): Promise<void> {
     const message = await this.messageRepository.getById(id);
-    const validator = chatMessageValidator(
+    const parsed = parseChatMessage(
       rollType.formulaValidator,
       rollType.resultValidator,
+      message,
     );
-    const parsed = validator.parse(message);
     const updated = produce(parsed, (draft) => {
       callback({ draft });
     });
+    // Widen to AnyChatMessage for the repository/broadcaster, which don't need
+    // the specific formula/result types.
     await this.messageRepository.updateMessage(updated);
     this.broadcaster.broadcastChatMessage(updated);
-
-    // return parsed;
   }
 }

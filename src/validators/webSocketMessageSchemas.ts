@@ -9,9 +9,11 @@ export type JsonData = z.core.util.JSONType;
 export type JsonValidator = z.ZodType<JsonData>;
 
 /**
- * Create a zod validator
+ * Create a zod validator for chat messages.
+ * Not exported — external callers should use {@link parseChatMessage} instead,
+ * which returns a correctly-typed {@link ChatMessage}.
  */
-export function chatMessageValidator<
+function chatMessageValidator<
   TFormulaValidator extends JsonValidator,
   TResultValidator extends JsonValidator,
 >(
@@ -47,20 +49,49 @@ export function chatMessageValidator<
   });
 }
 
-const _v = chatMessageValidator(z.string(), z.number());
-
-type _T = z.infer<typeof _v>;
-
+/**
+ * The output shape of a validated chat message.
+ * Parameterised by the *data* types (not the validator types) so that
+ * TypeScript never has to push generic validators through Zod's complex
+ * mapped-type machinery.
+ */
 export type ChatMessage<
-  TFormulaValidator extends JsonValidator,
-  TResultValidator extends JsonValidator,
-> = z.infer<
-  ReturnType<typeof chatMessageValidator<TFormulaValidator, TResultValidator>>
->;
+  TFormula extends JsonData = JsonData,
+  TResult extends JsonData = JsonData,
+> = {
+  id: string;
+  displayName: string;
+  chatId: string;
+  created_time: number;
+  rollType: string;
+  formula: TFormula;
+  results: TResult;
+  chat: string | null;
+};
 
 export const anyChatMessageValidator = chatMessageValidator(z.json(), z.json());
 
-export type AnyChatMessage = z.infer<typeof anyChatMessageValidator>;
+/**
+ * Validate a candidate value against a chat message schema built from the
+ * given formula/result validators, and return it typed as a {@link ChatMessage}.
+ *
+ * This encapsulates the single type-assertion that bridges Zod's complex
+ * generic output type to our plain structural {@link ChatMessage} type.
+ */
+export function parseChatMessage<
+  TFormulaValidator extends JsonValidator,
+  TResultValidator extends JsonValidator,
+>(
+  formulaValidator: TFormulaValidator,
+  resultValidator: TResultValidator,
+  candidate: unknown,
+): ChatMessage<z.infer<TFormulaValidator>, z.infer<TResultValidator>> {
+  const validator = chatMessageValidator(formulaValidator, resultValidator);
+  return validator.parse(candidate) as ChatMessage<
+    z.infer<TFormulaValidator>,
+    z.infer<TResultValidator>
+  >;
+}
 
 export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({

@@ -1,5 +1,5 @@
 import type {
-  AnyChatMessage,
+  ChatMessage,
   WebSocketServerMessage,
 } from "#/validators/webSocketMessageSchemas";
 
@@ -31,7 +31,7 @@ export class Broadcaster {
     });
   }
 
-  broadcastChatMessage(message: AnyChatMessage): void {
+  broadcastChatMessage(message: ChatMessage): void {
     this.broadcast({
       type: "message",
       payload: { message },
@@ -45,7 +45,7 @@ export class Broadcaster {
   //   });
   // }
 
-  async sendCatchUp(ws: WebSocket, messages: AnyChatMessage[]): Promise<void> {
+  async sendCatchUp(ws: WebSocket, messages: ChatMessage[]): Promise<void> {
     this.send(ws, {
       type: "catchup",
       payload: { messages },

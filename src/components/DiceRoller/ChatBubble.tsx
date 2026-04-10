@@ -1,6 +1,6 @@
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
-import type { AnyChatMessage } from "#/validators/webSocketMessageSchemas";
+import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { RollResultErrorBoundary } from "../RollResultErrorBoundary";
 import { ShowMoreDialog } from "./ShowMoreDialog";
@@ -18,7 +18,7 @@ import {
 } from "react";
 
 type ChatBubbleProps = {
-  message: AnyChatMessage;
+  message: ChatMessage;
 };
 
 export function addLinkTargets(html: string): string {

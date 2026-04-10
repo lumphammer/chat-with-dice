@@ -14,7 +14,7 @@ import {
 import {
   webSocketClientMessageSchema,
   type JsonData,
-  type AnyChatMessage,
+  type ChatMessage,
 } from "#/validators/webSocketMessageSchemas";
 import { type ServerMountedCapability } from "../../capabilities/types";
 import { Broadcaster } from "./Broadcaster";
@@ -223,7 +223,7 @@ export class DiceRollerRoom extends DurableObject {
       formula,
     });
 
-    const rollerMessage: AnyChatMessage = {
+    const rollerMessage: ChatMessage = {
       created_time: Date.now(),
       formula: formula,
       id: crypto.randomUUID(),
