@@ -42,6 +42,7 @@ export default defineConfig({
       { ignore: [-1, 0, 1, 2, 24, 60, 1000] },
     ],
     // bobbins: new values as props to built-ins are fine
+    // "react-perf/jsx-no-jsx-as-prop": "off",
     "react-perf/jsx-no-new-function-as-prop": "off",
     // same as react-perf/jsx-no-new-function-as-prop
     "react-perf/jsx-no-new-object-as-prop": "off",

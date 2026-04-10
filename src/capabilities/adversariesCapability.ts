@@ -12,6 +12,7 @@ export const adversariesCapability = createCapability({
         id: z.nanoid(),
         name: z.string(),
         threat: z.int().min(0),
+        difficulty: z.int().min(0),
         startingResilience: z.int(),
         resilience: z.int(),
       }),
@@ -24,6 +25,7 @@ export const adversariesCapability = createCapability({
       payloadValidator: z.object({
         name: z.string(),
         threat: z.int().min(0),
+        difficulty: z.int().min(0),
         startingResilience: z.int().min(1),
       }),
       pureFn: ({ stateDraft, payload }) => {
@@ -31,6 +33,7 @@ export const adversariesCapability = createCapability({
           id: nanoid(),
           name: payload.name,
           threat: payload.threat,
+          difficulty: payload.difficulty,
           resilience: payload.startingResilience,
           startingResilience: payload.startingResilience,
         });
@@ -41,6 +44,7 @@ export const adversariesCapability = createCapability({
         id: z.nanoid(),
         name: z.string(),
         threat: z.int().min(0),
+        difficulty: z.int().min(0),
         startingResilience: z.int().min(1),
       }),
       pureFn: ({ stateDraft, payload }) => {
@@ -50,9 +54,13 @@ export const adversariesCapability = createCapability({
         if (adversary) {
           const damageTaken =
             adversary.startingResilience - adversary.resilience;
-          const newDamageTaken = Math.min(damageTaken, payload.startingResilience);
+          const newDamageTaken = Math.min(
+            damageTaken,
+            payload.startingResilience,
+          );
           adversary.name = payload.name;
           adversary.threat = payload.threat;
+          adversary.difficulty = payload.difficulty;
           adversary.startingResilience = payload.startingResilience;
           adversary.resilience = payload.startingResilience - newDamageTaken;
         }

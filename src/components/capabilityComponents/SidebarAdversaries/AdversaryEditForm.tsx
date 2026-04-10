@@ -3,6 +3,7 @@ import { useState } from "react";
 interface AdversaryData {
   name: string;
   threat: number;
+  difficulty: number;
   startingResilience: number;
 }
 
@@ -15,6 +16,7 @@ interface Props {
 export const AdversaryEditForm = ({ adversary, onSave, onCancel }: Props) => {
   const [name, setName] = useState(adversary.name);
   const [threat, setThreat] = useState(adversary.threat);
+  const [difficulty, setDifficulty] = useState(adversary.difficulty);
   const [startingResilience, setStartingResilience] = useState(
     adversary.startingResilience,
   );
@@ -23,7 +25,7 @@ export const AdversaryEditForm = ({ adversary, onSave, onCancel }: Props) => {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSave({ name, threat, startingResilience });
+        onSave({ name, threat, difficulty, startingResilience });
       }}
     >
       <label className="floating-label">
@@ -35,7 +37,7 @@ export const AdversaryEditForm = ({ adversary, onSave, onCancel }: Props) => {
         />
       </label>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-4 grid grid-cols-3 gap-2">
         <label className="floating-label">
           <span>Threat</span>
           <input
@@ -44,6 +46,16 @@ export const AdversaryEditForm = ({ adversary, onSave, onCancel }: Props) => {
             min={0}
             value={threat}
             onChange={(e) => setThreat(Number(e.target.value))}
+          />
+        </label>
+        <label className="floating-label">
+          <span>Difficulty</span>
+          <input
+            className="input input-sm w-full"
+            type="number"
+            min={0}
+            value={difficulty}
+            onChange={(e) => setDifficulty(Number(e.target.value))}
           />
         </label>
         <label className="floating-label">

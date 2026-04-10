@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 
 const DEFAULT_STARTING_RESILIENCE = 3;
 const DEFAULT_THREAT = 1;
+const DEFAULT_DIFFICULTY = 0;
 
 export const CreateAdversaryForm = () => {
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -11,6 +12,7 @@ export const CreateAdversaryForm = () => {
 
   const [name, setName] = useState("");
   const [threat, setThreat] = useState(DEFAULT_THREAT);
+  const [difficulty, setDifficulty] = useState(DEFAULT_DIFFICULTY);
   const [startingResilience, setStartingResilience] = useState(
     DEFAULT_STARTING_RESILIENCE,
   );
@@ -21,9 +23,15 @@ export const CreateAdversaryForm = () => {
 
   const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    capInfo.actions.createAdversary({ name, threat, startingResilience });
+    capInfo.actions.createAdversary({
+      name,
+      threat,
+      difficulty,
+      startingResilience,
+    });
     setName("");
     setThreat(DEFAULT_THREAT);
+    setDifficulty(DEFAULT_DIFFICULTY);
     setStartingResilience(DEFAULT_STARTING_RESILIENCE);
   };
 
@@ -43,7 +51,7 @@ export const CreateAdversaryForm = () => {
           />
         </label>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="mt-4 grid grid-cols-3 gap-2">
           <label className="floating-label">
             <span>Threat</span>
             <input
@@ -52,6 +60,16 @@ export const CreateAdversaryForm = () => {
               min={0}
               value={threat}
               onChange={(e) => setThreat(Number(e.target.value))}
+            />
+          </label>
+          <label className="floating-label">
+            <span>Difficulty</span>
+            <input
+              className="input w-full"
+              type="number"
+              min={0}
+              value={difficulty}
+              onChange={(e) => setDifficulty(Number(e.target.value))}
             />
           </label>
           <label className="floating-label">
