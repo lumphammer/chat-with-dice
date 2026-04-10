@@ -41,6 +41,33 @@ const DiceRow = memo(
 );
 DiceRow.displayName = "DiceRow";
 
+// ── Problems display ──────────────────────────────────────────────────────────
+
+const HELL_THRESHOLD = 3;
+
+const PROBLEM_CONSEQUENCES = [
+  "you get off scot free",
+  "you encounter a new challenge",
+  "someone or something important sustains collateral harm",
+] as const;
+
+const ProblemsDisplay = memo(({ problemCount }: { problemCount: number }) => {
+  const consequence =
+    problemCount >= HELL_THRESHOLD
+      ? "agents of hell act directly"
+      : PROBLEM_CONSEQUENCES[problemCount];
+  return (
+    <div className="text-warning text-sm">
+      {problemCount === 0
+        ? "No problems"
+        : `${problemCount} problem${problemCount === 1 ? "" : "s"}`}
+      {" — "}
+      {consequence}
+    </div>
+  );
+});
+ProblemsDisplay.displayName = "ProblemsDisplay";
+
 // ── Consumed status label ─────────────────────────────────────────────────────
 
 const ConsumedLabel = memo(
@@ -207,7 +234,7 @@ GeeseRollDisplay.displayName = "GeeseRollDisplay";
 
 const GeeseResolveDisplay = memo(
   ({ result }: { result: Extract<GeeseResult, { action: "resolve" }> }) => {
-    const { totalSuccesses, faces } = result;
+    const { totalSuccesses, faces, problemCount } = result;
     return (
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
@@ -219,6 +246,7 @@ const GeeseResolveDisplay = memo(
           ✓ Resolved with {totalSuccesses} success
           {totalSuccesses === 1 ? "" : "es"}
         </div>
+        <ProblemsDisplay problemCount={problemCount} />
       </div>
     );
   },
@@ -286,7 +314,13 @@ const GeesePassDisplay = memo(
     messageId: string;
   }) => {
     const { chatId } = useUserIdentityContext();
-    const { faces, totalSuccesses, consumedBy, previousContributors } = result;
+    const {
+      faces,
+      totalSuccesses,
+      problemCount,
+      consumedBy,
+      previousContributors,
+    } = result;
 
     const currentUserContributed = previousContributors.some(
       (c) => c.chatId === chatId,
@@ -308,6 +342,7 @@ const GeesePassDisplay = memo(
             ? "no successes to claim"
             : `${totalSuccesses} success${totalSuccesses === 1 ? "" : "es"} to claim`}
         </div>
+        <ProblemsDisplay problemCount={problemCount} />
         {consumedBy != null ? (
           <div className="text-base-content/60 text-sm font-medium">
             Committed by {consumedBy.displayName} ✓

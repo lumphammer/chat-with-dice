@@ -38,6 +38,7 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
     action: z.literal("roll"),
     faces: rollFacesValidator,
     totalSuccesses: z.int(),
+    problemCount: z.int(),
     explodableCount: z.int(),
     consumed: z.enum(["explode", "resolve", "pass"]).optional(),
     previousContributors: z.array(
@@ -48,6 +49,7 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
     action: z.literal("resolve"),
     faces: rollFacesValidator,
     totalSuccesses: z.int(),
+    problemCount: z.int(),
     previousContributors: z.array(
       z.object({ chatId: z.string(), displayName: z.string() }),
     ),
@@ -56,6 +58,7 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
     action: z.literal("pass"),
     faces: rollFacesValidator,
     totalSuccesses: z.int(),
+    problemCount: z.int(),
     previousContributors: z.array(
       z.object({ chatId: z.string(), displayName: z.string() }),
     ),

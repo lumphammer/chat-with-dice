@@ -10,11 +10,9 @@ function d6(): number {
 
 const roll = (numDice: number) => {
   const faces = Array.from({ length: numDice }, d6);
-
-  const successCount = faces
-    .flat()
-    .filter((v) => v >= GEESE_SUCCESS_MIN).length;
-  return [faces, successCount] as const;
+  const successCount = faces.filter((v) => v >= GEESE_SUCCESS_MIN).length;
+  const problemCount = faces.filter((v) => v === 1).length;
+  return [faces, successCount, problemCount] as const;
 };
 
 export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
@@ -25,11 +23,12 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
   displayName,
 }) => {
   if (formula.action === "start") {
-    const [faces, successCount] = roll(formula.numDice);
+    const [faces, successCount, problemCount] = roll(formula.numDice);
     return {
       action: "roll",
       faces: [faces],
       totalSuccesses: successCount,
+      problemCount: problemCount,
       explodableCount: successCount,
       previousContributors: [{ chatId, displayName }],
     } satisfies GeeseResult;
@@ -44,17 +43,15 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
     if (previous.results.action !== "pass") {
       throw new Error("Previous message did not result in a pass");
     }
-    const [faces, successCount] = roll(formula.numDice);
-    previous.results.consumedBy = {
-      chatId,
-      displayName,
-    };
+    const [faces, successCount, problemCount] = roll(formula.numDice);
+    previous.results.consumedBy = { chatId, displayName };
     updateMessage(previous);
 
     return {
       action: "roll",
       faces: [...previous.results.faces, faces],
       totalSuccesses: previous.results.totalSuccesses + successCount,
+      problemCount: problemCount,
       explodableCount: successCount,
       previousContributors: [
         ...previous.results.previousContributors,
@@ -70,13 +67,16 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
 
   // explode
   if (formula.action === "explode") {
-    const [faces, successCount] = roll(previous.results.explodableCount);
+    const [faces, successCount, problemCount] = roll(
+      previous.results.explodableCount,
+    );
     previous.results.consumed = "explode";
     updateMessage(previous);
     return {
       action: "roll",
       faces: [...previous.results.faces, faces],
       totalSuccesses: previous.results.totalSuccesses + successCount,
+      problemCount: previous.results.problemCount + problemCount,
       explodableCount: successCount,
       previousContributors: [...previous.results.previousContributors],
     } satisfies GeeseResult;
@@ -90,6 +90,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       action: "resolve",
       faces: previous.results.faces,
       totalSuccesses: previous.results.totalSuccesses,
+      problemCount: previous.results.problemCount,
       previousContributors: [...previous.results.previousContributors],
     } satisfies GeeseResult;
   }
@@ -102,6 +103,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       action: "pass",
       faces: previous.results.faces,
       totalSuccesses: previous.results.totalSuccesses - 1,
+      problemCount: previous.results.problemCount,
       previousContributors: [...previous.results.previousContributors],
     } satisfies GeeseResult;
   }
