@@ -47,4 +47,18 @@ export class MessageJiggler {
     await this.messageRepository.updateMessage(updated);
     this.broadcaster.broadcastChatMessage(updated);
   }
+
+  async getMessage<
+    TFormulaValidator extends JsonValidator,
+    TResultValidator extends JsonValidator,
+  >(
+    id: string,
+    formulaValidator: TFormulaValidator,
+    resultValidator: TResultValidator,
+  ): Promise<
+    ChatMessage<z.infer<TFormulaValidator>, z.infer<TResultValidator>>
+  > {
+    const message = await this.messageRepository.getById(id);
+    return parseChatMessage(formulaValidator, resultValidator, message);
+  }
 }

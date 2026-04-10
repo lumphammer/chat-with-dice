@@ -48,12 +48,12 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
   }),
   z.object({
     action: z.literal("resolve"),
-    rounds: rollFacesValidator,
+    faces: rollFacesValidator,
     totalSuccesses: z.int(),
   }),
   z.object({
     action: z.literal("pass"),
-    rounds: rollFacesValidator,
+    faces: rollFacesValidator,
     totalSuccesses: z.int(),
     consumedBy: z
       .object({

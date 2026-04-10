@@ -218,7 +218,7 @@ export class DiceRollerRoom extends DurableObject {
     assertRollType(rollType);
 
     const rollTypeDef = rollTypeRegistry[rollType];
-    const result = rollTypeDef.handler({
+    const results = await rollTypeDef.handler({
       messageJiggler: this.messageJiggler,
       formula,
     });
@@ -229,7 +229,7 @@ export class DiceRollerRoom extends DurableObject {
       id: crypto.randomUUID(),
       // result: roll?.output ?? null,
       rollType,
-      results: result,
+      results,
       chat,
       chatId,
       displayName,

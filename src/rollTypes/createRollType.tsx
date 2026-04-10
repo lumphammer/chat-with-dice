@@ -1,4 +1,5 @@
 import type {
+  ChatMessage,
   JsonData,
   JsonValidator,
 } from "#/validators/webSocketMessageSchemas";
@@ -10,6 +11,14 @@ export type RollInputComponent<TFormula extends JsonData> =
   React.ComponentType<{
     onChange: (formula: TFormula) => void;
   }>;
+
+export type RollHandler<
+  TFormula extends JsonData,
+  TResult extends JsonData,
+> = (tools: {
+  formula: TFormula;
+  getMessage: (id: string) => Promise<ChatMessage<TFormula, TResult>>;
+}) => TResult | Promise<TResult>;
 
 export type RollTypeDefinition<
   TFormulaValidator extends JsonValidator,
@@ -26,10 +35,7 @@ export type RollTypeDefinition<
     onChange: (formula: z.infer<TFormulaValidator>) => void;
   }>;
   defaultFormula: z.infer<TFormulaValidator>;
-  handler: (tools: {
-    formula: z.infer<TFormulaValidator>;
-    messageJiggler: MessageJiggler;
-  }) => z.infer<TResultValidator>;
+  handler: RollHandler<z.infer<TFormulaValidator>, z.infer<TResultValidator>>;
 };
 
 export type RollType<
@@ -46,7 +52,7 @@ export type RollType<
   handler: (tools: {
     formula: JsonData;
     messageJiggler: MessageJiggler;
-  }) => z.infer<TResultValidator>;
+  }) => Promise<z.infer<TResultValidator>>;
   formulaValidator: TFormulaValidator;
   resultValidator: TResultValidator;
 };
@@ -87,12 +93,20 @@ export function createRollType<
       );
       return <def.InputComponent onChange={handleChange} />;
     },
-    handler: (tools: { formula: JsonData; messageJiggler: MessageJiggler }) => {
+    handler: async (tools: {
+      formula: JsonData;
+      messageJiggler: MessageJiggler;
+    }) => {
       console.log(tools.formula);
       const formula = def.formulaValidator.parse(tools.formula);
-      const result = def.handler({
+      const result = await def.handler({
         formula,
-        messageJiggler: tools.messageJiggler,
+        getMessage: async (id: string) =>
+          await tools.messageJiggler.getMessage(
+            id,
+            def.formulaValidator,
+            def.resultValidator,
+          ),
       });
       return result;
     },

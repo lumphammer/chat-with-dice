@@ -11,7 +11,7 @@ const MESSAGE_CATCHUP_LENGTH = 100;
 export class MessageRepository {
   constructor(private db: DrizzleSqliteDODatabase<typeof dbSchema>) {}
 
-  async getById(id: string): Promise<ChatMessage | undefined> {
+  async getById(id: string): Promise<ChatMessage> {
     const dbRow = (
       await this.db
         .select()
@@ -19,6 +19,9 @@ export class MessageRepository {
         .where(eq(dbSchema.Messages.id, id))
         .execute()
     ).at(0);
+    if (dbRow === undefined) {
+      throw new Error(`Message not found: ${id}`);
+    }
     const parsed = anyChatMessageValidator.parse(dbRow);
     return parsed;
   }
