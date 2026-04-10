@@ -153,9 +153,19 @@ const GeeseRollDisplay = memo(
     result: Extract<GeeseResult, { action: "roll" }>;
     messageId: string;
   }) => {
-    const { totalSuccesses, explodableCount, faces, consumed } = result;
+    const {
+      totalSuccesses,
+      explodableCount,
+      faces,
+      consumed,
+      previousContributors,
+    } = result;
+    const { chatId } = useUserIdentityContext();
 
     const isFaded = consumed != null;
+    const isOwner =
+      previousContributors.length > 0 &&
+      previousContributors[previousContributors.length - 1].chatId === chatId;
 
     return (
       <div className={`flex flex-col gap-3${isFaded ? " opacity-50" : ""}`}>
@@ -179,11 +189,13 @@ const GeeseRollDisplay = memo(
         {consumed != null ? (
           <ConsumedLabel consumed={consumed} />
         ) : (
-          <RollActionButtons
-            messageId={messageId}
-            explodableCount={explodableCount}
-            totalSuccesses={totalSuccesses}
-          />
+          isOwner && (
+            <RollActionButtons
+              messageId={messageId}
+              explodableCount={explodableCount}
+              totalSuccesses={totalSuccesses}
+            />
+          )
         )}
       </div>
     );
