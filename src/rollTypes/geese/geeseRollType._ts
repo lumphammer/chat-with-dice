@@ -11,9 +11,7 @@ export const geeseRollType = createRollType({
   InputComponent: GeeseInputUI,
   handler: geeseHandler,
   defaultFormula: {
-    action: "roll" as const,
+    action: "start" as const,
     numDice: 1,
-    previousRounds: [],
-    inheritedSuccesses: 0,
   },
 });

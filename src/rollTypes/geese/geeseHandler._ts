@@ -1,0 +1,73 @@
+import { SIX } from "#/constants";
+import type { GeeseFormula, GeeseResult } from "./geeseValidators";
+
+const GEESE_SUCCESS_MIN = 4;
+
+function d6(): number {
+  return Math.floor(Math.random() * SIX) + 1;
+}
+
+export function geeseHandler({
+  formula,
+}: {
+  formula: GeeseFormula;
+}): GeeseResult {
+  if (formula.action === "start") {
+    const newRound = Array.from({ length: formula.numDice }, () => d6());
+    const faces = [newRound];
+
+    const diceSuccesses = faces
+      .flat()
+      .filter((v) => v >= GEESE_SUCCESS_MIN).length;
+    const totalSuccesses = diceSuccesses;
+    const explodableCount = newRound.filter(
+      (v) => v >= GEESE_SUCCESS_MIN,
+    ).length;
+
+    return {
+      action: "roll",
+      faces,
+      totalSuccesses,
+      explodableCount,
+    };
+  }
+  if (formula.action === "explode") {
+    const newRound = Array.from({ length: formula.numDice }, () => d6());
+    const faces = [newRound];
+
+    const diceSuccesses = faces
+      .flat()
+      .filter((v) => v >= GEESE_SUCCESS_MIN).length;
+    const totalSuccesses = diceSuccesses;
+    const explodableCount = newRound.filter(
+      (v) => v >= GEESE_SUCCESS_MIN,
+    ).length;
+
+    return {
+      action: "roll",
+      faces,
+      totalSuccesses,
+      explodableCount,
+    };
+  }
+
+  if (formula.action === "resolve") {
+    return {
+      action: "resolve",
+      rounds: formula.rounds,
+      totalSuccesses: formula.totalSuccesses,
+    };
+  }
+
+  if (formula.action === "pass") {
+    return {
+      action: "pass",
+      rounds: formula.rounds,
+      totalSuccesses: formula.totalSuccesses,
+      rollerChatId: formula.rollerChatId,
+      passedSuccesses: Math.max(0, formula.totalSuccesses - 1),
+    };
+  }
+
+  // action === "roll"
+}
