@@ -31,6 +31,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       faces: [faces],
       totalSuccesses: successCount,
       explodableCount: successCount,
+      previousContributors: [{ chatId, displayName }],
     } satisfies GeeseResult;
   }
 
@@ -55,6 +56,10 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       faces: [...previous.results.faces, faces],
       totalSuccesses: previous.results.totalSuccesses + successCount,
       explodableCount: successCount,
+      previousContributors: [
+        ...previous.results.previousContributors,
+        { chatId, displayName },
+      ],
     } satisfies GeeseResult;
   }
 
@@ -73,6 +78,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       faces: [...previous.results.faces, faces],
       totalSuccesses: previous.results.totalSuccesses + successCount,
       explodableCount: successCount,
+      previousContributors: [...previous.results.previousContributors],
     } satisfies GeeseResult;
   }
 
@@ -84,6 +90,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       action: "resolve",
       faces: previous.results.faces,
       totalSuccesses: previous.results.totalSuccesses,
+      previousContributors: [...previous.results.previousContributors],
     } satisfies GeeseResult;
   }
 
@@ -95,6 +102,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       action: "pass",
       faces: previous.results.faces,
       totalSuccesses: previous.results.totalSuccesses - 1,
+      previousContributors: [...previous.results.previousContributors],
     } satisfies GeeseResult;
   }
 
