@@ -31,7 +31,13 @@ export const HavocInputUI = memo(
 );
 
 export const HavocDisplay = memo(
-  ({ result }: { formula: HavocFormula; result: HavocResult }) => {
+  ({
+    result,
+  }: {
+    formula: HavocFormula;
+    result: HavocResult;
+    messageId: string;
+  }) => {
     const successCount = result.faces.filter(
       (f) => f.degree === HAVOC_SUCCESS_DEGREE,
     ).length;

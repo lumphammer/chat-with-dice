@@ -33,6 +33,7 @@ export type RollTypeDefinition<
   DisplayComponent: React.ComponentType<{
     formula: z.infer<TFormulaValidator>;
     result: z.infer<TResultValidator>;
+    messageId: string;
   }>;
   InputComponent: ComponentType<{
     onChange: (formula: z.infer<TFormulaValidator>) => void;
@@ -48,6 +49,7 @@ export type RollType<
   DisplayComponent: ComponentType<{
     formula: z.infer<TFormulaValidator>;
     result: z.infer<TResultValidator>;
+    messageId: string;
   }>;
   InputComponent: ComponentType<{
     onChange: (formula: z.infer<TFormulaValidator>) => void;
@@ -75,13 +77,21 @@ export function createRollType<
     DisplayComponent: ({
       formula: rawFormula,
       result: rawResult,
+      messageId,
     }: {
       formula: unknown;
       result: unknown;
+      messageId: string;
     }) => {
       const formula = def.formulaValidator.parse(rawFormula);
       const result = def.resultValidator.parse(rawResult);
-      return <def.DisplayComponent formula={formula} result={result} />;
+      return (
+        <def.DisplayComponent
+          formula={formula}
+          result={result}
+          messageId={messageId}
+        />
+      );
     },
     // outwardly visible input ui
     InputComponent: ({

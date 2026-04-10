@@ -3,7 +3,7 @@ import { useUserIdentityContext } from "#/components/DiceRoller/contexts/userIde
 import faceStyles from "../havoc/faces.module.css";
 import type { GeeseFormula, GeeseResult } from "./geeseValidators";
 import styles from "@/styles/inputs.module.css";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useState, type ChangeEvent } from "react";
 
 const GEESE_SUCCESS_MIN = 4;
 
@@ -41,89 +41,124 @@ const DiceRow = memo(
 );
 DiceRow.displayName = "DiceRow";
 
-// ── Roll result (with action buttons) ────────────────────────────────────────
+// ── Consumed status label ─────────────────────────────────────────────────────
 
-const GeeseRollDisplay = memo(
-  ({ result }: { result: Extract<GeeseResult, { action: "roll" }> }) => {
+const ConsumedLabel = memo(
+  ({ consumed }: { consumed: "explode" | "resolve" | "pass" }) => {
+    const label =
+      consumed === "explode"
+        ? "→ Exploded"
+        : consumed === "resolve"
+          ? "✓ Resolved"
+          : "→ Passed";
+    return (
+      <div className="text-base-content/60 text-sm font-medium">{label}</div>
+    );
+  },
+);
+ConsumedLabel.displayName = "ConsumedLabel";
+
+// ── Roll action buttons ───────────────────────────────────────────────────────
+
+const RollActionButtons = memo(
+  ({
+    messageId,
+    explodableCount,
+    totalSuccesses,
+  }: {
+    messageId: string;
+    explodableCount: number;
+    totalSuccesses: number;
+  }) => {
     const sendMessage = useSendMessageContext();
-    const { displayName, chatId } = useUserIdentityContext();
+    const { displayName } = useUserIdentityContext();
 
-    const handleRollMore = useCallback(() => {
+    const handleExplode = useCallback(() => {
       sendMessage({
         type: "chat",
         payload: {
           rollType: "geese",
           formula: {
-            action: "roll",
-            numDice: result.explodingCount,
-            previousRounds: result.rounds,
-            inheritedSuccesses: result.inheritedSuccesses,
+            action: "explode",
+            previousMessageId: messageId,
           } satisfies GeeseFormula,
           chat: null,
           displayName,
         },
       });
-    }, [
-      result.explodingCount,
-      result.rounds,
-      result.inheritedSuccesses,
-      sendMessage,
-      displayName,
-    ]);
+    }, [messageId, sendMessage, displayName]);
 
     const handleResolve = useCallback(() => {
       sendMessage({
         type: "chat",
         payload: {
           rollType: "geese",
-          formula: JSON.stringify({
+          formula: {
             action: "resolve",
-            rounds: result.rounds,
-            totalSuccesses: result.totalSuccesses,
-          } satisfies GeeseFormula),
+            previousMessageId: messageId,
+          } satisfies GeeseFormula,
           chat: null,
           displayName,
         },
       });
-    }, [result.rounds, result.totalSuccesses, sendMessage, displayName]);
+    }, [messageId, sendMessage, displayName]);
 
     const handlePass = useCallback(() => {
       sendMessage({
         type: "chat",
         payload: {
           rollType: "geese",
-          formula: JSON.stringify({
+          formula: {
             action: "pass",
-            rounds: result.rounds,
-            totalSuccesses: result.totalSuccesses,
-            rollerChatId: chatId,
-          } satisfies GeeseFormula),
+            previousMessageId: messageId,
+          } satisfies GeeseFormula,
           chat: null,
           displayName,
         },
       });
-    }, [
-      result.rounds,
-      result.totalSuccesses,
-      chatId,
-      sendMessage,
-      displayName,
-    ]);
+    }, [messageId, sendMessage, displayName]);
 
-    const { totalSuccesses, explodingCount, rounds, inheritedSuccesses } =
-      result;
     const canPass = totalSuccesses >= 1;
 
     return (
-      <div className="flex flex-col gap-3">
-        {inheritedSuccesses > 0 && (
-          <div className="text-base-content/60 text-xs">
-            Starting with {inheritedSuccesses} inherited success
-            {inheritedSuccesses === 1 ? "" : "es"}
-          </div>
+      <div className="flex flex-wrap gap-2">
+        {explodableCount > 0 && (
+          <button onClick={handleExplode} className="btn btn-primary btn-sm">
+            Explode {explodableCount} {explodableCount === 1 ? "die" : "dice"}
+          </button>
         )}
+        <button onClick={handleResolve} className="btn btn-success btn-sm">
+          Resolve
+        </button>
+        <button
+          onClick={handlePass}
+          disabled={!canPass}
+          className="btn btn-ghost btn-sm"
+        >
+          Pass
+        </button>
+      </div>
+    );
+  },
+);
+RollActionButtons.displayName = "RollActionButtons";
+
+// ── Roll result (with action buttons) ────────────────────────────────────────
+
+const GeeseRollDisplay = memo(
+  ({
+    result,
+    messageId,
+  }: {
+    result: Extract<GeeseResult, { action: "roll" }>;
+    messageId: string;
+  }) => {
+    const { totalSuccesses, explodableCount, faces, consumed } = result;
+
+    return (
+      <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
-          {rounds.map((round, i) => (
+          {faces.map((round, i) => (
             <DiceRow key={i} dice={round} roundIndex={i} />
           ))}
         </div>
@@ -131,31 +166,23 @@ const GeeseRollDisplay = memo(
           {totalSuccesses === 0
             ? "No successes"
             : `${totalSuccesses} success${totalSuccesses === 1 ? "" : "es"} total`}
-          {explodingCount > 0 && (
+          {explodableCount > 0 && (
             <span className="text-base-content/60 font-normal">
               {" "}
-              &mdash; {explodingCount}{" "}
-              {explodingCount === 1 ? "die explodes" : "dice explode"}
+              &mdash; {explodableCount}{" "}
+              {explodableCount === 1 ? "die explodes" : "dice explode"}
             </span>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {explodingCount > 0 && (
-            <button onClick={handleRollMore} className="btn btn-primary btn-sm">
-              Roll {explodingCount} more {explodingCount === 1 ? "die" : "dice"}
-            </button>
-          )}
-          <button onClick={handleResolve} className="btn btn-success btn-sm">
-            Resolve
-          </button>
-          <button
-            onClick={handlePass}
-            disabled={!canPass}
-            className="btn btn-ghost btn-sm"
-          >
-            Pass
-          </button>
-        </div>
+        {consumed != null ? (
+          <ConsumedLabel consumed={consumed} />
+        ) : (
+          <RollActionButtons
+            messageId={messageId}
+            explodableCount={explodableCount}
+            totalSuccesses={totalSuccesses}
+          />
+        )}
       </div>
     );
   },
@@ -184,68 +211,93 @@ const GeeseResolveDisplay = memo(
 );
 GeeseResolveDisplay.displayName = "GeeseResolveDisplay";
 
-// ── Pass result (with Commit button) ─────────────────────────────────────────
+// ── Commit section inside pass display ────────────────────────────────────────
+
+const CommitSection = memo(({ messageId }: { messageId: string }) => {
+  const sendMessage = useSendMessageContext();
+  const { displayName } = useUserIdentityContext();
+  const [numDice, setNumDice] = useState(1);
+
+  const handleNumDiceChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setNumDice(Math.max(1, parseInt(e.target.value, 10) || 1));
+    },
+    [],
+  );
+
+  const handleCommit = useCallback(() => {
+    sendMessage({
+      type: "chat",
+      payload: {
+        rollType: "geese",
+        formula: {
+          action: "commit",
+          numDice,
+          previousMessageId: messageId,
+        } satisfies GeeseFormula,
+        chat: null,
+        displayName,
+      },
+    });
+  }, [numDice, messageId, sendMessage, displayName]);
+
+  return (
+    <div className="flex items-center gap-2">
+      <label className="text-base-content/60 text-xs">
+        Dice to add:
+        <input
+          type="number"
+          min={1}
+          value={numDice}
+          onChange={handleNumDiceChange}
+          className={`${styles.input} w-20 px-2 py-1 text-center text-sm`}
+        />
+      </label>
+      <button onClick={handleCommit} className="btn btn-primary btn-sm">
+        Commit
+      </button>
+    </div>
+  );
+});
+CommitSection.displayName = "CommitSection";
+
+// ── Pass result (with Commit section) ─────────────────────────────────────────
 
 const GeesePassDisplay = memo(
-  ({ result }: { result: Extract<GeeseResult, { action: "pass" }> }) => {
-    const sendMessage = useSendMessageContext();
-    const { displayName } = useUserIdentityContext();
-    const [numDice, setNumDice] = useState(1);
+  ({
+    result,
+    messageId,
+  }: {
+    result: Extract<GeeseResult, { action: "pass" }>;
+    messageId: string;
+  }) => {
+    const { chatId } = useUserIdentityContext();
+    const { faces, totalSuccesses, consumedBy, previousContributors } = result;
 
-    const { rounds, faces, totalSuccesses } = result;
-
-    const handleCommit = useCallback(() => {
-      sendMessage({
-        type: "chat",
-        payload: {
-          rollType: "geese",
-          formula: {
-            action: "commit",
-            numDice,
-            previousMessageId: "",
-          } satisfies GeeseFormula,
-          chat: null,
-          displayName,
-        },
-      });
-    }, [numDice, displayName, sendMessage]);
+    const currentUserContributed = previousContributors.some(
+      (c) => c.chatId === chatId,
+    );
+    const showCommitSection = consumedBy == null && !currentUserContributed;
 
     return (
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 opacity-60">
-          {rounds.map((round, i) => (
+          {faces.map((round, i) => (
             <DiceRow key={i} dice={round} roundIndex={i} />
           ))}
         </div>
         <div className="text-sm font-semibold">
           → Passed &mdash;{" "}
-          {passedSuccesses === 0
+          {totalSuccesses === 0
             ? "no successes to claim"
-            : `${passedSuccesses} success${passedSuccesses === 1 ? "" : "es"} to claim`}
+            : `${totalSuccesses} success${totalSuccesses === 1 ? "" : "es"} to claim`}
         </div>
-        {passedSuccesses > 0 && (
-          <div className="flex items-center gap-2">
-            <label className="text-base-content/60 text-xs">
-              Dice to add:
-              <input
-                type="number"
-                min={1}
-                value={numDice}
-                disabled={commitDisabled}
-                onChange={(e) =>
-                  setNumDice(Math.max(1, parseInt(e.target.value, 10) || 1))
-                }
-                className={`${styles.input} w-20 px-2 py-1 text-center text-sm`}
-              />
-            </label>
-            <button
-              disabled={commitDisabled}
-              onClick={handleCommit}
-              className="btn btn-primary btn-sm"
-            >
-              {hasCommitted ? "Committed ✓" : "Commit"}
-            </button>
+        {consumedBy != null ? (
+          <div className="text-base-content/60 text-sm font-medium">
+            Committed by {consumedBy.displayName} ✓
           </div>
+        ) : (
+          showCommitSection && <CommitSection messageId={messageId} />
         )}
       </div>
     );
@@ -256,14 +308,21 @@ GeesePassDisplay.displayName = "GeesePassDisplay";
 // ── Root export ───────────────────────────────────────────────────────────────
 
 export const GeeseDisplay = memo(
-  ({ result }: { formula: GeeseFormula; result: GeeseResult }) => {
+  ({
+    result,
+    messageId,
+  }: {
+    formula: GeeseFormula;
+    result: GeeseResult;
+    messageId: string;
+  }) => {
     if (result.action === "roll") {
-      return <GeeseRollDisplay result={result} />;
+      return <GeeseRollDisplay result={result} messageId={messageId} />;
     }
     if (result.action === "resolve") {
       return <GeeseResolveDisplay result={result} />;
     }
-    return <GeesePassDisplay result={result} />;
+    return <GeesePassDisplay result={result} messageId={messageId} />;
   },
 );
 GeeseDisplay.displayName = "GeeseDisplay";

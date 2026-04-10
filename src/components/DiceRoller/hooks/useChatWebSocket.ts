@@ -71,9 +71,21 @@ export const useChatWebSocket = ({
         }
         const data = incomingWebsocketMessage.data;
         if (data.type === "message") {
-          setMessages((old) =>
-            [...old, data.payload.message].slice(-MAX_HISTORY_BUFFER_LENGTH),
-          );
+          setMessages((old) => {
+            const oldIndex = old.findIndex(
+              (message) => message.id === data.payload.message.id,
+            );
+            if (oldIndex !== -1) {
+              return [
+                ...old.slice(0, oldIndex),
+                data.payload.message,
+                ...old.slice(oldIndex + 1),
+              ].slice(-MAX_HISTORY_BUFFER_LENGTH);
+            }
+            return [...old, data.payload.message].slice(
+              -MAX_HISTORY_BUFFER_LENGTH,
+            );
+          });
         } else if (data.type === "catchup") {
           setMessages(data.payload.messages);
         } else if (data.type === "error") {

@@ -9,6 +9,7 @@ import { memo } from "react";
 export type DiceRollResultProps = {
   formula: StandardFormula;
   result: StandardResult;
+  messageId: string;
 };
 
 export const DiceRollResult = memo(

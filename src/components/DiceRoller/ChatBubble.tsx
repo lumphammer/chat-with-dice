@@ -69,7 +69,13 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
     message.results !== null
   ) {
     const Component = rollTypeRegistry[message.rollType].DisplayComponent;
-    display = <Component formula={message.formula} result={message.results} />;
+    display = (
+      <Component
+        formula={message.formula}
+        result={message.results}
+        messageId={message.id}
+      />
+    );
   }
 
   return (
