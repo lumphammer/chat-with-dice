@@ -155,8 +155,10 @@ const GeeseRollDisplay = memo(
   }) => {
     const { totalSuccesses, explodableCount, faces, consumed } = result;
 
+    const isFaded = consumed != null;
+
     return (
-      <div className="flex flex-col gap-3">
+      <div className={`flex flex-col gap-3${isFaded ? " opacity-50" : ""}`}>
         <div className="flex flex-col gap-2">
           {faces.map((round, i) => (
             <DiceRow key={i} dice={round} roundIndex={i} />
@@ -196,12 +198,12 @@ const GeeseResolveDisplay = memo(
     const { totalSuccesses, faces } = result;
     return (
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2 opacity-60">
+        <div className="flex flex-col gap-2">
           {faces.map((round, i) => (
             <DiceRow key={i} dice={round} roundIndex={i} />
           ))}
         </div>
-        <div className="text-sm font-semibold">
+        <div className="text-success text-sm font-bold">
           ✓ Resolved with {totalSuccesses} success
           {totalSuccesses === 1 ? "" : "es"}
         </div>
@@ -279,9 +281,11 @@ const GeesePassDisplay = memo(
     );
     const showCommitSection = consumedBy == null && !currentUserContributed;
 
+    const isFaded = consumedBy != null;
+
     return (
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2 opacity-60">
+      <div className={`flex flex-col gap-3${isFaded ? " opacity-50" : ""}`}>
+        <div className="flex flex-col gap-2">
           {faces.map((round, i) => (
             <DiceRow key={i} dice={round} roundIndex={i} />
           ))}
