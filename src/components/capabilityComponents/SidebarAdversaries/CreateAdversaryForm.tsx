@@ -1,17 +1,16 @@
-import { objectivesCapability } from "#/capabilities/objectivesCapability";
+import { adversariesCapability } from "#/capabilities/adversariesCapability";
 import { ExpandableForm } from "#/components/capabilityComponents/shared/ExpandableForm";
 import { useRef, useState } from "react";
 
 const DEFAULT_STARTING_RESILIENCE = 3;
-const DEFAULT_DIFFICULTY = 0;
+const DEFAULT_THREAT = 1;
 
-export const CreateObjectiveForm = () => {
+export const CreateAdversaryForm = () => {
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const capInfo = objectivesCapability.useMount();
+  const capInfo = adversariesCapability.useMount();
 
   const [name, setName] = useState("");
-  const [isPrimary, setIsPrimary] = useState(false);
-  const [difficulty, setDifficulty] = useState(DEFAULT_DIFFICULTY);
+  const [threat, setThreat] = useState(DEFAULT_THREAT);
   const [startingResilience, setStartingResilience] = useState(
     DEFAULT_STARTING_RESILIENCE,
   );
@@ -22,21 +21,15 @@ export const CreateObjectiveForm = () => {
 
   const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    capInfo.actions.createObjective({
-      name,
-      isPrimary,
-      difficulty,
-      startingResilience,
-    });
+    capInfo.actions.createAdversary({ name, threat, startingResilience });
     setName("");
-    setIsPrimary(false);
-    setDifficulty(DEFAULT_DIFFICULTY);
+    setThreat(DEFAULT_THREAT);
     setStartingResilience(DEFAULT_STARTING_RESILIENCE);
   };
 
   return (
     <ExpandableForm
-      label="Add objective"
+      label="Add adversary"
       onOpen={() => nameInputRef.current?.focus()}
     >
       <form onSubmit={handleSubmit}>
@@ -52,13 +45,13 @@ export const CreateObjectiveForm = () => {
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <label className="floating-label">
-            <span>Difficulty</span>
+            <span>Threat</span>
             <input
               className="input w-full"
               type="number"
               min={0}
-              value={difficulty}
-              onChange={(e) => setDifficulty(Number(e.target.value))}
+              value={threat}
+              onChange={(e) => setThreat(Number(e.target.value))}
             />
           </label>
           <label className="floating-label">
@@ -72,16 +65,6 @@ export const CreateObjectiveForm = () => {
             />
           </label>
         </div>
-
-        <label className="label mt-4 cursor-pointer justify-start gap-2">
-          <input
-            className="checkbox"
-            type="checkbox"
-            checked={isPrimary}
-            onChange={(e) => setIsPrimary(e.target.checked)}
-          />
-          <span className="text-base-content text-sm">Primary</span>
-        </label>
 
         <button
           className="btn btn-primary btn-sm mt-4 w-full"

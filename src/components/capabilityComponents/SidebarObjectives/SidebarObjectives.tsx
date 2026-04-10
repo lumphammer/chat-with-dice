@@ -1,7 +1,7 @@
 import { objectivesCapability } from "#/capabilities/objectivesCapability";
+import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { CreateObjectiveForm } from "./CreateObjectiveForm";
 import { ObjectiveDisplay } from "./ObjectiveDisplay";
-import { LoaderCircleIcon } from "lucide-react";
 import { memo } from "react";
 
 export const SidebarObjectives = memo(() => {
@@ -12,15 +12,7 @@ export const SidebarObjectives = memo(() => {
   }
 
   return (
-    <div className="relative h-full overflow-scroll p-4">
-      {capInfo.patches.length > 0 && (
-        <LoaderCircleIcon
-          className="text-base-content/40 absolute top-4 right-4 h-5 w-5
-            animate-spin"
-          aria-label="Saving…"
-        />
-      )}
-      <h2 className="text-3xl">Objectives</h2>
+    <SidebarPanel title="Objectives" isSaving={capInfo.patches.length > 0}>
       <CreateObjectiveForm />
       {capInfo.state.objectives.map((objective) => (
         <ObjectiveDisplay
@@ -35,6 +27,6 @@ export const SidebarObjectives = memo(() => {
           }
         />
       ))}
-    </div>
+    </SidebarPanel>
   );
 });
