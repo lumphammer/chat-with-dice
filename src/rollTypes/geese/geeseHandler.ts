@@ -20,6 +20,9 @@ const roll = (numDice: number) => {
 export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
   formula,
   getMessage,
+  updateMessage,
+  chatId,
+  displayName,
 }) => {
   if (formula.action === "start") {
     const [faces, successCount] = roll(formula.numDice);
@@ -35,11 +38,18 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
   // now
   const previous = await getMessage(formula.previousMessageId);
 
-  if (formula.action === "explode") {
-    if (previous.results.action !== "roll") {
-      throw new Error("Previous message did not result in a roll");
+  // commits must follow passes
+  if (formula.action === "commit") {
+    if (previous.results.action !== "pass") {
+      throw new Error("Previous message did not result in a pass");
     }
-    const [faces, successCount] = roll(previous.results.explodableCount);
+    const [faces, successCount] = roll(formula.numDice);
+    previous.results.consumedBy = {
+      chatId,
+      displayName,
+    };
+    updateMessage(previous);
+
     return {
       action: "roll",
       faces: [...previous.results.faces, faces],
@@ -48,7 +58,28 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
     } satisfies GeeseResult;
   }
 
+  // everything else requires a roll, so we check that here
+  if (previous.results.action !== "roll") {
+    throw new Error("Previous message did not result in a roll");
+  }
+
+  // explode
+  if (formula.action === "explode") {
+    const [faces, successCount] = roll(previous.results.explodableCount);
+    previous.results.consumed = "explode";
+    updateMessage(previous);
+    return {
+      action: "roll",
+      faces: [...previous.results.faces, faces],
+      totalSuccesses: previous.results.totalSuccesses + successCount,
+      explodableCount: successCount,
+    } satisfies GeeseResult;
+  }
+
+  // resolve
   if (formula.action === "resolve") {
+    previous.results.consumed = "resolve";
+    updateMessage(previous);
     return {
       action: "resolve",
       faces: previous.results.faces,
@@ -56,22 +87,14 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
     } satisfies GeeseResult;
   }
 
+  // pass
   if (formula.action === "pass") {
+    previous.results.consumed = "pass";
+    updateMessage(previous);
     return {
       action: "pass",
       faces: previous.results.faces,
       totalSuccesses: previous.results.totalSuccesses - 1,
-    } satisfies GeeseResult;
-  }
-
-  if (formula.action === "commit") {
-    const [faces, successCount] = roll(formula.numDice);
-
-    return {
-      action: "roll",
-      faces: [...previous.results.faces, faces],
-      totalSuccesses: previous.results.totalSuccesses + successCount,
-      explodableCount: successCount,
     } satisfies GeeseResult;
   }
 

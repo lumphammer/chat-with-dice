@@ -26,7 +26,12 @@ export class MessageRepository {
     return parsed;
   }
 
-  async updateMessage(_message: ChatMessage) {}
+  async updateMessage(message: ChatMessage) {
+    await this.db
+      .update(dbSchema.Messages)
+      .set(message)
+      .where(eq(dbSchema.Messages.id, message.id));
+  }
 
   async insert(message: ChatMessage): Promise<void> {
     await this.db.insert(dbSchema.Messages).values(message);

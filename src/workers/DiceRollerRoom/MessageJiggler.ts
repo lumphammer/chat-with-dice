@@ -61,4 +61,8 @@ export class MessageJiggler {
     const message = await this.messageRepository.getById(id);
     return parseChatMessage(formulaValidator, resultValidator, message);
   }
+  async updateMessage(message: ChatMessage): Promise<void> {
+    await this.messageRepository.updateMessage(message);
+    this.broadcaster.broadcastChatMessage(message);
+  }
 }

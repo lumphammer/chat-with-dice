@@ -39,12 +39,7 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
     faces: rollFacesValidator,
     totalSuccesses: z.int(),
     explodableCount: z.int(),
-    consumed: z
-      .object({
-        action: z.enum(["explode", "resolve", "pass"]),
-        messageId: z.string(),
-      })
-      .optional(),
+    consumed: z.enum(["explode", "resolve", "pass"]).optional(),
   }),
   z.object({
     action: z.literal("resolve"),

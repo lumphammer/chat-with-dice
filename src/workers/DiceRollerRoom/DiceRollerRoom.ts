@@ -221,6 +221,8 @@ export class DiceRollerRoom extends DurableObject {
     const results = await rollTypeDef.handler({
       messageJiggler: this.messageJiggler,
       formula,
+      chatId,
+      displayName,
     });
 
     const rollerMessage: ChatMessage = {
