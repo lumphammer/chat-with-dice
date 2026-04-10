@@ -3,9 +3,11 @@ import type { StandardFormula, StandardResult } from "./standardRollValidators";
 import { DiceRoll } from "@dice-roller/rpg-dice-roller";
 import z from "zod";
 
-export const standardRollHandler = (
-  formula: StandardFormula,
-): StandardResult => {
+export const standardRollHandler = ({
+  formula,
+}: {
+  formula: StandardFormula;
+}): StandardResult => {
   let diceRoll: DiceRoll;
   try {
     diceRoll = new DiceRoll(formula);

@@ -1,6 +1,6 @@
 // oxlint-disable no-shadow
 // oxlint-disable no-magic-numbers
-import type { RollerMessage } from "#/validators/webSocketMessageSchemas";
+import type { AnyChatMessage } from "#/validators/webSocketMessageSchemas";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import { Broadcaster } from "../workers/DiceRollerRoom/Broadcaster";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
@@ -49,11 +49,11 @@ function makeDoCtx() {
 }
 
 const mockMessageRepository = {
-  async insert(_message: RollerMessage): Promise<void> {
+  async insert(_message: AnyChatMessage): Promise<void> {
     //
   },
 
-  async getRecent(_limit?: number): Promise<RollerMessage[]> {
+  async getRecent(_limit?: number): Promise<AnyChatMessage[]> {
     return [];
   },
 } as unknown as MessageRepository;

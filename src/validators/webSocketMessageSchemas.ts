@@ -9,44 +9,74 @@ export type JsonData = z.core.util.JSONType;
 export type JsonValidator = z.ZodType<JsonData>;
 
 /**
- * This should correspond to the Messages table, but we are defining separately
- * to avoid having a WS type that is basically "SELECT * FROM". While that would
- * be okay now, as the table gets wider we want to be selective about what we
- * send over the wire.
+ * Create a zod validator
  */
-export const chatMessageValidator = z.object({
-  /** Primary key */
-  id: z.string(),
-  /** Display name of the user at the time they sent the message */
-  displayName: z.string(),
-  /** Chat ID of the user, used for differentiation */
-  chatId: z.string(),
-  /** When the message was created */
-  created_time: z.int(),
-  /** The type of the roll - none, formula, havoc etc */
-  rollType: z.string(),
-  /** Either a dice formula or JSON */
-  formula: z.json(),
-  /** Structured JSON results, either from rpg die roller, or our own */
-  results: z.json(),
-  /** Chat text */
-  chat: z.string().nullable(),
-});
+export function chatMessageValidator<
+  TFormulaValidator extends JsonValidator,
+  TResultValidator extends JsonValidator,
+>(
+  formulaValidator: TFormulaValidator,
+  resultsValidator: TResultValidator,
+): z.ZodObject<{
+  id: z.ZodString;
+  displayName: z.ZodString;
+  chatId: z.ZodString;
+  created_time: z.ZodInt;
+  rollType: z.ZodString;
+  formula: TFormulaValidator;
+  results: TResultValidator;
+  chat: z.ZodNullable<z.ZodString>;
+}> {
+  return z.object({
+    /** Primary key */
+    id: z.string(),
+    /** Display name of the user at the time they sent the message */
+    displayName: z.string(),
+    /** Chat ID of the user, used for differentiation */
+    chatId: z.string(),
+    /** When the message was created */
+    created_time: z.int(),
+    /** The type of the roll - none, formula, havoc etc */
+    rollType: z.string(),
+    /**  */
+    formula: formulaValidator,
+    /**  */
+    results: resultsValidator,
+    /** Chat text */
+    chat: z.string().nullable(),
+  });
+}
 
-export type RollerMessage = z.infer<typeof chatMessageValidator>;
+const _v = chatMessageValidator(z.string(), z.number());
+
+type _T = z.infer<typeof _v>;
+
+export type ChatMessage<
+  TFormulaValidator extends JsonValidator,
+  TResultValidator extends JsonValidator,
+> = z.infer<
+  ReturnType<typeof chatMessageValidator<TFormulaValidator, TResultValidator>>
+>;
+
+export const anyChatMessageValidator = chatMessageValidator(z.json(), z.json());
+
+export type AnyChatMessage = z.infer<typeof anyChatMessageValidator>;
 
 export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("message"),
-    payload: z.object({ message: chatMessageValidator }),
+    payload: z.object({ message: anyChatMessageValidator }),
   }),
   z.object({
     type: z.literal("messageUpdate"),
-    payload: z.object({ messageId: z.string(), message: chatMessageValidator }),
+    payload: z.object({
+      messageId: z.string(),
+      message: anyChatMessageValidator,
+    }),
   }),
   z.object({
     type: z.literal("catchup"),
-    payload: z.object({ messages: z.array(chatMessageValidator) }),
+    payload: z.object({ messages: z.array(anyChatMessageValidator) }),
   }),
   z.object({
     type: z.literal("error"),

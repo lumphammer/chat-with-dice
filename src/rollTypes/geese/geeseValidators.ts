@@ -1,55 +1,66 @@
 import { SIX } from "#/constants";
 import { z } from "zod";
 
-const roundSchema = z.array(z.int().min(1).max(SIX));
-const roundsSchema = z.array(roundSchema);
+const rollFacesValidator = z.array(z.array(z.int().min(1).max(SIX)));
 
 export const geeseFormulaValidator = z.discriminatedUnion("action", [
+  // start a new scheme
   z.object({
-    action: z.literal("roll"),
+    action: z.literal("start"),
     numDice: z.int().min(1),
-    previousRounds: roundsSchema,
-    /** Successes carried in from a previous player's pass */
-    inheritedSuccesses: z.int().min(0),
   }),
+  // explode the results of a start or a commit
+  z.object({
+    action: z.literal("explode"),
+    previousMessageId: z.string(),
+  }),
+  // resolve a start, explode, or pass
   z.object({
     action: z.literal("resolve"),
-    rounds: roundsSchema,
-    totalSuccesses: z.int(),
+    previousMessageId: z.string(),
   }),
+  // pass on a start, explode, or commit to other players
   z.object({
     action: z.literal("pass"),
-    rounds: roundsSchema,
-    totalSuccesses: z.int(),
-    /** chatId of the player who initiated this roll sequence */
-    rollerChatId: z.string(),
+    previousMessageId: z.string(),
+  }),
+  // pick up another player's pass and commit to their scheme
+  z.object({
+    action: z.literal("commit"),
+    numDice: z.int().min(1),
+    previousMessageId: z.string(),
   }),
 ]);
 
 export const geeseResultValidator = z.discriminatedUnion("action", [
+  // result for a start, commit, or explode
   z.object({
     action: z.literal("roll"),
-    rounds: roundsSchema,
-    /** Total successes: dice successes + any inherited */
+    faces: rollFacesValidator,
     totalSuccesses: z.int(),
-    /** Successes inherited from a pass (0 for fresh rolls) */
-    inheritedSuccesses: z.int().min(0),
-    /** How many dice from the latest round "explode" (scored 4+) and need re-rolling */
-    explodingCount: z.int(),
+    explodableCount: z.int(),
+    consumed: z
+      .object({
+        action: z.enum(["explode", "resolve", "pass"]),
+        messageId: z.string(),
+      })
+      .optional(),
   }),
   z.object({
     action: z.literal("resolve"),
-    rounds: roundsSchema,
+    rounds: rollFacesValidator,
     totalSuccesses: z.int(),
   }),
   z.object({
     action: z.literal("pass"),
-    rounds: roundsSchema,
+    rounds: rollFacesValidator,
     totalSuccesses: z.int(),
-    /** chatId of the player who initiated this roll sequence */
-    rollerChatId: z.string(),
-    /** Successes available to claim (totalSuccesses - 1, min 0) */
-    passedSuccesses: z.int().min(0),
+    consumedBy: z
+      .object({
+        chatId: z.string(),
+        displayName: z.string(),
+      })
+      .optional(),
   }),
 ]);
 

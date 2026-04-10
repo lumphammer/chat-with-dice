@@ -14,11 +14,12 @@ import {
 import {
   webSocketClientMessageSchema,
   type JsonData,
-  type RollerMessage,
+  type AnyChatMessage,
 } from "#/validators/webSocketMessageSchemas";
 import { type ServerMountedCapability } from "../../capabilities/types";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
+import { MessageJiggler } from "./MessageJiggler";
 import { MessageRepository } from "./MessageRepository";
 import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
@@ -37,6 +38,7 @@ export class DiceRollerRoom extends DurableObject {
   private capabilities: Map<string, ServerMountedCapability> = new Map();
   private config: RoomConfig = defaultRoomConfig;
   private stateRepository: CapabilityStateRepository;
+  private messageJiggler: MessageJiggler;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -51,6 +53,10 @@ export class DiceRollerRoom extends DurableObject {
     this.messageRepository = new MessageRepository(this.db);
     this.broadcaster = new Broadcaster(ctx);
     this.stateRepository = new CapabilityStateRepository(ctx.storage.kv);
+    this.messageJiggler = new MessageJiggler(
+      this.messageRepository,
+      this.broadcaster,
+    );
 
     console.log("Durable object id booting:", ctx.id.toString());
 
@@ -212,9 +218,12 @@ export class DiceRollerRoom extends DurableObject {
     assertRollType(rollType);
 
     const rollTypeDef = rollTypeRegistry[rollType];
-    const result = rollTypeDef.handler(formula);
+    const result = rollTypeDef.handler({
+      messageJiggler: this.messageJiggler,
+      formula,
+    });
 
-    const rollerMessage: RollerMessage = {
+    const rollerMessage: AnyChatMessage = {
       created_time: Date.now(),
       formula: formula,
       id: crypto.randomUUID(),

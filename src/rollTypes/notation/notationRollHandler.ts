@@ -3,9 +3,11 @@ import type { NotationFormula, NotationResult } from "./notationRollValidators";
 import { DiceRoll } from "@dice-roller/rpg-dice-roller";
 import z from "zod";
 
-export const notationRollHandler = (
-  formula: NotationFormula,
-): NotationResult => {
+export const notationRollHandler = ({
+  formula,
+}: {
+  formula: NotationFormula;
+}): NotationResult => {
   let diceRoll: DiceRoll;
   try {
     diceRoll = new DiceRoll(formula);

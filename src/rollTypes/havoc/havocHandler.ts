@@ -12,7 +12,11 @@ function d(size: number): number {
   return Math.floor(Math.random() * size) + 1;
 }
 
-export const havocHandler = (formula: HavocFormula): HavocResult => {
+export const havocHandler = ({
+  formula,
+}: {
+  formula: HavocFormula;
+}): HavocResult => {
   const faces = Array.from({ length: formula.numDice }).map<HavocFace>(() => {
     const faceValue = d(SIX);
     return faceValue < HAVOC_SUCCESS_MIN

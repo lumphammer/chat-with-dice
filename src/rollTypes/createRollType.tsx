@@ -2,6 +2,7 @@ import type {
   JsonData,
   JsonValidator,
 } from "#/validators/webSocketMessageSchemas";
+import type { MessageJiggler } from "#/workers/DiceRollerRoom/MessageJiggler";
 import { useCallback, useEffect, type ComponentType } from "react";
 import type { z } from "zod";
 
@@ -25,7 +26,10 @@ export type RollTypeDefinition<
     onChange: (formula: z.infer<TFormulaValidator>) => void;
   }>;
   defaultFormula: z.infer<TFormulaValidator>;
-  handler: (formula: z.infer<TFormulaValidator>) => z.infer<TResultValidator>;
+  handler: (tools: {
+    formula: z.infer<TFormulaValidator>;
+    messageJiggler: MessageJiggler;
+  }) => z.infer<TResultValidator>;
 };
 
 export type RollType<
@@ -39,9 +43,10 @@ export type RollType<
   InputComponent: ComponentType<{
     onChange: (formula: z.infer<TFormulaValidator>) => void;
   }>;
-  handler: (
-    rawFormula: z.infer<TFormulaValidator>,
-  ) => z.infer<TResultValidator>;
+  handler: (tools: {
+    formula: JsonData;
+    messageJiggler: MessageJiggler;
+  }) => z.infer<TResultValidator>;
   formulaValidator: TFormulaValidator;
   resultValidator: TResultValidator;
 };
@@ -82,10 +87,13 @@ export function createRollType<
       );
       return <def.InputComponent onChange={handleChange} />;
     },
-    handler: (rawFormula: z.infer<TFormulaValidator>) => {
-      console.log(rawFormula);
-      const formula = def.formulaValidator.parse(rawFormula);
-      const result = def.handler(formula);
+    handler: (tools: { formula: JsonData; messageJiggler: MessageJiggler }) => {
+      console.log(tools.formula);
+      const formula = def.formulaValidator.parse(tools.formula);
+      const result = def.handler({
+        formula,
+        messageJiggler: tools.messageJiggler,
+      });
       return result;
     },
     formulaValidator: def.formulaValidator,

@@ -1,7 +1,7 @@
 import { ReconnectingWebSocket } from "#/utils/ReconnectingWebSocket";
 import {
   webSocketServerMessageSchema,
-  type RollerMessage,
+  type AnyChatMessage,
   type WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { CapabilityInfoContextValue } from "../../../capabilities/reactContexts/capabilityInfoContext";
@@ -34,7 +34,7 @@ export const useChatWebSocket = ({
   onError,
   setCapabilityInfos,
 }: UseChatWebSocketArgs) => {
-  const [messages, setMessages] = useState<RollerMessage[]>([]);
+  const [messages, setMessages] = useState<AnyChatMessage[]>([]);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
 
