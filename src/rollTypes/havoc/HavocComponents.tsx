@@ -1,5 +1,5 @@
 import { HAVOC_CRITICAL_DEGREE, HAVOC_SUCCESS_DEGREE } from "#/constants";
-import faceStyles from "./faces.module.css";
+import faceStyles from "#/styles/faces.module.css";
 import type { HavocFormula, HavocResult } from "./havocValidators";
 import styles from "@/styles/inputs.module.css";
 import { memo, useId } from "react";

@@ -1,4 +1,4 @@
-import type { GeeseFormula } from "./geeseValidators";
+import type { GeeseFormula } from "../geeseValidators";
 import styles from "@/styles/inputs.module.css";
 import { memo, useId, useState, useCallback, type ChangeEvent } from "react";
 
