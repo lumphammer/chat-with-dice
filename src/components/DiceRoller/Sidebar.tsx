@@ -13,7 +13,7 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
       defaultValue={config.capabilities[0]?.name}
       orientation="vertical"
     >
-      <Tabs.List className="absolute right-full flex flex-col gap-4">
+      <Tabs.List className="absolute right-full mt-4 flex flex-col gap-4 pr-2">
         {config.capabilities.map(({ name }) => {
           if (!isCapabilityName(name)) {
             return null;
