@@ -68,6 +68,39 @@ const ProblemsDisplay = memo(({ problemCount }: { problemCount: number }) => {
 });
 ProblemsDisplay.displayName = "ProblemsDisplay";
 
+// ── Scheme header ─────────────────────────────────────────────────────────────
+
+const SchemeHeader = memo(
+  ({
+    schemeDescription,
+    ownerName,
+    actorName,
+    formulaAction,
+  }: {
+    schemeDescription: string | undefined;
+    ownerName: string;
+    actorName: string;
+    formulaAction: "start" | "explode" | "commit" | "resolve" | "pass";
+  }) => {
+    const schemeLabel = schemeDescription
+      ? `"${schemeDescription}" scheme`
+      : "scheme";
+    const ownerPossessive = `${ownerName}'s`;
+
+    let text: string;
+    if (formulaAction === "explode") {
+      text = `Exploding dice for ${ownerPossessive} ${schemeLabel}`;
+    } else if (formulaAction === "commit") {
+      text = `${actorName} committed to ${ownerPossessive} ${schemeLabel}`;
+    } else {
+      text = `${ownerPossessive} ${schemeLabel}`;
+    }
+
+    return <div className="text-base-content/60 text-xs italic">{text}</div>;
+  },
+);
+SchemeHeader.displayName = "SchemeHeader";
+
 // ── Consumed status label ─────────────────────────────────────────────────────
 
 const ConsumedLabel = memo(
@@ -176,9 +209,11 @@ const GeeseRollDisplay = memo(
   ({
     result,
     messageId,
+    formulaAction,
   }: {
     result: Extract<GeeseResult, { action: "roll" }>;
     messageId: string;
+    formulaAction: "start" | "explode" | "commit";
   }) => {
     const {
       totalSuccesses,
@@ -186,6 +221,7 @@ const GeeseRollDisplay = memo(
       faces,
       consumed,
       previousContributors,
+      schemeDescription,
     } = result;
     const { chatId } = useUserIdentityContext();
 
@@ -193,9 +229,19 @@ const GeeseRollDisplay = memo(
     const isOwner =
       previousContributors.length > 0 &&
       previousContributors[previousContributors.length - 1].chatId === chatId;
+    const ownerName = previousContributors[0]?.displayName ?? "Unknown";
+    const actorName =
+      previousContributors[previousContributors.length - 1]?.displayName ??
+      "Unknown";
 
     return (
       <div className={`flex flex-col gap-3${isFaded ? " opacity-50" : ""}`}>
+        <SchemeHeader
+          schemeDescription={schemeDescription}
+          ownerName={ownerName}
+          actorName={actorName}
+          formulaAction={formulaAction}
+        />
         <div className="flex flex-col gap-2">
           {faces.map((round, i) => (
             <DiceRow key={i} dice={round} roundIndex={i} />
@@ -234,9 +280,25 @@ GeeseRollDisplay.displayName = "GeeseRollDisplay";
 
 const GeeseResolveDisplay = memo(
   ({ result }: { result: Extract<GeeseResult, { action: "resolve" }> }) => {
-    const { totalSuccesses, faces, problemCount } = result;
+    const {
+      totalSuccesses,
+      faces,
+      problemCount,
+      previousContributors,
+      schemeDescription,
+    } = result;
+    const ownerName = previousContributors[0]?.displayName ?? "Unknown";
+    const actorName =
+      previousContributors[previousContributors.length - 1]?.displayName ??
+      "Unknown";
     return (
       <div className="flex flex-col gap-3">
+        <SchemeHeader
+          schemeDescription={schemeDescription}
+          ownerName={ownerName}
+          actorName={actorName}
+          formulaAction="resolve"
+        />
         <div className="flex flex-col gap-2">
           {faces.map((round, i) => (
             <DiceRow key={i} dice={round} roundIndex={i} />
@@ -350,7 +412,12 @@ const GeesePassDisplay = memo(
       consumed,
       consumedBy,
       previousContributors,
+      schemeDescription,
     } = result;
+    const ownerName = previousContributors[0]?.displayName ?? "Unknown";
+    const actorName =
+      previousContributors[previousContributors.length - 1]?.displayName ??
+      "Unknown";
 
     const isOwner =
       previousContributors.length > 0 &&
@@ -365,6 +432,12 @@ const GeesePassDisplay = memo(
 
     return (
       <div className={`flex flex-col gap-3${isFaded ? " opacity-50" : ""}`}>
+        <SchemeHeader
+          schemeDescription={schemeDescription}
+          ownerName={ownerName}
+          actorName={actorName}
+          formulaAction="pass"
+        />
         <div className="flex flex-col gap-2">
           {faces.map((round, i) => (
             <DiceRow key={i} dice={round} roundIndex={i} />
@@ -401,6 +474,7 @@ GeesePassDisplay.displayName = "GeesePassDisplay";
 
 export const GeeseDisplay = memo(
   ({
+    formula,
     result,
     messageId,
   }: {
@@ -409,7 +483,13 @@ export const GeeseDisplay = memo(
     messageId: string;
   }) => {
     if (result.action === "roll") {
-      return <GeeseRollDisplay result={result} messageId={messageId} />;
+      return (
+        <GeeseRollDisplay
+          result={result}
+          messageId={messageId}
+          formulaAction={formula.action as "start" | "explode" | "commit"}
+        />
+      );
     }
     if (result.action === "resolve") {
       return <GeeseResolveDisplay result={result} />;

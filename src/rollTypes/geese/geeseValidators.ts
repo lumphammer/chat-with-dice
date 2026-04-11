@@ -8,6 +8,7 @@ export const geeseFormulaValidator = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("start"),
     numDice: z.int().min(1),
+    schemeDescription: z.string().min(1).optional(),
   }),
   // explode the results of a start or a commit
   z.object({
@@ -44,6 +45,7 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
     previousContributors: z.array(
       z.object({ chatId: z.string(), displayName: z.string() }),
     ),
+    schemeDescription: z.string().min(1).optional(),
   }),
   z.object({
     action: z.literal("resolve"),
@@ -53,6 +55,7 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
     previousContributors: z.array(
       z.object({ chatId: z.string(), displayName: z.string() }),
     ),
+    schemeDescription: z.string().min(1).optional(),
   }),
   z.object({
     action: z.literal("pass"),
@@ -69,6 +72,7 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
       })
       .optional(),
     consumed: z.literal("resolve").optional(),
+    schemeDescription: z.string().min(1).optional(),
   }),
 ]);
 
