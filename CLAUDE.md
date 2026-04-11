@@ -19,3 +19,5 @@ Favour keeping component files short by breaking out subcomponents, even if they
 In our `pages/` tree, any page with more than trivial complexity should be expressed as a React component, located nearby under a `_components` folder.
 
 Icons in react components should come from lucide-react where possible.
+
+Avoid hard-coding colors - use theme colours where possible. If the theme doesn't contain something you need, stop and ask the user about the possibility of adding it.
