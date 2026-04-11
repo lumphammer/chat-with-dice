@@ -1,7 +1,7 @@
 import faceStyles from "#/styles/faces.module.css";
 import { memo } from "react";
 
-const GEESE_SUCCESS_MIN = 4;
+const SUCCESS_MIN = 4;
 
 export const DiceRow = memo(
   ({ dice, roundIndex }: { dice: number[]; roundIndex: number }) => {
@@ -14,7 +14,7 @@ export const DiceRow = memo(
           {dice.map((value, i) => (
             <span
               key={i}
-              data-degree={value >= GEESE_SUCCESS_MIN ? "success" : "failure"}
+              data-degree={value >= SUCCESS_MIN ? "success" : "failure"}
               className={faceStyles.face}
             >
               {value}

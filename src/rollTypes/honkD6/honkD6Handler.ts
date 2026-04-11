@@ -1,8 +1,8 @@
 import { SIX } from "#/constants";
 import type { RollHandler } from "../createRollType";
-import type { GeeseFormula, GeeseResult } from "./geeseValidators";
+import type { HonkD6Formula, HonkD6Result } from "./honkD6Validators";
 
-const GEESE_SUCCESS_MIN = 4;
+const SUCCESS_MIN = 4;
 
 function d6(): number {
   return Math.floor(Math.random() * SIX) + 1;
@@ -10,12 +10,12 @@ function d6(): number {
 
 const roll = (numDice: number) => {
   const faces = Array.from({ length: numDice }, d6);
-  const successCount = faces.filter((v) => v >= GEESE_SUCCESS_MIN).length;
+  const successCount = faces.filter((v) => v >= SUCCESS_MIN).length;
   const problemCount = faces.filter((v) => v === 1).length;
   return [faces, successCount, problemCount] as const;
 };
 
-export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
+export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
   formula,
   getMessage,
   updateMessage,
@@ -32,7 +32,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       explodableCount: successCount,
       previousContributors: [{ chatId, displayName }],
       schemeDescription: formula.schemeDescription,
-    } satisfies GeeseResult;
+    } satisfies HonkD6Result;
   }
 
   // every other action should have a previousMessageId, so we can fetch that
@@ -59,7 +59,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
         { chatId, displayName },
       ],
       schemeDescription: previous.results.schemeDescription,
-    } satisfies GeeseResult;
+    } satisfies HonkD6Result;
   }
 
   // resolve — can follow a roll OR a pass
@@ -83,7 +83,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       problemCount: previous.results.problemCount,
       previousContributors: [...previous.results.previousContributors],
       schemeDescription: previous.results.schemeDescription,
-    } satisfies GeeseResult;
+    } satisfies HonkD6Result;
   }
 
   // everything else requires a roll, so we check that here
@@ -106,7 +106,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       explodableCount: successCount,
       previousContributors: [...previous.results.previousContributors],
       schemeDescription: previous.results.schemeDescription,
-    } satisfies GeeseResult;
+    } satisfies HonkD6Result;
   }
 
   // pass
@@ -120,7 +120,7 @@ export const geeseHandler: RollHandler<GeeseFormula, GeeseResult> = async ({
       problemCount: previous.results.problemCount,
       previousContributors: [...previous.results.previousContributors],
       schemeDescription: previous.results.schemeDescription,
-    } satisfies GeeseResult;
+    } satisfies HonkD6Result;
   }
 
   throw new Error("Invalid action");

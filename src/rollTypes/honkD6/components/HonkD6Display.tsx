@@ -1,8 +1,8 @@
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
 import { useUserIdentityContext } from "#/components/DiceRoller/contexts/userIdentityContext";
-import type { GeeseFormula, GeeseResult } from "../geeseValidators";
+import type { HonkD6Formula, HonkD6Result } from "../honkD6Validators";
 import { DiceRow } from "./DiceRow";
-import { GeesePassDisplay } from "./GeesePassDisplay";
+import { HonkD6PassDisplay } from "./HonkD6PassDisplay";
 import { ProblemsDisplay } from "./ProblemsDisplay";
 import { SchemeHeader } from "./SchemeHeader";
 import { memo, useCallback } from "react";
@@ -43,11 +43,11 @@ const RollActionButtons = memo(
       sendMessage({
         type: "chat",
         payload: {
-          rollType: "geese",
+          rollType: "honkD6",
           formula: {
             action: "explode",
             previousMessageId: messageId,
-          } satisfies GeeseFormula,
+          } satisfies HonkD6Formula,
           chat: null,
           displayName,
         },
@@ -58,11 +58,11 @@ const RollActionButtons = memo(
       sendMessage({
         type: "chat",
         payload: {
-          rollType: "geese",
+          rollType: "honkD6",
           formula: {
             action: "resolve",
             previousMessageId: messageId,
-          } satisfies GeeseFormula,
+          } satisfies HonkD6Formula,
           chat: null,
           displayName,
         },
@@ -73,11 +73,11 @@ const RollActionButtons = memo(
       sendMessage({
         type: "chat",
         payload: {
-          rollType: "geese",
+          rollType: "honkD6",
           formula: {
             action: "pass",
             previousMessageId: messageId,
-          } satisfies GeeseFormula,
+          } satisfies HonkD6Formula,
           chat: null,
           displayName,
         },
@@ -115,13 +115,13 @@ RollActionButtons.displayName = "RollActionButtons";
 
 // ── Roll result (with action buttons) ────────────────────────────────────────
 
-const GeeseRollDisplay = memo(
+const HonkD6RollDisplay = memo(
   ({
     result,
     messageId,
     formulaAction,
   }: {
-    result: Extract<GeeseResult, { action: "roll" }>;
+    result: Extract<HonkD6Result, { action: "roll" }>;
     messageId: string;
     formulaAction: "start" | "explode" | "commit";
   }) => {
@@ -177,12 +177,12 @@ const GeeseRollDisplay = memo(
     );
   },
 );
-GeeseRollDisplay.displayName = "GeeseRollDisplay";
+HonkD6RollDisplay.displayName = "HonkD6RollDisplay";
 
 // ── Resolve result ────────────────────────────────────────────────────────────
 
-const GeeseResolveDisplay = memo(
-  ({ result }: { result: Extract<GeeseResult, { action: "resolve" }> }) => {
+const HonkD6ResolveDisplay = memo(
+  ({ result }: { result: Extract<HonkD6Result, { action: "resolve" }> }) => {
     const {
       totalSuccesses,
       faces,
@@ -216,23 +216,23 @@ const GeeseResolveDisplay = memo(
     );
   },
 );
-GeeseResolveDisplay.displayName = "GeeseResolveDisplay";
+HonkD6ResolveDisplay.displayName = "HonkD6ResolveDisplay";
 
 // ── Root export ───────────────────────────────────────────────────────────────
 
-export const GeeseDisplay = memo(
+export const HonkD6Display = memo(
   ({
     formula,
     result,
     messageId,
   }: {
-    formula: GeeseFormula;
-    result: GeeseResult;
+    formula: HonkD6Formula;
+    result: HonkD6Result;
     messageId: string;
   }) => {
     if (result.action === "roll") {
       return (
-        <GeeseRollDisplay
+        <HonkD6RollDisplay
           result={result}
           messageId={messageId}
           formulaAction={formula.action as "start" | "explode" | "commit"}
@@ -240,9 +240,9 @@ export const GeeseDisplay = memo(
       );
     }
     if (result.action === "resolve") {
-      return <GeeseResolveDisplay result={result} />;
+      return <HonkD6ResolveDisplay result={result} />;
     }
-    return <GeesePassDisplay result={result} messageId={messageId} />;
+    return <HonkD6PassDisplay result={result} messageId={messageId} />;
   },
 );
-GeeseDisplay.displayName = "GeeseDisplay";
+HonkD6Display.displayName = "HonkD6Display";

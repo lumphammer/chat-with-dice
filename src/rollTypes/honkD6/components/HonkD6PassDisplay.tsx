@@ -1,6 +1,6 @@
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
 import { useUserIdentityContext } from "#/components/DiceRoller/contexts/userIdentityContext";
-import type { GeeseFormula, GeeseResult } from "../geeseValidators";
+import type { HonkD6Formula, HonkD6Result } from "../honkD6Validators";
 import { DiceRow } from "./DiceRow";
 import { ProblemsDisplay } from "./ProblemsDisplay";
 import { SchemeHeader } from "./SchemeHeader";
@@ -25,12 +25,12 @@ const CommitSection = memo(({ messageId }: { messageId: string }) => {
     sendMessage({
       type: "chat",
       payload: {
-        rollType: "geese",
+        rollType: "honkD6",
         formula: {
           action: "commit",
           numDice,
           previousMessageId: messageId,
-        } satisfies GeeseFormula,
+        } satisfies HonkD6Formula,
         chat: null,
         displayName,
       },
@@ -74,11 +74,11 @@ const PassResolveButton = memo(
       sendMessage({
         type: "chat",
         payload: {
-          rollType: "geese",
+          rollType: "honkD6",
           formula: {
             action: "resolve",
             previousMessageId: messageId,
-          } satisfies GeeseFormula,
+          } satisfies HonkD6Formula,
           chat: null,
           displayName,
         },
@@ -96,12 +96,12 @@ PassResolveButton.displayName = "PassResolveButton";
 
 // ── Pass result (with Commit section) ─────────────────────────────────────────
 
-export const GeesePassDisplay = memo(
+export const HonkD6PassDisplay = memo(
   ({
     result,
     messageId,
   }: {
-    result: Extract<GeeseResult, { action: "pass" }>;
+    result: Extract<HonkD6Result, { action: "pass" }>;
     messageId: string;
   }) => {
     const { chatId } = useUserIdentityContext();
@@ -173,4 +173,4 @@ export const GeesePassDisplay = memo(
     );
   },
 );
-GeesePassDisplay.displayName = "GeesePassDisplay";
+HonkD6PassDisplay.displayName = "HonkD6PassDisplay";

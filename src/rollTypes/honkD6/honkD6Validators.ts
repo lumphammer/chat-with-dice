@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const rollFacesValidator = z.array(z.array(z.int().min(1).max(SIX)));
 
-export const geeseFormulaValidator = z.discriminatedUnion("action", [
+export const honkD6FormulaValidator = z.discriminatedUnion("action", [
   // start a new scheme
   z.object({
     action: z.literal("start"),
@@ -33,7 +33,7 @@ export const geeseFormulaValidator = z.discriminatedUnion("action", [
   }),
 ]);
 
-export const geeseResultValidator = z.discriminatedUnion("action", [
+export const honkD6ResultValidator = z.discriminatedUnion("action", [
   // result for a start, commit, or explode
   z.object({
     action: z.literal("roll"),
@@ -76,5 +76,5 @@ export const geeseResultValidator = z.discriminatedUnion("action", [
   }),
 ]);
 
-export type GeeseFormula = z.infer<typeof geeseFormulaValidator>;
-export type GeeseResult = z.infer<typeof geeseResultValidator>;
+export type HonkD6Formula = z.infer<typeof honkD6FormulaValidator>;
+export type HonkD6Result = z.infer<typeof honkD6ResultValidator>;

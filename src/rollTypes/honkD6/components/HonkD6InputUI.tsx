@@ -1,9 +1,9 @@
-import type { GeeseFormula } from "../geeseValidators";
+import type { HonkD6Formula } from "../honkD6Validators";
 import styles from "@/styles/inputs.module.css";
 import { memo, useId, useState, useCallback, type ChangeEvent } from "react";
 
-export const GeeseInputUI = memo(
-  ({ onChange }: { onChange: (formula: GeeseFormula) => void }) => {
+export const HonkD6InputUI = memo(
+  ({ onChange }: { onChange: (formula: HonkD6Formula) => void }) => {
     const diceId = useId();
     const descriptionId = useId();
 
@@ -63,4 +63,4 @@ export const GeeseInputUI = memo(
   },
 );
 
-GeeseInputUI.displayName = "GeeseInputUI";
+HonkD6InputUI.displayName = "HonkD6InputUI";
