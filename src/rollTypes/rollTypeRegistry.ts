@@ -11,6 +11,7 @@ export const rollTypeRegistry: Record<string, AnyRollType> = {
   havoc: havocRollType,
   notation: notationRollType,
   honkD6: honkD6RollType,
+  geese: honkD6RollType, // legacy
   // f20: defineRoll({
   //   requestValidator: z.object({
   //     critOn: z.int().min(1),
