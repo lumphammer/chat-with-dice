@@ -182,6 +182,7 @@ export const DiceRoller = memo(
                   data-part="outer expander"
                   className="flex flex-1 flex-row justify-start overflow-hidden"
                 >
+                  {/* chat scroller and chat form */}
                   <div
                     data-part="main"
                     className="mx-auto flex max-w-4xl flex-1 flex-col"

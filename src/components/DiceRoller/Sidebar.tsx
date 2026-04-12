@@ -3,17 +3,19 @@ import {
   isCapabilityName,
 } from "#/capabilities/capabilityRegistry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
+import styles from "./sidebar.module.css";
 import { Tabs } from "@ark-ui/react/tabs";
 import { memo } from "react";
 
 export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
   return (
     <Tabs.Root
-      className="bg-base-100 relative w-sm"
+      className={`bg-base-100 relative w-sm rounded-l-2xl border border-r-0
+        ${styles.root}`}
       defaultValue={config.capabilities[0]?.name}
       orientation="vertical"
     >
-      <Tabs.List className="absolute right-full mt-4 flex flex-col gap-4 pr-2">
+      <Tabs.List className={`flex flex-col gap-4 ${styles.tabList}`}>
         {config.capabilities.map(({ name }) => {
           if (!isCapabilityName(name)) {
             return null;
@@ -42,7 +44,7 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
 
         return (
           Component && (
-            <Tabs.Content key={name} value={name}>
+            <Tabs.Content key={name} value={name} className={styles.tabContent}>
               <Component />
             </Tabs.Content>
           )
