@@ -13,10 +13,13 @@
 * [x] finally, close the circle by being able to dispatch the actions we have on the capability
 * [x] ability to "mount" a capability client-side
 
+## Small Items
+
+* [ ] Mobile layout
+
 ## Big items
 
-* [ ] Vision statement
-* [ ] Mission statement
+* [x] Mission statement
 * [ ] System admin
   * [ ] Admin users
   * [ ] List rooms
