@@ -1,0 +1,61 @@
+@import "#/styles/global.css";
+
+.root {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  border-top-left-radius: calc(var(--spacing) * 3);
+  border-bottom-left-radius: calc(var(--spacing) * 3);
+  border-color: oklch(from var(--color-base-content) l c h / 0.2);
+  border-width: 1px;
+  border-right-width: 0;
+  display: grid;
+  grid-template-columns: [tabs] auto [content] 1fr;
+  --contentWidth: var(--container-xs);
+  background-color: var(--color-base-100);
+
+  @container (width >= 80rem) {
+    position: relative;
+    /*background-color: var(--color-red-900);*/
+  }
+}
+
+.tabList {
+  margin-top: calc(var(--spacing) * 4);
+  padding: calc(var(--spacing) * 2);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 4);
+}
+
+.tabButton {
+  border: 0px solid oklch(from var(--color-base-content) l c h / 0.3);
+  color: var(--color-base-content);
+  padding: calc(var(--spacing) * 1);
+  border-radius: var(--spacing);
+  transition: scale 200ms ease-out;
+  cursor: pointer;
+  &:hover:not(&[aria-selected="true"]) {
+    /*border: 1px solid var(--color-accent);*/
+    background-color: oklch(from var(--color-accent) l c h / 0.3);
+    scale: 1.2;
+  }
+  &[aria-selected="true"] {
+    background-color: var(--color-accent);
+    color: var(--color-accent-content);
+    cursor: default;
+  }
+}
+
+.contentArea {
+  width: var(--contentWidth);
+  overflow: hidden;
+  position: relative;
+}
+
+.tabContent {
+  overflow: auto;
+  position: absolute;
+  inset: 0;
+}

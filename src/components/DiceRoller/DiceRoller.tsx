@@ -10,10 +10,10 @@ import {
 } from "../../capabilities/reactContexts/capabilityInfoContext";
 import { SetCapabilityStateContextProvider } from "../../capabilities/reactContexts/setCapabilityStateContext";
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
+import { Sidebar } from "../Sidebar/Sidebar";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
-import { Sidebar } from "./Sidebar";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
 import { UserIdentityContextProvider } from "./contexts/userIdentityContext";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
@@ -178,9 +178,11 @@ export const DiceRoller = memo(
                     ></span>
                   </div>
                 </header>
+                {/* flex row for main chat and sidebar */}
                 <div
                   data-part="outer expander"
-                  className="flex flex-1 flex-row justify-start overflow-hidden"
+                  className="group/main @container relative flex flex-1 flex-row
+                    justify-start overflow-hidden"
                 >
                   {/* chat scroller and chat form */}
                   <div
@@ -216,6 +218,7 @@ export const DiceRoller = memo(
                     </div>
                     <ChatForm onNewMessage={handleNewMessage} />
                   </div>
+                  {/* sidebar */}
                   <Sidebar config={config} />
                 </div>
               </div>
