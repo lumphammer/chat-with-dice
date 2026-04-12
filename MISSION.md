@@ -30,6 +30,6 @@ Trade-off: it's going to be slower to develop some features.
 
 ### Accessibility over aesthetics
 
-When developing, pay attention to the accessibility tree in the browser dev tools. Use Ark UI components where feasible. Think about text contrast. Treat accessibility problems as bugs, not nice-to-haves.
+When developing, pay attention to the accessibility tree in the browser dev tools. Use Ark UI components where feasible. Think about text contrast. Treat accessibility problems as bugs, not nice-to-haves. Avoid semitransparent elements except as a way to dim elements.
 
 Trade-off: some highly aesthetic UIs just aren't accessible.
