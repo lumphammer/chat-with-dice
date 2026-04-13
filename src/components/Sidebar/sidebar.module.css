@@ -27,13 +27,18 @@
   }
 
   @container (width >= 80rem) {
+    position: relative;
     --sidebarWidth: var(--contentWidthWhenOpen);
     &[data-desktop-closed] {
       --sidebarWidth: 0px;
     }
+  }
+}
 
-    position: relative;
-    /*background-color: var(--color-red-900);*/
+.spaceHolder {
+  width: 3em;
+  @container (width >= 80rem) {
+    width: 0px;
   }
 }
 
