@@ -187,7 +187,8 @@ export const DiceRoller = memo(
                   {/* chat scroller and chat form */}
                   <div
                     data-part="main"
-                    className="mx-auto flex max-w-4xl flex-1 flex-col"
+                    className="mx-auto flex max-w-4xl flex-1 flex-col
+                      overflow-hidden"
                   >
                     <div className="relative flex-1 basis-0">
                       <div
