@@ -42,7 +42,7 @@ export type ClientMountedCapability<
 type PureActionFn<TState, TPayload> = (tools: {
   stateDraft: Draft<TState>;
   payload: TPayload;
-}) => void | Promise<void>;
+}) => void;
 
 type EffectfulActionFn<TState, TPayload> = (tools: {
   doCtx: DurableObjectState;

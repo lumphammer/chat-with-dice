@@ -4,9 +4,16 @@ import { honkD6RollType } from "./honkD6/honkD6RollType";
 import { notationRollType } from "./notation/notationRollType";
 import { standardRollType } from "./standard/standardRollType";
 
-export type RollTypeName = keyof typeof rollTypeRegistry;
+export const rollTypeNames = [
+  "standard",
+  "havoc",
+  "notation",
+  "honkD6",
+  "geese",
+] as const;
+export type RollTypeName = (typeof rollTypeNames)[number];
 
-export const rollTypeRegistry: Record<string, AnyRollType> = {
+export const rollTypeRegistry: Record<RollTypeName, AnyRollType> = {
   standard: standardRollType,
   havoc: havocRollType,
   notation: notationRollType,

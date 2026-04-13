@@ -93,7 +93,7 @@ export const createCapability = <
       });
     } else if (action.pureFn) {
       // if pure and not effectful, call pure
-      await action.pureFn({ stateDraft, payload });
+      action.pureFn({ stateDraft, payload });
     }
     // if neither, noop
     const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
@@ -260,10 +260,10 @@ export const createCapability = <
       ? parsedState.data
       : def.getInitialState({ config });
 
-    if (parsedConfig.success === false) {
+    if (!parsedConfig.success) {
       console.error("Received a corrupt config for capability " + name);
     }
-    if (parsedState.success === false) {
+    if (!parsedState.success) {
       console.error("Received a corrupt state for capability " + name);
     }
 

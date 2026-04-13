@@ -46,7 +46,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
     }
     const [faces, successCount, problemCount] = roll(formula.numDice);
     previous.results.consumedBy = { chatId, displayName };
-    updateMessage(previous);
+    await updateMessage(previous);
 
     return {
       action: "roll",
@@ -75,7 +75,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
     } else {
       previous.results.consumed = "resolve";
     }
-    updateMessage(previous);
+    await updateMessage(previous);
     return {
       action: "resolve",
       faces: previous.results.faces,
@@ -97,7 +97,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
       previous.results.explodableCount,
     );
     previous.results.consumed = "explode";
-    updateMessage(previous);
+    await updateMessage(previous);
     return {
       action: "roll",
       faces: [...previous.results.faces, faces],
@@ -112,7 +112,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
   // pass
   if (formula.action === "pass") {
     previous.results.consumed = "pass";
-    updateMessage(previous);
+    await updateMessage(previous);
     return {
       action: "pass",
       faces: previous.results.faces,

@@ -50,6 +50,9 @@ export default defineConfig({
     "react/no-array-index-key": "off",
     // this comes up way too much in plumbing code
     "typescript/no-unsafe-type-assertion": "off",
+    // so many callbacks are expected to return or not; messy to keep putting
+    // "return undefined"
+    "typescript/consistent-return": "off",
   },
   settings: {
     "jsx-a11y": {

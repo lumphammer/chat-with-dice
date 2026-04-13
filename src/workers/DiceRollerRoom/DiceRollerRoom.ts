@@ -61,7 +61,7 @@ export class DiceRollerRoom extends DurableObject {
     console.log("Durable object id booting:", ctx.id.toString());
 
     // load config from d1
-    this.ctx.blockConcurrencyWhile(async () => {
+    void this.ctx.blockConcurrencyWhile(async () => {
       const configRows = await d1
         .select({ config: Rooms.config })
         .from(Rooms)
@@ -82,7 +82,7 @@ export class DiceRollerRoom extends DurableObject {
 
     // Mount all capabilities before handling any events.
     // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
-    this.ctx.blockConcurrencyWhile(async () => {
+    void this.ctx.blockConcurrencyWhile(async () => {
       await Promise.all(
         this.config.capabilities.map(async ({ name, config }) => {
           console.log("mounting capability", name);

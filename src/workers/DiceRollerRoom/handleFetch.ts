@@ -39,7 +39,7 @@ export async function handleFetch(
     await broadcaster.sendCatchUp(server, await messageRepository.getRecent());
     await Promise.all(
       capabilities.values().map((mountedCap) => {
-        mountedCap.sendInit(server);
+        return mountedCap.sendInit(server);
       }),
     );
   }, CATCHUP_DELAY_MS);
