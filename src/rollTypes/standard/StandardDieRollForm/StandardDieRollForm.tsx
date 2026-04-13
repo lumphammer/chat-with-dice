@@ -44,7 +44,7 @@ export const StandardDieRollForm = ({
   }, []);
 
   return (
-    <div className="flex flex-1 flex-row">
+    <>
       {/*die count */}
       <ArityPicker
         arity={arity}
@@ -89,6 +89,6 @@ export const StandardDieRollForm = ({
       >
         Arity: {arity} Cardinality: {cardinality}
       </div>*/}
-    </div>
+    </>
   );
 };
