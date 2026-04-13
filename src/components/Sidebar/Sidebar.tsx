@@ -5,9 +5,11 @@ import {
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import styles from "./sidebar.module.css";
 import { Tabs } from "@ark-ui/react/tabs";
-import { memo } from "react";
+import { memo, useRef } from "react";
 
 export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
+  const ref = useRef<HTMLElement>(null);
+
   return (
     <Tabs.Root
       className={styles.root}
@@ -15,7 +17,7 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
       orientation="vertical"
       asChild
     >
-      <aside>
+      <aside ref={ref}>
         <Tabs.List className={styles.tabList} asChild>
           <nav>
             {config.capabilities.map(({ name }) => {
@@ -28,6 +30,23 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                   key={name}
                   className={styles.tabButton}
                   value={name}
+                  onClick={(e) => {
+                    if (!ref.current) {
+                      return;
+                    }
+                    console.log(e.currentTarget, ref.current);
+                    const isSelected = e.currentTarget.ariaSelected === "true";
+                    if ("desktopClosed" in ref.current.dataset) {
+                      delete ref.current.dataset.desktopClosed;
+                    } else if (isSelected) {
+                      ref.current.dataset.desktopClosed = "true";
+                    }
+                    if (!("mobileOpen" in ref.current.dataset)) {
+                      ref.current.dataset.mobileOpen = "true";
+                    } else if (isSelected) {
+                      delete ref.current.dataset.mobileOpen;
+                    }
+                  }}
                 >
                   <Component />
                 </Tabs.Trigger>
