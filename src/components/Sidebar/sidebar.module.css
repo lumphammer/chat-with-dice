@@ -7,24 +7,6 @@
   inherits: true;
 }
 
-@keyframes openSidebar {
-  from {
-    --sidebar-width: 0;
-  }
-  to {
-    --sidebar-width: 16;
-  }
-}
-
-@keyframes closeSidebar {
-  from {
-    --sidebar-width: 16;
-  }
-  to {
-    --sidebar-width: 0;
-  }
-}
-
 .root {
   position: absolute;
   top: 0;
@@ -86,13 +68,18 @@
 
 .contentArea {
   width: var(--sidebarWidth);
-  transition: width 200ms ease-out;
+  transition: width 2000ms ease-out;
   overflow: hidden;
   position: relative;
 }
 
 .tabContent {
-  overflow: auto;
+  overflow: hidden;
   position: absolute;
   inset: 0;
+}
+
+.tabContentInner {
+  width: var(--contentWidthWhenOpen);
+  overflow: auto;
 }

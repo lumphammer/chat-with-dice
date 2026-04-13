@@ -68,7 +68,9 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                   value={name}
                   className={styles.tabContent}
                 >
-                  <Component />
+                  <div className={styles.tabContentInner}>
+                    <Component />
+                  </div>
                 </Tabs.Content>
               )
             );
