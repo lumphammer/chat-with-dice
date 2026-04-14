@@ -14,7 +14,10 @@ type CapabilityInfo = {
   iconComponent: ComponentType;
 };
 
-export const capabilityRegistry: Record<string, CapabilityInfo> = {
+const capabilityNames = ["counter", "objectives", "adversaries"] as const;
+export type CapabilityName = (typeof capabilityNames)[number];
+
+export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
   counter: {
     capability: counterCapability,
     sidebarComponent: SidebarCounter,
@@ -31,8 +34,6 @@ export const capabilityRegistry: Record<string, CapabilityInfo> = {
     iconComponent: Swords,
   },
 };
-
-export type CapabilityName = keyof typeof capabilityRegistry;
 
 export function isCapabilityName(name: string): name is CapabilityName {
   return name in capabilityRegistry;
