@@ -20,21 +20,21 @@
 ## Big items
 
 * [x] Mission statement
+* [ ] Basic room admin (owner only)
+  * [ ] Rename
+  * [ ] Delete
+  * [ ] Manage capabilities
+* [ ] Roll Types to capabilities
+* [ ] Split chat form / UX work
 * [ ] System admin
   * [ ] Admin users
   * [ ] List rooms
 * [ ] CI / CD
 * [ ] "Currently online" / "All visitors" view
-* [ ] Room admin
-  * [ ] Rename
-  * [ ] Delete
-  * [ ] Manage capabilities
-  * [ ] Manage roll types
-* [ ] 
+* [ ] Roles/permissions
 * [ ] File uploads
 * [ ] Collaborative documents
 * [ ] Whiteboards
-* [ ]
 * [ ]
 * [ ]
 * [ ]
