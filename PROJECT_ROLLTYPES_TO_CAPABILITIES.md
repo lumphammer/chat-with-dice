@@ -20,7 +20,7 @@ A plan of attack might look like:
 
 * [ ] Ditch the roll form
 * [ ] Changes to the capability system:
-  * [ ] Multiple sidebar elements
+  * [x] Multiple sidebar elements
   * [ ] Roll result validator
   * [ ] Roll display UI
   * [ ] Effectful functions are given some typed helpers to publish and modify messages

@@ -10,8 +10,13 @@ import type { ComponentType } from "react";
 
 type CapabilityInfo = {
   capability: AnyCapability;
-  sidebarComponent?: ComponentType;
-  iconComponent: ComponentType;
+  sidebarInfos?: SidebarInfo[];
+};
+
+type SidebarInfo = {
+  key: string;
+  SidebarComponent: ComponentType;
+  IconComponent: ComponentType;
 };
 
 const capabilityNames = ["counter", "objectives", "adversaries"] as const;
@@ -20,18 +25,33 @@ export type CapabilityName = (typeof capabilityNames)[number];
 export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
   counter: {
     capability: counterCapability,
-    sidebarComponent: SidebarCounter,
-    iconComponent: SquarePlus,
+    sidebarInfos: [
+      {
+        key: "counter",
+        SidebarComponent: SidebarCounter,
+        IconComponent: SquarePlus,
+      },
+    ],
   },
   objectives: {
     capability: objectivesCapability,
-    sidebarComponent: SidebarObjectives,
-    iconComponent: Check,
+    sidebarInfos: [
+      {
+        key: "objectives",
+        SidebarComponent: SidebarObjectives,
+        IconComponent: Check,
+      },
+    ],
   },
   adversaries: {
     capability: adversariesCapability,
-    sidebarComponent: SidebarAdversaries,
-    iconComponent: Swords,
+    sidebarInfos: [
+      {
+        key: "adversaries",
+        SidebarComponent: SidebarAdversaries,
+        IconComponent: Swords,
+      },
+    ],
   },
 };
 

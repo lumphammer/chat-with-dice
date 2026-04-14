@@ -5,10 +5,29 @@ import {
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import styles from "./sidebar.module.css";
 import { Tabs } from "@ark-ui/react/tabs";
-import { memo, useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 
 export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
   const ref = useRef<HTMLElement>(null);
+
+  const capabilities = useMemo(
+    () =>
+      config.capabilities.flatMap(({ name }) =>
+        isCapabilityName(name)
+          ? [[name, capabilityRegistry[name]] as const]
+          : [],
+      ),
+    [config.capabilities],
+  );
+
+  const defaultValue = useMemo(() => {
+    const firstCapWithSidebars = capabilities.find(
+      ([, capInfo]) => (capInfo.sidebarInfos?.length ?? 0) > 0,
+    );
+    const defaultKey =
+      firstCapWithSidebars && firstCapWithSidebars[1].sidebarInfos?.[0]?.key;
+    return defaultKey && `${firstCapWithSidebars?.[0]}.${defaultKey}`;
+  }, [capabilities]);
 
   return (
     <>
@@ -16,7 +35,7 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
 
       <Tabs.Root
         className={styles.root}
-        defaultValue={config.capabilities[0]?.name}
+        defaultValue={defaultValue}
         orientation="vertical"
         asChild
       >
@@ -27,57 +46,67 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                 if (!isCapabilityName(name)) {
                   return null;
                 }
-                const Component = capabilityRegistry[name].iconComponent;
-                return (
-                  <Tabs.Trigger
-                    key={name}
-                    className={styles.tabButton}
-                    value={name}
-                    onClick={(e) => {
-                      if (!ref.current) {
-                        return;
-                      }
-                      console.log(e.currentTarget, ref.current);
-                      const isSelected =
-                        e.currentTarget.ariaSelected === "true";
-                      if ("desktopClosed" in ref.current.dataset) {
-                        delete ref.current.dataset.desktopClosed;
-                      } else if (isSelected) {
-                        ref.current.dataset.desktopClosed = "true";
-                      }
-                      if (!("mobileOpen" in ref.current.dataset)) {
-                        ref.current.dataset.mobileOpen = "true";
-                      } else if (isSelected) {
-                        delete ref.current.dataset.mobileOpen;
-                      }
-                    }}
-                  >
-                    <Component />
-                  </Tabs.Trigger>
-                );
+                const sidebarInfos = capabilityRegistry[name].sidebarInfos;
+                if (!sidebarInfos) {
+                  return [];
+                }
+                return sidebarInfos.map(({ IconComponent, key }) => {
+                  return (
+                    <Tabs.Trigger
+                      key={`${name}.${key}`}
+                      className={styles.tabButton}
+                      value={`${name}.${key}`}
+                      onClick={(e) => {
+                        if (!ref.current) {
+                          return;
+                        }
+                        console.log(e.currentTarget, ref.current);
+                        const isSelected =
+                          e.currentTarget.ariaSelected === "true";
+                        if ("desktopClosed" in ref.current.dataset) {
+                          delete ref.current.dataset.desktopClosed;
+                        } else if (isSelected) {
+                          ref.current.dataset.desktopClosed = "true";
+                        }
+                        if (!("mobileOpen" in ref.current.dataset)) {
+                          ref.current.dataset.mobileOpen = "true";
+                        } else if (isSelected) {
+                          delete ref.current.dataset.mobileOpen;
+                        }
+                      }}
+                    >
+                      <IconComponent />
+                    </Tabs.Trigger>
+                  );
+                });
               })}
             </nav>
           </Tabs.List>
           <section className={styles.contentArea}>
-            {config.capabilities.map(({ name }) => {
+            {config.capabilities.flatMap(({ name }) => {
               if (!isCapabilityName(name)) {
-                return null;
+                return [];
               }
-              const Component = capabilityRegistry[name].sidebarComponent;
+              const sidebarInfos = capabilityRegistry[name].sidebarInfos;
+              if (!sidebarInfos) {
+                return [];
+              }
 
-              return (
-                Component && (
-                  <Tabs.Content
-                    key={name}
-                    value={name}
-                    className={styles.tabContent}
-                  >
-                    <div className={styles.tabContentInner}>
-                      <Component />
-                    </div>
-                  </Tabs.Content>
-                )
-              );
+              return sidebarInfos.map(({ SidebarComponent, key }) => {
+                return (
+                  SidebarComponent && (
+                    <Tabs.Content
+                      key={`${name}.${key}`}
+                      value={`${name}.${key}`}
+                      className={styles.tabContent}
+                    >
+                      <div className={styles.tabContentInner}>
+                        <SidebarComponent />
+                      </div>
+                    </Tabs.Content>
+                  )
+                );
+              });
             })}
           </section>
         </aside>
