@@ -13,5 +13,5 @@ export const notationRollType = createRollType({
   InputComponent: NotationInput,
   handler: notationRollHandler,
   DisplayComponent: DiceRollResult,
-  defaultFormula: "1d6+0",
+  defaultFormula: { formula: "1d6+0" },
 });

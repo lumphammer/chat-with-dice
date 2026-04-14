@@ -5,8 +5,24 @@ import { z } from "zod/v4";
 
 const USERNAME_MAX_LENGTH = 128;
 
-export type JsonData = z.core.util.JSONType;
+/**
+ * A restricted type for JSON-serializable data which *must* be an at the top
+ * level.
+ */
+export type JsonData = {
+  [key: string]: z.core.util.JSONType;
+};
+
+/**
+ * A type for zof validators of JsonData
+ * @see JsonData
+ */
 export type JsonValidator = z.ZodType<JsonData>;
+
+export const jsonObjectValidator = z.record(
+  z.string(),
+  z.json(),
+) satisfies JsonValidator;
 
 /**
  * Create a zod validator for chat messages.
@@ -69,7 +85,10 @@ export type ChatMessage<
   chat: string | null;
 };
 
-export const anyChatMessageValidator = chatMessageValidator(z.json(), z.json());
+export const anyChatMessageValidator = chatMessageValidator(
+  z.record(z.string(), z.json()),
+  z.record(z.string(), z.json()),
+);
 
 /**
  * Validate a candidate value against a chat message schema built from the
@@ -161,7 +180,7 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
     payload: z.object({
       // WRONG - make this use a list of known roll types
       rollType: z.string(),
-      formula: z.json(),
+      formula: jsonObjectValidator,
       chat: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
     }),

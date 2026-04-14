@@ -18,7 +18,7 @@ export const DiceRollResult = memo(
 
     return (
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="font-mono text-sm opacity-70">{formula}</span>
+        <span className="font-mono text-sm opacity-70">{formula.formula}</span>
         <span className="opacity-30">→</span>
         {result.rolls.map((entry, i) => (
           <RollEntryNode key={i} entry={entry} />

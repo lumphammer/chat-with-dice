@@ -3,7 +3,10 @@ import { useSetCapabilityStateContext } from "#/capabilities/reactContexts/setCa
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
 import { useUserIdentityContext } from "#/components/DiceRoller/contexts/userIdentityContext";
 import { toAlphanumeric } from "#/utils/alphanumeric";
-import type { ActionCall } from "#/validators/webSocketMessageSchemas";
+import type {
+  ActionCall,
+  JsonValidator,
+} from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
@@ -28,14 +31,20 @@ const ARTIFICIAL_LAG_MS = 500;
  * @returns
  */
 export const createCapability = <
-  TConfigValidator extends z.ZodTypeAny,
-  TStateValidator extends z.ZodObject,
+  TConfigValidator extends JsonValidator,
+  TStateValidator extends JsonValidator,
+  TMessageDataValidator extends JsonValidator,
   TActions extends Record<
     string,
     ActionDefinition<z.infer<TStateValidator>, z.ZodTypeAny>
   >,
 >(
-  def: CapabilityDefinition<TConfigValidator, TStateValidator, TActions>,
+  def: CapabilityDefinition<
+    TConfigValidator,
+    TStateValidator,
+    TMessageDataValidator,
+    TActions
+  >,
 ): Capability<z.infer<TStateValidator>, TActions> => {
   const name = toAlphanumeric(def.name);
 

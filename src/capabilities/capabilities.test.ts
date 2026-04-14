@@ -1,5 +1,3 @@
-// oxlint-disable no-shadow
-// oxlint-disable no-magic-numbers
 import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import { Broadcaster } from "../workers/DiceRollerRoom/Broadcaster";
@@ -92,8 +90,8 @@ describe("createCapability", () => {
   const testCapability = createCapability({
     name: "TestCap",
     initialise: async () => {},
-    configValidator: z.null(),
-    defaultConfig: null,
+    configValidator: z.object(),
+    defaultConfig: {},
     stateValidator: z.object({ value: z.int() }),
     getInitialState: () => ({ value: 0 }),
     buildActions: ({ createAction }) => ({

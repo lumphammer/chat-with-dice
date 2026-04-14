@@ -1,7 +1,7 @@
 import { structuredRollsSchema } from "#/validators/rpgDieRollerResulsSchemas";
 import { z } from "zod";
 
-export const standardFormulaValidator = z.string();
+export const standardFormulaValidator = z.object({ formula: z.string() });
 
 export type StandardFormula = z.infer<typeof standardFormulaValidator>;
 

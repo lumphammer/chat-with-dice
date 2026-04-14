@@ -13,5 +13,5 @@ export const standardRollType = createRollType({
   InputComponent: StandardDieRollForm,
   handler: standardRollHandler,
   DisplayComponent: DiceRollResult,
-  defaultFormula: "1d6+0",
+  defaultFormula: { formula: "1d6+0" },
 });

@@ -10,7 +10,7 @@ export const standardRollHandler = ({
 }): StandardResult => {
   let diceRoll: DiceRoll;
   try {
-    diceRoll = new DiceRoll(formula);
+    diceRoll = new DiceRoll(formula.formula);
   } catch (e: unknown) {
     throw new Error("Couldn't parse dice formula", { cause: e });
   }

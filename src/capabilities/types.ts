@@ -1,5 +1,9 @@
 import type { Alphanumeric } from "#/utils/alphanumeric";
-import type { ActionCall } from "#/validators/webSocketMessageSchemas";
+import type {
+  ActionCall,
+  JsonData,
+  JsonValidator,
+} from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
 import type { MessageRepository } from "#/workers/DiceRollerRoom/MessageRepository";
@@ -20,7 +24,7 @@ export type ServerMountedCapability = {
 };
 
 export type ClientMountedCapability<
-  TState extends z.infer<z.ZodObject> = z.infer<z.ZodObject>,
+  TState extends JsonData = JsonData,
   TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>> =
     Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
 > =
@@ -79,8 +83,9 @@ export type CreateAction<TState> = <TPayloadValidator extends z.ZodType>(def: {
  * The full input definition for a capability
  */
 export type CapabilityDefinition<
-  TConfigValidator extends z.ZodType,
-  TStateValidator extends z.ZodObject,
+  TConfigValidator extends JsonValidator,
+  TStateValidator extends JsonValidator,
+  TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
     ActionDefinition<z.infer<TStateValidator>, z.ZodType>
@@ -90,6 +95,7 @@ export type CapabilityDefinition<
   configValidator: TConfigValidator;
   defaultConfig: z.infer<TConfigValidator>;
   stateValidator: TStateValidator;
+  messageDataValidator?: TMessageDataValidator;
   getInitialState: (tools: {
     config: z.infer<TConfigValidator>;
   }) => z.infer<TStateValidator>;
@@ -124,7 +130,7 @@ export type AnyCapability = {
 
 export type Capability<
   // TConfig extends z.infer<z.ZodTypeAny>,
-  TState extends z.infer<z.ZodObject>,
+  TState extends JsonData,
   TActions extends Record<string, ActionDefinition<TState, z.ZodType>>,
 > = {
   name: Alphanumeric;

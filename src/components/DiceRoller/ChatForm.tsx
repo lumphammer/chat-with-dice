@@ -59,7 +59,9 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const InputComponent = rollTypeRegistry[rollType].InputComponent;
 
   const hasFormula =
-    typeof formula === "string" ? formula.trim().length > 0 : !!formula;
+    typeof formula.formula === "string"
+      ? formula.formula.trim().length > 0
+      : !!formula;
 
   return (
     <FormulaContextProvider value={formulaContextValue}>

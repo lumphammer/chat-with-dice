@@ -19,7 +19,7 @@ export const StandardDieRollForm = ({
   const [modifier, setModifier] = useState("0");
 
   useEffect(() => {
-    onChange(`${arity}d${cardinality}${operator}${modifier}`);
+    onChange({ formula: `${arity}d${cardinality}${operator}${modifier}` });
   }, [onChange, arity, cardinality, operator, modifier]);
 
   const cardinalityRef = useRef<{ focus: () => void }>(null);
