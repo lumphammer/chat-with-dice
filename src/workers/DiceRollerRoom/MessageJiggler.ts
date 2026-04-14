@@ -21,6 +21,11 @@ export class MessageJiggler {
     private broadcaster: Broadcaster,
   ) {}
 
+  async sendChatMessage(message: ChatMessage): Promise<void> {
+    await this.messageRepository.updateMessage(message);
+    this.broadcaster.broadcastChatMessage(message);
+  }
+
   async modifyMesage<
     TFormulaValidator extends JsonValidator,
     TResultValidator extends JsonValidator,

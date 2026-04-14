@@ -9,7 +9,7 @@ import type {
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
-import type { MessageRepository } from "../workers/DiceRollerRoom/MessageRepository";
+import { MessageJiggler } from "#/workers/DiceRollerRoom/MessageJiggler";
 import type {
   Capability,
   CapabilityDefinition,
@@ -67,7 +67,7 @@ export const createCapability = <
   // server-side message handler
   const handleMessage = async ({
     doCtx,
-    messageRepository,
+    messageJiggler,
     broadcaster,
     stateRepository,
     state,
@@ -76,7 +76,7 @@ export const createCapability = <
     displayName,
   }: {
     doCtx: DurableObjectState;
-    messageRepository: MessageRepository;
+    messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
     chatId: string;
     state: z.infer<TStateValidator>;
@@ -95,10 +95,10 @@ export const createCapability = <
         stateDraft,
         payload,
         pureFn: action.pureFn ?? (() => {}),
-        messageRepository,
         broadcaster,
         chatId,
         displayName,
+        sendChatMessage: (message) => messageJiggler.sendChatMessage(message),
       });
     } else if (action.pureFn) {
       // if pure and not effectful, call pure
@@ -125,13 +125,13 @@ export const createCapability = <
     broadcaster,
     config,
     doCtx,
-    messageRepository,
+    messageJiggler,
     stateRepository,
   }: {
     broadcaster: Broadcaster;
     config: unknown;
     doCtx: DurableObjectState;
-    messageRepository: MessageRepository;
+    messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
   }): Promise<ServerMountedCapability | null> => {
     // get config
@@ -160,7 +160,7 @@ export const createCapability = <
     await def.initialise({
       doCtx,
       draftState: draftState,
-      messageRepository,
+      messageJiggler,
       config: configParseResult.data,
     });
     // the need for this cast is odd
@@ -181,7 +181,7 @@ export const createCapability = <
 
         state = await handleMessage({
           doCtx,
-          messageRepository,
+          messageJiggler,
           stateRepository,
           state,
           actionCall,

@@ -1,12 +1,13 @@
 import type { Alphanumeric } from "#/utils/alphanumeric";
 import type {
   ActionCall,
+  ChatMessage,
   JsonData,
   JsonValidator,
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
-import type { MessageRepository } from "#/workers/DiceRollerRoom/MessageRepository";
+import type { MessageJiggler } from "#/workers/DiceRollerRoom/MessageJiggler";
 import type { Draft, Patch } from "immer";
 import type { z } from "zod";
 
@@ -50,7 +51,8 @@ type PureActionFn<TState, TPayload> = (tools: {
 
 type EffectfulActionFn<TState, TPayload> = (tools: {
   doCtx: DurableObjectState;
-  messageRepository: MessageRepository;
+  // messageRepository: MessageRepository;
+  sendChatMessage: (message: ChatMessage) => void;
   broadcaster: Broadcaster;
   pureFn: PureActionFn<TState, TPayload>;
   stateDraft: Draft<TState>;
@@ -103,9 +105,9 @@ export type CapabilityDefinition<
     doCtx: DurableObjectState;
     draftState: Draft<z.infer<TStateValidator>>;
     // db: DBHandle;
-    messageRepository: MessageRepository;
+    messageJiggler: MessageJiggler;
     config: z.infer<TConfigValidator>;
-  }) => Promise<void>;
+  }) => void | Promise<void>;
   buildActions: (tools: {
     createAction: CreateAction<z.infer<TStateValidator>>;
   }) => TActions;
@@ -120,7 +122,7 @@ export type AnyCapability = {
   name: string;
   mount: (tools: {
     doCtx: DurableObjectState;
-    messageRepository: MessageRepository;
+    messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
 
     config: unknown;
@@ -136,7 +138,7 @@ export type Capability<
   name: Alphanumeric;
   mount: (tools: {
     doCtx: DurableObjectState;
-    messageRepository: MessageRepository;
+    messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
     config: unknown;
     broadcaster: Broadcaster;
