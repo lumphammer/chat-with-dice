@@ -18,6 +18,7 @@ import type {
   CreateAction,
   ActionDefinition,
   AnyActionDefinition,
+  inferIfZod,
 } from "./types";
 import { createDraft, finishDraft, produceWithPatches } from "immer";
 import { nanoid } from "nanoid";
@@ -33,10 +34,14 @@ const ARTIFICIAL_LAG_MS = 500;
 export const createCapability = <
   TConfigValidator extends JsonValidator,
   TStateValidator extends JsonValidator,
-  TMessageDataValidator extends JsonValidator,
+  TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    ActionDefinition<z.infer<TStateValidator>, z.ZodTypeAny>
+    ActionDefinition<
+      z.infer<TStateValidator>,
+      z.ZodTypeAny,
+      inferIfZod<TMessageDataValidator>
+    >
   >,
 >(
   def: CapabilityDefinition<
@@ -48,11 +53,10 @@ export const createCapability = <
 ): Capability<z.infer<TStateValidator>, TActions> => {
   const name = toAlphanumeric(def.name);
 
-  const createAction: CreateAction<z.infer<TStateValidator>> = ({
-    payloadValidator,
-    pureFn,
-    effectfulFn: complexFn,
-  }) => ({
+  const createAction: CreateAction<
+    z.infer<TStateValidator>,
+    inferIfZod<TMessageDataValidator>
+  > = ({ payloadValidator, pureFn, effectfulFn: complexFn }) => ({
     type: "complex",
     payloadValidator,
     pureFn: pureFn,
@@ -98,7 +102,17 @@ export const createCapability = <
         broadcaster,
         chatId,
         displayName,
-        sendChatMessage: (message) => messageJiggler.sendChatMessage(message),
+        sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
+          void messageJiggler.sendChatMessage({
+            chat: "",
+            chatId,
+            created_time: Date.now(),
+            displayName,
+            formula: {},
+            id: nanoid(),
+            results: data ?? {},
+            rollType: name,
+          }),
       });
     } else if (action.pureFn) {
       // if pure and not effectful, call pure

@@ -1,7 +1,6 @@
 import type { Alphanumeric } from "#/utils/alphanumeric";
 import type {
   ActionCall,
-  ChatMessage,
   JsonData,
   JsonValidator,
 } from "#/validators/webSocketMessageSchemas";
@@ -10,6 +9,8 @@ import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/Capabil
 import type { MessageJiggler } from "#/workers/DiceRollerRoom/MessageJiggler";
 import type { Draft, Patch } from "immer";
 import type { z } from "zod";
+
+export type inferIfZod<T> = T extends z.ZodType ? z.infer<T> : T;
 
 /**
  * Represents what the server gets after mounting a capability
@@ -26,8 +27,13 @@ export type ServerMountedCapability = {
 
 export type ClientMountedCapability<
   TState extends JsonData = JsonData,
-  TActions extends Record<string, ActionDefinition<TState, z.ZodTypeAny>> =
-    Record<string, ActionDefinition<TState, z.ZodTypeAny>>,
+  TActions extends Record<
+    string,
+    ActionDefinition<TState, z.ZodTypeAny, JsonData | undefined>
+  > = Record<
+    string,
+    ActionDefinition<TState, z.ZodTypeAny, JsonData | undefined>
+  >,
 > =
   | { initialised: false }
   | {
@@ -49,10 +55,10 @@ type PureActionFn<TState, TPayload> = (tools: {
   payload: TPayload;
 }) => void;
 
-type EffectfulActionFn<TState, TPayload> = (tools: {
+type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
   doCtx: DurableObjectState;
   // messageRepository: MessageRepository;
-  sendChatMessage: (message: ChatMessage) => void;
+  sendChatMessage: (data: TMessageData) => void;
   broadcaster: Broadcaster;
   pureFn: PureActionFn<TState, TPayload>;
   stateDraft: Draft<TState>;
@@ -64,22 +70,40 @@ type EffectfulActionFn<TState, TPayload> = (tools: {
 /**
  * An action definition. Input validator plus function.
  */
-export type ActionDefinition<TState, TPayloadValidator extends z.ZodType> = {
+export type ActionDefinition<
+  TState,
+  TPayloadValidator extends z.ZodType,
+  TMessageData extends JsonData | undefined,
+> = {
   payloadValidator: TPayloadValidator;
   pureFn?: PureActionFn<TState, z.infer<TPayloadValidator>>;
-  effectfulFn?: EffectfulActionFn<TState, z.infer<TPayloadValidator>>;
+  effectfulFn?: EffectfulActionFn<
+    TState,
+    z.infer<TPayloadValidator>,
+    TMessageData
+  >;
 };
 
-export type AnyActionDefinition = ActionDefinition<any, z.ZodType>;
+export type AnyActionDefinition = ActionDefinition<
+  any,
+  z.ZodType,
+  JsonData | undefined
+>;
 
 /**
  * Type for the builder function used when defining a capability
  */
-export type CreateAction<TState> = <TPayloadValidator extends z.ZodType>(def: {
+export type CreateAction<TState, TMessageData extends JsonData | undefined> = <
+  TPayloadValidator extends z.ZodType,
+>(def: {
   payloadValidator: TPayloadValidator;
   pureFn?: PureActionFn<TState, z.infer<TPayloadValidator>>;
-  effectfulFn?: EffectfulActionFn<TState, z.infer<TPayloadValidator>>;
-}) => ActionDefinition<TState, TPayloadValidator>;
+  effectfulFn?: EffectfulActionFn<
+    TState,
+    z.infer<TPayloadValidator>,
+    TMessageData
+  >;
+}) => ActionDefinition<TState, TPayloadValidator, TMessageData>;
 
 /**
  * The full input definition for a capability
@@ -90,7 +114,11 @@ export type CapabilityDefinition<
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    ActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    ActionDefinition<
+      z.infer<TStateValidator>,
+      z.ZodType,
+      inferIfZod<TMessageDataValidator>
+    >
   >,
 > = {
   name: string;
@@ -109,7 +137,10 @@ export type CapabilityDefinition<
     config: z.infer<TConfigValidator>;
   }) => void | Promise<void>;
   buildActions: (tools: {
-    createAction: CreateAction<z.infer<TStateValidator>>;
+    createAction: CreateAction<
+      z.infer<TStateValidator>,
+      inferIfZod<TMessageDataValidator>
+    >;
   }) => TActions;
 };
 
@@ -133,7 +164,10 @@ export type AnyCapability = {
 export type Capability<
   // TConfig extends z.infer<z.ZodTypeAny>,
   TState extends JsonData,
-  TActions extends Record<string, ActionDefinition<TState, z.ZodType>>,
+  TActions extends Record<
+    string,
+    ActionDefinition<TState, z.ZodType, JsonData | undefined>
+  >,
 > = {
   name: Alphanumeric;
   mount: (tools: {

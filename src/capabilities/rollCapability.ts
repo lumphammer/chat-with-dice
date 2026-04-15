@@ -175,8 +175,6 @@ const messageDataValidator = z.object({
   }),
 });
 
-type MessageData = z.infer<typeof messageDataValidator>;
-
 function modify(operand1: number, operator: Operator, operand2: number) {
   if (operator === "+") return operand1 + operand2;
   if (operator === "-") return operand1 - operand2;
@@ -197,7 +195,7 @@ export const rollCapability = createCapability({
     return {
       doRoll: createAction({
         payloadValidator: rollFormulaValidator,
-        effectfulFn: async ({ payload, sendChatMessage, chatId }) => {
+        effectfulFn: async ({ payload, sendChatMessage }) => {
           const { arity, cardinality, exploding, favour, keep, modifier } =
             payload;
           const faceGroup = rollHandfulsWithMaybeFavour(
@@ -207,7 +205,7 @@ export const rollCapability = createCapability({
             exploding,
             favour,
           );
-          const messageData: MessageData = {
+          sendChatMessage({
             formula: payload,
             result: {
               faces: faceGroup,
@@ -215,16 +213,6 @@ export const rollCapability = createCapability({
                 ? modify(faceGroup.total, modifier.operator, modifier.operand)
                 : faceGroup.total,
             },
-          };
-          sendChatMessage({
-            chat: "",
-            chatId,
-            created_time: Date.now(),
-            displayName: "",
-            id: "",
-            rollType: "",
-            formula: {},
-            results: messageData,
           });
         },
       }),
