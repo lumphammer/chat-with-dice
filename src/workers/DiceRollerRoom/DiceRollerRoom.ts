@@ -169,7 +169,10 @@ export class DiceRollerRoom extends DurableObject {
         return;
       }
 
-      const checkOwner = (description: string, cb: () => void) => {
+      const checkOwner = async (
+        description: string,
+        cb: () => void | Promise<void>,
+      ) => {
         if (this.createdByUserId !== attachment.userId) {
           this.broadcaster.sendError(
             ws,
@@ -180,7 +183,7 @@ export class DiceRollerRoom extends DurableObject {
             data,
           });
         } else {
-          cb();
+          await cb();
         }
       };
 
@@ -203,17 +206,20 @@ export class DiceRollerRoom extends DurableObject {
           displayName: data.payload.displayName,
         });
       } else if (data.type === "updateConfig") {
-        checkOwner("update room config", () => {
+        await checkOwner("update room config", async () => {
           const config = data.payload.config;
-          d1.update(Rooms)
+          await d1
+            .update(Rooms)
             .set({ config })
             .where(eq(Rooms.durableObjectId, this.ctx.id.toString()));
           this.broadcaster.brodcastConfig(config);
         });
       } else if (data.type === "updateRoomName") {
-        checkOwner("update room config", () => {
+        await checkOwner("update room config", async () => {
           const roomName = data.payload.roomName;
-          d1.update(Rooms)
+          console.log("Updating room name", roomName, this.ctx.id.toString());
+          await d1
+            .update(Rooms)
             .set({ name: roomName })
             .where(eq(Rooms.durableObjectId, this.ctx.id.toString()));
           this.broadcaster.brodcastRoomName(roomName);
