@@ -26,12 +26,14 @@ export const useChatWebSocket = ({
   onError,
   setCapabilityInfos,
   setRoomConfig,
+  setRoomName,
 }: {
   roomId: string;
   chatId: string;
   onError: (error: { errorMessage: string; detail: string }) => void;
   setCapabilityInfos: Dispatch<SetStateAction<CapabilityInfoContextValue>>;
   setRoomConfig: (config: RoomConfig) => void;
+  setRoomName: (roomName: string) => void;
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connectionStatus, setConnectionStatus] =
@@ -129,6 +131,8 @@ export const useChatWebSocket = ({
           });
         } else if (data.type === "roomConfig") {
           setRoomConfig(data.payload.config);
+        } else if (data.type === "roomName") {
+          setRoomName(data.payload.roomName);
         }
       },
       onclose: () => {
@@ -146,7 +150,7 @@ export const useChatWebSocket = ({
       console.log("Closing websocket because effect re-ran");
       ws.close();
     };
-  }, [roomId, chatId, onError, setCapabilityInfos, setRoomConfig]);
+  }, [roomId, chatId, onError, setCapabilityInfos, setRoomConfig, setRoomName]);
 
   const sendMessage = useCallback((content: WebSocketClientMessage) => {
     websocketRef.current?.json(content);

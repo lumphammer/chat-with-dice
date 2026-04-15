@@ -114,6 +114,7 @@ export const DiceRoller = memo(
       ),
       setCapabilityInfos,
       setRoomConfig: setRoomConfig,
+      setRoomName: setRoomName,
     });
 
     const handleSetRoomConfig = useCallback(
