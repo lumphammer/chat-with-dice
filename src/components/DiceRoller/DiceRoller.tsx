@@ -45,7 +45,7 @@ const iconMap = {
 export const DiceRoller = memo(
   ({
     roomId,
-    config,
+    config: initialConfig,
     isOwner,
   }: {
     roomId: string;
@@ -54,6 +54,8 @@ export const DiceRoller = memo(
   }) => {
     const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
       useUserIdentityStorage({ isOwner });
+
+    const [config, setConfig] = useState(initialConfig);
 
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});
@@ -106,6 +108,7 @@ export const DiceRoller = memo(
         [toaster],
       ),
       setCapabilityInfos,
+      setRoomConfig: setConfig,
     });
 
     const hue = deriveHueFromUserId(userIdentity.chatId);

@@ -1,4 +1,5 @@
 import { ReconnectingWebSocket } from "#/utils/ReconnectingWebSocket";
+import type { RoomConfig } from "#/validators/roomConfigValidator";
 import {
   webSocketServerMessageSchema,
   type ChatMessage,
@@ -17,15 +18,6 @@ import {
 } from "react";
 import z from "zod";
 
-type UseChatWebSocketArgs = {
-  roomId: string;
-  chatId: string;
-  onError: (error: { errorMessage: string; detail: string }) => void;
-  // capabilityStates: Record<string, unknown>;
-  // setCapabilityState: (name: string, state: unknown, config?: unknown) => void;
-  setCapabilityInfos: Dispatch<SetStateAction<CapabilityInfoContextValue>>;
-};
-
 const MAX_HISTORY_BUFFER_LENGTH = 100;
 
 export const useChatWebSocket = ({
@@ -33,7 +25,14 @@ export const useChatWebSocket = ({
   chatId,
   onError,
   setCapabilityInfos,
-}: UseChatWebSocketArgs) => {
+  setRoomConfig,
+}: {
+  roomId: string;
+  chatId: string;
+  onError: (error: { errorMessage: string; detail: string }) => void;
+  setCapabilityInfos: Dispatch<SetStateAction<CapabilityInfoContextValue>>;
+  setRoomConfig: (config: RoomConfig) => void;
+}) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
@@ -128,6 +127,8 @@ export const useChatWebSocket = ({
               };
             });
           });
+        } else if (data.type === "roomConfig") {
+          setRoomConfig(data.payload.config);
         }
       },
       onclose: () => {
@@ -145,7 +146,7 @@ export const useChatWebSocket = ({
       console.log("Closing websocket because effect re-ran");
       ws.close();
     };
-  }, [roomId, chatId, onError, setCapabilityInfos]);
+  }, [roomId, chatId, onError, setCapabilityInfos, setRoomConfig]);
 
   const sendMessage = useCallback((content: WebSocketClientMessage) => {
     websocketRef.current?.json(content);
