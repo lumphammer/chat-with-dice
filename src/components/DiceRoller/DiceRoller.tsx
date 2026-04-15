@@ -43,9 +43,17 @@ const iconMap = {
 };
 
 export const DiceRoller = memo(
-  ({ roomId, config }: { roomId: string; config: RoomConfig }) => {
+  ({
+    roomId,
+    config,
+    isOwner,
+  }: {
+    roomId: string;
+    config: RoomConfig;
+    isOwner: boolean;
+  }) => {
     const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
-      useUserIdentityStorage();
+      useUserIdentityStorage({ isOwner });
 
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});

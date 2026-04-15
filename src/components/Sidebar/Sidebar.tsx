@@ -3,12 +3,17 @@ import {
   isCapabilityName,
 } from "#/capabilities/capabilityRegistry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
+import { useUserIdentityContext } from "../DiceRoller/contexts/userIdentityContext";
+import { Config } from "../config/Config";
 import styles from "./sidebar.module.css";
 import { Tabs } from "@ark-ui/react/tabs";
+import { Cog } from "lucide-react";
 import { memo, useMemo, useRef } from "react";
 
 export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
   const ref = useRef<HTMLElement>(null);
+
+  const { isOwner } = useUserIdentityContext();
 
   const capabilities = useMemo(
     () =>
@@ -80,6 +85,32 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                   );
                 });
               })}
+              {isOwner && (
+                <Tabs.Trigger
+                  // key="config"
+                  className={styles.tabButton}
+                  value="config"
+                  onClick={(e) => {
+                    if (!ref.current) {
+                      return;
+                    }
+                    console.log(e.currentTarget, ref.current);
+                    const isSelected = e.currentTarget.ariaSelected === "true";
+                    if ("desktopClosed" in ref.current.dataset) {
+                      delete ref.current.dataset.desktopClosed;
+                    } else if (isSelected) {
+                      ref.current.dataset.desktopClosed = "true";
+                    }
+                    if (!("mobileOpen" in ref.current.dataset)) {
+                      ref.current.dataset.mobileOpen = "true";
+                    } else if (isSelected) {
+                      delete ref.current.dataset.mobileOpen;
+                    }
+                  }}
+                >
+                  <Cog />
+                </Tabs.Trigger>
+              )}
             </nav>
           </Tabs.List>
           <section className={styles.contentArea}>
@@ -108,6 +139,13 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                 );
               });
             })}
+            {isOwner && (
+              <Tabs.Content value="config" className={styles.tabContent}>
+                <div className={styles.tabContentInner}>
+                  <Config />
+                </div>
+              </Tabs.Content>
+            )}
           </section>
         </aside>
       </Tabs.Root>

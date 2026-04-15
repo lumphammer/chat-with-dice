@@ -7,14 +7,19 @@ import { hasCookieConsent } from "#/utils/hasCookieConsent";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type UseUserIdentityStorageReturn = {
-  userIdentity: { displayName: string; chatId: string };
+  userIdentity: { displayName: string; chatId: string; isOwner: boolean };
+
   isPending: boolean;
 } & (
   | { loggedIn: false; handleSetDisplayName: (newDisplayName: string) => void }
   | { loggedIn: true; handleSetDisplayName: null }
 );
 
-export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
+export const useUserIdentityStorage = ({
+  isOwner,
+}: {
+  isOwner: boolean;
+}): UseUserIdentityStorageReturn => {
   const { data: sessionData, isPending } = authClient.useSession();
 
   const [localDisplayName, setLocalDislayName] = useState<string>(
@@ -44,9 +49,9 @@ export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
     }
   }, []);
 
-  const userIdentity = useMemo(
-    () => ({ displayName: localDisplayName, chatId: localChatId }),
-    [localDisplayName, localChatId],
+  const localUserIdentity = useMemo(
+    () => ({ displayName: localDisplayName, chatId: localChatId, isOwner }),
+    [localDisplayName, localChatId, isOwner],
   );
 
   if (sessionData && sessionData.user) {
@@ -55,11 +60,17 @@ export const useUserIdentityStorage = (): UseUserIdentityStorageReturn => {
       handleSetDisplayName: null,
       isPending,
       userIdentity: {
+        isOwner,
         displayName: sessionData.user.name,
         chatId: sessionData.user.chatId,
       },
     };
   } else {
-    return { loggedIn: false, userIdentity, handleSetDisplayName, isPending };
+    return {
+      loggedIn: false,
+      userIdentity: localUserIdentity,
+      handleSetDisplayName,
+      isPending,
+    };
   }
 };

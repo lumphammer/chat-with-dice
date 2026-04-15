@@ -22,8 +22,16 @@ const config = configParseResult.success
 if (configParseResult.success === false) {
   console.error("Room failed config validation");
 }
+
+// temp until we have a roles system
+const isOwner = room.created_by_user_id === Astro.locals.user?.id;
 ---
 
 <Layout title={room?.name ?? "(room not found)"}>
-  <DiceRoller client:only roomId={roomId ?? ""} config={config} />
+  <DiceRoller
+    client:only
+    roomId={roomId ?? ""}
+    config={config}
+    isOwner={isOwner}
+  />
 </Layout>
