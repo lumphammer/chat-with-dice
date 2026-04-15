@@ -168,6 +168,22 @@ export class DiceRollerRoom extends DurableObject {
         console.log("Attachment", ws.deserializeAttachment());
         return;
       }
+
+      const checkOwner = (description: string, cb: () => void) => {
+        if (this.createdByUserId !== attachment.userId) {
+          this.broadcaster.sendError(
+            ws,
+            `You are not the room owner and cannot ${description}`,
+          );
+          console.error(`Unauthorised attempt to ${description}:`, {
+            userId: attachment.userId,
+            data,
+          });
+        } else {
+          cb();
+        }
+      };
+
       const data = parsed.data;
       if (data.type === "chat") {
         // handle chat
@@ -187,22 +203,21 @@ export class DiceRollerRoom extends DurableObject {
           displayName: data.payload.displayName,
         });
       } else if (data.type === "updateConfig") {
-        const config = data.payload.config;
-        if (this.createdByUserId !== attachment.userId) {
-          this.broadcaster.sendError(
-            ws,
-            "You are not the room owner and cannot update config",
-          );
-          console.error("Unauthorised attempt to update room config:", {
-            userId: attachment.userId,
-            config,
-          });
-        } else {
+        checkOwner("update room config", () => {
+          const config = data.payload.config;
           d1.update(Rooms)
             .set({ config })
             .where(eq(Rooms.durableObjectId, this.ctx.id.toString()));
           this.broadcaster.brodcastConfig(config);
-        }
+        });
+      } else if (data.type === "updateRoomName") {
+        checkOwner("update room config", () => {
+          const roomName = data.payload.roomName;
+          d1.update(Rooms)
+            .set({ name: roomName })
+            .where(eq(Rooms.durableObjectId, this.ctx.id.toString()));
+          this.broadcaster.brodcastRoomName(roomName);
+        });
       }
     } catch (error) {
       this.broadcaster.sendError(ws, error);

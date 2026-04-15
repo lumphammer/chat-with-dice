@@ -33,5 +33,6 @@ const isOwner = room.created_by_user_id === Astro.locals.user?.id;
     roomId={roomId ?? ""}
     config={config}
     isOwner={isOwner}
+    displayName={room.name}
   />
 </Layout>

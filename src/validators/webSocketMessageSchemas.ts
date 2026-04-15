@@ -156,6 +156,12 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
       config: roomConfigValidator,
     }),
   }),
+  z.object({
+    type: z.literal("roomName"),
+    payload: z.object({
+      roomName: z.string(),
+    }),
+  }),
 ]);
 
 export type WebSocketServerMessage = z.infer<
@@ -196,6 +202,12 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("updateConfig"),
     payload: z.object({
       config: roomConfigValidator,
+    }),
+  }),
+  z.object({
+    type: z.literal("updateRoomName"),
+    payload: z.object({
+      roomName: z.string(),
     }),
   }),
   actionCallMessageValidator,

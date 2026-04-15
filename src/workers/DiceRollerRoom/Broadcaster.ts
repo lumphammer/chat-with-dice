@@ -61,4 +61,13 @@ export class Broadcaster {
       },
     });
   }
+
+  brodcastRoomName(roomName: string): void {
+    this.broadcast({
+      type: "roomName",
+      payload: {
+        roomName,
+      },
+    });
+  }
 }

@@ -14,6 +14,7 @@ import { Sidebar } from "../Sidebar/Sidebar";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
+import { RoomConfigContextProvider } from "./contexts/roomConfigContext";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
 import { UserIdentityContextProvider } from "./contexts/userIdentityContext";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
@@ -45,17 +46,21 @@ const iconMap = {
 export const DiceRoller = memo(
   ({
     roomId,
+    displayName: initialDisplayName,
     config: initialConfig,
     isOwner,
   }: {
     roomId: string;
+    displayName: string;
     config: RoomConfig;
     isOwner: boolean;
   }) => {
     const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
       useUserIdentityStorage({ isOwner });
 
-    const [config, setConfig] = useState(initialConfig);
+    const [roomConfig, setRoomConfig] = useState(initialConfig);
+
+    const [roomName, setRoomName] = useState(initialDisplayName);
 
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});
@@ -108,8 +113,34 @@ export const DiceRoller = memo(
         [toaster],
       ),
       setCapabilityInfos,
-      setRoomConfig: setConfig,
+      setRoomConfig: setRoomConfig,
     });
+
+    const handleSetRoomConfig = useCallback(
+      (config: RoomConfig) => {
+        setRoomConfig(config);
+        sendMessage({
+          type: "updateConfig",
+          payload: {
+            config,
+          },
+        });
+      },
+      [sendMessage],
+    );
+
+    const handleSetRoomName = useCallback(
+      (newRoomName: string) => {
+        setRoomName(newRoomName);
+        sendMessage({
+          type: "updateRoomName",
+          payload: {
+            roomName: newRoomName,
+          },
+        });
+      },
+      [sendMessage],
+    );
 
     const hue = deriveHueFromUserId(userIdentity.chatId);
 
@@ -152,125 +183,147 @@ export const DiceRoller = memo(
         >
           <SendMessageContextProvider value={sendMessage}>
             <UserIdentityContextProvider value={userIdentity}>
-              <div
-                className="@container-[size] flex h-full w-full flex-col
-                  [--bubble-dark-c:0.12] [--bubble-dark-l:36%]
-                  [--bubble-light-c:0.12] [--bubble-light-l:82%]
-                  [--user-colour:oklch(var(--bubble-light-l)_var(--bubble-light-c)_var(--user-hue))]
-                  dark:[--user-colour:oklch(var(--bubble-dark-l)_var(--bubble-dark-c)_var(--user-hue))]"
-                style={
-                  { "--user-hue": hue } satisfies UserHueStyle as UserHueStyle
-                }
+              <RoomConfigContextProvider
+                value={useMemo(
+                  () => ({
+                    roomConfig,
+                    setRoomConfig: handleSetRoomConfig,
+                    roomName,
+                    setRoomName: handleSetRoomName,
+                  }),
+                  [
+                    roomConfig,
+                    handleSetRoomConfig,
+                    handleSetRoomName,
+                    roomName,
+                  ],
+                )}
               >
-                <header className="flex flex-row px-4">
-                  <div className="flex-1" />
-                  <DisplayNameDialog
-                    displayName={userIdentity.displayName}
-                    onSetDisplayName={handleSetDisplayName}
-                    loggedIn={loggedIn}
-                    isPending={isPending}
-                  />
-                  <div
-                    className="text-middle ml-4 inline-flex h-(--size) flex-col
-                      justify-center"
-                  >
-                    Connection status:
-                  </div>
-                  <div
-                    className="text-middle inline-flex h-(--size) flex-col
-                      justify-center"
-                  >
-                    <span
-                      data-connection-status={connectionStatus}
-                      aria-description={connectionStatus}
-                      className="text-middle ml-4 inline-block h-3 w-3
-                        rounded-full bg-red-500 align-baseline
-                        data-[connection-status=connected]:bg-green-500"
-                    ></span>
-                  </div>
-                </header>
-                {/* flex row for main chat and sidebar */}
                 <div
-                  data-part="outer expander"
-                  className="group/main @container relative flex flex-1 flex-row
-                    justify-start overflow-hidden"
+                  className="@container-[size] flex h-full w-full flex-col
+                    [--bubble-dark-c:0.12] [--bubble-dark-l:36%]
+                    [--bubble-light-c:0.12] [--bubble-light-l:82%]
+                    [--user-colour:oklch(var(--bubble-light-l)_var(--bubble-light-c)_var(--user-hue))]
+                    dark:[--user-colour:oklch(var(--bubble-dark-l)_var(--bubble-dark-c)_var(--user-hue))]"
+                  style={
+                    { "--user-hue": hue } satisfies UserHueStyle as UserHueStyle
+                  }
                 >
-                  {/* chat scroller and chat form */}
-                  <div
-                    data-part="main"
-                    className="mx-auto flex max-w-4xl flex-1 flex-col
-                      overflow-hidden"
-                  >
-                    <div className="relative flex-1 basis-0">
-                      <div
-                        ref={scrollContainerRef}
-                        onScroll={handleScroll}
-                        className="absolute inset-0 overflow-auto px-4"
-                      >
-                        {messages.map((message) => (
-                          <ChatBubble
-                            key={message.id}
-                            message={message}
-                          ></ChatBubble>
-                        ))}
-                        {messages.length === 0 && (
-                          <div className="font-italic">No messages yet</div>
-                        )}
-                        <div ref={bottomRef} />
-                      </div>
-                      {hasNewMessages && (
-                        <button
-                          onClick={scrollToBottom}
-                          className="btn btn-primary btn-sm absolute bottom-4
-                            left-1/2 -translate-x-1/2 shadow-lg"
-                        >
-                          ↓ New messages
-                        </button>
-                      )}
+                  <header className="flex flex-row px-4">
+                    <div className="flex-1" />
+                    <DisplayNameDialog
+                      displayName={userIdentity.displayName}
+                      onSetDisplayName={handleSetDisplayName}
+                      loggedIn={loggedIn}
+                      isPending={isPending}
+                    />
+                    <div
+                      className="text-middle ml-4 inline-flex h-(--size)
+                        flex-col justify-center"
+                    >
+                      Connection status:
                     </div>
-                    <ChatForm onNewMessage={handleNewMessage} />
-                  </div>
-                  {/* sidebar */}
-                  <Sidebar config={config} />
-                </div>
-              </div>
-              <Portal>
-                <Toaster toaster={toaster}>
-                  {(toast) => {
-                    const ToastIcon = toast.type
-                      ? iconMap[toast.type as keyof typeof iconMap]
-                      : undefined;
-                    return (
-                      <Toast.Root key={toast.id} className={toastStyles.toast}>
-                        {ToastIcon && (
-                          <div className="mt-0.5 shrink-0">
-                            <ToastIcon className="h-5 w-5" />
-                          </div>
-                        )}
-                        <details className="flex min-w-0 flex-1 flex-col gap-1">
-                          <summary
-                            className="text-sm leading-snug font-semibold"
-                          >
-                            {toast.title}
-                          </summary>
-                          <Toast.Description
-                            className="text-xs leading-snug opacity-80"
-                          >
-                            {toast.description}
-                          </Toast.Description>
-                        </details>
-
-                        <Toast.CloseTrigger
-                          className="hover:bg-base-300 mt-0.5 shrink-0
-                            cursor-pointer rounded-md p-0.5 transition-colors"
+                    <div
+                      className="text-middle inline-flex h-(--size) flex-col
+                        justify-center"
+                    >
+                      <span
+                        data-connection-status={connectionStatus}
+                        aria-description={connectionStatus}
+                        className="text-middle ml-4 inline-block h-3 w-3
+                          rounded-full bg-red-500 align-baseline
+                          data-[connection-status=connected]:bg-green-500"
+                      ></span>
+                    </div>
+                  </header>
+                  {/* flex row for main chat and sidebar */}
+                  <div
+                    data-part="outer expander"
+                    className="group/main @container relative flex flex-1
+                      flex-row justify-start overflow-hidden"
+                  >
+                    {/* chat scroller and chat form */}
+                    <div
+                      data-part="main"
+                      className="mx-auto flex max-w-4xl flex-1 flex-col
+                        overflow-hidden"
+                    >
+                      <div className="relative flex-1 basis-0">
+                        <div
+                          ref={scrollContainerRef}
+                          onScroll={handleScroll}
+                          className="absolute inset-0 overflow-auto px-4"
                         >
-                          <XIcon className="h-4 w-4" />
-                        </Toast.CloseTrigger>
-                      </Toast.Root>
-                    );
-                  }}
-                </Toaster>
-              </Portal>
+                          {messages.map((message) => (
+                            <ChatBubble
+                              key={message.id}
+                              message={message}
+                            ></ChatBubble>
+                          ))}
+                          {messages.length === 0 && (
+                            <div className="font-italic">No messages yet</div>
+                          )}
+                          <div ref={bottomRef} />
+                        </div>
+                        {hasNewMessages && (
+                          <button
+                            onClick={scrollToBottom}
+                            className="btn btn-primary btn-sm absolute bottom-4
+                              left-1/2 -translate-x-1/2 shadow-lg"
+                          >
+                            ↓ New messages
+                          </button>
+                        )}
+                      </div>
+                      <ChatForm onNewMessage={handleNewMessage} />
+                    </div>
+                    {/* sidebar */}
+                    <Sidebar config={roomConfig} />
+                  </div>
+                </div>
+                <Portal>
+                  <Toaster toaster={toaster}>
+                    {(toast) => {
+                      const ToastIcon = toast.type
+                        ? iconMap[toast.type as keyof typeof iconMap]
+                        : undefined;
+                      return (
+                        <Toast.Root
+                          key={toast.id}
+                          className={toastStyles.toast}
+                        >
+                          {ToastIcon && (
+                            <div className="mt-0.5 shrink-0">
+                              <ToastIcon className="h-5 w-5" />
+                            </div>
+                          )}
+                          <details
+                            className="flex min-w-0 flex-1 flex-col gap-1"
+                          >
+                            <summary
+                              className="text-sm leading-snug font-semibold"
+                            >
+                              {toast.title}
+                            </summary>
+                            <Toast.Description
+                              className="text-xs leading-snug opacity-80"
+                            >
+                              {toast.description}
+                            </Toast.Description>
+                          </details>
+
+                          <Toast.CloseTrigger
+                            className="hover:bg-base-300 mt-0.5 shrink-0
+                              cursor-pointer rounded-md p-0.5 transition-colors"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Toast.CloseTrigger>
+                        </Toast.Root>
+                      );
+                    }}
+                  </Toaster>
+                </Portal>
+              </RoomConfigContextProvider>
             </UserIdentityContextProvider>
           </SendMessageContextProvider>
         </SetCapabilityStateContextProvider>

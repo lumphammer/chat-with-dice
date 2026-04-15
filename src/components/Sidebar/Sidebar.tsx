@@ -142,7 +142,7 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
             {isOwner && (
               <Tabs.Content value="config" className={styles.tabContent}>
                 <div className={styles.tabContentInner}>
-                  <Config config={config} />
+                  <Config />
                 </div>
               </Tabs.Content>
             )}
