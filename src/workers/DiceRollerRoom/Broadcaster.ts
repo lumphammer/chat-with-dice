@@ -1,3 +1,4 @@
+import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type {
   ChatMessage,
   WebSocketServerMessage,
@@ -45,10 +46,19 @@ export class Broadcaster {
   //   });
   // }
 
-  async sendCatchUp(ws: WebSocket, messages: ChatMessage[]): Promise<void> {
+  sendCatchUp(ws: WebSocket, messages: ChatMessage[]): void {
     this.send(ws, {
       type: "catchup",
       payload: { messages },
+    });
+  }
+
+  brodcastConfig(config: RoomConfig): void {
+    this.broadcast({
+      type: "roomConfig",
+      payload: {
+        config,
+      },
     });
   }
 }

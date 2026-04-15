@@ -7,6 +7,7 @@ import { z } from "zod/v4";
 
 export const sessionAttachmentSchema = z.object({
   chatId: z.uuid(),
+  userId: z.string().nullable(),
 });
 
 export type SessionAttachment = z.infer<typeof sessionAttachmentSchema>;

@@ -20,6 +20,9 @@ export async function handleFetch(
   if (!chatId) {
     return new Response("chatId is required", { status: 400 });
   }
+
+  const userId = URL.parse(request.url)?.searchParams.get("userId") ?? null;
+
   // Create a WebSocket pair (client and server)
   const pair = new WebSocketPair();
   const [client, server] = Object.values(pair);
@@ -29,14 +32,14 @@ export async function handleFetch(
   // keeping the WebSocket connection open
   ctx.acceptWebSocket(server);
 
-  const attachment: SessionAttachment = { chatId };
+  const attachment: SessionAttachment = { chatId, userId };
   server.serializeAttachment(attachment);
 
   // this is lame, but FF dev tools fails to show ws messages sent immediately
   // when the socket is opened
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1719394
   setTimeout(async () => {
-    await broadcaster.sendCatchUp(server, await messageRepository.getRecent());
+    broadcaster.sendCatchUp(server, await messageRepository.getRecent());
     await Promise.all(
       capabilities.values().map((mountedCap) => {
         return mountedCap.sendInit(server);

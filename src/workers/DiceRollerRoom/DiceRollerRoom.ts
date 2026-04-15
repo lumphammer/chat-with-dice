@@ -39,6 +39,7 @@ export class DiceRollerRoom extends DurableObject {
   private config: RoomConfig = defaultRoomConfig;
   private stateRepository: CapabilityStateRepository;
   private messageJiggler: MessageJiggler;
+  private createdByUserId: string = "";
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -62,14 +63,20 @@ export class DiceRollerRoom extends DurableObject {
 
     // load config from d1
     void this.ctx.blockConcurrencyWhile(async () => {
-      const configRows = await d1
-        .select({ config: Rooms.config })
+      const roomRows = await d1
+        .select({
+          config: Rooms.config,
+          createByUserId: Rooms.created_by_user_id,
+        })
         .from(Rooms)
         .where(eq(Rooms.durableObjectId, ctx.id.toString()))
         .limit(1);
-      console.log("configRows loaded", configRows);
-      const rawConfig = configRows[0]?.config;
-      const parsedConfig = roomConfigValidator.safeParse(rawConfig);
+      console.log("database loaded", roomRows);
+      const roomRow = roomRows[0];
+      if (!roomRow) {
+        throw new Error("Room not found");
+      }
+      const parsedConfig = roomConfigValidator.safeParse(roomRow.config);
       if (parsedConfig.success) {
         this.config = parsedConfig.data;
       } else {
@@ -78,6 +85,7 @@ export class DiceRollerRoom extends DurableObject {
           parsedConfig.error,
         );
       }
+      this.createdByUserId = roomRow.createByUserId;
     });
 
     // Mount all capabilities before handling any events.
@@ -178,6 +186,23 @@ export class DiceRollerRoom extends DurableObject {
           chatId: attachment.chatId,
           displayName: data.payload.displayName,
         });
+      } else if (data.type === "updateConfig") {
+        const config = data.payload.config;
+        if (this.createdByUserId !== attachment.userId) {
+          this.broadcaster.sendError(
+            ws,
+            "You are not the room owner and cannot update config",
+          );
+          console.error("Unauthorised attempt to update room config:", {
+            userId: attachment.userId,
+            config,
+          });
+        } else {
+          d1.update(Rooms)
+            .set({ config })
+            .where(eq(Rooms.durableObjectId, this.ctx.id.toString()));
+          this.broadcaster.brodcastConfig(config);
+        }
       }
     } catch (error) {
       this.broadcaster.sendError(ws, error);

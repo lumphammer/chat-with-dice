@@ -1,6 +1,7 @@
 // import { rollerMessageSchema } from "./rollerMessageSchema";
 // import { Messages } from "#/schemas/roller-schema";
 // import { createSelectSchema } from "drizzle-orm/zod";
+import { roomConfigValidator } from "./roomConfigValidator";
 import { z } from "zod/v4";
 
 const USERNAME_MAX_LENGTH = 128;
@@ -149,6 +150,12 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
       config: z.any(),
     }),
   }),
+  z.object({
+    type: z.literal("roomConfig"),
+    payload: z.object({
+      config: roomConfigValidator,
+    }),
+  }),
 ]);
 
 export type WebSocketServerMessage = z.infer<
@@ -183,6 +190,12 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
       formula: jsonObjectValidator,
       chat: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
+    }),
+  }),
+  z.object({
+    type: z.literal("updateConfig"),
+    payload: z.object({
+      config: roomConfigValidator,
     }),
   }),
   actionCallMessageValidator,
