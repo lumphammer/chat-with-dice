@@ -50,7 +50,11 @@ export const createCapability = <
     TMessageDataValidator,
     TActions
   >,
-): Capability<z.infer<TStateValidator>, TActions> => {
+): Capability<
+  z.infer<TStateValidator>,
+  TActions,
+  z.infer<TConfigValidator>
+> => {
   const name = toAlphanumeric(def.name);
 
   const createAction: CreateAction<
@@ -303,5 +307,6 @@ export const createCapability = <
     name,
     mount,
     useMount,
+    defaultConfig: def.defaultConfig,
   };
 };

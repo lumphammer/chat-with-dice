@@ -151,6 +151,7 @@ export type CapabilityDefinition<
  */
 export type AnyCapability = {
   name: string;
+  defaultConfig: JsonData;
   mount: (tools: {
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
@@ -168,8 +169,10 @@ export type Capability<
     string,
     ActionDefinition<TState, z.ZodType, JsonData | undefined>
   >,
+  TConfig extends JsonData,
 > = {
   name: Alphanumeric;
+  defaultConfig: TConfig;
   mount: (tools: {
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
