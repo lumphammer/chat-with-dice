@@ -1,3 +1,7 @@
+import {
+  capabilityRegistry,
+  isCapabilityName,
+} from "#/capabilities/capabilityRegistry";
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
@@ -76,6 +80,16 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
         messageId={message.id}
       />
     );
+  } else if (isCapabilityName(message.rollType)) {
+    const { ChatDisplayComponent } = capabilityRegistry[message.rollType];
+    if (ChatDisplayComponent && message.results !== null) {
+      display = (
+        <ChatDisplayComponent
+          results={message.results}
+          messageId={message.id}
+        />
+      );
+    }
   }
 
   return (

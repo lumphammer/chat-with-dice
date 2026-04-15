@@ -6,21 +6,21 @@ import { z } from "zod/v4";
 // HANDFUL: a group of dice thrown together
 // FAVOUR: Advantage or disadvantage
 
-const keepValidator = z
+export const keepValidator = z
   .enum(["all", "highest", "lowest", "dropHighest", "dropLowest"])
   .default("all");
 
-type Keep = z.infer<typeof keepValidator>;
+export type Keep = z.infer<typeof keepValidator>;
 
-const favourValidator = z.enum(["normal", "advantage", "disadvantage"]);
+export const favourValidator = z.enum(["normal", "advantage", "disadvantage"]);
 
-const operatorValidator = z.enum(["+", "-", "*", "/"]);
+export const operatorValidator = z.enum(["+", "-", "*", "/"]);
 
-type Operator = z.infer<typeof operatorValidator>;
+export type Operator = z.infer<typeof operatorValidator>;
 
-type Favour = z.infer<typeof favourValidator>;
+export type Favour = z.infer<typeof favourValidator>;
 
-const rollFormulaValidator = z.object({
+export const rollFormulaValidator = z.object({
   arity: z.int().min(1),
   cardinality: z.int().min(1),
   modifier: z
@@ -34,30 +34,30 @@ const rollFormulaValidator = z.object({
   exploding: z.boolean(),
 });
 
-const faceValidator = z.object({
+export const faceValidator = z.object({
   cardinality: z.int().min(1),
   result: z.int().min(1),
   exploded: z.boolean(),
   kept: z.boolean(),
 });
 
-type Face = z.infer<typeof faceValidator>;
+export type Face = z.infer<typeof faceValidator>;
 
-const handfulValidator = z.object({
+export const handfulValidator = z.object({
   faces: z.array(faceValidator),
   total: z.int(),
   kept: z.boolean(),
 });
 
-type Handful = z.infer<typeof handfulValidator>;
+export type Handful = z.infer<typeof handfulValidator>;
 
-const favouredHandfulsValidator = z.object({
+export const favouredHandfulsValidator = z.object({
   series1: handfulValidator,
   series2: handfulValidator,
   total: z.int(),
 });
 
-type FavouredHandfuls = z.infer<typeof favouredHandfulsValidator>;
+export type FavouredHandfuls = z.infer<typeof favouredHandfulsValidator>;
 
 function rollOneDie(cardinality: number): Face {
   return {
@@ -167,7 +167,7 @@ function rollHandfulsWithMaybeFavour(
   return rollHandfulOfDice(arity, cardinality, keep, exploding);
 }
 
-const messageDataValidator = z.object({
+export const messageDataValidator = z.object({
   formula: rollFormulaValidator,
   result: z.object({
     faces: z.union([handfulValidator, favouredHandfulsValidator]),
