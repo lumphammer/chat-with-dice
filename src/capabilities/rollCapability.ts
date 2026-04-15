@@ -185,6 +185,7 @@ function modify(operand1: number, operator: Operator, operand2: number) {
 
 export const rollCapability = createCapability({
   name: "roll",
+  displayName: "Roll",
   configValidator: z.object({}),
   defaultConfig: {},
   stateValidator: z.object({}),

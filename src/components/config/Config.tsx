@@ -47,10 +47,6 @@ function setCapabilityEnabled(
   };
 }
 
-function formatCapabilityName(name: string): string {
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}
-
 export const Config = memo(() => {
   const { roomConfig, setRoomConfig, roomName, setRoomName } =
     useRoomConfigContext();
@@ -161,7 +157,7 @@ export const Config = memo(() => {
                     shadow-sm"
                 >
                   <span className="font-medium">
-                    {formatCapabilityName(capabilityName)}
+                    {capabilityRegistry[capabilityName].capability.displayName}
                   </span>
                   <input
                     className="checkbox"

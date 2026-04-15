@@ -305,6 +305,7 @@ export const createCapability = <
   // return a defined capability
   return {
     name,
+    displayName: def.displayName,
     mount,
     useMount,
     defaultConfig: def.defaultConfig,

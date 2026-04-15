@@ -122,6 +122,7 @@ export type CapabilityDefinition<
   >,
 > = {
   name: string;
+  displayName: string;
   configValidator: TConfigValidator;
   defaultConfig: z.infer<TConfigValidator>;
   stateValidator: TStateValidator;
@@ -151,6 +152,7 @@ export type CapabilityDefinition<
  */
 export type AnyCapability = {
   name: string;
+  displayName: string;
   defaultConfig: JsonData;
   mount: (tools: {
     doCtx: DurableObjectState;
@@ -172,6 +174,7 @@ export type Capability<
   TConfig extends JsonData,
 > = {
   name: Alphanumeric;
+  displayName: string;
   defaultConfig: TConfig;
   mount: (tools: {
     doCtx: DurableObjectState;

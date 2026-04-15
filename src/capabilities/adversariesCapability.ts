@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const adversariesCapability = createCapability({
   name: "adversaries",
+  displayName: "Adversaries",
   configValidator: z.object({}),
   defaultConfig: {},
   stateValidator: z.object({

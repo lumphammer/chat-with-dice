@@ -3,6 +3,7 @@ import { z } from "zod/v4";
 
 export const counterCapability = createCapability({
   name: "counter",
+  displayName: "Counter",
   configValidator: z.object({ startAt: z.int() }),
   defaultConfig: { startAt: 0 },
   stateValidator: z.object({
