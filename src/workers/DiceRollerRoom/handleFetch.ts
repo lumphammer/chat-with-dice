@@ -40,11 +40,9 @@ export async function handleFetch(
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1719394
   setTimeout(async () => {
     broadcaster.sendCatchUp(server, await messageRepository.getRecent());
-    await Promise.all(
-      capabilities.values().map((mountedCap) => {
-        return mountedCap.sendInit(server);
-      }),
-    );
+    for (const capability of capabilities.values()) {
+      broadcaster.sendCapabilityInit(server, capability);
+    }
   }, CATCHUP_DELAY_MS);
 
   // Return the client WebSocket in the response

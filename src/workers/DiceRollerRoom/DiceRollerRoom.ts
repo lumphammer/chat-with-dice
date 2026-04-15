@@ -224,9 +224,7 @@ export class DiceRollerRoom extends DurableObject {
               const mountedCap = await this.mountCapability(name, capConfig);
               if (mountedCap) {
                 this.capabilities.set(name, mountedCap);
-                await Promise.all(
-                  this.ctx.getWebSockets().map((ws) => mountedCap.sendInit(ws)),
-                );
+                this.broadcaster.broadcastCapabilityInit(mountedCap);
               }
             }),
           );

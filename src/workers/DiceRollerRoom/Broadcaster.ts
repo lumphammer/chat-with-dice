@@ -1,3 +1,4 @@
+import type { ServerMountedCapability } from "#/capabilities/types";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type {
   ChatMessage,
@@ -50,6 +51,20 @@ export class Broadcaster {
     this.send(ws, {
       type: "catchup",
       payload: { messages },
+    });
+  }
+
+  sendCapabilityInit(ws: WebSocket, capability: ServerMountedCapability): void {
+    this.send(ws, {
+      type: "capabilityInit",
+      payload: capability.getInitPayload(),
+    });
+  }
+
+  broadcastCapabilityInit(capability: ServerMountedCapability): void {
+    this.broadcast({
+      type: "capabilityInit",
+      payload: capability.getInitPayload(),
     });
   }
 

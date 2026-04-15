@@ -208,16 +208,11 @@ export const createCapability = <
           displayName,
         });
       },
-      sendInit: async (ws: WebSocket) => {
-        broadcaster.send(ws, {
-          type: "capabilityInit",
-          payload: {
-            capability: name,
-            state,
-            config,
-          },
-        });
-      },
+      getInitPayload: () => ({
+        capability: name,
+        state,
+        config,
+      }),
     };
   };
 

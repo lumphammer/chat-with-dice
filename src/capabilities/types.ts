@@ -22,7 +22,7 @@ export type ServerMountedCapability = {
     chatId: string;
     displayName: string;
   }) => Promise<void>;
-  sendInit: (server: WebSocket) => Promise<void>;
+  getInitPayload: () => { capability: string; state: unknown; config: unknown };
 };
 
 export type ClientMountedCapability<
