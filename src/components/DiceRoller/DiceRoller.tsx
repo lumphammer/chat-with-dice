@@ -32,7 +32,7 @@ import {
   InfoIcon,
   XIcon,
 } from "lucide-react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 enablePatches();
 
@@ -142,6 +142,15 @@ export const DiceRoller = memo(
       },
       [sendMessage],
     );
+
+    // this is a hack but we need to update the astro-rendered part of the page
+    // if the room name changes
+    useEffect(() => {
+      const h1 = document.querySelector("body > header h1");
+      if (h1) {
+        h1.textContent = roomName;
+      }
+    }, [roomName]);
 
     const hue = deriveHueFromUserId(userIdentity.chatId);
 
