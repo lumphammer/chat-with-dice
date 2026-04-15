@@ -8,4 +8,4 @@ overrides:
   # vite: 8.0.0
 
 patchedDependencies:
-  quikdown@1.2.2: patches/quikdown@1.2.2.patch
+  quikdown@1.2.9: patches/quikdown@1.2.2.patch
