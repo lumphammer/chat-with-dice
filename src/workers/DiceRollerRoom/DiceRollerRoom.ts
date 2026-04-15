@@ -93,23 +93,9 @@ export class DiceRollerRoom extends DurableObject {
     void this.ctx.blockConcurrencyWhile(async () => {
       await Promise.all(
         this.config.capabilities.map(async ({ name, config }) => {
-          console.log("mounting capability", name);
-          if (!isCapabilityName(name)) {
-            return;
-          }
-          const capabilityInfo = capabilityRegistry[name];
-          const mountedCap = await capabilityInfo.capability.mount({
-            doCtx: this.ctx,
-            messageJiggler: this.messageJiggler,
-            stateRepository: this.stateRepository,
-            config,
-            broadcaster: this.broadcaster,
-          });
+          const mountedCap = await this.mountCapability(name, config);
           if (mountedCap) {
             this.capabilities.set(name, mountedCap);
-            console.log(name, "mounted!");
-          } else {
-            console.log(name, "failed to mount");
           }
         }),
       );
@@ -207,12 +193,46 @@ export class DiceRollerRoom extends DurableObject {
         });
       } else if (data.type === "updateConfig") {
         await checkOwner("update room config", async () => {
-          const config = data.payload.config;
+          const newConfig = data.payload.config;
+
           await d1
             .update(Rooms)
-            .set({ config })
+            .set({ config: newConfig })
             .where(eq(Rooms.durableObjectId, this.ctx.id.toString()));
-          this.broadcaster.brodcastConfig(config);
+
+          // Unmount capabilities that were removed
+          const newCapabilityNames = new Set(
+            newConfig.capabilities.map(({ name }) => name),
+          );
+          for (const { name } of this.config.capabilities) {
+            if (!newCapabilityNames.has(name)) {
+              this.capabilities.delete(name);
+              console.log(name, "unmounted");
+            }
+          }
+
+          // Mount capabilities that were added, and announce them to all
+          // currently connected clients
+          const previousCapabilityNames = new Set(
+            this.config.capabilities.map(({ name }) => name),
+          );
+          const addedCapabilities = newConfig.capabilities.filter(
+            ({ name }) => !previousCapabilityNames.has(name),
+          );
+          await Promise.all(
+            addedCapabilities.map(async ({ name, config: capConfig }) => {
+              const mountedCap = await this.mountCapability(name, capConfig);
+              if (mountedCap) {
+                this.capabilities.set(name, mountedCap);
+                await Promise.all(
+                  this.ctx.getWebSockets().map((ws) => mountedCap.sendInit(ws)),
+                );
+              }
+            }),
+          );
+
+          this.config = newConfig;
+          this.broadcaster.brodcastConfig(newConfig);
         });
       } else if (data.type === "updateRoomName") {
         await checkOwner("update room config", async () => {
@@ -246,6 +266,30 @@ export class DiceRollerRoom extends DurableObject {
     console.error("WebSocket error:", error);
     // Treat errors as disconnections
     await this.webSocketClose(ws, WEBSOCKET_INTERNAL_ERROR); //, "WebSocket error", false);
+  }
+
+  private async mountCapability(
+    name: string,
+    config: unknown,
+  ): Promise<ServerMountedCapability | null> {
+    if (!isCapabilityName(name)) {
+      return null;
+    }
+    console.log("mounting capability", name);
+    const capabilityInfo = capabilityRegistry[name];
+    const mountedCap = await capabilityInfo.capability.mount({
+      doCtx: this.ctx,
+      messageJiggler: this.messageJiggler,
+      stateRepository: this.stateRepository,
+      config,
+      broadcaster: this.broadcaster,
+    });
+    if (mountedCap) {
+      console.log(name, "mounted!");
+    } else {
+      console.log(name, "failed to mount");
+    }
+    return mountedCap ?? null;
   }
 
   async runFormula({
