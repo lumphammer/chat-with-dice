@@ -180,3 +180,5 @@ export const Config = memo(() => {
     </SidebarPanel>
   );
 });
+
+Config.displayName = "Config";
