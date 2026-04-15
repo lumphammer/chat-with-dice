@@ -9,18 +9,8 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const capabilityNames = Object.keys(capabilityRegistry) as CapabilityName[];
 
-const fallbackCapabilityDefaults: Record<CapabilityName, unknown> = {
-  counter: { startAt: 0 },
-  objectives: {},
-  adversaries: {},
-};
-
 function getCapabilityDefaultConfig(name: CapabilityName): unknown {
-  const capability = capabilityRegistry[name].capability as {
-    defaultConfig?: unknown;
-  };
-
-  return capability.defaultConfig ?? fallbackCapabilityDefaults[name];
+  return capabilityRegistry[name].capability.defaultConfig;
 }
 
 function setCapabilityEnabled(
@@ -66,6 +56,8 @@ export const Config = memo(() => {
     useRoomConfigContext();
 
   const [roomNameDraft, setRoomNameDraft] = useState(roomName);
+  const roomNameDraftRef = useRef(roomNameDraft);
+  roomNameDraftRef.current = roomNameDraft;
   const lastSyncedRoomNameRef = useRef(roomName);
   const lastSubmittedRoomNameRef = useRef<string | null>(null);
 
@@ -73,7 +65,8 @@ export const Config = memo(() => {
     const previousRoomName = lastSyncedRoomNameRef.current;
     const lastSubmittedRoomName = lastSubmittedRoomNameRef.current;
     const shouldAdoptIncomingRoomName =
-      roomNameDraft === previousRoomName || roomName === lastSubmittedRoomName;
+      roomNameDraftRef.current === previousRoomName ||
+      roomName === lastSubmittedRoomName;
 
     if (shouldAdoptIncomingRoomName) {
       setRoomNameDraft(roomName);
@@ -84,7 +77,7 @@ export const Config = memo(() => {
     }
 
     lastSyncedRoomNameRef.current = roomName;
-  }, [roomNameDraft, roomName]);
+  }, [roomName]);
 
   const trimmedName = roomNameDraft.trim();
   const canSubmitName = trimmedName.length > 0 && trimmedName !== roomName;
