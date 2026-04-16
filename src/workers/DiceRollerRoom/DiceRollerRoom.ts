@@ -324,7 +324,7 @@ export class DiceRollerRoom extends DurableObject {
       chatId,
       displayName,
     };
-    await this.messageRepository.insert(rollerMessage);
+    await this.messageRepository.upsertMessage(rollerMessage);
     console.log("inserting into Messages", rollerMessage);
     this.broadcaster.broadcastChatMessage(rollerMessage);
   }

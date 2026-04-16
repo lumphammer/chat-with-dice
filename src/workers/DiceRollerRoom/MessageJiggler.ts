@@ -22,7 +22,7 @@ export class MessageJiggler {
   ) {}
 
   async sendChatMessage(message: ChatMessage): Promise<void> {
-    await this.messageRepository.updateMessage(message);
+    await this.messageRepository.upsertMessage(message);
     this.broadcaster.broadcastChatMessage(message);
   }
 

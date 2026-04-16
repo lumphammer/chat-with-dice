@@ -33,22 +33,31 @@ export class MessageRepository {
       .where(eq(dbSchema.Messages.id, message.id));
   }
 
-  async insert(message: ChatMessage): Promise<void> {
-    await this.db.insert(dbSchema.Messages).values(message);
+  async upsertMessage(message: ChatMessage): Promise<void> {
+    const upsertValues = () => {
+      const { id: _, ...rest } = message;
+      return rest;
+    };
+    await this.db.insert(dbSchema.Messages).values(message).onConflictDoUpdate({
+      target: dbSchema.Messages.id,
+      set: upsertValues(),
+    });
   }
 
   async getRecent(
     limit: number = MESSAGE_CATCHUP_LENGTH,
   ): Promise<ChatMessage[]> {
-    return (
+    const messagesFromDB = (
       await this.db
         .select()
         .from(dbSchema.Messages)
         .orderBy(desc(dbSchema.Messages.created_time))
         .limit(limit)
         .execute()
-    )
-      .toReversed()
-      .map((m) => anyChatMessageValidator.parse(m));
+    ).toReversed();
+    console.log("messagesFromDB", messagesFromDB);
+    const parsed = messagesFromDB.map((m) => anyChatMessageValidator.parse(m));
+    console.log("parsed", parsed);
+    return parsed;
   }
 }
