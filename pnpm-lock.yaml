@@ -7,7 +7,12 @@ settings:
 overrides:
   '@astrojs/cloudflare': 13.1.10
   astro: 6.1.7
-  wrangler: ^4.81.0
+  wrangler: ^4.83.0
+
+patchedDependencies:
+  quikdown@1.2.9:
+    hash: fbc81af4430304558e3f8497a9357da17359e07f2128f6c49311e36e20407f80
+    path: patches/quikdown@1.2.2.patch
 
 importers:
 
@@ -111,7 +116,7 @@ importers:
         version: 0.7.2(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.8.3))(prettier-plugin-astro@0.14.1)(prettier-plugin-organize-imports@4.3.0(prettier@3.8.3)(typescript@5.9.3))(prettier@3.8.3)
       quikdown:
         specifier: ^1.2.9
-        version: 1.2.9
+        version: 1.2.9(patch_hash=fbc81af4430304558e3f8497a9357da17359e07f2128f6c49311e36e20407f80)
       react:
         specifier: ^19.2.5
         version: 19.2.5
@@ -155,7 +160,7 @@ packages:
     resolution: {integrity: sha512-Ogl8p4MifPMHbpHKJL78eqEL+I3wbHrYmo83P/FkKZQ9VzzKi2A1RjnbaiiPAwrA8xQOqIUo4zlN7+Mse0aJAQ==}
     peerDependencies:
       astro: 6.1.7
-      wrangler: ^4.81.0
+      wrangler: ^4.83.0
 
   '@astrojs/compiler@2.13.1':
     resolution: {integrity: sha512-f3FN83d2G/v32ipNClRKgYv30onQlMZX1vCeZMjPsMMPl1mDpmbl0+N5BYo4S/ofzqJyS5hvwacEo0CCVDn/Qg==}
@@ -497,7 +502,7 @@ packages:
     resolution: {integrity: sha512-a8ZkCA/SOiJ36jT3LlBLkUb7ZzGInhYJoTY4BMRBGdk+nsh44HavbNvtu/RdaqS5VJEMLM4+LqVIJ+V0ahGeFg==}
     peerDependencies:
       vite: ^6.1.0 || ^7.0.0 || ^8.0.0
-      wrangler: ^4.81.0
+      wrangler: ^4.83.0
 
   '@cloudflare/workerd-darwin-64@1.20260415.1':
     resolution: {integrity: sha512-dsxaKsQm3LnPGNPEdsRv09QN3Y4DqCw7kX5j6noKqbAtro2jTr95sVlYM1jUxZ5FkOl1f7SXgaKKB9t5H5Nkbg==}
@@ -8847,7 +8852,7 @@ snapshots:
   pure-rand@6.1.0:
     optional: true
 
-  quikdown@1.2.9: {}
+  quikdown@1.2.9(patch_hash=fbc81af4430304558e3f8497a9357da17359e07f2128f6c49311e36e20407f80): {}
 
   radix3@1.1.2: {}
 
