@@ -6,6 +6,7 @@ type RoomConfigContextValue = {
   setRoomConfig: (config: RoomConfig) => void;
   roomName: string;
   setRoomName: (newRoomName: string) => void;
+  roomId: string;
 };
 
 const RoomConfigContext = createContext<RoomConfigContextValue | null>(null);

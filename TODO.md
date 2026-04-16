@@ -21,11 +21,11 @@
 
 * [x] Mission statement
 * [ ] Basic room admin (owner only)
-  * [ ] Rename
+  * [x] Rename
   * [ ] Delete
-  * [ ] Manage capabilities
-* [ ] Roll Types to capabilities
-* [ ] Split chat form / UX work
+  * [x] Manage capabilities
+* [x] Roll Types to capabilities
+* [x] Split chat form / UX work
 * [ ] System admin
   * [ ] Admin users
   * [ ] List rooms

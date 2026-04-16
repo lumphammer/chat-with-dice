@@ -14,4 +14,5 @@ export const Rooms = sqliteTable("Rooms", {
   type: text({ enum: ROOM_TYPE_NAMES }).notNull(),
   config: text({ mode: "json" }),
   durableObjectId: text(),
+  deleted_time: int(),
 });

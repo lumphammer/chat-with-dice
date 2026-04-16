@@ -18,11 +18,11 @@ On mobile, this gives us a much more comfortable way to present the UI rather th
 
 A plan of attack might look like:
 
-* [ ] Ditch the roll form
-* [ ] Changes to the capability system:
+* [x] Ditch the roll form
+* [x] Changes to the capability system:
   * [x] Multiple sidebar elements
-  * [ ] Roll result validator
-  * [ ] Roll display UI
-  * [ ] Effectful functions are given some typed helpers to publish and modify messages
-  * [ ] Message display is based on capability name
+  * [x] Roll result validator
+  * [x] Roll display UI
+  * [x] Effectful functions are given some typed helpers to publish and modify messages
+  * [x] Message display is based on capability name
 * [ ]  Ditch the whole roll types system

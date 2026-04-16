@@ -1,7 +1,9 @@
 import { createChatWithDiceRoom } from "./createChatWithDiceRoom";
+import { deleteRoom } from "./deleteRoom";
 import { getMyRooms } from "./getMyRooms";
 
 export const server = {
   createChatWithDiceRoom,
+  deleteRoom,
   getMyRooms,
 };

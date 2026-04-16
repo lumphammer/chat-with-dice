@@ -188,12 +188,14 @@ export const DiceRoller = memo(
                     setRoomConfig: handleSetRoomConfig,
                     roomName,
                     setRoomName: handleSetRoomName,
+                    roomId,
                   }),
                   [
                     roomConfig,
                     handleSetRoomConfig,
                     handleSetRoomName,
                     roomName,
+                    roomId,
                   ],
                 )}
               >

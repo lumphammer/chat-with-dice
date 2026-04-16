@@ -2,8 +2,10 @@ import {
   capabilityRegistry,
   type CapabilityName,
 } from "#/capabilities/capabilityRegistry";
+import { DeleteButton } from "#/components/capabilityComponents/shared/DeleteButton";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
+import { actions } from "astro:actions";
 import { useRoomConfigContext } from "../DiceRoller/contexts/roomConfigContext";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -48,7 +50,7 @@ function setCapabilityEnabled(
 }
 
 export const Config = memo(() => {
-  const { roomConfig, setRoomConfig, roomName, setRoomName } =
+  const { roomConfig, setRoomConfig, roomName, setRoomName, roomId } =
     useRoomConfigContext();
 
   const [roomNameDraft, setRoomNameDraft] = useState(roomName);
@@ -93,6 +95,11 @@ export const Config = memo(() => {
     setRoomNameDraft(trimmedName);
     setRoomName(trimmedName);
   }, [roomName, setRoomName, trimmedName]);
+
+  const handleDeleteRoom = useCallback(async () => {
+    await actions.deleteRoom({ roomId });
+    window.location.href = "/roller/rooms";
+  }, [roomId]);
 
   const handleToggleCapability = useCallback(
     (capabilityName: CapabilityName, enabled: boolean) => {
@@ -172,6 +179,18 @@ export const Config = memo(() => {
             );
           })}
         </ul>
+      </section>
+
+      <section className="mt-6">
+        <h3 className="text-xl">Danger zone</h3>
+        <div className="mt-4">
+          <DeleteButton
+            label="Delete room"
+            itemType="room"
+            challengePhrase={roomName}
+            onDelete={handleDeleteRoom}
+          />
+        </div>
       </section>
     </SidebarPanel>
   );
