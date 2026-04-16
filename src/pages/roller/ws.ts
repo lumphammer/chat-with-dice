@@ -1,6 +1,6 @@
 import type { User } from "#/auth";
 import { db } from "#/db";
-import { users, Rooms } from "#/schemas/chatDB-schema";
+import { users, rooms } from "#/schemas/chatDB-schema";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { eq, sql } from "drizzle-orm";
@@ -41,8 +41,8 @@ export const GET: APIRoute = async ({ url, request: origRequest, locals }) => {
     (
       await db
         .select({ n: sql<number>`1` })
-        .from(Rooms)
-        .where(eq(Rooms.id, roomId))
+        .from(rooms)
+        .where(eq(rooms.id, roomId))
         .limit(1)
         .all()
     ).length > 0;

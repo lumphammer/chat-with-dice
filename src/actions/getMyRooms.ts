@@ -1,5 +1,5 @@
 import { db } from "#/db";
-import { Rooms } from "#/schemas/chatDB-schema";
+import { rooms } from "#/schemas/chatDB-schema";
 import { defineAction } from "astro:actions";
 import { and, desc, eq, isNull } from "drizzle-orm";
 
@@ -14,14 +14,11 @@ export const getMyRooms = defineAction({
     }
     const result = await db
       .select()
-      .from(Rooms)
+      .from(rooms)
       .where(
-        and(
-          eq(Rooms.created_by_user_id, user.id),
-          isNull(Rooms.deleted_time),
-        ),
+        and(eq(rooms.created_by_user_id, user.id), isNull(rooms.deleted_time)),
       )
-      .orderBy(desc(Rooms.created_time))
+      .orderBy(desc(rooms.created_time))
       .limit(MAX_RECENT_ROOMS);
     return result;
   },

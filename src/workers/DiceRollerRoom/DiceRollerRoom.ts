@@ -5,7 +5,7 @@ import {
 import { db as d1 } from "#/db";
 import { assertRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
-import { Rooms } from "#/schemas/chatDB-schema";
+import { rooms } from "#/schemas/chatDB-schema";
 import * as dbSchema from "#/schemas/roller-schema";
 import {
   roomConfigValidator,
@@ -65,11 +65,11 @@ export class DiceRollerRoom extends DurableObject {
     void this.ctx.blockConcurrencyWhile(async () => {
       const roomRows = await d1
         .select({
-          config: Rooms.config,
-          createByUserId: Rooms.created_by_user_id,
+          config: rooms.config,
+          createByUserId: rooms.created_by_user_id,
         })
-        .from(Rooms)
-        .where(eq(Rooms.durableObjectId, ctx.id.toString()))
+        .from(rooms)
+        .where(eq(rooms.durableObjectId, ctx.id.toString()))
         .limit(1);
       console.log("database loaded", roomRows);
       const roomRow = roomRows[0];
@@ -196,9 +196,9 @@ export class DiceRollerRoom extends DurableObject {
           const newConfig = data.payload.config;
 
           await d1
-            .update(Rooms)
+            .update(rooms)
             .set({ config: newConfig })
-            .where(eq(Rooms.durableObjectId, this.ctx.id.toString()));
+            .where(eq(rooms.durableObjectId, this.ctx.id.toString()));
 
           // Unmount capabilities that were removed
           const newCapabilityNames = new Set(
@@ -237,9 +237,9 @@ export class DiceRollerRoom extends DurableObject {
           const roomName = data.payload.roomName;
           console.log("Updating room name", roomName, this.ctx.id.toString());
           await d1
-            .update(Rooms)
+            .update(rooms)
             .set({ name: roomName })
-            .where(eq(Rooms.durableObjectId, this.ctx.id.toString()));
+            .where(eq(rooms.durableObjectId, this.ctx.id.toString()));
           this.broadcaster.brodcastRoomName(roomName);
         });
       }

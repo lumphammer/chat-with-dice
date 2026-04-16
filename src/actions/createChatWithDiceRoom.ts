@@ -1,6 +1,6 @@
 import { db } from "#/db";
 import { ROOM_TYPE_NAMES, roomTypes } from "#/roomTypes";
-import { Rooms } from "#/schemas/chatDB-schema";
+import { rooms } from "#/schemas/chatDB-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
@@ -34,7 +34,7 @@ export const createChatWithDiceRoom = defineAction({
 
     // we *could* use the DO id as the pk, but that feels leaky
 
-    await db.insert(Rooms).values({
+    await db.insert(rooms).values({
       created_by_user_id: user.id,
       created_time: Date.now(),
       name: input.roomName,

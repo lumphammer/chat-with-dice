@@ -3,7 +3,7 @@ import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export * from "./auth-schema";
 
-export const Rooms = sqliteTable("Rooms", {
+export const rooms = sqliteTable("rooms", {
   id: text().primaryKey(),
   name: text().notNull(),
   description: text(),
