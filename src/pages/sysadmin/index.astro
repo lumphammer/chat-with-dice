@@ -1,0 +1,36 @@
+---
+import { auth } from "#/auth";
+import { AdminRoomList } from "#/components/sysAdmin/AdminRoomList";
+import Layout from "#/layouts/Layout.astro";
+
+export const prerender = false;
+
+let users:
+  | null
+  | (ReturnType<typeof auth.api.listUsers> extends Promise<infer T>
+      ? T
+      : never) = null;
+
+let authError = false;
+
+try {
+  users = await auth.api.listUsers({
+    query: {},
+    headers: Astro.request.headers,
+  });
+} catch {
+  authError = true;
+}
+
+// Astro.locals.user.
+---
+
+<Layout title={"Admin 🕵️‍♀️"}>
+  {
+    users === null ? (
+      <div>No.</div>
+    ) : (
+      <AdminRoomList users={users.users} total={users.total} />
+    )
+  }
+</Layout>
