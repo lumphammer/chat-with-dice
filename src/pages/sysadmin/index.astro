@@ -1,7 +1,7 @@
 ---
 import { auth } from "#/auth";
-import { AdminRoomList } from "#/components/sysAdmin/AdminRoomList";
 import Layout from "#/layouts/Layout.astro";
+import { AdminUserList } from "@/components/sysAdmin/AdminUserList";
 
 export const prerender = false;
 
@@ -30,7 +30,7 @@ try {
     users === null ? (
       <div>No.</div>
     ) : (
-      <AdminRoomList users={users.users} total={users.total} />
+      <AdminUserList users={users.users} total={users.total} client:load />
     )
   }
 </Layout>
