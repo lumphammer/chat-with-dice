@@ -1,0 +1,34 @@
+---
+import { auth } from "#/auth";
+import SysAdminLayout from "#/layouts/SysAdmin.astro";
+import { AdminUserList } from "@/components/sysAdmin/AdminUserList";
+
+export const prerender = false;
+
+let users:
+  | null
+  | (ReturnType<typeof auth.api.listUsers> extends Promise<infer T>
+      ? T
+      : never) = null;
+
+try {
+  users = await auth.api.listUsers({
+    query: {},
+    headers: Astro.request.headers,
+  });
+} catch {
+  //
+}
+---
+
+<SysAdminLayout title={"Users 🕵️‍♀️"} class="flex flex-col">
+  {
+    users === null ? (
+      <div>No.</div>
+    ) : (
+      <div class="flex-1">
+        <AdminUserList users={users.users} total={users.total} client:load />
+      </div>
+    )
+  }
+</SysAdminLayout>

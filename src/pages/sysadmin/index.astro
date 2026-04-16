@@ -1,36 +1,23 @@
 ---
-import { auth } from "#/auth";
 import Layout from "#/layouts/Layout.astro";
-import { AdminUserList } from "@/components/sysAdmin/AdminUserList";
-
-export const prerender = false;
-
-let users:
-  | null
-  | (ReturnType<typeof auth.api.listUsers> extends Promise<infer T>
-      ? T
-      : never) = null;
-
-let authError = false;
-
-try {
-  users = await auth.api.listUsers({
-    query: {},
-    headers: Astro.request.headers,
-  });
-} catch {
-  authError = true;
-}
-
-// Astro.locals.user.
+import { ChevronRight, Users } from "@lucide/astro";
 ---
 
-<Layout title={"Admin 🕵️‍♀️"}>
-  {
-    users === null ? (
-      <div>No.</div>
-    ) : (
-      <AdminUserList users={users.users} total={users.total} client:load />
-    )
-  }
+<Layout title={"Admin 🕵️‍♀️"} class="p-4">
+  <ul class="list bg-base-200 rounded-box shadow-md">
+    <li>
+      <a
+        href="/sysadmin/users/"
+        class="list-row hover:bg-base-100 cursor-pointer"
+      >
+        <div class="list-col text-6xl font-thin opacity-50">
+          <Users class="h-full" />
+        </div>
+        <div class="list-col-grow text-2xl font-thin">Users</div>
+        <div>
+          <ChevronRight />
+        </div>
+      </a>
+    </li>
+  </ul>
 </Layout>

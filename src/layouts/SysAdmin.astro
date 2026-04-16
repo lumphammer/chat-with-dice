@@ -1,0 +1,20 @@
+---
+import { ChevronLeft } from "@lucide/astro";
+import Layout from "./Layout.astro";
+
+type Props = {
+  class?: string;
+  title: string | null;
+};
+
+const { title, class: className } = Astro.props;
+---
+
+<Layout title={title} class="flex flex-col">
+  <nav class="p-2">
+    <a class="link" href="..">
+      <ChevronLeft class="inline" /> Back
+    </a>
+  </nav>
+  <slot />
+</Layout>

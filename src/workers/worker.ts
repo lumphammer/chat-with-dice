@@ -1,3 +1,4 @@
+import { auth } from "#/auth";
 import handler from "@astrojs/cloudflare/entrypoints/server";
 
 export { DiceRollerRoom } from "./DiceRollerRoom/DiceRollerRoom";
@@ -19,6 +20,23 @@ export function addPTerryHeader(request: Request, response: Response) {
   }
 }
 
+async function checkSysAdminCredentials(request: Request, response: Response) {
+  const url = URL.parse(request.url);
+  if (!url || !url.pathname.startsWith("/sysadmin")) {
+    return response;
+  }
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+  if (session && session.user.role === "admin") {
+    return response;
+  }
+  return new Response(null, {
+    status: 404,
+    statusText: "Not found",
+  });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const response = await handler.fetch(request, env, ctx);
@@ -34,7 +52,10 @@ export default {
     // * server-rendered pages
     // * live endpoints
     // * static assets that are included in `assets.run_worker_first`
-    return addPTerryHeader(request, response);
+    return checkSysAdminCredentials(
+      request,
+      addPTerryHeader(request, response),
+    );
   },
   async queue(batch, _env) {
     let messages = JSON.stringify(batch.messages);
