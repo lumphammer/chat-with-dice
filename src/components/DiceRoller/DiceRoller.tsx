@@ -1,9 +1,5 @@
-import type { RollTypeName } from "#/rollTypes/rollTypeRegistry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
-import type {
-  JsonData,
-  WebSocketClientMessage,
-} from "#/validators/webSocketMessageSchemas";
+import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
 import {
   CapabilityInfoContextProvider,
   type CapabilityInfoContextValue,
@@ -163,20 +159,12 @@ export const DiceRoller = memo(
     } = useSmartScroll({ messages });
 
     const handleNewMessage = useCallback(
-      ({
-        formula,
-        chat,
-        rollType,
-      }: {
-        formula: JsonData;
-        chat: string;
-        rollType: RollTypeName;
-      }) => {
+      ({ chat }: { chat: string }) => {
         const msg: WebSocketClientMessage = {
           type: "chat",
           payload: {
-            rollType,
-            formula,
+            rollType: "chat",
+            formula: {},
             chat,
             displayName: userIdentity.displayName,
           },

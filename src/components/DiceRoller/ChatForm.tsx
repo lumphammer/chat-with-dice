@@ -1,14 +1,7 @@
-import {
-  rollTypeRegistry,
-  type RollTypeName,
-} from "#/rollTypes/rollTypeRegistry";
-import type { JsonData } from "#/validators/webSocketMessageSchemas";
-// import { FormulaForm } from "./FormulaForm/FormulaForm";
-import { RollTypePicker } from "./RollTypePicker";
-import { FormulaContextProvider } from "./contexts/formulaContext";
+import { useStateWithRef } from "../useStateWithRef";
 import styles from "@/styles/inputs.module.css";
-import { Dices, SendHorizontal } from "lucide-react";
-import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
+import { SendHorizontal } from "lucide-react";
+import { type SubmitEvent, memo, useCallback } from "react";
 
 // * Normal (X Y Z) => Total, success?
 //   * Normal
@@ -25,90 +18,51 @@ import { type SubmitEvent, memo, useCallback, useMemo, useState } from "react";
 // * Formula (formula) => total
 
 type ChatFormProps = {
-  onNewMessage: (args: {
-    rollType: RollTypeName;
-    formula: JsonData;
-    chat: string;
-  }) => void;
+  onNewMessage: (args: { chat: string }) => void;
 };
 
 export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
-  const [formula, setFormula] = useState<JsonData>({});
-  const [chat, setChat] = useState("");
-  const [rollType, setRollType] = useState<RollTypeName>("standard");
-
-  const formulaContextValue = useMemo(() => {
-    return {
-      setFormula,
-      formula,
-    };
-  }, [formula, setFormula]);
+  const [chat, setChat, chatRef] = useStateWithRef("");
 
   const handleSubmit = useCallback(
     (event: SubmitEvent) => {
       event.preventDefault();
       onNewMessage({
-        formula,
-        chat,
-        rollType,
+        chat: chatRef.current,
       });
     },
-    [formula, chat, onNewMessage, rollType],
+    [chatRef, onNewMessage],
   );
 
-  const InputComponent = rollTypeRegistry[rollType].InputComponent;
-
-  const hasFormula =
-    typeof formula.formula === "string"
-      ? formula.formula.trim().length > 0
-      : !!formula;
-
   return (
-    <FormulaContextProvider value={formulaContextValue}>
-      <form onSubmit={handleSubmit} className="flex flex-row flex-wrap p-4">
-        <div
-          className="border-primary flex min-w-0 flex-1 flex-row flex-wrap
-            overflow-hidden rounded-l-xl border shadow-sm"
-        >
-          <RollTypePicker rollType={rollType} setRollType={setRollType} />
-          <InputComponent onChange={setFormula} />
-          <textarea
-            rows={1}
-            className={`${styles.input} field-sizing-content max-h-[30cqh]
-              min-w-full flex-1 resize-none overflow-y-auto rounded-bl-xl
-              border-t px-4 py-2 text-left`}
-            value={chat}
-            onChange={(e) => setChat(e.target.value)}
-            placeholder={hasFormula ? "Annotation" : "Chat message"}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                e.currentTarget.form?.requestSubmit();
-              }
-            }}
+    <form
+      onSubmit={handleSubmit}
+      className="border-primary m-4 flex flex-row overflow-hidden rounded-xl
+        border"
+    >
+      <textarea
+        rows={1}
+        className={`${styles.input} field-sizing-content max-h-[30cqh] flex-1
+          resize-none overflow-y-auto rounded-l-xl px-4 py-2 text-left`}
+        value={chat}
+        onChange={(e) => setChat(e.target.value)}
+        placeholder="Chat"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            e.currentTarget.form?.requestSubmit();
+          }
+        }}
+      />
+      <button className="btn btn-primary h-auto w-12 px-6">
+        <span className="relative flex h-5.5 w-5.5 items-center justify-center">
+          <SendHorizontal
+            size={22}
+            className="absolute transition-opacity duration-300"
           />
-        </div>
-        <button
-          className="btn btn-primary h-auto self-stretch rounded-none
-            rounded-r-xl px-6"
-        >
-          <span
-            className="relative flex h-5.5 w-5.5 items-center justify-center"
-          >
-            <SendHorizontal
-              size={22}
-              className={`absolute transition-opacity duration-300
-                ${hasFormula ? "opacity-0" : "opacity-100"}`}
-            />
-            <Dices
-              size={22}
-              className={`absolute transition-opacity duration-300
-                ${hasFormula ? "opacity-100" : "opacity-0"}`}
-            />
-          </span>
-        </button>
-      </form>
-    </FormulaContextProvider>
+        </span>
+      </button>
+    </form>
   );
 });
 
