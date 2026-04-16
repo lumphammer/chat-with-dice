@@ -56,7 +56,16 @@ export class MessageRepository {
         .execute()
     ).toReversed();
     console.log("messagesFromDB", messagesFromDB);
-    const parsed = messagesFromDB.map((m) => anyChatMessageValidator.parse(m));
+    const parsed = messagesFromDB
+      .map((m) => {
+        const parsedMessage = anyChatMessageValidator.safeParse(m);
+        if (parsedMessage.success) {
+          return parsedMessage.data;
+        } else {
+          return null;
+        }
+      })
+      .filter((m): m is ChatMessage => m !== null);
     console.log("parsed", parsed);
     return parsed;
   }
