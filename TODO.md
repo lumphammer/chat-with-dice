@@ -22,7 +22,7 @@
 * [x] Mission statement
 * [ ] Basic room admin (owner only)
   * [x] Rename
-  * [ ] Delete
+  * [x] Delete
   * [x] Manage capabilities
 * [x] Roll Types to capabilities
 * [x] Split chat form / UX work
