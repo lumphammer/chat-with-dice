@@ -6,6 +6,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
 import { getOAuthState } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
+import { admin } from "better-auth/plugins";
 import { waitUntil } from "cloudflare:workers";
 
 // see
@@ -152,6 +153,7 @@ export const auth = betterAuth({
         }
       },
     }),
+    admin(),
   ],
 });
 
