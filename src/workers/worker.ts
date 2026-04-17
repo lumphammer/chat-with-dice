@@ -7,7 +7,19 @@ const HTTP_SWITCHING_PROTOCOLS = 101;
 
 const log = console.log.bind(console, "[worker]");
 
-export function addPTerryHeader(request: Request, response: Response) {
+type Responder = () => Response | Promise<Response>;
+
+type Middleware = (
+  req: Request,
+  next: Responder,
+) => Response | Promise<Response>;
+
+function defineMiddleware(cb: Middleware): Middleware {
+  return cb;
+}
+
+export const addPTerryHeader = defineMiddleware(async (request, next) => {
+  const response = await next();
   if (response.status === HTTP_SWITCHING_PROTOCOLS) {
     log("websocket - stepping back");
     return response;
@@ -18,29 +30,39 @@ export function addPTerryHeader(request: Request, response: Response) {
     response2.headers.set("X-Clacks-Overhead", "GNU Terry Pratchett");
     return response2;
   }
-}
+});
 
-async function checkSysAdminCredentials(request: Request, response: Response) {
+const checkSysAdminCredentials = defineMiddleware(async (request, next) => {
   const url = URL.parse(request.url);
   if (!url || !url.pathname.startsWith("/sysadmin")) {
-    return response;
+    return next();
   }
   const session = await auth.api.getSession({
     headers: request.headers,
   });
   if (session && session.user.role === "admin") {
-    return response;
+    return next();
   }
   return new Response(null, {
     status: 404,
     statusText: "Not found",
   });
-}
+});
+
+const middlewares = [checkSysAdminCredentials, addPTerryHeader];
 
 export default {
   async fetch(request, env, ctx) {
-    const response = await handler.fetch(request, env, ctx);
+    const final = middlewares.reduce<Responder>(
+      (next, middleware) => () => middleware(request, next),
+      () => handler.fetch(request, env, ctx),
+    );
+
     log("running for", request.url);
+
+    return final();
+
+    // const response = await handler.fetch(request, env, ctx);
     // astro middleware doesn't run for static assets, even when
     // `assets.run_worker_first` is set in wrangler.jsonc. But we can do
     // middleware-like things here.
@@ -52,10 +74,10 @@ export default {
     // * server-rendered pages
     // * live endpoints
     // * static assets that are included in `assets.run_worker_first`
-    return checkSysAdminCredentials(
-      request,
-      addPTerryHeader(request, response),
-    );
+    // return checkSysAdminCredentials(
+    //   request,
+    //   addPTerryHeader(request, response),
+    // );
   },
   async queue(batch, _env) {
     let messages = JSON.stringify(batch.messages);
