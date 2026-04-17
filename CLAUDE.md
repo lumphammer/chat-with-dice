@@ -21,3 +21,15 @@ In our `pages/` tree, any page with more than trivial complexity should be expre
 Icons in react components should come from lucide-react where possible.
 
 Avoid hard-coding colors - use theme colours where possible. If the theme doesn't contain something you need, stop and ask the user about the possibility of adding it.
+
+## Commit message style
+
+* All lowercase — never capitalise the first word (exception: all-caps single-word notes like `TODO` or `MISSION`)
+* No trailing punctuation
+* No conventional-commits prefixes (`feat:`, `fix:`, `chore:`, etc.)
+* Single line only — no body, no footer
+* Short and punchy — aim for 3–6 words
+* Start with an action verb: `add`, `fix`, `make`, `rename`, `strip`, `allow`, `start`, `plumb`, etc.
+* Informal, honest language is fine — "first stab at …", "start making …", "work towards …"
+* For multi-step work use phase suffixes: `foo phase 1`, `foo phase 2`
+* Never include issue numbers or PR links
