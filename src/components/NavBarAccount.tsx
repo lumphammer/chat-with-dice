@@ -1,5 +1,5 @@
 import { authClient } from "#/utils/auth-client";
-import { Dices, LogOut, Settings } from "lucide-react";
+import { Dices, LogOut, Settings, Shield } from "lucide-react";
 import { useRef } from "react";
 
 type UserInfo = {
@@ -8,11 +8,11 @@ type UserInfo = {
   image: string | null;
 };
 
-type Props = {
+export function NavBarAccount({
+  initialUser,
+}: {
   initialUser: UserInfo | null;
-};
-
-export function NavBarAccount({ initialUser }: Props) {
+}) {
   const { data: sessionData, isPending } = authClient.useSession();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -103,6 +103,14 @@ export function NavBarAccount({ initialUser }: Props) {
               Account Settings
             </a>
           </li>
+          {sessionData?.user.role === "admin" && (
+            <li>
+              <a href="/sysadmin" onClick={closeMenu}>
+                <Shield size={16} />
+                Sysadmin
+              </a>
+            </li>
+          )}
           <li>
             <button onClick={handleLogOut}>
               <LogOut size={16} />
