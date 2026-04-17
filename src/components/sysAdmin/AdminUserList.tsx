@@ -1,23 +1,9 @@
-import { AdminUserDetailDialog } from "./AdminUserDetailDialog";
 import { AdminUserRow } from "./AdminUserRow";
 import type { UserWithRole } from "better-auth/client/plugins";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo } from "react";
 
 export const AdminUserList = memo(
   ({ users, total }: { users: UserWithRole[]; total: number }) => {
-    const dialogRef = useRef<HTMLDialogElement>(null);
-    const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
-
-    const handleShowDetails = (user: UserWithRole) => {
-      setSelectedUser(user);
-    };
-
-    useEffect(() => {
-      if (selectedUser) {
-        dialogRef.current?.showModal();
-      }
-    }, [selectedUser]);
-
     return (
       <div className="p-4">
         <h2 className="mb-4 text-2xl font-bold">
@@ -37,16 +23,11 @@ export const AdminUserList = memo(
             </thead>
             <tbody>
               {users.map((user) => (
-                <AdminUserRow
-                  key={user.id}
-                  user={user}
-                  onShowDetails={handleShowDetails}
-                />
+                <AdminUserRow key={user.id} user={user} />
               ))}
             </tbody>
           </table>
         </div>
-        <AdminUserDetailDialog dialogRef={dialogRef} user={selectedUser} />
       </div>
     );
   },

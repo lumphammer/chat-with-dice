@@ -15,7 +15,8 @@
 
 ## Small Items
 
-* [ ] Mobile layout
+* [x] Mobile layout
+* [ ] Nanostores
 
 ## Big items
 

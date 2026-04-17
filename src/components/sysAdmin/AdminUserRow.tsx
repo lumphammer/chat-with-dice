@@ -4,10 +4,9 @@ import { memo } from "react";
 
 type Props = {
   user: UserWithRole;
-  onShowDetails: (user: UserWithRole) => void;
 };
 
-export const AdminUserRow = memo(({ user, onShowDetails }: Props) => {
+export const AdminUserRow = memo(({ user }: Props) => {
   return (
     <tr>
       <td>
@@ -39,15 +38,14 @@ export const AdminUserRow = memo(({ user, onShowDetails }: Props) => {
       </td>
       <td>{user.createdAt.toLocaleDateString()}</td>
       <td>
-        <button
-          type="button"
+        <a
+          href={`/sysadmin/users/${user.id}/`}
           className="btn btn-sm btn-outline"
-          onClick={() => onShowDetails(user)}
           aria-label={`Show details for ${user.name ?? user.email}`}
         >
           <InfoIcon className="h-4 w-4" />
           Details
-        </button>
+        </a>
       </td>
     </tr>
   );

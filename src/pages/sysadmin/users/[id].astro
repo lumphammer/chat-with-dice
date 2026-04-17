@@ -1,0 +1,27 @@
+---
+import { auth } from "#/auth";
+import SysAdminLayout from "#/layouts/SysAdmin.astro";
+import { UserDetailPage } from "./_components/UserDetailPage";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+let user = null;
+try {
+  user = await auth.api.getUser({
+    query: { id: id! },
+    headers: Astro.request.headers,
+  });
+} catch {
+  //
+}
+
+if (!user) return Astro.redirect("/sysadmin/users/");
+---
+
+<SysAdminLayout title={user.name ?? user.email}>
+  <div class="p-4">
+    <UserDetailPage user={user} client:load />
+  </div>
+</SysAdminLayout>
