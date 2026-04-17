@@ -9,7 +9,7 @@
     "directory": "./dist",
     // this is how to run worker for selected paths for e.g. auth, logging etc.
     // https://developers.cloudflare.com/workers/static-assets/routing/worker-script/#run-worker-before-each-request
-    "run_worker_first": ["/syntax-test/"],
+    "run_worker_first": ["/syntax-test/", "/sysadmin/"],
   },
   "observability": {
     "enabled": true,
