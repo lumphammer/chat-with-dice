@@ -16,7 +16,7 @@ Remember that `React.FormEvent` is deprecated. The deprecation notice is:
 
 Favour keeping component files short by breaking out subcomponents, even if they're only used on one place.
 
-In our `pages/` tree, any page with more than trivial complexity should be expressed as a React component, located nearby under a `_components` folder.
+In our `pages/` tree, any page with more than trivial complexity should be expressed as a React component, located nearby under  `src/components` folder.
 
 Icons in react components should come from lucide-react where possible.
 
