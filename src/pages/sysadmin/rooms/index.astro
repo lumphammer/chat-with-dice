@@ -1,0 +1,45 @@
+---
+import { auth } from "#/auth";
+import { db } from "#/db";
+import SysAdminLayout from "#/layouts/SysAdmin.astro";
+import { rooms } from "#/schemas/chatDB-schema";
+import { desc } from "drizzle-orm";
+import { AdminRoomList } from "./_components/AdminRoomList";
+
+export const prerender = false;
+
+const MAX_ROOMS = 500;
+
+const allRooms = await db
+  .select()
+  .from(rooms)
+  .orderBy(desc(rooms.created_time))
+  .limit(MAX_ROOMS);
+
+// Fetch creator info for all rooms
+type CreatorInfo = { id: string; name: string | null; email: string };
+const userMap: Record<string, CreatorInfo> = {};
+try {
+  const result = await auth.api.listUsers({
+    query: { limit: 1000 },
+    headers: Astro.request.headers,
+  });
+  for (const user of result.users) {
+    userMap[user.id] = { id: user.id, name: user.name, email: user.email };
+  }
+} catch {
+  //
+}
+
+const adminRooms = allRooms.map((room) => ({
+  ...room,
+  creatorName: userMap[room.created_by_user_id]?.name ?? null,
+  creatorEmail: userMap[room.created_by_user_id]?.email ?? null,
+}));
+---
+
+<SysAdminLayout title={"Rooms 🎲"} class="flex flex-col">
+  <div class="flex-1">
+    <AdminRoomList rooms={adminRooms} client:load />
+  </div>
+</SysAdminLayout>

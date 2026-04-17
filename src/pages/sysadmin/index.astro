@@ -1,6 +1,6 @@
 ---
 import Layout from "#/layouts/Layout.astro";
-import { ChevronRight, Users } from "@lucide/astro";
+import { ChevronRight, Dices, Users } from "@lucide/astro";
 ---
 
 <Layout title={"Admin 🕵️‍♀️"} class="p-4">
@@ -14,6 +14,20 @@ import { ChevronRight, Users } from "@lucide/astro";
           <Users class="h-full" />
         </div>
         <div class="list-col-grow text-2xl font-thin">Users</div>
+        <div>
+          <ChevronRight />
+        </div>
+      </a>
+    </li>
+    <li>
+      <a
+        href="/sysadmin/rooms/"
+        class="list-row hover:bg-base-100 cursor-pointer"
+      >
+        <div class="list-col text-6xl font-thin opacity-50">
+          <Dices class="h-full" />
+        </div>
+        <div class="list-col-grow text-2xl font-thin">Rooms</div>
         <div>
           <ChevronRight />
         </div>
