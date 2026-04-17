@@ -78,7 +78,8 @@ export const RoomConfigSection = memo(({ room, onRoomUpdated }: Props) => {
           />
           {feedback && (
             <div
-              className={`alert ${feedback.type === "success" ? "alert-success" : "alert-error"}`}
+              className={`alert
+              ${feedback.type === "success" ? "alert-success" : "alert-error"}`}
             >
               {feedback.message}
             </div>

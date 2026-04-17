@@ -1,5 +1,5 @@
-import faceStyles from "#/styles/faces.module.css";
 import type { Face } from "#/capabilities/rollCapability";
+import faceStyles from "#/styles/faces.module.css";
 
 type FaceChipProps = {
   face: Face;
@@ -18,7 +18,8 @@ export function FaceChip({ face }: FaceChipProps) {
 
   return (
     <span
-      className={`${faceStyles.face} ${!face.kept ? "line-through decoration-2" : ""}`}
+      className={`${faceStyles.face}
+        ${!face.kept ? "line-through decoration-2" : ""}`}
       data-degree={degree}
       aria-label={`${face.result}${!face.kept ? " (dropped)" : ""}${face.exploded ? " (exploded)" : ""}`}
     >

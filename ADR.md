@@ -6,14 +6,13 @@
 
 Mainstream, huge ecosystem, still getting major development effort, gets the job done, long-term prospects very good.
 
-Also considered: 
+Also considered:
 
 Solid: Great choice, but I've already worked in React a lot more and this wasn't an area where I wanted to go leftfield.
 
 Preact: Not quite mainstream enough. DX is almost identical to React, main advantages are render speed and bundle size but I was happy with React.
 
 Vue, Svelte: Good options, but I prefer the code-first approach.
-
 
 ### Astro
 
@@ -27,7 +26,6 @@ Also considered:
 
 Next, TanStack Start: would have been fine, probably.
 
-
 ### Cloudflare Workers / Durable Objects
 
 CF are doing huge things in the edge computing world. DX not quite as polished as some, but Durable Objects are just incredibly good and solve the question of persistent connections in a serverless world. Given that this is at it's core a chat app, having a built-in solution for WebSockets is a huge win.
@@ -37,7 +35,6 @@ Also considered:
 Almost any other serverless solution: requires extra services to handle WebSockets.
 
 Dockerization or a VPS: makes the server stateful. Serverless is preferable for a single-maintainer project.
-
 
 ### Drizzle + D1
 
@@ -49,7 +46,6 @@ The risk factor with Drizzle is that's very young. I'm using (as of writing) the
 
 It also suffers from weak documentation - patchy in places, and written by someone who I assume does not have English as a first language. Again, this is a transient problem.
 
-
 ### Better Auth
 
 I wanted the power to have a bunch of OAuth integrations and login methods, without learning the guts of OAuth myself. I also didn't want to to be knitting my own auth back-end, period, because of the high likelihood of creating a security disaster in the process.
@@ -59,7 +55,6 @@ A third-party service like Clerk or Auth0 would have solved that but I want to l
 Better Auth requires more setup, especially for a first-timer, but it was a cost I was willing to pay.
 
 Since auth data lives in our own D1 database, we are not dependent on a third party service. Auth interactions are routed through a single module, minimising the surface area of a potential migration. The primary migration targets would be building on Oslo primitives directly, or adopting a managed service if the project's scale (and income?) warrants it.
-
 
 ## Naming
 

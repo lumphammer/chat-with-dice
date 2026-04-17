@@ -1,5 +1,5 @@
-import { FaceChip } from "./FaceChip";
 import type { Handful } from "#/capabilities/rollCapability";
+import { FaceChip } from "./FaceChip";
 
 type HandfulDisplayProps = {
   handful: Handful;
@@ -26,7 +26,7 @@ export function HandfulDisplay({
       {showSubtotal && (
         <>
           <span className="text-base-content/30 mx-0.5">=</span>
-          <span className="tabular-nums font-semibold">{handful.total}</span>
+          <span className="font-semibold tabular-nums">{handful.total}</span>
         </>
       )}
     </div>

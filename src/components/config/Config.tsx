@@ -5,8 +5,8 @@ import {
 import { DeleteButton } from "#/components/capabilityComponents/shared/DeleteButton";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
-import { actions } from "astro:actions";
 import { useRoomConfigContext } from "../DiceRoller/contexts/roomConfigContext";
+import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const capabilityNames = Object.keys(capabilityRegistry) as CapabilityName[];

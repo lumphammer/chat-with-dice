@@ -14,7 +14,8 @@ type Props = {
 
 export const AdminRoomRow = memo(({ room }: Props) => {
   const typeInfo = roomTypes[room.type];
-  const creatorLabel = room.creatorName ?? room.creatorEmail ?? room.created_by_user_id;
+  const creatorLabel =
+    room.creatorName ?? room.creatorEmail ?? room.created_by_user_id;
   const isDeleted = room.deleted_time != null;
 
   return (

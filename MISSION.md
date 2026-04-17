@@ -4,11 +4,9 @@
 
 Produce a lightweight, cheap, easy-to-use tool for people playing low-prep/no-prep TTRPGs online.
 
-
 ## Discussion
 
 Technically this will be in the "VTT" space, but taking a fundamentally different approach. This is a handy structured notepad for jotting down the stuff you need in-play. Unlike a traditional VTT, I'm not trying to produce a virtual tabletop with the map and tokens front and center. We will in due course have something like a whiteboard, but it will put drawing tools first, not the map. It doesn't expect you to have a 4K battlemap and art assets - you can just dive in with no prep and scribble on the whiteboard as you go.
-
 
 ## Values
 

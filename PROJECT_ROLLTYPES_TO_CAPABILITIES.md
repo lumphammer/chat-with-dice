@@ -10,19 +10,19 @@ After briefly considering some bridge between capabilities and roll types, I thi
 
 Then, capabilities can advertise an inputUI and displayUI in the capability registry. The chat bar just loads whatever capabilities are configured which advertise an inputUI (lots won't.)
 
-The next thought is: I've been struggling to come up with a pleasant UX for rolls on mobile. As soon as there's more than one or two inputs, they start stacking up crazily and hogging screen space. And they're fiddly. The usual rule for UIs in tight spaces is modality, not cramming. So question: Should the roll UI actually live in the sidebar? 
+The next thought is: I've been struggling to come up with a pleasant UX for rolls on mobile. As soon as there's more than one or two inputs, they start stacking up crazily and hogging screen space. And they're fiddly. The usual rule for UIs in tight spaces is modality, not cramming. So question: Should the roll UI actually live in the sidebar?
 
-On desktop this could feel very natural - instead of a double-duty form at the foot of the page, you have "chat" in the usual place, and "rolls" in the sidebar. This would also work well when you have systems like Honk D6 which is a much more natural fit for stateful, sidebar-based interactions after the initial roll anyway. Having the rolling *start* there would be great. Not to mention that I've been unsure of the UX merit of having interactive chat bubbles as we do in the current Honk D6 implementation (what happens if someone adds chat when you're in the middle of typing or clicking?)
+On desktop this could feel very natural - instead of a double-duty form at the foot of the page, you have "chat" in the usual place, and "rolls" in the sidebar. This would also work well when you have systems like Honk D6 which is a much more natural fit for stateful, sidebar-based interactions after the initial roll anyway. Having the rolling _start_ there would be great. Not to mention that I've been unsure of the UX merit of having interactive chat bubbles as we do in the current Honk D6 implementation (what happens if someone adds chat when you're in the middle of typing or clicking?)
 
 On mobile, this gives us a much more comfortable way to present the UI rather than cramming it in with the chat.
 
 A plan of attack might look like:
 
-* [x] Ditch the roll form
-* [x] Changes to the capability system:
-  * [x] Multiple sidebar elements
-  * [x] Roll result validator
-  * [x] Roll display UI
-  * [x] Effectful functions are given some typed helpers to publish and modify messages
-  * [x] Message display is based on capability name
-* [ ]  Ditch the whole roll types system
+- [x] Ditch the roll form
+- [x] Changes to the capability system:
+  - [x] Multiple sidebar elements
+  - [x] Roll result validator
+  - [x] Roll display UI
+  - [x] Effectful functions are given some typed helpers to publish and modify messages
+  - [x] Message display is based on capability name
+- [ ] Ditch the whole roll types system

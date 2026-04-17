@@ -10,9 +10,8 @@ export function SubExpression({ group }: SubExpressionProps) {
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-1 rounded-lg border px-2 py-1 ${
-        isDropped ? "border-base-300 opacity-35" : "border-base-content/20"
-      }`}
+      className={`flex flex-wrap items-center gap-1 rounded-lg border px-2 py-1
+        ${isDropped ? "border-base-300 opacity-35" : "border-base-content/20"}`}
     >
       {group.results.map((entry, i) => (
         <RollEntryNode key={i} entry={entry} />

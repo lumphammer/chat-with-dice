@@ -1,6 +1,6 @@
 import type { rooms } from "#/schemas/chatDB-schema";
-import { memo, useState } from "react";
 import { AdminRoomRow } from "./AdminRoomRow";
+import { memo, useState } from "react";
 
 type AdminRoom = typeof rooms.$inferSelect & {
   creatorName: string | null;
@@ -37,7 +37,11 @@ export const AdminRoomList = memo(({ rooms: allRooms }: Props) => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-bold">
           {filtered.length} Room{filtered.length !== 1 ? "s" : ""}
-          {search && <span className="text-base-content/50 ml-1 text-base font-normal">(filtered)</span>}
+          {search && (
+            <span className="text-base-content/50 ml-1 text-base font-normal">
+              (filtered)
+            </span>
+          )}
         </h2>
         <div className="flex items-center gap-4">
           <input
@@ -75,8 +79,13 @@ export const AdminRoomList = memo(({ rooms: allRooms }: Props) => {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-base-content/50 text-center py-8">
-                  {total === 0 ? "No rooms yet." : "No rooms match your filters."}
+                <td
+                  colSpan={5}
+                  className="text-base-content/50 py-8 text-center"
+                >
+                  {total === 0
+                    ? "No rooms yet."
+                    : "No rooms match your filters."}
                 </td>
               </tr>
             ) : (

@@ -5,6 +5,7 @@
 ## The Problem
 
 Right now, `DiceRollerRoom` would need to change if you modified:
+
 - Your database library (SQLite → D1)
 - Your WebSocket protocol
 - Your dice rolling logic
@@ -30,23 +31,26 @@ export class MessageRepository {
   }
 
   async getRecent(limit: number): Promise<RollerMessage[]> {
-    return (await this.db
-      .select()
-      .from(dbSchema.Messages)
-      .orderBy(desc(dbSchema.Messages.created_time))
-      .limit(limit)
-      .execute()
+    return (
+      await this.db
+        .select()
+        .from(dbSchema.Messages)
+        .orderBy(desc(dbSchema.Messages.created_time))
+        .limit(limit)
+        .execute()
     ).toReversed();
   }
 }
 ```
 
 **Benefits:**
+
 - Isolates DB implementation details
 - Easy to swap SQLite for D1 or add caching without touching the DO
 - Testable in isolation
 
 **Currently in DiceRollerRoom:**
+
 - The insert in `runFormula`
 - The query in `sendCatchUp`
 
@@ -103,11 +107,13 @@ export class RoomBroadcaster {
 ```
 
 **Benefits:**
+
 - Owns all knowledge about WebSocket protocol and message formatting
 - Changes to message schema only affect this class
 - `DiceRollerRoom` doesn't need to know about WebSocket details
 
 **Currently in DiceRollerRoom:**
+
 - `send()`
 - `sendError()`
 - `sendChatMessage()`
@@ -127,7 +133,9 @@ import { sessionAttachmentSchema } from "./types";
 
 export function parseIncomingMessage(raw: ArrayBuffer | string) {
   const parsed = webSocketClientMessageSchema.safeParse(
-    typeof raw === "string" ? JSON.parse(raw) : JSON.parse(new TextDecoder().decode(raw))
+    typeof raw === "string"
+      ? JSON.parse(raw)
+      : JSON.parse(new TextDecoder().decode(raw)),
   );
   if (!parsed.success) {
     throw new Error("Server received an unrecognized message", {
@@ -177,6 +185,7 @@ export function buildRollerMessage({
 ```
 
 **Benefits:**
+
 - Pure functions are easier to test
 - No hidden dependencies or side effects
 - Reusable anywhere

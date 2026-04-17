@@ -52,7 +52,8 @@ export const DeleteRestoreSection = memo(({ room, onRoomUpdated }: Props) => {
         </p>
         {feedback && (
           <div
-            className={`alert ${feedback.type === "success" ? "alert-success" : "alert-error"}`}
+            className={`alert
+            ${feedback.type === "success" ? "alert-success" : "alert-error"}`}
           >
             {feedback.message}
           </div>

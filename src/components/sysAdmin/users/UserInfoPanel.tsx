@@ -19,7 +19,10 @@ const Field = ({
   children: React.ReactNode;
 }) => (
   <div className="flex flex-col gap-0.5">
-    <dt className="text-base-content/60 text-xs font-semibold tracking-wide uppercase">
+    <dt
+      className="text-base-content/60 text-xs font-semibold tracking-wide
+        uppercase"
+    >
       {label}
     </dt>
     <dd className="text-base-content text-sm">{children}</dd>

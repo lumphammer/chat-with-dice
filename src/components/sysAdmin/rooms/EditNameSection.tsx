@@ -77,7 +77,8 @@ export const EditNameSection = memo(({ room, onRoomUpdated }: Props) => {
           </div>
           {feedback && (
             <div
-              className={`alert ${feedback.type === "success" ? "alert-success" : "alert-error"}`}
+              className={`alert
+              ${feedback.type === "success" ? "alert-success" : "alert-error"}`}
             >
               {feedback.message}
             </div>

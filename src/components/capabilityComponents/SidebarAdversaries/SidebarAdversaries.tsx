@@ -1,7 +1,7 @@
 import { adversariesCapability } from "#/capabilities/adversariesCapability";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
-import { CreateAdversaryForm } from "./CreateAdversaryForm";
 import { AdversaryDisplay } from "./AdversaryDisplay";
+import { CreateAdversaryForm } from "./CreateAdversaryForm";
 import { memo } from "react";
 
 export const SidebarAdversaries = memo(() => {
