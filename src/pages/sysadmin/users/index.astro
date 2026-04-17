@@ -1,21 +1,21 @@
 ---
 import { auth } from "#/auth";
 import SysAdminLayout from "#/layouts/SysAdmin.astro";
-import { AdminUserList } from "@/components/sysAdmin/AdminUserList";
+import { AdminUserList } from "@/components/sysAdmin/users/AdminUserList";
+import type { UserWithRole } from "better-auth/plugins";
 
 export const prerender = false;
 
-let users:
-  | null
-  | (ReturnType<typeof auth.api.listUsers> extends Promise<infer T>
-      ? T
-      : never) = null;
+let users: UserWithRole[] = [];
+let total = 0;
 
 try {
-  users = await auth.api.listUsers({
+  const result = await auth.api.listUsers({
     query: {},
     headers: Astro.request.headers,
   });
+  users = result.users;
+  total = result.total;
 } catch {
   //
 }
@@ -23,11 +23,9 @@ try {
 
 <SysAdminLayout title={"Users 🕵️‍♀️"} class="flex flex-col">
   {
-    users === null ? (
-      <div>No.</div>
-    ) : (
+    (
       <div class="flex-1">
-        <AdminUserList users={users.users} total={users.total} client:load />
+        <AdminUserList users={users} total={total} client:load />
       </div>
     )
   }

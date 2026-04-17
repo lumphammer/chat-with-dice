@@ -5,11 +5,18 @@ import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { eq } from "drizzle-orm";
 
+const MAX_ROOM_NAME_LENGTH = 128;
+const MAX_ROOM_DESCRIPTION_LENGTH = 512;
+
 export const adminUpdateRoom = defineAction({
   input: z.object({
     roomId: z.string(),
-    name: z.string().min(1).max(128).optional(),
-    description: z.string().max(512).nullable().optional(),
+    name: z.string().min(1).max(MAX_ROOM_NAME_LENGTH).optional(),
+    description: z
+      .string()
+      .max(MAX_ROOM_DESCRIPTION_LENGTH)
+      .nullable()
+      .optional(),
     config: z.string().optional(), // JSON string, validated in handler
   }),
   handler: async (input, context) => {

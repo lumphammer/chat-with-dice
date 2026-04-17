@@ -1,6 +1,6 @@
+import { authClient } from "#/utils/auth-client";
 import type { UserWithRole } from "better-auth/client/plugins";
 import { memo, useState } from "react";
-import { authClient } from "#/utils/auth-client";
 
 type Role = "user" | "admin";
 
@@ -29,9 +29,12 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
     });
     setLoading(false);
     if (error || !data?.user) {
-      setFeedback({ type: "error", message: error?.message ?? "Failed to set role." });
+      setFeedback({
+        type: "error",
+        message: error?.message ?? "Failed to set role.",
+      });
     } else {
-      onUserUpdated(data.user as UserWithRole);
+      onUserUpdated(data.user);
       setFeedback({ type: "success", message: "Role updated." });
     }
   };
@@ -41,7 +44,7 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
       <div className="card-body">
         <h2 className="card-title text-base">Role</h2>
         <form onSubmit={handleSubmit} className="flex items-end gap-3">
-          <div className="flex flex-col gap-1 flex-1">
+          <div className="flex flex-1 flex-col gap-1">
             <label className="label label-text text-xs" htmlFor="role-select">
               Role
             </label>
@@ -56,12 +59,17 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
             </select>
           </div>
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? <span className="loading loading-spinner loading-sm" /> : "Save"}
+            {loading ? (
+              <span className="loading loading-spinner loading-sm" />
+            ) : (
+              "Save"
+            )}
           </button>
         </form>
         {feedback && (
           <div
-            className={`alert mt-2 ${feedback.type === "success" ? "alert-success" : "alert-error"}`}
+            className={`alert mt-2
+            ${feedback.type === "success" ? "alert-success" : "alert-error"}`}
           >
             {feedback.message}
           </div>

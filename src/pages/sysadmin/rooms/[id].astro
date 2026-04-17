@@ -3,35 +3,24 @@ import { auth } from "#/auth";
 import { db } from "#/db";
 import SysAdminLayout from "#/layouts/SysAdmin.astro";
 import { rooms } from "#/schemas/chatDB-schema";
+import { RoomDetailPage } from "@/components/sysAdmin/rooms/RoomDetailPage";
+import type { User } from "better-auth/types";
 import { eq } from "drizzle-orm";
-import { RoomDetailPage } from "./_components/RoomDetailPage";
 
 export const prerender = false;
 
 const { id } = Astro.params;
 
-const [room] = await db
-  .select()
-  .from(rooms)
-  .where(eq(rooms.id, id!))
-  .limit(1);
+const [room] = await db.select().from(rooms).where(eq(rooms.id, id!)).limit(1);
 
 if (!room) return Astro.redirect("/sysadmin/rooms/");
 
-type CreatorInfo = { id: string; name: string | null; email: string };
-let creator: CreatorInfo | null = null;
+let creator: User | null = null;
 try {
-  const result = await auth.api.getUser({
-    query: { userId: room.created_by_user_id },
+  creator = await auth.api.getUser({
+    query: { id: room.created_by_user_id },
     headers: Astro.request.headers,
   });
-  if (result?.user) {
-    creator = {
-      id: result.user.id,
-      name: result.user.name,
-      email: result.user.email,
-    };
-  }
 } catch {
   //
 }

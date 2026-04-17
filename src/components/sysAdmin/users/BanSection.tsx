@@ -1,6 +1,6 @@
+import { authClient } from "#/utils/auth-client";
 import type { UserWithRole } from "better-auth/client/plugins";
 import { memo, useState } from "react";
-import { authClient } from "#/utils/auth-client";
 
 type Props = {
   user: UserWithRole;
@@ -30,14 +30,14 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
     if (apiError || !data?.user) {
       setError(apiError?.message ?? "Failed to ban user.");
     } else {
-      onUserUpdated(data.user as UserWithRole);
+      onUserUpdated(data.user);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div className="flex gap-3">
-        <div className="flex flex-col gap-1 flex-1">
+        <div className="flex flex-1 flex-col gap-1">
           <label className="label label-text text-xs" htmlFor="ban-reason">
             Reason (optional)
           </label>
@@ -50,7 +50,7 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
             placeholder="e.g. Repeated ToS violations"
           />
         </div>
-        <div className="flex flex-col gap-1 w-36">
+        <div className="flex w-36 flex-col gap-1">
           <label className="label label-text text-xs" htmlFor="ban-expires">
             Expires in (days)
           </label>
@@ -93,7 +93,7 @@ const UnbanPanel = ({ user, onUserUpdated }: Props) => {
     if (apiError || !data?.user) {
       setError(apiError?.message ?? "Failed to unban user.");
     } else {
-      onUserUpdated(data.user as UserWithRole);
+      onUserUpdated(data.user);
     }
   };
 
