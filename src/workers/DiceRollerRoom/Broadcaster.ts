@@ -95,7 +95,7 @@ export class Broadcaster {
         const { data: attachment, success } = sessionAttachmentSchema.safeParse(
           ws.deserializeAttachment(),
         );
-        if (success) {
+        if (success && ws.readyState === WebSocket.OPEN) {
           const onlineUser: OnlineUser = {
             chatId: attachment.chatId,
             displayName: attachment.displayName,
