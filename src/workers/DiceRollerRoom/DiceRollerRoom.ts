@@ -291,9 +291,12 @@ export class DiceRollerRoom extends DurableObject {
       // null means the client hasn't pinged yet — either brand new or never
       // will. Leave it alone; CF will eventually drop a truly dead TCP.
       if (lastPing && now - lastPing.getTime() > STALE_THRESHOLD_MS) {
+        const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
         try {
+          console.log("closing stale connection", att.chatId, att.displayName);
           ws.close(WEBSOCKET_GOING_AWAY, "stale connection");
         } catch {
+          console.log("error while closing - continuing");
           // already closed/closing; the sweep is best-effort
         }
         evicted += 1;
@@ -307,7 +310,10 @@ export class DiceRollerRoom extends DurableObject {
 
     // Re-arm only while there's something worth watching.
     if (this.ctx.getWebSockets().length > 0) {
+      console.log("rescheduling evition sweep");
       await this.ctx.storage.setAlarm(Date.now() + SWEEP_INTERVAL_MS);
+    } else {
+      console.log("no active connections, not rescheduling sweep");
     }
   }
 

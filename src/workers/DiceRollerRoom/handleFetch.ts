@@ -53,6 +53,7 @@ export async function handleFetch(
   // last client left and the sweep wound itself down). A short initial delay
   // lets the brand-new socket actually send its first ping.
   if ((await ctx.storage.getAlarm()) === null) {
+    console.log("setting initial alarm for stale sweep");
     await ctx.storage.setAlarm(Date.now() + 1_000);
   }
 
