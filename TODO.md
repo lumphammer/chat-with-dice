@@ -16,6 +16,7 @@
 ## Small Items
 
 - [x] Mobile layout
+- [ ] Help tab
 - [ ] Nanostores
 
 ## Big items
@@ -30,13 +31,13 @@
 - [x] System admin
   - [x] Admin users
   - [x] List rooms
-- [ ] CI / CD
+- [x] CI / CD
 - [ ] "Currently online" / "All visitors" view
-- [ ] Roles/permissions
+- [x] Roles/permissions
 - [ ] File uploads
 - [ ] Collaborative documents
 - [ ] Whiteboards
-- [ ]
+- [ ] Room-level roles (e.g. appoint extra admins)
 - [ ]
 - [ ]
 - [ ]

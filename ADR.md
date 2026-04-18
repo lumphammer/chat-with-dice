@@ -56,6 +56,14 @@ Better Auth requires more setup, especially for a first-timer, but it was a cost
 
 Since auth data lives in our own D1 database, we are not dependent on a third party service. Auth interactions are routed through a single module, minimising the surface area of a potential migration. The primary migration targets would be building on Oslo primitives directly, or adopting a managed service if the project's scale (and income?) warrants it.
 
+### Styles: Tailwind, DaisyUI, CSS Modules
+
+Tailwind is unbeatable for rapidly getting unique styles set up. That said, there's a need for component classes which build on the atomic CSS provided by TW. (If you'e not sure whether you "should" be using component classes - TW has always had a `components` layer. It was never intended to be a 100% solution.)
+
+To that end, I'm also using DaisyUI for it's collection of nice, pre-styled component classes, and CSS Modules in places where I need unique styles that would be cumbersome to describe in TW.
+
+We also have some extensions to the core DaisyUI theme system to 1. provide more automation in deriving themes, and 2. make up for some shortfalls in DaisyUI's palette, mainly to do with contrast.
+
 ## Naming
 
 We use Zod extensively. We refer to what Zod usually calls a "schema" as a "validator". This is to avoid confusion with database schemas.
