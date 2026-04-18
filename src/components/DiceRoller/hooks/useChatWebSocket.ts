@@ -1,3 +1,4 @@
+import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
 import { ReconnectingWebSocket } from "#/utils/ReconnectingWebSocket";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import {
@@ -150,7 +151,7 @@ export const useChatWebSocket = ({
       onerror: () => {
         setConnectionStatus("error");
       },
-      keepaliveInterval: 5_000,
+      keepaliveInterval: WS_KEEPALIVE_INTERVAL_MS,
     });
 
     websocketRef.current = ws;
