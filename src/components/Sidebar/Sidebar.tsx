@@ -5,9 +5,10 @@ import {
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import { useUserIdentityContext } from "../DiceRoller/contexts/userIdentityContext";
 import { Config } from "../config/Config";
+import { Help } from "../help/Help";
 import styles from "./sidebar.module.css";
 import { Tabs } from "@ark-ui/react/tabs";
-import { Cog } from "lucide-react";
+import { CircleHelp, Cog } from "lucide-react";
 import { memo, useMemo, useRef } from "react";
 
 export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
@@ -111,6 +112,29 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                   <Cog />
                 </Tabs.Trigger>
               )}
+              <Tabs.Trigger
+                className={styles.tabButton}
+                value="help"
+                onClick={(e) => {
+                  if (!ref.current) {
+                    return;
+                  }
+                  console.log(e.currentTarget, ref.current);
+                  const isSelected = e.currentTarget.ariaSelected === "true";
+                  if ("desktopClosed" in ref.current.dataset) {
+                    delete ref.current.dataset.desktopClosed;
+                  } else if (isSelected) {
+                    ref.current.dataset.desktopClosed = "true";
+                  }
+                  if (!("mobileOpen" in ref.current.dataset)) {
+                    ref.current.dataset.mobileOpen = "true";
+                  } else if (isSelected) {
+                    delete ref.current.dataset.mobileOpen;
+                  }
+                }}
+              >
+                <CircleHelp />
+              </Tabs.Trigger>
             </nav>
           </Tabs.List>
           <section className={styles.contentArea}>
@@ -146,6 +170,11 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                 </div>
               </Tabs.Content>
             )}
+            <Tabs.Content value="help" className={styles.tabContent}>
+              <div className={styles.tabContentInner}>
+                <Help />
+              </div>
+            </Tabs.Content>
           </section>
         </aside>
       </Tabs.Root>
