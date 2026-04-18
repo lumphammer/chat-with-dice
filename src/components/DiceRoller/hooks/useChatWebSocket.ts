@@ -44,7 +44,6 @@ export const useChatWebSocket = ({
   const [usersOnline, setUsersOnline] = useState<OnlineUser[]>([]);
 
   const websocketRef = useRef<ReconnectingWebSocket>(null);
-  const closedRef = useRef(false);
 
   useEffect(() => {
     if (!chatId) {
@@ -156,22 +155,19 @@ export const useChatWebSocket = ({
 
     websocketRef.current = ws;
 
-    const safeClose = () => {
-      console.log("safeclose");
-      if (!closedRef.current && ws.readyState === WebSocket.OPEN) {
-        console.log("safeclose executing");
-        closedRef.current = true;
-        ws.close();
-      }
+    // A polite hint for the server when the browser is reasonably cooperative.
+    // Not relied on for correctness — the DO runs a liveness sweep and will
+    // evict this connection itself if the ping stream dies. `pagehide` is the
+    // most reliable of the bfcache/unload events (particularly on mobile); we
+    // skip `beforeunload` because its delivery is patchier and the sweep
+    // already covers the cases it would catch.
+    const handlePageHide = () => {
+      ws.close();
     };
-
-    window.addEventListener("pagehide", safeClose);
-    window.addEventListener("beforeunload", safeClose);
+    window.addEventListener("pagehide", handlePageHide);
 
     return () => {
-      console.log("Closing websocket because effect re-ran");
-      window.removeEventListener("pagehide", safeClose);
-      window.removeEventListener("beforeunload", safeClose);
+      window.removeEventListener("pagehide", handlePageHide);
       ws.close();
     };
   }, [

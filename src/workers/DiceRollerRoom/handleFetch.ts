@@ -47,6 +47,15 @@ export async function handleFetch(
   // keeping the WebSocket connection open
   ctx.acceptWebSocket(server);
 
+  // Make sure the liveness-sweep alarm is running. The alarm handler
+  // re-schedules itself while sockets remain connected; we only need to kick
+  // things off when the DO has no pending alarm (first client, or after the
+  // last client left and the sweep wound itself down). A short initial delay
+  // lets the brand-new socket actually send its first ping.
+  if ((await ctx.storage.getAlarm()) === null) {
+    await ctx.storage.setAlarm(Date.now() + 1_000);
+  }
+
   const attachment: SessionAttachment = {
     chatId,
     userId: userId ?? undefined,

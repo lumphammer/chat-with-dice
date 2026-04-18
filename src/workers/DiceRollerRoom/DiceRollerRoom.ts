@@ -24,6 +24,20 @@ import { eq } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 const WEBSOCKET_INTERNAL_ERROR = 1101;
+const WEBSOCKET_GOING_AWAY = 1001;
+
+/**
+ * How often the DO wakes up to sweep for dead WebSocket connections.
+ * Should be roughly the client keepalive interval (see useChatWebSocket).
+ */
+const SWEEP_INTERVAL_MS = 30_000;
+
+/**
+ * A connection is considered dead if we haven't seen an auto-ping from it for
+ * this long. Set generously enough to tolerate a couple of dropped pings over
+ * a flaky network before we evict the user from the online list.
+ */
+const STALE_THRESHOLD_MS = 90_000;
 
 export class DiceRollerRoom extends DurableObject {
   private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
@@ -247,11 +261,51 @@ export class DiceRollerRoom extends DurableObject {
 
   /**
    * Handle WebSocket close events (Hibernation API)
-   * Called when a client disconnects
+   * Called when a client disconnects cleanly. This is a *hint* — it is not
+   * reliably delivered (dead TCP, mobile tab kills, DO hibernation all swallow
+   * it), so we can't depend on it alone. The real source of truth for presence
+   * is the liveness sweep in `alarm()` below.
    */
   override async webSocketClose(ws: WebSocket, code: number): Promise<void> {
     ws.close(code, "Durable Object is closing WebSocket");
     this.broadcaster.broadcastUsersOnline();
+  }
+
+  /**
+   * Periodic liveness sweep. Because clients ping via auto-response (which
+   * intentionally does not wake the DO), the DO wouldn't otherwise notice a
+   * client that just stopped talking. This alarm wakes us up, checks the last
+   * auto-ping timestamp for each connected socket, and closes any that have
+   * gone quiet for too long. `webSocketClose` then fires for each eviction and
+   * we rebroadcast the online list.
+   */
+  override async alarm(): Promise<void> {
+    const now = Date.now();
+    let evicted = 0;
+
+    for (const ws of this.ctx.getWebSockets()) {
+      const lastPing = this.ctx.getWebSocketAutoResponseTimestamp(ws);
+      // null means the client hasn't pinged yet — either brand new or never
+      // will. Leave it alone; CF will eventually drop a truly dead TCP.
+      if (lastPing && now - lastPing.getTime() > STALE_THRESHOLD_MS) {
+        try {
+          ws.close(WEBSOCKET_GOING_AWAY, "stale connection");
+        } catch {
+          // already closed/closing; the sweep is best-effort
+        }
+        evicted += 1;
+      }
+    }
+
+    if (evicted > 0) {
+      console.log(`Sweep evicted ${evicted} stale connection(s)`);
+      this.broadcaster.broadcastUsersOnline();
+    }
+
+    // Re-arm only while there's something worth watching.
+    if (this.ctx.getWebSockets().length > 0) {
+      await this.ctx.storage.setAlarm(Date.now() + SWEEP_INTERVAL_MS);
+    }
   }
 
   /**
