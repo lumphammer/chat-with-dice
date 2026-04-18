@@ -8,7 +8,7 @@ Head to [Chat with Dice](https://chatwithdice.lumphammer.net) and sign up.
 
 ## Development
 
-I develop on Linux, but it should work on MacOS. I have no idea if it will work on Windows. 
+I develop on Linux, but it should work on MacOS. I have no idea if it will work on Windows.
 
 ### 1. Dev tools
 
