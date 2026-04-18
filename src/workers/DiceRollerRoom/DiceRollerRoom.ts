@@ -249,6 +249,7 @@ export class DiceRollerRoom extends DurableObject {
    */
   override async webSocketClose(ws: WebSocket, code: number): Promise<void> {
     ws.close(code, "Durable Object is closing WebSocket");
+    this.broadcaster.broadcastUsersOnline();
   }
 
   /**
