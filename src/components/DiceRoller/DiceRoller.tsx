@@ -10,6 +10,7 @@ import { Sidebar } from "../Sidebar/Sidebar";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { DisplayNameDialog } from "./DisplayNameDialog";
+import { UsersOnline } from "./UsersOnline";
 import { RoomConfigContextProvider } from "./contexts/roomConfigContext";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
 import { UserIdentityContextProvider } from "./contexts/userIdentityContext";
@@ -96,23 +97,24 @@ export const DiceRoller = memo(
       [],
     );
 
-    const { connectionStatus, messages, sendMessage } = useChatWebSocket({
-      roomId: roomId,
-      chatId: userIdentity.chatId,
-      displayName: userIdentity.displayName,
-      onError: useCallback(
-        (error: { errorMessage: string; detail: string }) => {
-          toaster.error({
-            title: error.errorMessage,
-            description: error.detail,
-          });
-        },
-        [toaster],
-      ),
-      setCapabilityInfos,
-      setRoomConfig: setRoomConfig,
-      setRoomName: setRoomName,
-    });
+    const { connectionStatus, messages, sendMessage, usersOnline } =
+      useChatWebSocket({
+        roomId: roomId,
+        chatId: userIdentity.chatId,
+        displayName: userIdentity.displayName,
+        onError: useCallback(
+          (error: { errorMessage: string; detail: string }) => {
+            toaster.error({
+              title: error.errorMessage,
+              description: error.detail,
+            });
+          },
+          [toaster],
+        ),
+        setCapabilityInfos,
+        setRoomConfig: setRoomConfig,
+        setRoomName: setRoomName,
+      });
 
     const handleSetRoomConfig = useCallback(
       (config: RoomConfig) => {
@@ -209,20 +211,20 @@ export const DiceRoller = memo(
                     { "--user-hue": hue } satisfies UserHueStyle as UserHueStyle
                   }
                 >
-                  <header className="flex flex-row px-4">
-                    <div className="flex-1" />
+                  <header
+                    className="border-base-100 bg-base-100 flex flex-row gap-4
+                      border-b px-4 py-1"
+                  >
                     <DisplayNameDialog
                       displayName={userIdentity.displayName}
                       onSetDisplayName={handleSetDisplayName}
                       loggedIn={loggedIn}
                       isPending={isPending}
                     />
-                    <div
-                      className="text-middle ml-4 inline-flex h-(--size)
-                        flex-col justify-center"
-                    >
+                    <div className="flex-1" />
+                    {/*<div className="h-(--size) flex-col justify-center">
                       Connection status:
-                    </div>
+                    </div>*/}
                     <div
                       className="text-middle inline-flex h-(--size) flex-col
                         justify-center"
@@ -230,11 +232,15 @@ export const DiceRoller = memo(
                       <span
                         data-connection-status={connectionStatus}
                         aria-description={connectionStatus}
-                        className="text-middle ml-4 inline-block h-3 w-3
-                          rounded-full bg-red-500 align-baseline
+                        className="text-middle inline-block h-3 w-3 rounded-full
+                          bg-red-500 align-baseline
                           data-[connection-status=connected]:bg-green-500"
                       ></span>
                     </div>
+                    <UsersOnline
+                      usersOnline={usersOnline}
+                      chatId={userIdentity.chatId}
+                    />
                   </header>
                   {/* flex row for main chat and sidebar */}
                   <div

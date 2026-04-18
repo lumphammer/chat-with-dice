@@ -12,6 +12,7 @@
   top: 0;
   bottom: 0;
   right: 0;
+  margin: calc(var(--spacing) * 2) 0;
   background-color: var(--color-base-100);
   border-top-left-radius: calc(var(--spacing) * 3);
   border-bottom-left-radius: calc(var(--spacing) * 3);

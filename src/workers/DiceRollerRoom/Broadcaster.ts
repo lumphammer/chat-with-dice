@@ -89,7 +89,7 @@ export class Broadcaster {
   }
 
   private getUsersOnline(): OnlineUser[] {
-    const wses = this.ctx
+    const users = this.ctx
       .getWebSockets()
       .map((ws) => {
         const { data: attachment, success } = sessionAttachmentSchema.safeParse(
@@ -100,12 +100,23 @@ export class Broadcaster {
             chatId: attachment.chatId,
             displayName: attachment.displayName,
             loggedIn: attachment.userId !== undefined,
+            image: attachment.image,
           };
           return onlineUser;
         }
       })
-      .filter((u): u is OnlineUser => u !== undefined);
-    return wses;
+      .filter((u): u is OnlineUser => u !== undefined)
+      .reduce<OnlineUser[]>((acc, user) => {
+        const existingIndex = acc.findIndex((u) => u.chatId === user.chatId);
+        if (existingIndex > -1) {
+          acc[existingIndex] = user;
+        } else {
+          acc.push(user);
+        }
+        return acc;
+      }, []);
+    console.log(JSON.stringify(users, null, 2));
+    return users;
   }
 
   broadcastUsersOnline(): void {

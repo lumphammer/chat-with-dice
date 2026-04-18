@@ -28,7 +28,8 @@ export const DisplayNameDialog = memo(
     return (
       <>
         <div
-          className="text-middle inline-flex h-(--size) flex-col justify-center"
+          className="text-middle inline-flex h-(--size) flex-col justify-center
+            text-sm"
         >
           {initialDisplayName}
         </div>
