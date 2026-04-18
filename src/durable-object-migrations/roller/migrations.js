@@ -13,6 +13,7 @@ import m0011 from './20260315090756_curious_nextwave/migration.sql';
 import m0012 from './20260315091432_modern_stellaris/migration.sql';
 import m0013 from './20260315235204_tricky_otto_octavius/migration.sql';
 import m0014 from './20260316134615_mute_vengeance/migration.sql';
+import m0015 from './20260418104051_worried_magik/migration.sql';
 
   export default {
     migrations: {
@@ -30,7 +31,8 @@ import m0014 from './20260316134615_mute_vengeance/migration.sql';
 "20260315090756_curious_nextwave": m0011,
 "20260315091432_modern_stellaris": m0012,
 "20260315235204_tricky_otto_octavius": m0013,
-"20260316134615_mute_vengeance": m0014
+"20260316134615_mute_vengeance": m0014,
+"20260418104051_worried_magik": m0015
 }
   }
   

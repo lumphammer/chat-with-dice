@@ -10,11 +10,6 @@ import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { HandfulDisplay } from "./HandfulDisplay";
 import { memo } from "react";
 
-type RollResultDisplayProps = {
-  results: JsonData;
-  messageId: string;
-};
-
 function isFavouredHandfuls(
   faces: Handful | FavouredHandfuls,
 ): faces is FavouredHandfuls {
@@ -60,41 +55,43 @@ function formatFormula(formula: {
   return label;
 }
 
-export const RollResultDisplay = memo(({ results }: RollResultDisplayProps) => {
-  const parsed = messageDataValidator.safeParse(results);
-  if (!parsed.success) return null;
+export const RollResultDisplay = memo(
+  ({ results }: { results?: JsonData; messageId: string }) => {
+    const parsed = messageDataValidator.safeParse(results);
+    if (!parsed.success) return null;
 
-  const { formula, result } = parsed.data;
+    const { formula, result } = parsed.data;
 
-  return (
-    <div className="flex flex-col gap-1 py-1">
-      <span className="font-mono text-xs opacity-60">
-        {formatFormula(formula)}
-      </span>
+    return (
+      <div className="flex flex-col gap-1 py-1">
+        <span className="font-mono text-xs opacity-60">
+          {formatFormula(formula)}
+        </span>
 
-      {isFavouredHandfuls(result.faces) ? (
-        <div className="flex flex-col gap-1.5">
-          <HandfulDisplay
-            handful={result.faces.series1}
-            dimmed={!result.faces.series1.kept}
-            showSubtotal
-          />
-          <HandfulDisplay
-            handful={result.faces.series2}
-            dimmed={!result.faces.series2.kept}
-            showSubtotal
-          />
+        {isFavouredHandfuls(result.faces) ? (
+          <div className="flex flex-col gap-1.5">
+            <HandfulDisplay
+              handful={result.faces.series1}
+              dimmed={!result.faces.series1.kept}
+              showSubtotal
+            />
+            <HandfulDisplay
+              handful={result.faces.series2}
+              dimmed={!result.faces.series2.kept}
+              showSubtotal
+            />
+          </div>
+        ) : (
+          <HandfulDisplay handful={result.faces} />
+        )}
+
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-base-content/40 text-xs">total</span>
+          <span className="text-xl font-bold tabular-nums">{result.total}</span>
         </div>
-      ) : (
-        <HandfulDisplay handful={result.faces} />
-      )}
-
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-base-content/40 text-xs">total</span>
-        <span className="text-xl font-bold tabular-nums">{result.total}</span>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 RollResultDisplay.displayName = "RollResultDisplay";

@@ -21,6 +21,25 @@ export class MessageJiggler {
     private broadcaster: Broadcaster,
   ) {}
 
+  async chat({
+    chat,
+    chatId,
+    displayName,
+  }: {
+    chat: string | null;
+    chatId: string;
+    displayName: string;
+  }): Promise<void> {
+    const rollerMessage: ChatMessage = {
+      created_time: Date.now(),
+      id: crypto.randomUUID(),
+      chat,
+      chatId,
+      displayName,
+    };
+    await this.sendChatMessage(rollerMessage);
+  }
+
   async sendChatMessage(message: ChatMessage): Promise<void> {
     await this.messageRepository.upsertMessage(message);
     this.broadcaster.broadcastChatMessage(message);

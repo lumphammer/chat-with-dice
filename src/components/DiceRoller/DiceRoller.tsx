@@ -163,7 +163,6 @@ export const DiceRoller = memo(
         const msg: WebSocketClientMessage = {
           type: "chat",
           payload: {
-            rollType: "chat",
             formula: {},
             chat,
             displayName: userIdentity.displayName,

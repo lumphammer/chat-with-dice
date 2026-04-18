@@ -3,19 +3,13 @@ import {
   isCapabilityName,
 } from "#/capabilities/capabilityRegistry";
 import { db as d1 } from "#/db";
-import { assertRollType } from "#/rollTypes/isRollType";
-import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import { rooms } from "#/schemas/chatDB-schema";
 import * as dbSchema from "#/schemas/roller-schema";
 import {
   roomConfigValidator,
   type RoomConfig,
 } from "#/validators/roomConfigValidator";
-import {
-  webSocketClientMessageSchema,
-  type JsonData,
-  type ChatMessage,
-} from "#/validators/webSocketMessageSchemas";
+import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
 import { type ServerMountedCapability } from "../../capabilities/types";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
@@ -176,7 +170,7 @@ export class DiceRollerRoom extends DurableObject {
       const data = parsed.data;
       if (data.type === "chat") {
         // handle chat
-        await this.runFormula({
+        await this.messageJiggler.chat({
           ...data.payload,
           chatId: attachment.chatId,
         });
@@ -288,44 +282,5 @@ export class DiceRollerRoom extends DurableObject {
       console.log(name, "failed to mount");
     }
     return mountedCap ?? null;
-  }
-
-  async runFormula({
-    chat,
-    chatId,
-    displayName,
-    formula,
-    rollType,
-  }: {
-    chat: string | null;
-    chatId: string;
-    displayName: string;
-    formula: JsonData;
-    rollType: string;
-  }): Promise<void> {
-    assertRollType(rollType);
-
-    const rollTypeDef = rollTypeRegistry[rollType];
-    const results = await rollTypeDef.handler({
-      messageJiggler: this.messageJiggler,
-      formula,
-      chatId,
-      displayName,
-    });
-
-    const rollerMessage: ChatMessage = {
-      created_time: Date.now(),
-      formula: formula,
-      id: crypto.randomUUID(),
-      // result: roll?.output ?? null,
-      rollType,
-      results,
-      chat,
-      chatId,
-      displayName,
-    };
-    await this.messageRepository.upsertMessage(rollerMessage);
-    console.log("inserting into Messages", rollerMessage);
-    this.broadcaster.broadcastChatMessage(rollerMessage);
   }
 }

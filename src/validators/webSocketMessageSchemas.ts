@@ -41,9 +41,9 @@ function chatMessageValidator<
   displayName: z.ZodString;
   chatId: z.ZodString;
   created_time: z.ZodInt;
-  rollType: z.ZodString;
-  formula: TFormulaValidator;
-  results: TResultValidator;
+  rollType: z.ZodOptional<z.ZodString>;
+  formula: z.ZodOptional<TFormulaValidator>;
+  results: z.ZodOptional<TResultValidator>;
   chat: z.ZodNullable<z.ZodString>;
 }> {
   return z.object({
@@ -56,11 +56,11 @@ function chatMessageValidator<
     /** When the message was created */
     created_time: z.int(),
     /** The type of the roll - none, formula, havoc etc */
-    rollType: z.string(),
+    rollType: z.string().optional(),
     /**  */
-    formula: formulaValidator,
+    formula: formulaValidator.optional(),
     /**  */
-    results: resultsValidator,
+    results: resultsValidator.optional(),
     /** Chat text */
     chat: z.string().nullable(),
   });
@@ -80,9 +80,9 @@ export type ChatMessage<
   displayName: string;
   chatId: string;
   created_time: number;
-  rollType: string;
-  formula: TFormula;
-  results: TResult;
+  rollType?: string;
+  formula?: TFormula;
+  results?: TResult;
   chat: string | null;
 };
 
@@ -192,8 +192,8 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("chat"),
     payload: z.object({
       // WRONG - make this use a list of known roll types
-      rollType: z.string(),
-      formula: jsonObjectValidator,
+      rollType: z.string().optional(),
+      formula: jsonObjectValidator.optional(),
       chat: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
     }),

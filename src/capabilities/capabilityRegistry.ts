@@ -17,7 +17,7 @@ type CapabilityInfo = {
   sidebarInfos?: SidebarInfo[];
   /** Optional component to render this capability's roll messages in the chat log */
   ChatDisplayComponent?: ComponentType<{
-    results: JsonData;
+    results?: JsonData;
     messageId: string;
   }>;
 };
@@ -80,6 +80,8 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
   },
 };
 
-export function isCapabilityName(name: string): name is CapabilityName {
-  return name in capabilityRegistry;
+export function isCapabilityName(
+  name: string | undefined,
+): name is CapabilityName {
+  return !!name && name in capabilityRegistry;
 }

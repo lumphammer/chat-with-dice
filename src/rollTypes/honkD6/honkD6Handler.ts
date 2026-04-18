@@ -41,7 +41,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
 
   // commits must follow passes
   if (formula.action === "commit") {
-    if (previous.results.action !== "pass") {
+    if (previous.results?.action !== "pass") {
       throw new Error("Previous message did not result in a pass");
     }
     const [faces, successCount, problemCount] = roll(formula.numDice);
@@ -65,8 +65,8 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
   // resolve — can follow a roll OR a pass
   if (formula.action === "resolve") {
     if (
-      previous.results.action !== "roll" &&
-      previous.results.action !== "pass"
+      previous.results?.action !== "roll" &&
+      previous.results?.action !== "pass"
     ) {
       throw new Error("Can only resolve a roll or a pass");
     }
@@ -87,7 +87,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
   }
 
   // everything else requires a roll, so we check that here
-  if (previous.results.action !== "roll") {
+  if (previous.results?.action !== "roll") {
     throw new Error("Previous message did not result in a roll");
   }
 
