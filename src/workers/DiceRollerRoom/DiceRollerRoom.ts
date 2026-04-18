@@ -270,7 +270,14 @@ export class DiceRollerRoom extends DurableObject {
    * is the liveness sweep in `alarm()` below.
    */
   override async webSocketClose(ws: WebSocket, code: number): Promise<void> {
-    ws.close(code, "Durable Object is closing WebSocket");
+    const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
+    console.log("client disconnected", att.chatId, att.displayName);
+    try {
+      ws.close(code, "Durable Object is closing WebSocket");
+      console.log("WebSocket closed successfully");
+    } catch (error) {
+      console.error("Error closing WebSocket:", error);
+    }
     this.broadcaster.broadcastUsersOnline();
   }
 
@@ -283,15 +290,20 @@ export class DiceRollerRoom extends DurableObject {
    * we rebroadcast the online list.
    */
   override async alarm(): Promise<void> {
+    console.log("beginning eviction sweep");
     const now = Date.now();
     let evicted = 0;
 
-    for (const ws of this.ctx.getWebSockets()) {
+    const wses = this.ctx.getWebSockets();
+    console.log("currently holding this many websockets:", wses.length);
+
+    for (const ws of wses) {
+      const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
+      console.log("examining", att.chatId, att.displayName);
       const lastPing = this.ctx.getWebSocketAutoResponseTimestamp(ws);
       // null means the client hasn't pinged yet — either brand new or never
       // will. Leave it alone; CF will eventually drop a truly dead TCP.
       if (lastPing && now - lastPing.getTime() > STALE_THRESHOLD_MS) {
-        const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
         try {
           console.log("closing stale connection", att.chatId, att.displayName);
           ws.close(WEBSOCKET_GOING_AWAY, "stale connection");
@@ -300,6 +312,8 @@ export class DiceRollerRoom extends DurableObject {
           // already closed/closing; the sweep is best-effort
         }
         evicted += 1;
+      } else {
+        console.log("active connection, skipping", ws.deserializeAttachment());
       }
     }
 
@@ -310,7 +324,7 @@ export class DiceRollerRoom extends DurableObject {
 
     // Re-arm only while there's something worth watching.
     if (this.ctx.getWebSockets().length > 0) {
-      console.log("rescheduling evition sweep");
+      console.log("rescheduling eviction sweep");
       await this.ctx.storage.setAlarm(Date.now() + SWEEP_INTERVAL_MS);
     } else {
       console.log("no active connections, not rescheduling sweep");
