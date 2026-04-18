@@ -1,3 +1,4 @@
+import { useAutoResizeTextarea } from "../useAutoResizeTextarea";
 import { useStateWithRef } from "../useStateWithRef";
 import styles from "@/styles/inputs.module.css";
 import { SendHorizontal } from "lucide-react";
@@ -23,6 +24,7 @@ type ChatFormProps = {
 
 export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const [chat, setChat, chatRef] = useStateWithRef("");
+  const textareaRef = useAutoResizeTextarea(chat);
 
   const handleSubmit = useCallback(
     (event: SubmitEvent) => {
@@ -41,9 +43,10 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
         border"
     >
       <textarea
+        ref={textareaRef}
         rows={1}
-        className={`${styles.input} field-sizing-content max-h-[30cqh] flex-1
-          resize-none overflow-y-auto rounded-l-xl px-4 py-2 text-left`}
+        className={`${styles.input} max-h-[30cqh] flex-1 resize-none
+          overflow-y-auto rounded-l-xl px-4 py-2 text-left`}
         value={chat}
         onChange={(e) => setChat(e.target.value)}
         placeholder="Chat"

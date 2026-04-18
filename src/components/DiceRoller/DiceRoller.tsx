@@ -199,9 +199,9 @@ export const DiceRoller = memo(
                 )}
               >
                 <div
-                  className="@container-[size] flex h-full w-full flex-col
-                    [--bubble-dark-c:0.12] [--bubble-dark-l:36%]
-                    [--bubble-light-c:0.12] [--bubble-light-l:82%]
+                  className="flex h-full w-full flex-col [--bubble-dark-c:0.12]
+                    [--bubble-dark-l:36%] [--bubble-light-c:0.12]
+                    [--bubble-light-l:82%]
                     [--user-colour:oklch(var(--bubble-light-l)_var(--bubble-light-c)_var(--user-hue))]
                     dark:[--user-colour:oklch(var(--bubble-dark-l)_var(--bubble-dark-c)_var(--user-hue))]"
                   style={
@@ -238,7 +238,7 @@ export const DiceRoller = memo(
                   {/* flex row for main chat and sidebar */}
                   <div
                     data-part="outer expander"
-                    className="group/main @container relative flex flex-1
+                    className="group/main @container-[size] relative flex flex-1
                       flex-row justify-start overflow-hidden"
                   >
                     {/* chat scroller and chat form */}
