@@ -161,10 +161,14 @@ export class ReconnectingWebSocket {
   }
 
   close(code?: number, reason?: string) {
+    this.websocket.close(code, reason);
     clearTimeout(this.retryTimer);
     clearInterval(this.keepaliveTimer);
     this.retryTimer = undefined;
     this.keepaliveTimer = undefined;
-    this.websocket.close(code, reason);
+  }
+
+  get readyState() {
+    return this.websocket.readyState;
   }
 }

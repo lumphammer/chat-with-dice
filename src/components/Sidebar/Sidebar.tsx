@@ -66,7 +66,6 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                         if (!ref.current) {
                           return;
                         }
-                        console.log(e.currentTarget, ref.current);
                         const isSelected =
                           e.currentTarget.ariaSelected === "true";
                         if ("desktopClosed" in ref.current.dataset) {
@@ -95,7 +94,6 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                     if (!ref.current) {
                       return;
                     }
-                    console.log(e.currentTarget, ref.current);
                     const isSelected = e.currentTarget.ariaSelected === "true";
                     if ("desktopClosed" in ref.current.dataset) {
                       delete ref.current.dataset.desktopClosed;
@@ -119,7 +117,6 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
                   if (!ref.current) {
                     return;
                   }
-                  console.log(e.currentTarget, ref.current);
                   const isSelected = e.currentTarget.ariaSelected === "true";
                   if ("desktopClosed" in ref.current.dataset) {
                     delete ref.current.dataset.desktopClosed;

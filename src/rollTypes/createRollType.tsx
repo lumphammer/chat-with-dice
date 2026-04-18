@@ -114,7 +114,6 @@ export function createRollType<
       chatId: string;
       displayName: string;
     }) => {
-      console.log(tools.formula);
       const formula = def.formulaValidator.parse(tools.formula);
       const result = await def.handler({
         formula,

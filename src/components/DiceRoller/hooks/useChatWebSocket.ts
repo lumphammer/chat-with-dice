@@ -44,13 +44,12 @@ export const useChatWebSocket = ({
   const [usersOnline, setUsersOnline] = useState<OnlineUser[]>([]);
 
   const websocketRef = useRef<ReconnectingWebSocket>(null);
+  const closedRef = useRef(false);
 
   useEffect(() => {
     if (!chatId) {
       return;
     }
-    // Build WebSocket URL
-    // const wsUrl = `../ws/?roomId=${encodeURIComponent(roomId)}&chatId=${encodeURIComponent(chatId)}&displayName=${encodeURIComponent(displayName)}`;
 
     const url = new URL("../ws/", document.location.href);
     url.searchParams.set("roomId", roomId);
@@ -157,8 +156,22 @@ export const useChatWebSocket = ({
 
     websocketRef.current = ws;
 
+    const safeClose = () => {
+      console.log("safeclose");
+      if (!closedRef.current && ws.readyState === WebSocket.OPEN) {
+        console.log("safeclose executing");
+        closedRef.current = true;
+        ws.close();
+      }
+    };
+
+    window.addEventListener("pagehide", safeClose);
+    window.addEventListener("beforeunload", safeClose);
+
     return () => {
       console.log("Closing websocket because effect re-ran");
+      window.removeEventListener("pagehide", safeClose);
+      window.removeEventListener("beforeunload", safeClose);
       ws.close();
     };
   }, [

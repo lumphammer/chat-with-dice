@@ -55,7 +55,6 @@ export class MessageRepository {
         .limit(limit)
         .execute()
     ).toReversed();
-    console.log("messagesFromDB", messagesFromDB);
     const parsed = messagesFromDB
       .map((m) => {
         const parsedMessage = anyChatMessageValidator.safeParse(m);

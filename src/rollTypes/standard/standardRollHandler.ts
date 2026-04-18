@@ -20,11 +20,6 @@ export const standardRollHandler = ({
   // we need to work with the serialized format, but rpgDiceRoller cheats in its
   // .toJSON() by returning "raw" children, so we have to stringify and parse.
   const serializable = JSON.parse(JSON.stringify(diceRoll));
-  console.log(
-    "\nrdrRolls\n",
-    JSON.stringify(serializable.rolls, null, 2),
-    "\n",
-  );
 
   const { data: rolls, error } = structuredRollsSchema.safeParse(
     serializable.rolls,

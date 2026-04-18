@@ -47,6 +47,19 @@ export async function handleFetch(
   // keeping the WebSocket connection open
   ctx.acceptWebSocket(server);
 
+  server.addEventListener("close", (event) => {
+    server.close();
+    broadcaster.broadcastUsersOnline();
+
+    // readyState is already CLOSED — no need to call server.close().
+    console.log(
+      "WebSocket closing",
+      server.readyState,
+      event.code,
+      event.wasClean,
+    );
+  });
+
   const attachment: SessionAttachment = {
     chatId,
     userId: userId ?? undefined,
