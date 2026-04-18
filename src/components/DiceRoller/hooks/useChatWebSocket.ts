@@ -150,7 +150,7 @@ export const useChatWebSocket = ({
       onerror: () => {
         setConnectionStatus("error");
       },
-      keepaliveInterval: 30_000,
+      keepaliveInterval: 5_000,
     });
 
     websocketRef.current = ws;

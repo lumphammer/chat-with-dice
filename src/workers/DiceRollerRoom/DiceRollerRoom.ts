@@ -30,14 +30,14 @@ const WEBSOCKET_GOING_AWAY = 1001;
  * How often the DO wakes up to sweep for dead WebSocket connections.
  * Should be roughly the client keepalive interval (see useChatWebSocket).
  */
-const SWEEP_INTERVAL_MS = 30_000;
+const SWEEP_INTERVAL_MS = 5_000;
 
 /**
  * A connection is considered dead if we haven't seen an auto-ping from it for
  * this long. Set generously enough to tolerate a couple of dropped pings over
  * a flaky network before we evict the user from the online list.
  */
-const STALE_THRESHOLD_MS = 90_000;
+const STALE_THRESHOLD_MS = 15_000;
 
 export class DiceRollerRoom extends DurableObject {
   private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
