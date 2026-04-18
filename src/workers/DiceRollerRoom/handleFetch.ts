@@ -25,10 +25,16 @@ export async function handleFetch(
   }
 
   const userId = URL.parse(request.url)?.searchParams.get("userId") ?? null;
-  if (!userId) {
-    logError("userId was falsy");
-    return new Response("userId is required", { status: 400 });
+
+  const displayName = URL.parse(request.url)?.searchParams.get("displayName");
+  if (!displayName) {
+    logError("displayName was falsy");
+    return new Response("displayName is required", { status: 400 });
   }
+
+  const image = URL.parse(request.url)?.searchParams.get("image");
+  const loggedIn =
+    URL.parse(request.url)?.searchParams.get("loggedIn") === "true";
 
   log("Accepting WS fetch request, chatId: ", chatId, "userId: ", userId);
 
@@ -41,7 +47,13 @@ export async function handleFetch(
   // keeping the WebSocket connection open
   ctx.acceptWebSocket(server);
 
-  const attachment: SessionAttachment = { chatId, userId };
+  const attachment: SessionAttachment = {
+    chatId,
+    userId: userId ?? undefined,
+    loggedIn,
+    displayName,
+    image: image ?? undefined,
+  };
   server.serializeAttachment(attachment);
 
   log("created WS attachment", attachment);
@@ -56,6 +68,7 @@ export async function handleFetch(
       log("sending init for", capability.name);
       broadcaster.sendCapabilityInit(server, capability);
     }
+    broadcaster.broadcastUsersOnline();
   }, CATCHUP_DELAY_MS);
 
   // Return the client WebSocket in the response

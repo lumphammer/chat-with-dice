@@ -24,13 +24,17 @@ async function validateChatId(user: User | null, chatId: string) {
   return chatIdIsNotUsedByAnAccount;
 }
 
-export const GET: APIRoute = async ({ url, request: origRequest, locals }) => {
-  let request = origRequest;
+export const GET: APIRoute = async ({ url, request, locals }) => {
   const roomId = url.searchParams.get("roomId");
   const chatId = url.searchParams.get("chatId");
+  const displayName = url.searchParams.get("displayName");
+
   if (!roomId) return new Response("roomId is required", { status: 400 });
   if (!chatId) return new Response("chatId is required", { status: 400 });
+  if (!displayName)
+    return new Response("displayName is required", { status: 400 });
 
+  // get the user if these is one and confirm that teh chatId is available
   const user = locals.user;
   const chatIdOkay = await validateChatId(user, chatId);
   if (!chatIdOkay)
@@ -48,19 +52,21 @@ export const GET: APIRoute = async ({ url, request: origRequest, locals }) => {
     ).length > 0;
   if (!roomExists) return new Response("room does not exist", { status: 400 });
 
-  // Get the ChatRoom Durable Object namespace
+  // Get the ChatRoom Durable Object stub
   const RollerNamespace = env.DiceRollerRoom;
   if (!RollerNamespace)
     return new Response("Roller binding not found", { status: 500 });
-  // Get a stub (reference) to the Durable Object
   const durableObjectStub = RollerNamespace.getByName(roomId);
+
+  const updatedUrl = new URL(url);
+  updatedUrl.pathname = "/ws";
 
   if (user) {
     // update params to set userId
-    const updatedUrl = new URL(url);
     updatedUrl.searchParams.set("userId", user.id);
-    request = new Request(updatedUrl, request);
+    if (user.image) {
+      updatedUrl.searchParams.set("image", user.image);
+    }
   }
-
-  return durableObjectStub.fetch(request);
+  return durableObjectStub.fetch(new Request(updatedUrl, request));
 };

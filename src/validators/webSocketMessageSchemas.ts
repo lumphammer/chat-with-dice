@@ -113,6 +113,15 @@ export function parseChatMessage<
   >;
 }
 
+export const onlineUserValidator = z.object({
+  displayName: z.string(),
+  chatId: z.string(),
+  loggedIn: z.boolean(),
+  image: z.url().optional(),
+});
+
+export type OnlineUser = z.infer<typeof onlineUserValidator>;
+
 export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("message"),
@@ -160,6 +169,18 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("roomName"),
     payload: z.object({
       roomName: z.string(),
+    }),
+  }),
+  z.object({
+    type: z.literal("usersOnline"),
+    payload: z.object({
+      usersOnline: z.array(onlineUserValidator),
+    }),
+  }),
+  z.object({
+    type: z.literal("userOffline"),
+    payload: z.object({
+      chatId: z.string(),
     }),
   }),
 ]);

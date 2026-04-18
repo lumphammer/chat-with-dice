@@ -99,6 +99,7 @@ export const DiceRoller = memo(
     const { connectionStatus, messages, sendMessage } = useChatWebSocket({
       roomId: roomId,
       chatId: userIdentity.chatId,
+      displayName: userIdentity.displayName,
       onError: useCallback(
         (error: { errorMessage: string; detail: string }) => {
           toaster.error({

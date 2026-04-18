@@ -2,8 +2,10 @@ import type { ServerMountedCapability } from "#/capabilities/types";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type {
   ChatMessage,
+  OnlineUser,
   WebSocketServerMessage,
 } from "#/validators/webSocketMessageSchemas";
+import { sessionAttachmentSchema } from "./types";
 
 export class Broadcaster {
   constructor(private ctx: DurableObjectState) {}
@@ -82,6 +84,36 @@ export class Broadcaster {
       type: "roomName",
       payload: {
         roomName,
+      },
+    });
+  }
+
+  private getUsersOnline(): OnlineUser[] {
+    const wses = this.ctx
+      .getWebSockets()
+      .map((ws) => {
+        const { data: attachment, success } = sessionAttachmentSchema.safeParse(
+          ws.deserializeAttachment(),
+        );
+        if (success) {
+          const onlineUser: OnlineUser = {
+            chatId: attachment.chatId,
+            displayName: attachment.displayName,
+            loggedIn: attachment.userId !== undefined,
+          };
+          return onlineUser;
+        }
+      })
+      .filter((u): u is OnlineUser => u !== undefined);
+    return wses;
+  }
+
+  broadcastUsersOnline(): void {
+    const usersOnline = this.getUsersOnline();
+    this.broadcast({
+      type: "usersOnline",
+      payload: {
+        usersOnline,
       },
     });
   }

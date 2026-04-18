@@ -16,7 +16,7 @@
 ## Small Items
 
 - [x] Mobile layout
-- [ ] Help tab
+- [x] Help tab
 - [ ] Nanostores
 
 ## Big items

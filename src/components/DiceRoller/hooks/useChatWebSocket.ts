@@ -23,6 +23,7 @@ const MAX_HISTORY_BUFFER_LENGTH = 100;
 export const useChatWebSocket = ({
   roomId,
   chatId,
+  displayName,
   onError,
   setCapabilityInfos,
   setRoomConfig,
@@ -30,6 +31,7 @@ export const useChatWebSocket = ({
 }: {
   roomId: string;
   chatId: string;
+  displayName: string;
   onError: (error: { errorMessage: string; detail: string }) => void;
   setCapabilityInfos: Dispatch<SetStateAction<CapabilityInfoContextValue>>;
   setRoomConfig: (config: RoomConfig) => void;
@@ -46,10 +48,15 @@ export const useChatWebSocket = ({
       return;
     }
     // Build WebSocket URL
-    const wsUrl = `../ws/?roomId=${encodeURIComponent(roomId)}&chatId=${encodeURIComponent(chatId)}`;
+    // const wsUrl = `../ws/?roomId=${encodeURIComponent(roomId)}&chatId=${encodeURIComponent(chatId)}&displayName=${encodeURIComponent(displayName)}`;
+
+    const url = new URL("../ws/", document.location.href);
+    url.searchParams.set("roomId", roomId);
+    url.searchParams.set("chatId", chatId);
+    url.searchParams.set("displayName", displayName);
 
     // Create WebSocket connection
-    const ws = new ReconnectingWebSocket(wsUrl, {
+    const ws = new ReconnectingWebSocket(url.toString(), {
       onopen: () => {
         setConnectionStatus("connected");
       },
@@ -150,7 +157,15 @@ export const useChatWebSocket = ({
       console.log("Closing websocket because effect re-ran");
       ws.close();
     };
-  }, [roomId, chatId, onError, setCapabilityInfos, setRoomConfig, setRoomName]);
+  }, [
+    roomId,
+    chatId,
+    onError,
+    setCapabilityInfos,
+    setRoomConfig,
+    setRoomName,
+    displayName,
+  ]);
 
   const sendMessage = useCallback((content: WebSocketClientMessage) => {
     websocketRef.current?.json(content);
