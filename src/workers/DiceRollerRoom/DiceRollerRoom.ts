@@ -94,6 +94,8 @@ export class DiceRollerRoom extends DurableObject {
         }),
       );
     });
+
+    this.broadcaster.broadcastUsersOnline();
   }
 
   /**
