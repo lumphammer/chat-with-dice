@@ -18,7 +18,7 @@
 - [x] Mobile layout
 - [x] Help tab
 - [ ] Nanostores for room name, display name, etc.
-- [ ] limit connections per room (100?)
+- [x] limit connections per room (100?)
 - [ ] Swipable sidebar on mobile
 - [ ] Easier feedback channels (built-in?)
 
@@ -37,6 +37,16 @@
 - [x] CI / CD
 - [x] "Currently online" / "All visitors" view
 - [x] Roles/permissions
+- [ ] Themes
+
+## Capabilities
+
+- [x] Basic rolls
+- [ ] Havoc Engine
+  - [ ] Objectives/Adversaries/Rolls
+- [ ] FitD 
+  - [ ] Clocks
+  - [ ] Rolls
 
 ## New features
 
