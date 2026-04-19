@@ -17,7 +17,10 @@
 
 - [x] Mobile layout
 - [x] Help tab
-- [ ] Nanostores
+- [ ] Nanostores for room name, display name, etc.
+- [ ] limit connections per room (100?)
+- [ ] Swipable sidebar on mobile
+- [ ] Easier feedback channels (built-in?)
 
 ## Big items
 
@@ -34,11 +37,11 @@
 - [x] CI / CD
 - [ ] "Currently online" / "All visitors" view
 - [x] Roles/permissions
+
+## New features
+
 - [ ] File uploads
 - [ ] Collaborative documents
 - [ ] Whiteboards
 - [ ] Room-level roles (e.g. appoint extra admins)
-- [ ]
-- [ ]
-- [ ]
 - [ ] Private rooms
