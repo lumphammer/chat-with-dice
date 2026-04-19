@@ -44,7 +44,7 @@
 - [x] Basic rolls
 - [ ] Havoc Engine
   - [ ] Objectives/Adversaries/Rolls
-- [ ] FitD 
+- [ ] FitD
   - [ ] Clocks
   - [ ] Rolls
 
