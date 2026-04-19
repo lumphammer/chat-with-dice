@@ -5,18 +5,35 @@ import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 type Props = {
   title: string | null;
   bodyClass?: string;
+  theme?: string;
 };
 
-const { title, bodyClass = "" } = Astro.props;
+const { title, bodyClass = "", theme } = Astro.props;
 ---
 
-<html lang="en" class="h-full">
+<html lang="en" class="h-full" data-configured-theme={theme}>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{`${title ?? ""}${title ? " | " : ""}Chat with Dice`}</title>
+    <script is:inline>
+      function setThemeBeforePageDraws() {
+        let theme = document.documentElement.getAttribute(
+          "data-configured-theme",
+        );
+        console.log("Configured theme is", theme);
+        // debugger;
+        if (!theme) {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "havocDark"
+            : "havocLight";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      }
+      setThemeBeforePageDraws();
+    </script>
   </head>
   <body class={"flex h-full w-full flex-col overflow-auto " + bodyClass}>
     <slot />

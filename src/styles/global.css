@@ -10,12 +10,6 @@
   &:where([data-theme="havocDark"], [data-theme="havocDark"] *) {
     @slot;
   }
-
-  @media (prefers-color-scheme: dark) {
-    &:where([data-theme="unset"], [data-theme="unset"] *) {
-      @slot;
-    }
-  }
 }
 
 @import "./themes/havocDark.css";
