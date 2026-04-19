@@ -8,17 +8,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 type UseUserIdentityStorageReturn = {
   userIdentity: { displayName: string; chatId: string; isOwner: boolean };
-
   isPending: boolean;
+  roomOwnerId: string;
 } & (
   | { loggedIn: false; handleSetDisplayName: (newDisplayName: string) => void }
   | { loggedIn: true; handleSetDisplayName: null }
 );
 
 export const useUserIdentityStorage = ({
-  isOwner,
+  roomOwnerId,
 }: {
-  isOwner: boolean;
+  roomOwnerId: string;
 }): UseUserIdentityStorageReturn => {
   const { data: sessionData, isPending } = authClient.useSession();
 
@@ -49,9 +49,15 @@ export const useUserIdentityStorage = ({
     }
   }, []);
 
+  // const isOwner = roomOwnerId ===
+
   const localUserIdentity = useMemo(
-    () => ({ displayName: localDisplayName, chatId: localChatId, isOwner }),
-    [localDisplayName, localChatId, isOwner],
+    () => ({
+      displayName: localDisplayName,
+      chatId: localChatId,
+      isOwner: false,
+    }),
+    [localDisplayName, localChatId],
   );
 
   if (sessionData && sessionData.user) {
@@ -59,8 +65,9 @@ export const useUserIdentityStorage = ({
       loggedIn: true,
       handleSetDisplayName: null,
       isPending,
+      roomOwnerId,
       userIdentity: {
-        isOwner,
+        isOwner: roomOwnerId === sessionData.user.chatId,
         displayName: sessionData.user.name,
         chatId: sessionData.user.chatId,
       },
@@ -68,6 +75,7 @@ export const useUserIdentityStorage = ({
   } else {
     return {
       loggedIn: false,
+      roomOwnerId,
       userIdentity: localUserIdentity,
       handleSetDisplayName,
       isPending,

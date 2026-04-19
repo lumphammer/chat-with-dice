@@ -1,7 +1,7 @@
 ---
 import { db } from "#/db";
 import Layout from "#/layouts/Layout.astro";
-import { rooms } from "#/schemas/chatDB-schema";
+import { rooms, users } from "#/schemas/chatDB-schema";
 import { roomConfigValidator } from "#/validators/roomConfigValidator";
 import { defaultRoomConfig } from "#/workers/DiceRollerRoom/defaultRoomConfig";
 import { DiceRoller } from "@/components/DiceRoller/DiceRoller";
@@ -12,9 +12,22 @@ const roomId = Astro.params["roomId"] ?? "";
 const room = (
   await db.select().from(rooms).where(eq(rooms.id, roomId)).limit(1).all()
 )[0];
+
 if (!room) {
   return Astro.redirect("/roller");
 }
+
+// this needs to go away by using a relation, and then getting rid of chatId in
+// due course, but for now, we'll get the room creator's chatId
+const roomOwnerId = (
+  await db
+    .select({ roomOwnerId: users.chatId })
+    .from(users)
+    .where(eq(users.id, room.created_by_user_id))
+    .limit(1)
+    .all()
+)[0]?.roomOwnerId;
+
 const configParseResult = roomConfigValidator.safeParse(room.config);
 const config = configParseResult.success
   ? configParseResult.data
@@ -22,9 +35,6 @@ const config = configParseResult.success
 if (configParseResult.success === false) {
   console.error("Room failed config validation");
 }
-
-// temp until we have a roles system
-const isOwner = room.created_by_user_id === Astro.locals.user?.id;
 ---
 
 <Layout title={room?.name ?? "(room not found)"}>
@@ -32,7 +42,7 @@ const isOwner = room.created_by_user_id === Astro.locals.user?.id;
     client:only
     roomId={roomId ?? ""}
     config={config}
-    isOwner={isOwner}
     displayName={room.name}
+    roomOwnerId={roomOwnerId}
   />
 </Layout>

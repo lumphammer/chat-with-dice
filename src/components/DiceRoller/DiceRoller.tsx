@@ -45,15 +45,15 @@ export const DiceRoller = memo(
     roomId,
     displayName: initialDisplayName,
     config: initialConfig,
-    isOwner,
+    roomOwnerId,
   }: {
     roomId: string;
     displayName: string;
     config: RoomConfig;
-    isOwner: boolean;
+    roomOwnerId: string;
   }) => {
     const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
-      useUserIdentityStorage({ isOwner });
+      useUserIdentityStorage({ roomOwnerId });
 
     const [roomConfig, setRoomConfig] = useState(initialConfig);
 
@@ -240,6 +240,7 @@ export const DiceRoller = memo(
                     <UsersOnline
                       usersOnline={usersOnline}
                       chatId={userIdentity.chatId}
+                      roomOwnerId={roomOwnerId}
                     />
                   </header>
                   {/* flex row for main chat and sidebar */}
