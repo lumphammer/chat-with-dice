@@ -247,7 +247,7 @@ export const DiceRoller = memo(
                   {/* flex row for main chat and sidebar */}
                   <div
                     data-part="outer expander"
-                    className=".main-area group/main @container-[size] relative
+                    className="main-area group/main @container-[size] relative
                       flex flex-1 flex-row justify-start overflow-hidden"
                   >
                     {/* chat scroller and chat form */}
