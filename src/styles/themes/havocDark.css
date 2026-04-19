@@ -5,7 +5,7 @@
   /* ---------------------------------------------------------------------------
    *  Daisy config
    * -------------------------------------------------------------------------*/
-  name: "HavocDark";
+  name: "havocDark";
   default: false; /* set as default */
   prefersdark: true; /* set as default dark mode (prefers-color-scheme:dark) */
   color-scheme: dark; /* color of browser-provided UI */
@@ -96,4 +96,10 @@
   /* effects */
   --depth: 0;
   --noise: 0;
+
+  /*@layer components {
+    .main-area {
+      background: green;
+    }
+  }*/
 }

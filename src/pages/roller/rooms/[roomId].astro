@@ -1,6 +1,6 @@
 ---
 import { db } from "#/db";
-import Layout from "#/layouts/Layout.astro";
+import HTML from "#/layouts/HTML.astro";
 import { rooms, users } from "#/schemas/chatDB-schema";
 import { roomConfigValidator } from "#/validators/roomConfigValidator";
 import { defaultRoomConfig } from "#/workers/DiceRollerRoom/defaultRoomConfig";
@@ -37,7 +37,7 @@ if (configParseResult.success === false) {
 }
 ---
 
-<Layout title={room?.name ?? "(room not found)"}>
+<HTML title={room?.name ?? "(room not found)"}>
   <DiceRoller
     client:only
     roomId={roomId ?? ""}
@@ -45,4 +45,4 @@ if (configParseResult.success === false) {
     displayName={room.name}
     roomOwnerId={roomOwnerId}
   />
-</Layout>
+</HTML>
