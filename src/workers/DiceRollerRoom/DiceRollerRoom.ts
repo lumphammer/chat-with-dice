@@ -20,6 +20,7 @@ import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
 import { setupDB } from "./setupDB";
 import { sessionAttachmentSchema } from "./types";
+import { describeState, isClosingorClosed, isConnectingOrOpen } from "./utils";
 import { DurableObject } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
@@ -272,11 +273,24 @@ export class DiceRollerRoom extends DurableObject {
   override async webSocketClose(ws: WebSocket, code: number): Promise<void> {
     const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
     console.log("client disconnected", att.chatId, att.displayName);
+    if (isClosingorClosed(ws)) {
+      console.error(
+        new Error(
+          `DiceRollerRoom # webSocketClose: WebSocket already ${describeState(ws)}`,
+        ),
+      );
+      return;
+    }
     try {
       ws.close(code, "Durable Object is closing WebSocket");
-      console.log("WebSocket closed successfully");
+      console.log(
+        "DiceRollerRoom # webSocketClose: WebSocket closed successfully",
+      );
     } catch (error) {
-      console.error("Error closing WebSocket:", error);
+      console.error(
+        "DiceRollerRoom # webSocketClose: Error closing WebSocket:",
+        error,
+      );
     }
     this.broadcaster.broadcastUsersOnline();
   }
@@ -290,44 +304,72 @@ export class DiceRollerRoom extends DurableObject {
    * we rebroadcast the online list.
    */
   override async alarm(): Promise<void> {
-    console.log("beginning eviction sweep");
+    console.log("DiceRollerRoom # alarm: beginning eviction sweep");
     const now = Date.now();
     let evicted = 0;
 
     const wses = this.ctx.getWebSockets();
-    console.log("currently holding this many websockets:", wses.length);
+    console.log(
+      "DiceRollerRoom # alarm: currently holding this many websockets:",
+      wses.length,
+    );
 
     for (const ws of wses) {
       const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
-      console.log("examining", att.chatId, att.displayName);
+      console.log(
+        "DiceRollerRoom # alarm: examining",
+        att.chatId,
+        att.displayName,
+      );
       const lastPing = this.ctx.getWebSocketAutoResponseTimestamp(ws);
       // null means the client hasn't pinged yet — either brand new or never
       // will. Leave it alone; CF will eventually drop a truly dead TCP.
       if (lastPing && now - lastPing.getTime() > STALE_THRESHOLD_MS) {
-        try {
-          console.log("closing stale connection", att.chatId, att.displayName);
-          ws.close(WEBSOCKET_GOING_AWAY, "stale connection");
-        } catch {
-          console.log("error while closing - continuing");
-          // already closed/closing; the sweep is best-effort
+        if (isConnectingOrOpen(ws)) {
+          try {
+            console.log(
+              "DiceRollerRoom # alarm: closing stale connection",
+              att.chatId,
+              att.displayName,
+            );
+            ws.close(WEBSOCKET_GOING_AWAY, "stale connection");
+          } catch {
+            console.log(
+              "DiceRollerRoom # alarm: error while closing - continuing",
+            );
+            // already closed/closing; the sweep is best-effort
+          }
+        } else {
+          console.log(
+            "DiceRollerRoom # alarm: stale connection in non-open state, skipping",
+            att.chatId,
+            att.displayName,
+          );
         }
         evicted += 1;
       } else {
-        console.log("active connection, skipping", ws.deserializeAttachment());
+        console.log(
+          "DiceRollerRoom # alarm: active connection, skipping",
+          ws.deserializeAttachment(),
+        );
       }
     }
 
     if (evicted > 0) {
-      console.log(`Sweep evicted ${evicted} stale connection(s)`);
+      console.log(
+        `DiceRollerRoom # alarm: Sweep evicted ${evicted} stale connection(s)`,
+      );
       this.broadcaster.broadcastUsersOnline();
     }
 
     // Re-arm only while there's something worth watching.
     if (this.ctx.getWebSockets().length > 0) {
-      console.log("rescheduling eviction sweep");
+      console.log("DiceRollerRoom # alarm: rescheduling eviction sweep");
       await this.ctx.storage.setAlarm(Date.now() + SWEEP_INTERVAL_MS);
     } else {
-      console.log("no active connections, not rescheduling sweep");
+      console.log(
+        "DiceRollerRoom # alarm: no active connections, not rescheduling sweep",
+      );
     }
   }
 

@@ -11,11 +11,21 @@ export class Broadcaster {
   constructor(private ctx: DurableObjectState) {}
 
   send(ws: WebSocket, message: WebSocketServerMessage): void {
+    if (ws.readyState !== WebSocket.OPEN) {
+      console.error(
+        new Error(
+          `Broadcaster # send: Attempted to send to a socket in state ${ws.readyState}`,
+        ),
+      );
+      return;
+    }
     ws.send(JSON.stringify(message));
   }
 
   broadcast(message: WebSocketServerMessage): void {
-    for (const server of this.ctx.getWebSockets()) {
+    for (const server of this.ctx
+      .getWebSockets()
+      .filter((ws) => ws.readyState === WebSocket.OPEN)) {
       this.send(server, message);
     }
   }
