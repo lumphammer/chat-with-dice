@@ -40,7 +40,8 @@ export const OnlineUserBadge = memo(
         data-large={large ? "true" : undefined}
         style={
           {
-            backgroundImage: showImage ? `url(${user.image})` : "none",
+            backgroundImage:
+              showImage && user.image ? `url(${user.image})` : "none",
             backgroundSize: "100%",
             "--user-hue": hue,
           } satisfies UserHueStyle as UserHueStyle
