@@ -6,15 +6,16 @@ import type {
   WebSocketServerMessage,
 } from "#/validators/webSocketMessageSchemas";
 import { sessionAttachmentSchema } from "./types";
+import { describeState, isClosingorClosed } from "./utils";
 
 export class Broadcaster {
   constructor(private ctx: DurableObjectState) {}
 
   send(ws: WebSocket, message: WebSocketServerMessage): void {
-    if (ws.readyState !== WebSocket.OPEN) {
+    if (isClosingorClosed(ws)) {
       console.error(
         new Error(
-          `Broadcaster # send: Attempted to send to a socket in state ${ws.readyState}`,
+          `Broadcaster # send: Attempted to send to a socket in ${describeState(ws)} state`,
         ),
       );
       return;

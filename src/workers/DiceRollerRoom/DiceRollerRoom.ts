@@ -272,7 +272,6 @@ export class DiceRollerRoom extends DurableObject {
    */
   override async webSocketClose(ws: WebSocket, code: number): Promise<void> {
     const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
-    console.group("webSocketClose");
     console.log("client disconnected", att.chatId, att.displayName);
     if (isClosingorClosed(ws)) {
       console.log(
@@ -292,7 +291,6 @@ export class DiceRollerRoom extends DurableObject {
       );
     }
     this.broadcaster.broadcastUsersOnline();
-    console.groupEnd();
   }
 
   /**
@@ -304,7 +302,6 @@ export class DiceRollerRoom extends DurableObject {
    * we rebroadcast the online list.
    */
   override async alarm(): Promise<void> {
-    console.group("DiceRollerRoom # alarm");
     console.log("DiceRollerRoom # alarm: beginning eviction sweep");
     const now = Date.now();
     let evicted = 0;
@@ -372,7 +369,6 @@ export class DiceRollerRoom extends DurableObject {
         "DiceRollerRoom # alarm: no active connections, not rescheduling sweep",
       );
     }
-    console.groupEnd();
   }
 
   /**
