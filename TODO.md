@@ -35,7 +35,7 @@
   - [x] Admin users
   - [x] List rooms
 - [x] CI / CD
-- [ ] "Currently online" / "All visitors" view
+- [x] "Currently online" / "All visitors" view
 - [x] Roles/permissions
 
 ## New features

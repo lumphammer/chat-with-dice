@@ -6,6 +6,8 @@ import { log, logError } from "./utils";
 
 const CATCHUP_DELAY_MS = 100;
 
+const MAX_ACTIVE_CONNECTIONS = 100;
+
 export async function handleFetch(
   request: Request,
   ctx: DurableObjectState,
@@ -18,6 +20,13 @@ export async function handleFetch(
     logError("Expected WebSocket upgrade");
     return new Response("Expected WebSocket upgrade", { status: 426 });
   }
+
+  const currentConnectionCount = broadcaster.currentConnectionCount();
+  if (currentConnectionCount >= MAX_ACTIVE_CONNECTIONS) {
+    logError("Too many active connections");
+    return new Response("Too many active connections", { status: 503 });
+  }
+
   const chatId = URL.parse(request.url)?.searchParams.get("chatId");
   if (!chatId) {
     logError("chatId was falsy");

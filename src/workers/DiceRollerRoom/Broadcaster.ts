@@ -6,7 +6,7 @@ import type {
   WebSocketServerMessage,
 } from "#/validators/webSocketMessageSchemas";
 import { sessionAttachmentSchema } from "./types";
-import { describeState, isClosingorClosed } from "./utils";
+import { describeState, isClosingorClosed, isConnectingOrOpen } from "./utils";
 
 export class Broadcaster {
   constructor(private ctx: DurableObjectState) {}
@@ -138,5 +138,10 @@ export class Broadcaster {
         usersOnline,
       },
     });
+  }
+
+  currentConnectionCount(): number {
+    return this.ctx.getWebSockets().filter((ws) => isConnectingOrOpen(ws))
+      .length;
   }
 }
