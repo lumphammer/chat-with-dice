@@ -1,5 +1,5 @@
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
-import { useUserIdentityContext } from "#/components/DiceRoller/contexts/userIdentityContext";
+import { useUserInfoContext } from "#/components/DiceRoller/contexts/userInfoContext";
 import type { HonkD6Formula, HonkD6Result } from "../honkD6Validators";
 import { DiceRow } from "./DiceRow";
 import { ProblemsDisplay } from "./ProblemsDisplay";
@@ -11,7 +11,7 @@ import { memo, useCallback, useState, type ChangeEvent } from "react";
 
 const CommitSection = memo(({ messageId }: { messageId: string }) => {
   const sendMessage = useSendMessageContext();
-  const { displayName } = useUserIdentityContext();
+  const { displayName } = useUserInfoContext();
   const [numDice, setNumDice] = useState(1);
 
   const handleNumDiceChange = useCallback(
@@ -68,7 +68,7 @@ const PassResolveButton = memo(
     totalSuccesses: number;
   }) => {
     const sendMessage = useSendMessageContext();
-    const { displayName } = useUserIdentityContext();
+    const { displayName } = useUserInfoContext();
 
     const handleResolve = useCallback(() => {
       sendMessage({
@@ -104,7 +104,7 @@ export const HonkD6PassDisplay = memo(
     result: Extract<HonkD6Result, { action: "pass" }>;
     messageId: string;
   }) => {
-    const { chatId } = useUserIdentityContext();
+    const { chatId } = useUserInfoContext();
     const {
       faces,
       totalSuccesses,

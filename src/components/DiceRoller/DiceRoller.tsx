@@ -9,14 +9,13 @@ import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { Sidebar } from "../Sidebar/Sidebar";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
-import { DisplayNameDialog } from "./DisplayNameDialog";
-import { UsersOnline } from "./UsersOnline";
+import { Header } from "./Header";
 import { RoomConfigContextProvider } from "./contexts/roomConfigContext";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
-import { UserIdentityContextProvider } from "./contexts/userIdentityContext";
+import { UserInfoContextProvider } from "./contexts/userInfoContext";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
 import { useSmartScroll } from "./hooks/useSmartScroll";
-import { useUserIdentityStorage } from "./hooks/useUserIdentityStorage";
+import { useUserInfoProvider } from "./hooks/useUserInfoProvider";
 import toastStyles from "./toast.module.css";
 import type { UserHueStyle } from "./types";
 import { Portal } from "@ark-ui/react/portal";
@@ -52,8 +51,7 @@ export const DiceRoller = memo(
     config: RoomConfig;
     roomOwnerId: string;
   }) => {
-    const { userIdentity, handleSetDisplayName, loggedIn, isPending } =
-      useUserIdentityStorage({ roomOwnerId });
+    const userInfo = useUserInfoProvider({ roomOwnerId });
 
     const [roomConfig, setRoomConfig] = useState(initialConfig);
 
@@ -100,8 +98,8 @@ export const DiceRoller = memo(
     const { connectionStatus, messages, sendMessage, usersOnline } =
       useChatWebSocket({
         roomId: roomId,
-        chatId: userIdentity.chatId,
-        displayName: userIdentity.displayName,
+        chatId: userInfo.chatId,
+        displayName: userInfo.displayName,
         onError: useCallback(
           (error: { errorMessage: string; detail: string }) => {
             toaster.error({
@@ -151,7 +149,7 @@ export const DiceRoller = memo(
       }
     }, [roomName]);
 
-    const hue = deriveHueFromUserId(userIdentity.chatId);
+    const hue = deriveHueFromUserId(userInfo.chatId);
 
     const {
       scrollContainerRef,
@@ -168,12 +166,12 @@ export const DiceRoller = memo(
           payload: {
             formula: {},
             chat,
-            displayName: userIdentity.displayName,
+            displayName: userInfo.displayName,
           },
         };
         sendMessage(msg);
       },
-      [userIdentity, sendMessage], // this should be a linter warning!
+      [userInfo, sendMessage], // this should be a linter warning!
     );
 
     return (
@@ -182,7 +180,7 @@ export const DiceRoller = memo(
           value={optimisticallySetCapabilityState}
         >
           <SendMessageContextProvider value={sendMessage}>
-            <UserIdentityContextProvider value={userIdentity}>
+            <UserInfoContextProvider value={userInfo}>
               <RoomConfigContextProvider
                 value={useMemo(
                   () => ({
@@ -212,38 +210,11 @@ export const DiceRoller = memo(
                     { "--user-hue": hue } satisfies UserHueStyle as UserHueStyle
                   }
                 >
-                  <header
-                    className="border-base-100 bg-base-100 flex flex-row gap-4
-                      border-b px-4 py-1"
-                  >
-                    <DisplayNameDialog
-                      displayName={userIdentity.displayName}
-                      onSetDisplayName={handleSetDisplayName}
-                      loggedIn={loggedIn}
-                      isPending={isPending}
-                    />
-                    <div className="flex-1" />
-                    {/*<div className="h-(--size) flex-col justify-center">
-                      Connection status:
-                    </div>*/}
-                    <div
-                      className="text-middle inline-flex h-(--size) flex-col
-                        justify-center"
-                    >
-                      <span
-                        data-connection-status={connectionStatus}
-                        aria-description={connectionStatus}
-                        className="text-middle inline-block h-3 w-3 rounded-full
-                          bg-red-500 align-baseline
-                          data-[connection-status=connected]:bg-green-500"
-                      ></span>
-                    </div>
-                    <UsersOnline
-                      usersOnline={usersOnline}
-                      chatId={userIdentity.chatId}
-                      roomOwnerId={roomOwnerId}
-                    />
-                  </header>
+                  <Header
+                    connectionStatus={connectionStatus}
+                    roomName={roomName}
+                    usersOnline={usersOnline}
+                  />
                   {/* flex row for main chat and sidebar */}
                   <div
                     data-part="outer expander"
@@ -332,7 +303,7 @@ export const DiceRoller = memo(
                   </Toaster>
                 </Portal>
               </RoomConfigContextProvider>
-            </UserIdentityContextProvider>
+            </UserInfoContextProvider>
           </SendMessageContextProvider>
         </SetCapabilityStateContextProvider>
       </CapabilityInfoContextProvider>

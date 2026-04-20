@@ -9,7 +9,7 @@ import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { RollResultErrorBoundary } from "../RollResultErrorBoundary";
 import { ShowMoreDialog } from "./ShowMoreDialog";
 import { TimeDisplay } from "./TimeDisplay";
-import { useUserIdentityContext } from "./contexts/userIdentityContext";
+import { useUserInfoContext } from "./contexts/userInfoContext";
 import type { UserHueStyle } from "./types";
 import quikdown from "quikdown";
 import {
@@ -41,7 +41,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
   // const [showMore, setShowMore] = useState(false);
   const [showShowMore, setShowShowMore] = useState(false);
 
-  const { chatId } = useUserIdentityContext();
+  const { chatId } = useUserInfoContext();
 
   const html = useMemo(() => {
     return addLinkTargets(

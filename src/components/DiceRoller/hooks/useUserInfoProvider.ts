@@ -4,22 +4,14 @@ import {
 } from "#/constants";
 import { authClient } from "#/utils/auth-client";
 import { hasCookieConsent } from "#/utils/hasCookieConsent";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import type { UserInfo } from "../types";
+import { useCallback, useEffect, useState } from "react";
 
-type UseUserIdentityStorageReturn = {
-  userIdentity: { displayName: string; chatId: string; isOwner: boolean };
-  isPending: boolean;
-  roomOwnerId: string;
-} & (
-  | { loggedIn: false; handleSetDisplayName: (newDisplayName: string) => void }
-  | { loggedIn: true; handleSetDisplayName: null }
-);
-
-export const useUserIdentityStorage = ({
+export const useUserInfoProvider = ({
   roomOwnerId,
 }: {
   roomOwnerId: string;
-}): UseUserIdentityStorageReturn => {
+}): UserInfo => {
   const { data: sessionData, isPending } = authClient.useSession();
 
   const [localDisplayName, setLocalDislayName] = useState<string>(
@@ -49,34 +41,23 @@ export const useUserIdentityStorage = ({
     }
   }, []);
 
-  // const isOwner = roomOwnerId ===
-
-  const localUserIdentity = useMemo(
-    () => ({
-      displayName: localDisplayName,
-      chatId: localChatId,
-      isOwner: false,
-    }),
-    [localDisplayName, localChatId],
-  );
-
   if (sessionData && sessionData.user) {
     return {
       loggedIn: true,
       handleSetDisplayName: null,
       isPending,
       roomOwnerId,
-      userIdentity: {
-        isOwner: roomOwnerId === sessionData.user.chatId,
-        displayName: sessionData.user.name,
-        chatId: sessionData.user.chatId,
-      },
+      isOwner: roomOwnerId === sessionData.user.chatId,
+      displayName: sessionData.user.name,
+      chatId: sessionData.user.chatId,
     };
   } else {
     return {
+      displayName: localDisplayName,
+      chatId: localChatId,
+      isOwner: false,
       loggedIn: false,
       roomOwnerId,
-      userIdentity: localUserIdentity,
       handleSetDisplayName,
       isPending,
     };

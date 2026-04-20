@@ -3,7 +3,7 @@ import {
   isCapabilityName,
 } from "#/capabilities/capabilityRegistry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
-import { useUserIdentityContext } from "../DiceRoller/contexts/userIdentityContext";
+import { useUserInfoContext } from "../DiceRoller/contexts/userInfoContext";
 import { Config } from "../config/Config";
 import { Help } from "../help/Help";
 import styles from "./sidebar.module.css";
@@ -14,7 +14,7 @@ import { memo, useMemo, useRef } from "react";
 export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
   const ref = useRef<HTMLElement>(null);
 
-  const { isOwner } = useUserIdentityContext();
+  const { isOwner } = useUserInfoContext();
 
   const capabilities = useMemo(
     () =>
@@ -40,7 +40,7 @@ export const Sidebar = memo(({ config }: { config: RoomConfig }) => {
       <div className={styles.spaceHolder} />
 
       <Tabs.Root
-        className={styles.root}
+        className={`${styles.root} sidebar`}
         defaultValue={defaultValue}
         orientation="vertical"
         asChild

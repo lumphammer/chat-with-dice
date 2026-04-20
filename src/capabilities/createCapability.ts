@@ -1,7 +1,7 @@
 import { useCapabilityInfo } from "#/capabilities/reactContexts/capabilityInfoContext";
 import { useSetCapabilityStateContext } from "#/capabilities/reactContexts/setCapabilityStateContext";
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
-import { useUserIdentityContext } from "#/components/DiceRoller/contexts/userIdentityContext";
+import { useUserInfoContext } from "#/components/DiceRoller/contexts/userInfoContext";
 import { toAlphanumeric } from "#/utils/alphanumeric";
 import type {
   ActionCall,
@@ -223,7 +223,7 @@ export const createCapability = <
     const sendMessage = useSendMessageContext();
     const setCapabilityState = useSetCapabilityStateContext();
     const info = useCapabilityInfo(name);
-    const userIdentity = useUserIdentityContext();
+    const userIdentity = useUserInfoContext();
 
     // when we map over the actions, TS gives up on typing the value side,
     // presumably because it's a mapped type? Anyway, this is the type of the

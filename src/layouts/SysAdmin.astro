@@ -7,7 +7,7 @@ type Props = {
   title: string | null;
 };
 
-const { title, class: className } = Astro.props;
+const { title } = Astro.props;
 ---
 
 <Layout title={title} class="flex flex-col">

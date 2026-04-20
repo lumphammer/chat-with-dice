@@ -10,3 +10,14 @@ export type ConnectionStatus = "connected" | "disconnected" | "error";
  * >
  */
 export type UserHueStyle = React.CSSProperties & { "--user-hue": number };
+
+export type UserInfo = {
+  displayName: string;
+  chatId: string;
+  isOwner: boolean;
+  isPending: boolean;
+  roomOwnerId: string;
+} & (
+  | { loggedIn: false; handleSetDisplayName: (newDisplayName: string) => void }
+  | { loggedIn: true; handleSetDisplayName: null }
+);

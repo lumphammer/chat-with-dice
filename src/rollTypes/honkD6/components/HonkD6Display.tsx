@@ -1,5 +1,5 @@
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
-import { useUserIdentityContext } from "#/components/DiceRoller/contexts/userIdentityContext";
+import { useUserInfoContext } from "#/components/DiceRoller/contexts/userInfoContext";
 import type { HonkD6Formula, HonkD6Result } from "../honkD6Validators";
 import { DiceRow } from "./DiceRow";
 import { HonkD6PassDisplay } from "./HonkD6PassDisplay";
@@ -37,7 +37,7 @@ const RollActionButtons = memo(
     totalSuccesses: number;
   }) => {
     const sendMessage = useSendMessageContext();
-    const { displayName } = useUserIdentityContext();
+    const { displayName } = useUserInfoContext();
 
     const handleExplode = useCallback(() => {
       sendMessage({
@@ -133,7 +133,7 @@ const HonkD6RollDisplay = memo(
       previousContributors,
       schemeDescription,
     } = result;
-    const { chatId } = useUserIdentityContext();
+    const { chatId } = useUserInfoContext();
 
     const isFaded = consumed != null;
     const isOwner =
