@@ -13,12 +13,12 @@
   bottom: 0;
   right: 0;
   margin: calc(var(--spacing) * 2) 0;
-  background-color: var(--color-base-100);
-  border-top-left-radius: calc(var(--spacing) * 3);
+  /*background-color: var(--color-base-100);*/
+  /*border-top-left-radius: calc(var(--spacing) * 3);
   border-bottom-left-radius: calc(var(--spacing) * 3);
   border-color: oklch(from var(--color-base-content) l c h / 0.2);
   border-width: 1px;
-  border-right-width: 0;
+  border-right-width: 0;*/
   display: grid;
   grid-template-columns: [tabs] auto [content] 1fr;
   --contentWidthWhenOpen: var(--container-xs);

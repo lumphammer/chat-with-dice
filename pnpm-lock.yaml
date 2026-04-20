@@ -36,6 +36,9 @@ importers:
       '@dice-roller/rpg-dice-roller':
         specifier: ^5.5.1
         version: 5.5.1
+      '@fontsource-variable/orbitron':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@lucide/astro':
         specifier: ^1.8.0
         version: 1.8.0(astro@6.1.7(@azure/identity@4.13.1)(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.1)(typescript@5.9.3)(yaml@2.8.3))
@@ -1068,6 +1071,9 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@fontsource-variable/orbitron@5.2.8':
+    resolution: {integrity: sha512-Jazvuj2cgBq663z1j/+JdwH2ztqQ8RaGhJgdHYphFbtfowiFaR74R8UgZl7x1skbXmUMWWH1jXfG7mrYFIYK0A==}
 
   '@hono/node-server@1.19.9':
     resolution: {integrity: sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==}
@@ -5728,6 +5734,8 @@ snapshots:
       '@floating-ui/utils': 0.2.11
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@fontsource-variable/orbitron@5.2.8': {}
 
   '@hono/node-server@1.19.9(hono@4.11.4)':
     dependencies:

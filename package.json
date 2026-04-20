@@ -42,6 +42,7 @@
     "@astrojs/react": "5.0.3",
     "@better-auth/drizzle-adapter": "https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913",
     "@dice-roller/rpg-dice-roller": "^5.5.1",
+    "@fontsource-variable/orbitron": "^5.2.8",
     "@lucide/astro": "^1.8.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",

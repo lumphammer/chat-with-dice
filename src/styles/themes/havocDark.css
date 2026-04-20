@@ -1,3 +1,5 @@
+@import "@fontsource-variable/orbitron";
+/*@fontsource-variable/nunito-sans*/
 /* =============================================================================
  * Dark theme
  * ===========================================================================*/
@@ -106,8 +108,44 @@
 
 @layer components {
   [data-theme="havocDark"] {
+    .btn {
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        0 100%
+      );
+      border-radius: 0;
+    }
+
+    .room-name {
+      font-family: "Orbitron Variable";
+      font-size: var(--text-xl);
+      font-weight: 700;
+    }
+
     .main-area {
+      --scanline-1: oklch(from var(--color-accent) l c h / 0);
+      --scanline-2: oklch(from var(--color-accent) l c h / 0.05);
+
       background:
+        /*// scanlines*/
+
+        repeating-linear-gradient(
+          -5deg,
+          var(--scanline-1) 0px,
+          var(--scanline-1) 50px,
+          var(--scanline-2) 50px,
+          var(--scanline-2) 51px
+        ),
+        repeating-linear-gradient(
+          85deg,
+          var(--scanline-1) 0px,
+          var(--scanline-1) 50px,
+          var(--scanline-2) 50px,
+          var(--scanline-2) 51px
+        ),
         radial-gradient(
           circle at 10% 90%,
           oklch(from var(--color-primary) 0.3 c h / 0.3) 0%,
@@ -119,6 +157,10 @@
           oklch(from var(--color-accent) 0.3 c h / 0) 50%
         ),
         var(--color-base-100);
+    }
+    .sidebar {
+      background: oklch(from var(--color-base-100) l c h / 50%);
+      backdrop-filter: blur(30px);
     }
   }
 }

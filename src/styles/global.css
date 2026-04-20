@@ -12,6 +12,7 @@
   }
 }
 
+@import "./themeUtils.css";
 @import "./themes/havocDark.css";
 @import "./themes/havocLight.css";
 
