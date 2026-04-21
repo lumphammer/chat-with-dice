@@ -54,13 +54,13 @@ const title = "Cookie Policy";
 </Layout>
 
 <script>
-  import { cookieConsentStore } from "#/stores";
+  import { storageConsentStore } from "#/stores";
 
   const showCookieBannerButton = document.getElementById(
     "show-cookie-banner-button",
   );
   showCookieBannerButton?.addEventListener("click", () => {
-    cookieConsentStore.set(null);
+    storageConsentStore.set(null);
     window.location.reload();
   });
 </script>

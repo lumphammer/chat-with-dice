@@ -11,7 +11,9 @@ export const RevokeSessionsSection = memo(({ userId }: { userId: string }) => {
   const handleRevoke = async () => {
     setLoading(true);
     setFeedback(null);
-    const { error } = await authClient.admin.revokeUserSessions({ userId });
+    const { error } = await authClient.admin.revokeUserSessions({
+      userId,
+    });
     setLoading(false);
     if (error) {
       setFeedback({

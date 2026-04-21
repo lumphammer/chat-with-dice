@@ -218,7 +218,9 @@ export function ForgotPasswordForm() {
                 onClick={async () => {
                   setError(null);
                   const { error: resendError } =
-                    await authClient.emailOtp.requestPasswordReset({ email });
+                    await authClient.emailOtp.requestPasswordReset({
+                      email,
+                    });
                   if (resendError) {
                     setError(resendError.message ?? "Failed to resend code.");
                   }

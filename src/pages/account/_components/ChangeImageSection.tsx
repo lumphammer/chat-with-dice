@@ -112,7 +112,9 @@ export function ChangeImageSection({ currentImage, name, email }: Props) {
     setSuccessMsg(null);
     setLoading("removing");
 
-    const { error: authError } = await authClient.updateUser({ image: null });
+    const { error: authError } = await authClient.updateUser({
+      image: null,
+    });
 
     setLoading("idle");
 
