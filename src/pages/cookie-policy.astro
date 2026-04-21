@@ -54,14 +54,13 @@ const title = "Cookie Policy";
 </Layout>
 
 <script>
-  import { COOKIE_CONSENT_LOCAL_STORAGE_KEY } from "#/constants";
+  import { cookieConsentStore } from "#/stores/millistore";
 
   const showCookieBannerButton = document.getElementById(
     "show-cookie-banner-button",
   );
   showCookieBannerButton?.addEventListener("click", () => {
-    localStorage.removeItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY);
-    // reload
+    cookieConsentStore.setValue(null);
     window.location.reload();
   });
 </script>

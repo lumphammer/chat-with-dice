@@ -2,6 +2,8 @@
 import {
   CHAT_ID_LOCAL_STORAGE_KEY,
   COOKIE_CONSENT_LOCAL_STORAGE_KEY,
+  COOKIES_ACCEPTED,
+  COOKIES_REJECTED,
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
 } from "#/constants";
 import { useCallback, useSyncExternalStore } from "react";
@@ -154,8 +156,8 @@ export const cookieConsentStore = createPersistentStore({
   defaultValue: null,
   key: COOKIE_CONSENT_LOCAL_STORAGE_KEY,
   validator: z.codec(z.string(), z.boolean(), {
-    encode: (x) => (x ? "accepted" : "rejected"),
-    decode: (x) => x === "accepted",
+    encode: (x) => (x ? COOKIES_ACCEPTED : COOKIES_REJECTED),
+    decode: (x) => x === COOKIES_ACCEPTED,
   }),
 });
 

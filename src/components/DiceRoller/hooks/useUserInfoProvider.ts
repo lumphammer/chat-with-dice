@@ -1,11 +1,7 @@
-import {
-  CHAT_ID_LOCAL_STORAGE_KEY,
-  DISPLAY_NAME_LOCAL_STORAGE_KEY,
-} from "#/constants";
+import { chatIdStore, displayNameStore, useStore } from "#/stores/millistore";
 import { authClient } from "#/utils/auth-client";
-import { hasCookieConsent } from "#/utils/hasCookieConsent";
 import type { UserInfo } from "../types";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export const useUserInfoProvider = ({
   roomOwnerId,
@@ -13,33 +9,14 @@ export const useUserInfoProvider = ({
   roomOwnerId: string;
 }): UserInfo => {
   const { data: sessionData, isPending } = authClient.useSession();
-
-  const [localDisplayName, setLocalDislayName] = useState<string>(
-    localStorage.getItem(DISPLAY_NAME_LOCAL_STORAGE_KEY) ??
-      sessionStorage.getItem(DISPLAY_NAME_LOCAL_STORAGE_KEY) ??
-      "",
-  );
-
-  const [localChatId, setLocalChatId] = useState<string>(
-    localStorage.getItem(CHAT_ID_LOCAL_STORAGE_KEY) ?? "",
-  );
+  const [localDisplayName, setLocalDislayName] = useStore(displayNameStore);
+  const [localChatId, setLocalChatId] = useStore(chatIdStore);
 
   useEffect(() => {
-    if (localChatId === "" && !isPending && !sessionData) {
-      const newUserId = crypto.randomUUID();
-      localStorage.setItem(CHAT_ID_LOCAL_STORAGE_KEY, newUserId);
-      setLocalChatId(newUserId);
+    if (localChatId === null && !isPending && !sessionData) {
+      setLocalChatId(crypto.randomUUID());
     }
-  }, [localChatId, isPending, sessionData]);
-
-  const handleSetDisplayName = useCallback((newDisplayName: string) => {
-    setLocalDislayName(newDisplayName);
-    if (hasCookieConsent()) {
-      localStorage.setItem(DISPLAY_NAME_LOCAL_STORAGE_KEY, newDisplayName);
-    } else {
-      sessionStorage.setItem(DISPLAY_NAME_LOCAL_STORAGE_KEY, newDisplayName);
-    }
-  }, []);
+  }, [localChatId, isPending, sessionData, setLocalChatId]);
 
   if (sessionData && sessionData.user) {
     return {
@@ -58,8 +35,8 @@ export const useUserInfoProvider = ({
       isOwner: false,
       loggedIn: false,
       roomOwnerId,
-      handleSetDisplayName,
-      isPending,
+      handleSetDisplayName: setLocalDislayName,
+      isPending: localDisplayName === null,
     };
   }
 };

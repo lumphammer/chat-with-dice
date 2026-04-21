@@ -1,9 +1,6 @@
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
-import {
-  CHAT_ID_LOCAL_STORAGE_KEY,
-  DISPLAY_NAME_LOCAL_STORAGE_KEY,
-} from "#/constants";
+import { chatIdStore, displayNameStore } from "#/stores/millistore";
 import { authClient } from "#/utils/auth-client";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
@@ -51,8 +48,8 @@ export function SigninForm() {
       setLoading("idle");
       return;
     } else {
-      localStorage.removeItem(CHAT_ID_LOCAL_STORAGE_KEY);
-      localStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
+      chatIdStore.setValue(null);
+      displayNameStore.setValue(null);
       window.location.href = getSafeReturnUrl();
     }
   }
@@ -71,15 +68,15 @@ export function SigninForm() {
       provider,
       callbackURL: getSafeReturnUrl(),
       additionalData: {
-        chatId: localStorage.getItem("userId") ?? crypto.randomUUID(),
+        chatId: chatIdStore.getValue() ?? crypto.randomUUID(),
       },
     });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");
       setLoading("idle");
     } else {
-      localStorage.removeItem(CHAT_ID_LOCAL_STORAGE_KEY);
-      localStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
+      chatIdStore.setValue(null);
+      displayNameStore.setValue(null);
       // on success the browser is redirected by the OAuth flow
     }
   }

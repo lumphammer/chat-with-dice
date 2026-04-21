@@ -12,8 +12,8 @@ export type ConnectionStatus = "connected" | "disconnected" | "error";
 export type UserHueStyle = React.CSSProperties & { "--user-hue": number };
 
 export type UserInfo = {
-  displayName: string;
-  chatId: string;
+  displayName: string | null;
+  chatId: string | null;
   isOwner: boolean;
   isPending: boolean;
   roomOwnerId: string;

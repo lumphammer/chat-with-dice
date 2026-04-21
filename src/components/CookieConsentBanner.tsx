@@ -1,41 +1,17 @@
-import {
-  COOKIE_CONSENT_LOCAL_STORAGE_KEY,
-  COOKIES_ACCEPTED,
-  COOKIES_REJECTED,
-  DISPLAY_NAME_LOCAL_STORAGE_KEY,
-} from "#/constants";
-import { useState } from "react";
+import { cookieConsentStore, useStore } from "#/stores/millistore";
 
 export const CookieConsentBanner = () => {
-  const [isVisible, setIsVisible] = useState(
-    localStorage.getItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY) === null,
-  );
+  const [hasCookieConsent, setCookieConsent] = useStore(cookieConsentStore);
 
   const handleAccept = () => {
-    localStorage.setItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY, COOKIES_ACCEPTED);
-    const localStorageDisplayName = localStorage.getItem(
-      DISPLAY_NAME_LOCAL_STORAGE_KEY,
-    );
-    const sessionStorageDisplayName = sessionStorage.getItem(
-      DISPLAY_NAME_LOCAL_STORAGE_KEY,
-    );
-    if (sessionStorageDisplayName && !localStorageDisplayName) {
-      localStorage.setItem(
-        DISPLAY_NAME_LOCAL_STORAGE_KEY,
-        sessionStorageDisplayName,
-      );
-      sessionStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
-    }
-    setIsVisible(false);
+    setCookieConsent(true);
   };
 
   const handleReject = () => {
-    localStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
-    localStorage.setItem(COOKIE_CONSENT_LOCAL_STORAGE_KEY, COOKIES_REJECTED);
-    setIsVisible(false);
+    setCookieConsent(false);
   };
 
-  if (!isVisible) {
+  if (hasCookieConsent !== null) {
     return null;
   }
 

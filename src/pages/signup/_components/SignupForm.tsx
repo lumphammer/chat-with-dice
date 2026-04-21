@@ -1,9 +1,6 @@
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
-import {
-  CHAT_ID_LOCAL_STORAGE_KEY,
-  DISPLAY_NAME_LOCAL_STORAGE_KEY,
-} from "#/constants";
+import { chatIdStore, displayNameStore } from "#/stores/millistore";
 import { authClient } from "#/utils/auth-client";
 import { generateRandomName } from "#/utils/generateRandomName";
 import { Dice6, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
@@ -38,16 +35,15 @@ export function SignupForm() {
       name,
       email,
       password,
-      chatId:
-        localStorage.getItem(CHAT_ID_LOCAL_STORAGE_KEY) ?? crypto.randomUUID(),
+      chatId: chatIdStore.getValue() ?? crypto.randomUUID(),
     });
 
     if (authError) {
       setError(authError.message ?? "Sign-up failed. Please try again.");
       setLoading("idle");
     } else {
-      localStorage.removeItem(CHAT_ID_LOCAL_STORAGE_KEY);
-      localStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
+      chatIdStore.setValue(null);
+      displayNameStore.setValue(null);
       setDone(true);
     }
   }
@@ -58,15 +54,15 @@ export function SignupForm() {
     const { error: authError } = await authClient.signIn.social({
       provider,
       additionalData: {
-        chatId: localStorage.getItem("userId") ?? crypto.randomUUID(),
+        chatId: chatIdStore.getValue() ?? crypto.randomUUID(),
       },
     });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");
       setLoading("idle");
     } else {
-      localStorage.removeItem(CHAT_ID_LOCAL_STORAGE_KEY);
-      localStorage.removeItem(DISPLAY_NAME_LOCAL_STORAGE_KEY);
+      chatIdStore.setValue(null);
+      displayNameStore.setValue(null);
       // on success the browser is redirected by the OAuth flow
     }
   }
