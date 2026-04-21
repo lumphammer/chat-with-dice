@@ -32,7 +32,7 @@ const CommitSection = memo(({ messageId }: { messageId: string }) => {
           previousMessageId: messageId,
         } satisfies HonkD6Formula,
         chat: null,
-        displayName,
+        displayName: displayName ?? "",
       },
     });
   }, [numDice, messageId, sendMessage, displayName]);
@@ -80,7 +80,7 @@ const PassResolveButton = memo(
             previousMessageId: messageId,
           } satisfies HonkD6Formula,
           chat: null,
-          displayName,
+          displayName: displayName ?? "",
         },
       });
     }, [messageId, sendMessage, displayName]);

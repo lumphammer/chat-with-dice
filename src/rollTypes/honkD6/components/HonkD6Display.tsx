@@ -49,7 +49,7 @@ const RollActionButtons = memo(
             previousMessageId: messageId,
           } satisfies HonkD6Formula,
           chat: null,
-          displayName,
+          displayName: displayName ?? "",
         },
       });
     }, [messageId, sendMessage, displayName]);
@@ -64,7 +64,7 @@ const RollActionButtons = memo(
             previousMessageId: messageId,
           } satisfies HonkD6Formula,
           chat: null,
-          displayName,
+          displayName: displayName ?? "",
         },
       });
     }, [messageId, sendMessage, displayName]);
@@ -79,7 +79,7 @@ const RollActionButtons = memo(
             previousMessageId: messageId,
           } satisfies HonkD6Formula,
           chat: null,
-          displayName,
+          displayName: displayName ?? "",
         },
       });
     }, [messageId, sendMessage, displayName]);

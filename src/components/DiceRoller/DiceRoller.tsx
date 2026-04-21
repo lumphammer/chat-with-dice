@@ -166,7 +166,7 @@ export const DiceRoller = memo(
           payload: {
             formula: {},
             chat,
-            displayName: userInfo.displayName,
+            displayName: userInfo.displayName ?? "",
           },
         };
         sendMessage(msg);

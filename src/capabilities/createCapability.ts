@@ -238,6 +238,9 @@ export const createCapability = <
             action,
             (payload: any): void => {
               const correlation = nanoid();
+              if (userIdentity.displayName === null) {
+                return;
+              }
               // construct and send the message
               sendMessage({
                 type: "action",

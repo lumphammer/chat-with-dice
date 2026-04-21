@@ -1,14 +1,15 @@
-import { cookieConsentStore, useStore } from "#/stores/millistore";
+import { cookieConsentStore } from "#/stores/millistore";
+import { useStore } from "@nanostores//react";
 
 export const CookieConsentBanner = () => {
-  const [hasCookieConsent, setCookieConsent] = useStore(cookieConsentStore);
+  const hasCookieConsent = useStore(cookieConsentStore);
 
   const handleAccept = () => {
-    setCookieConsent(true);
+    cookieConsentStore.set(true);
   };
 
   const handleReject = () => {
-    setCookieConsent(false);
+    cookieConsentStore.set(false);
   };
 
   if (hasCookieConsent !== null) {

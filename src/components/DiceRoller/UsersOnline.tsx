@@ -13,7 +13,7 @@ export const UsersOnline = memo(
     roomOwnerId,
   }: {
     usersOnline: OnlineUser[];
-    chatId: string;
+    chatId: string | null;
     roomOwnerId: string;
   }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);

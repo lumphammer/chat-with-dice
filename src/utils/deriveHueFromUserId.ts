@@ -11,7 +11,10 @@ const INITIAL_HASH = 5381;
 const HASH_MULTIPLIER = 33;
 const HUE_DEGREES = 360;
 
-export function deriveHueFromUserId(userId: string): number {
+export function deriveHueFromUserId(userId: string | null): number {
+  if (userId === null) {
+    return 0;
+  }
   let hash = INITIAL_HASH;
   for (let i = 0; i < userId.length; i++) {
     // hash * 33 XOR charCode, kept as a 32-bit integer

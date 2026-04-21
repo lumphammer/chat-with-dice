@@ -35,15 +35,15 @@ export function SignupForm() {
       name,
       email,
       password,
-      chatId: chatIdStore.getValue() ?? crypto.randomUUID(),
+      chatId: chatIdStore.get() ?? crypto.randomUUID(),
     });
 
     if (authError) {
       setError(authError.message ?? "Sign-up failed. Please try again.");
       setLoading("idle");
     } else {
-      chatIdStore.setValue(null);
-      displayNameStore.setValue(null);
+      chatIdStore.set(null);
+      displayNameStore.set(null);
       setDone(true);
     }
   }
@@ -54,15 +54,15 @@ export function SignupForm() {
     const { error: authError } = await authClient.signIn.social({
       provider,
       additionalData: {
-        chatId: chatIdStore.getValue() ?? crypto.randomUUID(),
+        chatId: chatIdStore.get() ?? crypto.randomUUID(),
       },
     });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");
       setLoading("idle");
     } else {
-      chatIdStore.setValue(null);
-      displayNameStore.setValue(null);
+      chatIdStore.set(null);
+      displayNameStore.set(null);
       // on success the browser is redirected by the OAuth flow
     }
   }

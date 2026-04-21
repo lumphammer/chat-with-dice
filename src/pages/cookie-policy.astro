@@ -60,7 +60,7 @@ const title = "Cookie Policy";
     "show-cookie-banner-button",
   );
   showCookieBannerButton?.addEventListener("click", () => {
-    cookieConsentStore.setValue(null);
+    cookieConsentStore.set(null);
     window.location.reload();
   });
 </script>

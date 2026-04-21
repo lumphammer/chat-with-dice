@@ -32,8 +32,8 @@ export const useChatWebSocket = ({
   setRoomName,
 }: {
   roomId: string;
-  chatId: string;
-  displayName: string;
+  chatId: string | null;
+  displayName: string | null;
   onError: (error: { errorMessage: string; detail: string }) => void;
   setCapabilityInfos: Dispatch<SetStateAction<CapabilityInfoContextValue>>;
   setRoomConfig: (config: RoomConfig) => void;
@@ -47,7 +47,7 @@ export const useChatWebSocket = ({
   const websocketRef = useRef<ReconnectingWebSocket>(null);
 
   useEffect(() => {
-    if (!chatId) {
+    if (!chatId || !displayName) {
       return;
     }
 

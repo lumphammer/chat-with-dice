@@ -8,7 +8,7 @@ export const DisplayNameDialog = memo(
     loggedIn,
     isPending,
   }: {
-    displayName: string;
+    displayName: string | null;
     onSetDisplayName: ((newDisplayName: string) => void) | null;
     loggedIn: boolean;
     isPending: boolean;

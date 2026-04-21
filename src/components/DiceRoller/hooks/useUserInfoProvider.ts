@@ -1,7 +1,8 @@
-import { chatIdStore, displayNameStore, useStore } from "#/stores/millistore";
+import { chatIdStore, displayNameStore } from "#/stores/millistore";
 import { authClient } from "#/utils/auth-client";
 import type { UserInfo } from "../types";
-import { useEffect } from "react";
+import { useStore } from "@nanostores/react";
+import { useCallback, useEffect } from "react";
 
 export const useUserInfoProvider = ({
   roomOwnerId,
@@ -9,14 +10,18 @@ export const useUserInfoProvider = ({
   roomOwnerId: string;
 }): UserInfo => {
   const { data: sessionData, isPending } = authClient.useSession();
-  const [localDisplayName, setLocalDislayName] = useStore(displayNameStore);
-  const [localChatId, setLocalChatId] = useStore(chatIdStore);
+  const localDisplayName = useStore(displayNameStore);
+  const localChatId = useStore(chatIdStore);
 
   useEffect(() => {
     if (localChatId === null && !isPending && !sessionData) {
-      setLocalChatId(crypto.randomUUID());
+      chatIdStore.set(crypto.randomUUID());
     }
-  }, [localChatId, isPending, sessionData, setLocalChatId]);
+  }, [localChatId, isPending, sessionData]);
+
+  const handleSetDisplayName = useCallback((newDisplayName: string) => {
+    displayNameStore.set(newDisplayName);
+  }, []);
 
   if (sessionData && sessionData.user) {
     return {
@@ -35,7 +40,7 @@ export const useUserInfoProvider = ({
       isOwner: false,
       loggedIn: false,
       roomOwnerId,
-      handleSetDisplayName: setLocalDislayName,
+      handleSetDisplayName,
       isPending: localDisplayName === null,
     };
   }

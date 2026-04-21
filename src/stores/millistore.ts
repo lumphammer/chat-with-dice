@@ -1,4 +1,3 @@
-// oxlint-disable typescript/unbound-method
 import {
   CHAT_ID_LOCAL_STORAGE_KEY,
   COOKIE_CONSENT_LOCAL_STORAGE_KEY,
@@ -6,63 +5,9 @@ import {
   COOKIES_REJECTED,
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
 } from "#/constants";
-import { useCallback, useSyncExternalStore } from "react";
+import { authClient } from "#/utils/auth-client.ts";
+import { atom, type Atom, type WritableAtom } from "nanostores";
 import { z } from "zod";
-
-/**
- * A function that listens for changes to a store
- */
-export type Listener<T> = (t: T) => void;
-
-/**
- * A store that holds a value and notifies listeners when it changes
- */
-export type Store<T> = {
-  subscribe(listener: Listener<T>): () => void;
-  setValue(newValue: T): void;
-  getValue(): T;
-};
-
-/**
- * Create a store with the given initial value
- * @param initialValue The initial value of the store
- */
-export const createStore = <T>(initialValue: T): Store<T> => {
-  const listeners: Set<Listener<T>> = new Set();
-  let value = initialValue;
-
-  return {
-    subscribe: (listener: Listener<T>) => {
-      listeners.add(listener);
-      return () => {
-        listeners.delete(listener);
-      };
-    },
-    setValue: (newValue: T) => {
-      if (Object.is(value, newValue)) return;
-      value = newValue;
-      listeners.forEach((listener) => listener(newValue));
-    },
-    getValue: () => {
-      return value;
-    },
-  };
-};
-
-/**
- * A hook that wraps a store and provides a reactive value and setter
- * @param store The store to wrap
- */
-export const useStore = <T>(store: Store<T>) => {
-  return [
-    useSyncExternalStore(
-      store.subscribe,
-      store.getValue,
-      store.getValue, // SSR
-    ),
-    useCallback((v: T) => store.setValue(v), [store]),
-  ] as const;
-};
 
 /**
  * Create a store which will persist to localStorage. If there is an existing
@@ -82,24 +27,24 @@ export const useStore = <T>(store: Store<T>) => {
  */
 export const createPersistentStore = <TValue, TDefault extends TValue | null>({
   defaultValue,
-  consentStore = createStore(true),
+  consentStore = atom(true),
   key,
   validator,
 }: {
   defaultValue: TDefault;
-  consentStore?: Store<boolean | null>;
+  consentStore?: Atom<boolean | null>;
   key: string;
   validator: z.ZodType<TValue, string>;
-}): Store<TDefault | TValue> => {
-  const valueStore = createStore<TDefault | TValue>(defaultValue);
+}): WritableAtom<TDefault | TValue> => {
+  const valueStore = atom<TDefault | TValue>(defaultValue);
   if (typeof localStorage === "undefined") {
     return valueStore;
   }
-  if (consentStore.getValue()) {
+  if (consentStore.get()) {
     const stored = localStorage.getItem(key);
     if (stored !== null) {
       try {
-        valueStore.setValue(validator.decode(stored));
+        valueStore.set(validator.decode(stored));
       } catch (e) {
         console.error(`Unable to parse localStorage value for ${key}`, e);
       }
@@ -120,14 +65,14 @@ export const createPersistentStore = <TValue, TDefault extends TValue | null>({
 
   consentStore.subscribe((newHasConsent) => {
     if (newHasConsent) {
-      setOrClearStorage(valueStore.getValue());
+      setOrClearStorage(valueStore.get());
     } else {
       localStorage.removeItem(key);
     }
   });
 
   valueStore.subscribe((newValue) => {
-    if (consentStore.getValue()) {
+    if (consentStore.get()) {
       setOrClearStorage(newValue);
     }
   });
@@ -136,7 +81,7 @@ export const createPersistentStore = <TValue, TDefault extends TValue | null>({
   window.addEventListener("storage", (event) => {
     if (event.key === key && event.newValue !== null) {
       try {
-        valueStore.setValue(validator.decode(event.newValue));
+        valueStore.set(validator.decode(event.newValue));
       } catch (e) {
         console.error(`Unable to parse localStorage value for ${key}`, e);
       }
@@ -167,3 +112,5 @@ export const displayNameStore = createPersistentStore({
   consentStore: cookieConsentStore,
   validator: z.string(),
 });
+
+authClient.$store.listen("$sessionSignal", (_x) => {});

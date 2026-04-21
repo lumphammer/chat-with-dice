@@ -48,8 +48,8 @@ export function SigninForm() {
       setLoading("idle");
       return;
     } else {
-      chatIdStore.setValue(null);
-      displayNameStore.setValue(null);
+      chatIdStore.set(null);
+      displayNameStore.set(null);
       window.location.href = getSafeReturnUrl();
     }
   }
@@ -68,15 +68,15 @@ export function SigninForm() {
       provider,
       callbackURL: getSafeReturnUrl(),
       additionalData: {
-        chatId: chatIdStore.getValue() ?? crypto.randomUUID(),
+        chatId: chatIdStore.get() ?? crypto.randomUUID(),
       },
     });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");
       setLoading("idle");
     } else {
-      chatIdStore.setValue(null);
-      displayNameStore.setValue(null);
+      chatIdStore.set(null);
+      displayNameStore.set(null);
       // on success the browser is redirected by the OAuth flow
     }
   }
