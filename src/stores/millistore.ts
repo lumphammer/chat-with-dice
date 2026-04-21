@@ -1,6 +1,6 @@
 // oxlint-disable typescript/unbound-method
 import { useCallback, useSyncExternalStore } from "react";
-import type { z } from "zod";
+import { z } from "zod";
 
 /**
  * A function that listens for changes to a store
@@ -58,51 +58,66 @@ export const useStore = <T>(store: Store<T>) => {
 };
 
 /**
- * Wrap a store in a persistence layer. If there is an existing valid value in
- * storage the store will be populated with it.
- * @param valueStore The store to persist
+ * Create a store which will persist to localStorage. If there is an existing
+ * valid value in storage the store will be populated with it.
+ *
+ * This is intended to be called once per key at module level
+ *
+ * @param defaultValue The default value to use if no value is found in storage
  * @param permissionStore An optional store that controls whether persistence is enabled
  * @param key The key to use in localStorage
+ * @param validator A zod validator for the value type
+ * @returns A store that persists its value to localStorage
  */
-export const createPersistentStore = <T>({
+export const createPersistentStore = <TValue, TDefault>({
   defaultValue,
-  permissionStore,
+  consentStore = createStore(true),
   key,
   validator,
 }: {
-  defaultValue: T;
-  permissionStore?: Store<boolean>;
+  defaultValue: TDefault;
+  consentStore?: Store<boolean | null>;
   key: string;
-  validator: z.ZodType<T>;
-}): [Store<T>, () => void] => {
-  const valueStore = createStore(defaultValue);
+  validator: z.ZodType<TValue, string>;
+}): Store<TDefault | TValue> => {
+  const valueStore = createStore<TDefault | TValue>(defaultValue);
   if (typeof localStorage === "undefined") {
-    return [valueStore, () => {}];
+    return valueStore;
   }
-  if (permissionStore?.getValue() ?? true) {
+  if (consentStore.getValue()) {
     const stored = localStorage.getItem(key);
     if (stored !== null) {
       try {
-        valueStore.setValue(validator.parse(JSON.parse(stored)));
+        valueStore.setValue(validator.decode(stored));
       } catch (e) {
         console.error(`Unable to parse localStorage value for ${key}`, e);
       }
     }
   }
 
-  const tearDownPermissionsListener =
-    permissionStore &&
-    permissionStore.subscribe((newHasPermission) => {
-      if (newHasPermission) {
-        localStorage.setItem(key, JSON.stringify(valueStore.getValue()));
-      } else {
-        localStorage.removeItem(key);
-      }
-    });
+  function isDefault(x: TValue | TDefault): x is TDefault {
+    return x === defaultValue;
+  }
 
-  const tearDownValueListener = valueStore.subscribe((newValue) => {
-    if (permissionStore?.getValue() ?? true) {
-      localStorage.setItem(key, JSON.stringify(newValue));
+  function setOrClearStorage(value: TValue | TDefault) {
+    if (isDefault(value)) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, validator.encode(value));
+    }
+  }
+
+  consentStore.subscribe((newHasConsent) => {
+    if (newHasConsent) {
+      setOrClearStorage(valueStore.getValue());
+    } else {
+      localStorage.removeItem(key);
+    }
+  });
+
+  valueStore.subscribe((newValue) => {
+    if (consentStore.getValue()) {
+      setOrClearStorage(newValue);
     }
   });
 
@@ -110,16 +125,36 @@ export const createPersistentStore = <T>({
   window.addEventListener("storage", (event) => {
     if (event.key === key && event.newValue !== null) {
       try {
-        valueStore.setValue(validator.parse(JSON.parse(event.newValue)));
+        valueStore.setValue(validator.decode(event.newValue));
       } catch (e) {
         console.error(`Unable to parse localStorage value for ${key}`, e);
       }
     }
   });
 
-  const teardown = () => {
-    tearDownValueListener();
-    tearDownPermissionsListener?.();
-  };
-  return [valueStore, teardown];
+  return valueStore;
 };
+
+export const chatIdStore = createPersistentStore({
+  defaultValue: null,
+  key: "chat-id",
+  validator: z.string(),
+});
+
+export const cookieConsentStore = createPersistentStore({
+  defaultValue: null,
+  key: "cookie-consent",
+  validator: z.codec(z.string(), z.boolean(), {
+    encode: (x) => (x ? "accepted" : "rejected"),
+    decode: (x) => x === "accepted",
+  }),
+});
+
+export const displayNameStore = createPersistentStore({
+  defaultValue: null,
+  key: "display-name",
+  consentStore: cookieConsentStore,
+  validator: z.string(),
+});
+
+chatIdStore.setValue(null);
