@@ -1,4 +1,9 @@
 // oxlint-disable typescript/unbound-method
+import {
+  CHAT_ID_LOCAL_STORAGE_KEY,
+  COOKIE_CONSENT_LOCAL_STORAGE_KEY,
+  DISPLAY_NAME_LOCAL_STORAGE_KEY,
+} from "#/constants";
 import { useCallback, useSyncExternalStore } from "react";
 import { z } from "zod";
 
@@ -63,13 +68,17 @@ export const useStore = <T>(store: Store<T>) => {
  *
  * This is intended to be called once per key at module level
  *
- * @param defaultValue The default value to use if no value is found in storage
- * @param permissionStore An optional store that controls whether persistence is enabled
- * @param key The key to use in localStorage
- * @param validator A zod validator for the value type
- * @returns A store that persists its value to localStorage
+ * Setting the store's value to defaultValue will clear local storage.
+ *
+ * @param defaultValue The default value to use if no value is found in storage.
+ *  Must be assignable to the output type of the validator, or null.
+ * @param permissionStore An optional store that controls whether persistence is
+ *  enabled.
+ * @param key The key to use in localStorage.
+ * @param validator A zod validator for the value type.
+ * @returns A store that persists its value to localStorage.
  */
-export const createPersistentStore = <TValue, TDefault>({
+export const createPersistentStore = <TValue, TDefault extends TValue | null>({
   defaultValue,
   consentStore = createStore(true),
   key,
@@ -137,13 +146,13 @@ export const createPersistentStore = <TValue, TDefault>({
 
 export const chatIdStore = createPersistentStore({
   defaultValue: null,
-  key: "chat-id",
+  key: CHAT_ID_LOCAL_STORAGE_KEY,
   validator: z.string(),
 });
 
 export const cookieConsentStore = createPersistentStore({
   defaultValue: null,
-  key: "cookie-consent",
+  key: COOKIE_CONSENT_LOCAL_STORAGE_KEY,
   validator: z.codec(z.string(), z.boolean(), {
     encode: (x) => (x ? "accepted" : "rejected"),
     decode: (x) => x === "accepted",
@@ -152,9 +161,7 @@ export const cookieConsentStore = createPersistentStore({
 
 export const displayNameStore = createPersistentStore({
   defaultValue: null,
-  key: "display-name",
+  key: DISPLAY_NAME_LOCAL_STORAGE_KEY,
   consentStore: cookieConsentStore,
   validator: z.string(),
 });
-
-chatIdStore.setValue(null);
