@@ -1,4 +1,4 @@
-import { cookieConsentStore } from "#/stores/millistore";
+import { cookieConsentStore } from "#/stores";
 import { useStore } from "@nanostores//react";
 
 export const CookieConsentBanner = () => {

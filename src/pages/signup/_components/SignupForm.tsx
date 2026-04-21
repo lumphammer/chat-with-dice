@@ -1,6 +1,6 @@
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
-import { chatIdStore, displayNameStore } from "#/stores/millistore";
+import { chatIdStore, displayNameStore } from "#/stores";
 import { authClient } from "#/utils/auth-client";
 import { generateRandomName } from "#/utils/generateRandomName";
 import { Dice6, Eye, EyeOff, Lock, Mail, User } from "lucide-react";

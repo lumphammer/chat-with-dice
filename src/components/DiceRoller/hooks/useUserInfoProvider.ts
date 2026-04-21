@@ -1,4 +1,4 @@
-import { chatIdStore, displayNameStore } from "#/stores/millistore";
+import { chatIdStore, displayNameStore } from "#/stores";
 import { authClient } from "#/utils/auth-client";
 import type { UserInfo } from "../types";
 import { useStore } from "@nanostores/react";

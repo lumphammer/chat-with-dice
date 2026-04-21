@@ -25,7 +25,7 @@ import { z } from "zod";
  * @param validator A zod validator for the value type.
  * @returns A store that persists its value to localStorage.
  */
-export const createPersistentStore = <TValue, TDefault extends TValue | null>({
+const createPersistentStore = <TValue, TDefault extends TValue | null>({
   defaultValue,
   consentStore = atom(true),
   key,
