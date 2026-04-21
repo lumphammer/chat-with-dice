@@ -5,7 +5,7 @@ import {
   COOKIES_REJECTED,
   DISPLAY_NAME_LOCAL_STORAGE_KEY,
 } from "#/constants";
-import { sessionAtom } from "#/utils/auth-client.ts";
+// import { sessionAtom } from "#/utils/auth-client.ts";
 import { createPersistentStore } from "./utils/createPersistentStore";
 import { z } from "zod";
 
@@ -29,17 +29,4 @@ export const displayNameStore = createPersistentStore({
   key: DISPLAY_NAME_LOCAL_STORAGE_KEY,
   consentStore: storageConsentStore,
   validator: z.string(),
-});
-
-sessionAtom.subscribe((session) => {
-  console.log("session update", session);
-  if (!session.isPending) {
-    if (session.data) {
-      displayNameStore.set(session.data.user.name);
-      chatIdStore.set(session.data.user.chatId);
-    } else {
-      displayNameStore.set(null);
-      chatIdStore.set(null);
-    }
-  }
 });
