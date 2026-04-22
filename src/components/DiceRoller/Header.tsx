@@ -1,4 +1,5 @@
 import { authClient } from "#/utils/auth-client";
+import { NavBarAccount } from "../NavBarAccount";
 import { DisplayNameDialog } from "./DisplayNameDialog";
 import { UsersOnline } from "./UsersOnline";
 import type { ConnectionStatus } from "./types";
@@ -23,9 +24,7 @@ export const Header = memo(
   }) => {
     const { isPending, data: sessionData } = authClient.useSession();
     const displayName = sessionData?.user.name;
-    // const handleSetDisplayName = ;
     const loggedIn = sessionData !== null;
-    const chatId = sessionData?.user.chatId;
 
     return (
       <header
@@ -56,11 +55,8 @@ export const Header = memo(
               align-baseline data-[connection-status=connected]:bg-green-500"
           ></span>
         </div>
-        <UsersOnline
-          usersOnline={usersOnline}
-          chatId={chatId}
-          roomOwnerId={roomOwnerId}
-        />
+        <UsersOnline usersOnline={usersOnline} roomOwnerId={roomOwnerId} />
+        <NavBarAccount initialUser={null} />
       </header>
     );
   },

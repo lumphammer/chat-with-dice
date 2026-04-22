@@ -1,3 +1,4 @@
+import { authClient } from "#/utils/auth-client";
 import type { OnlineUser } from "#/validators/webSocketMessageSchemas";
 import { OnlineUserBadge } from "./OnlineUserBadge";
 import { X } from "lucide-react";
@@ -9,13 +10,14 @@ const MULTIPLY_USERS_BY = 1;
 export const UsersOnline = memo(
   ({
     usersOnline,
-    chatId,
     roomOwnerId,
   }: {
     usersOnline: OnlineUser[];
-    chatId: string | undefined;
     roomOwnerId: string;
   }) => {
+    const { data: sessionData } = authClient.useSession();
+    const chatId = sessionData?.user.chatId;
+
     const dialogRef = useRef<HTMLDialogElement>(null);
     const handleOpen = useCallback(() => {
       dialogRef.current?.showModal();
@@ -71,57 +73,75 @@ export const UsersOnline = memo(
               className="list bg-base-100 rounded-box flex-1 overflow-auto pb-4
                 shadow-md"
             >
-              {sorted.map((user, i) => (
-                <li
-                  className="list-row bg-base-200"
-                  key={
-                    MULTIPLY_USERS_BY > 1 ? `${user.chatId}:${i}` : user.chatId
-                  }
-                >
-                  <div>
-                    <OnlineUserBadge
-                      key={
-                        MULTIPLY_USERS_BY > 1
-                          ? `${user.chatId}:${i}`
-                          : user.chatId
-                      }
-                      user={user}
-                      isCurrentUser={user.chatId === chatId}
-                      showImage
-                      large
-                    />
-                  </div>
-                  <div>
-                    <div>{user.displayName}</div>
-                    <div className="[] flex flex-row">
-                      {user.chatId === chatId && (
-                        <div
-                          className="peer text-xs font-semibold uppercase
-                            opacity-60"
-                        >
-                          You
-                        </div>
-                      )}
-                      {user.chatId === roomOwnerId && (
-                        <div
-                          className="peer text-xs font-semibold uppercase
-                            opacity-60 not-first:before:mx-1
-                            not-first:before:content-['/']"
-                        >
-                          Room Owner
-                        </div>
-                      )}
-                      <div
-                        className="peer text-xs font-semibold uppercase
-                          opacity-60 not-first:before:mx-1
-                          not-first:before:content-['/']"
-                      >
-                        {user.loggedIn ? "Logged in" : "Anonymous"}
+              {sorted.map((user, i) => {
+                const isYou = user.chatId === chatId;
+                const isAnonymous = isYou && sessionData?.user.isAnonymous;
+                const loggedIn = !isAnonymous && user.loggedIn;
+                return (
+                  <li
+                    className="list-row bg-base-200"
+                    key={
+                      MULTIPLY_USERS_BY > 1
+                        ? `${user.chatId}:${i}`
+                        : user.chatId
+                    }
+                  >
+                    <div>
+                      <OnlineUserBadge
+                        key={
+                          MULTIPLY_USERS_BY > 1
+                            ? `${user.chatId}:${i}`
+                            : user.chatId
+                        }
+                        user={user}
+                        isCurrentUser={user.chatId === chatId}
+                        showImage
+                        large
+                      />
+                    </div>
+                    <div>
+                      <div>{user.displayName}</div>
+                      <div className="[] flex flex-row">
+                        {isYou && (
+                          <div
+                            className="peer text-xs font-semibold uppercase
+                              opacity-60"
+                          >
+                            You
+                          </div>
+                        )}
+                        {isAnonymous && (
+                          <div
+                            className="peer text-xs font-semibold uppercase
+                              opacity-60 not-first:before:mx-1
+                              not-first:before:content-['/']"
+                          >
+                            Anonymous
+                          </div>
+                        )}
+                        {user.chatId === roomOwnerId && (
+                          <div
+                            className="peer text-xs font-semibold uppercase
+                              opacity-60 not-first:before:mx-1
+                              not-first:before:content-['/']"
+                          >
+                            Room Owner
+                          </div>
+                        )}
+                        {loggedIn && (
+                          <div
+                            className="peer text-xs font-semibold uppercase
+                              opacity-60 not-first:before:mx-1
+                              not-first:before:content-['/']"
+                          >
+                            Logged in
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </div>
           <form method="dialog" className="modal-backdrop">
