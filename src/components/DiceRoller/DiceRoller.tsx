@@ -50,11 +50,17 @@ export const DiceRoller = memo(
     config: RoomConfig;
     roomOwnerId: string;
   }) => {
-    const { data: sessionData } = authClient.useSession();
+    const { isPending, data: sessionData } = authClient.useSession();
     const [roomConfig, setRoomConfig] = useState(initialConfig);
     const [roomName, setRoomName] = useState(initialDisplayName);
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});
+
+    useEffect(() => {
+      if (!isPending && sessionData === null) {
+        void authClient.signIn.anonymous();
+      }
+    }, [isPending, sessionData]);
 
     const optimisticallySetCapabilityState = useCallback(
       (
