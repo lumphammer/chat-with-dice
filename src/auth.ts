@@ -7,6 +7,7 @@ import { betterAuth } from "better-auth";
 import { getOAuthState } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
+import { anonymous } from "better-auth/plugins";
 import { waitUntil } from "cloudflare:workers";
 
 // see
@@ -154,6 +155,15 @@ export const auth = betterAuth({
       },
     }),
     admin(),
+    anonymous({
+      onLinkAccount: async ({ anonymousUser, newUser }) => {
+        console.log("anonymousUser", anonymousUser);
+        console.log("newUser", newUser);
+        // newUser.user
+        // auth.api.updateUser
+        // perform actions like moving the cart items from anonymous user to the new user
+      },
+    }),
   ],
 });
 

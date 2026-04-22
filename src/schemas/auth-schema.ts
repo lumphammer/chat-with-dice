@@ -20,6 +20,7 @@ export const users = sqliteTable("users", {
   banned: integer("banned", { mode: "boolean" }).default(false),
   banReason: text("ban_reason"),
   banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
+  isAnonymous: integer("is_anonymous", { mode: "boolean" }).default(false),
   chatId: text("chat_id").notNull().unique(),
 });
 
