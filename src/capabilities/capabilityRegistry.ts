@@ -81,7 +81,7 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
 };
 
 export function isCapabilityName(
-  name: string | undefined,
+  name: string | undefined | null,
 ): name is CapabilityName {
   return !!name && name in capabilityRegistry;
 }

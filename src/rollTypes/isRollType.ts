@@ -1,6 +1,6 @@
 import { rollTypeRegistry, type RollTypeName } from "./rollTypeRegistry";
 
-export const isRollType = (x: string | undefined): x is RollTypeName => {
+export const isRollType = (x: string | undefined | null): x is RollTypeName => {
   return !!x && x in rollTypeRegistry;
 };
 
