@@ -2,6 +2,7 @@ import { db } from "#/db";
 import * as schema from "#/schemas/chatDB-schema";
 import { sendEmail } from "#/utils/sendEmail";
 import { envOrDie } from "./utils/envOrDie";
+import { generateRandomName } from "./utils/generateRandomName";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
 import { getOAuthState } from "better-auth/api";
@@ -157,6 +158,9 @@ export const auth = betterAuth({
     }),
     admin(),
     anonymous({
+      generateName(ctx) {
+        return generateRandomName();
+      },
       onLinkAccount: async ({ anonymousUser, newUser }) => {
         console.log("anonymousUser", anonymousUser);
         console.log("newUser", newUser);
