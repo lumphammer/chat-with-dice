@@ -1,25 +1,30 @@
-// import { rollerMessageSchema } from "./rollerMessageSchema";
-// import { Messages } from "#/schemas/roller-schema";
-// import { createSelectSchema } from "drizzle-orm/zod";
 import { roomConfigValidator } from "./roomConfigValidator";
 import { z } from "zod/v4";
 
 const USERNAME_MAX_LENGTH = 128;
 
 /**
- * A restricted type for JSON-serializable data which *must* be an at the top
- * level.
+ * A restricted type for JSON-serializable data which *must* be an object at the
+ * top level.
  */
 export type JsonData = {
   [key: string]: z.core.util.JSONType;
 };
 
 /**
- * A type for zof validators of JsonData
+ * A type for zod validators of JsonData
  * @see JsonData
  */
 export type JsonValidator = z.ZodType<JsonData>;
 
+/**
+ * A type for zod validators of JsonData or null.
+ */
+export type JsonDataOrNullValidator = z.ZodType<JsonData | null>;
+
+/**
+ * A zod validator for JSON objects.
+ */
 export const jsonObjectValidator = z.record(
   z.string(),
   z.json(),
@@ -31,8 +36,8 @@ export const jsonObjectValidator = z.record(
  * which returns a correctly-typed {@link ChatMessage}.
  */
 function chatMessageValidator<
-  TFormulaValidator extends JsonValidator,
-  TResultValidator extends JsonValidator,
+  TFormulaValidator extends JsonDataOrNullValidator,
+  TResultValidator extends JsonDataOrNullValidator,
 >(
   formulaValidator: TFormulaValidator,
   resultsValidator: TResultValidator,
@@ -41,9 +46,9 @@ function chatMessageValidator<
   displayName: z.ZodString;
   chatId: z.ZodString;
   created_time: z.ZodInt;
-  rollType: z.ZodOptional<z.ZodString>;
-  formula: z.ZodOptional<TFormulaValidator>;
-  results: z.ZodOptional<TResultValidator>;
+  rollType: z.ZodNullable<z.ZodString>;
+  formula: z.ZodNullable<TFormulaValidator>;
+  results: z.ZodNullable<TResultValidator>;
   chat: z.ZodNullable<z.ZodString>;
 }> {
   return z.object({
@@ -56,11 +61,11 @@ function chatMessageValidator<
     /** When the message was created */
     created_time: z.int(),
     /** The type of the roll - none, formula, havoc etc */
-    rollType: z.string().optional(),
+    rollType: z.string().nullable(),
     /**  */
-    formula: formulaValidator.optional(),
+    formula: formulaValidator.nullable(),
     /**  */
-    results: resultsValidator.optional(),
+    results: resultsValidator.nullable(),
     /** Chat text */
     chat: z.string().nullable(),
   });
@@ -73,22 +78,21 @@ function chatMessageValidator<
  * mapped-type machinery.
  */
 export type ChatMessage<
-  TFormula extends JsonData = JsonData,
-  TResult extends JsonData = JsonData,
-> = {
-  id: string;
-  displayName: string;
-  chatId: string;
-  created_time: number;
-  rollType?: string;
-  formula?: TFormula;
-  results?: TResult;
-  chat: string | null;
-};
+  TFormula extends JsonData | null = JsonData | null,
+  TResult extends JsonData | null = JsonData | null,
+> = z.infer<
+  ReturnType<
+    typeof chatMessageValidator<z.ZodType<TFormula>, z.ZodType<TResult>>
+  >
+>;
 
+/**
+ * A zod validator for any chat message, with formula and result types
+ * set to nullable JSON objects.
+ */
 export const anyChatMessageValidator = chatMessageValidator(
-  z.record(z.string(), z.json()),
-  z.record(z.string(), z.json()),
+  z.record(z.string(), z.json()).nullable(),
+  z.record(z.string(), z.json()).nullable(),
 );
 
 /**
@@ -113,15 +117,25 @@ export function parseChatMessage<
   >;
 }
 
-export const onlineUserValidator = z.object({
+/**
+ * A zod validator for an online user, with display name, chat ID, logged-in
+ * status, and optional image URL.
+ */
+const onlineUserValidator = z.object({
   displayName: z.string(),
   chatId: z.string(),
   loggedIn: z.boolean(),
   image: z.url().optional(),
 });
 
+/**
+ * A type for the inferred online user type from the zod validator.
+ */
 export type OnlineUser = z.infer<typeof onlineUserValidator>;
 
+/**
+ * A zod validator for a web socket server message, discriminated by type.
+ */
 export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("message"),
@@ -185,19 +199,33 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
+/**
+ * A type for the inferred web socket server message type from the zod validator.
+ */
 export type WebSocketServerMessage = z.infer<
   typeof webSocketServerMessageSchema
 >;
 
-export const actionCallValidator = z.object({
+/**
+ * A zod validator for an action call, with action name, correlation ID, and
+ * optional parameters.
+ */
+const actionCallValidator = z.object({
   actionName: z.string(),
   correlation: z.string(),
   params: z.any(),
 });
 
+/**
+ * A type for the inferred action call type from the zod validator.
+ */
 export type ActionCall = z.infer<typeof actionCallValidator>;
 
-export const actionCallMessageValidator = z.object({
+/**
+ * A zod validator for an action call message, with a type of "action" and a
+ * payload containing the capability name, display name, and action call.
+ */
+const actionCallMessageValidator = z.object({
   type: z.literal("action"),
   payload: z.object({
     capabilityName: z.string(),
@@ -206,13 +234,13 @@ export const actionCallMessageValidator = z.object({
   }),
 });
 
-export type ActionCallMessage = z.infer<typeof actionCallMessageValidator>;
-
+/**
+ * A zod validator for a web socket client message, discriminated by type.
+ */
 export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("chat"),
     payload: z.object({
-      // WRONG - make this use a list of known roll types
       rollType: z.string().optional(),
       formula: jsonObjectValidator.optional(),
       chat: z.string().nullable(),
@@ -234,6 +262,9 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
   actionCallMessageValidator,
 ]);
 
+/**
+ * A type for the inferred web socket client message type from the zod validator.
+ */
 export type WebSocketClientMessage = z.infer<
   typeof webSocketClientMessageSchema
 >;

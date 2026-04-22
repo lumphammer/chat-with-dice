@@ -5,6 +5,7 @@ import {
 } from "#/validators/webSocketMessageSchemas";
 import { desc, eq } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
+import { z } from "zod";
 
 const MESSAGE_CATCHUP_LENGTH = 100;
 
@@ -44,6 +45,11 @@ export class MessageRepository {
     });
   }
 
+  async insertMessage(message: ChatMessage): Promise<void> {
+    console.log("inserting into db", JSON.stringify(message, null, 2));
+    await this.db.insert(dbSchema.Messages).values(message);
+  }
+
   async getRecent(
     limit: number = MESSAGE_CATCHUP_LENGTH,
   ): Promise<ChatMessage[]> {
@@ -61,6 +67,10 @@ export class MessageRepository {
         if (parsedMessage.success) {
           return parsedMessage.data;
         } else {
+          console.log(
+            "Failed parsing message from DB",
+            z.prettifyError(parsedMessage.error),
+          );
           return null;
         }
       })

@@ -33,6 +33,9 @@ export class MessageJiggler {
     const rollerMessage: ChatMessage = {
       created_time: Date.now(),
       id: crypto.randomUUID(),
+      rollType: null,
+      formula: null,
+      results: null,
       chat,
       chatId,
       displayName,
@@ -41,7 +44,7 @@ export class MessageJiggler {
   }
 
   async sendChatMessage(message: ChatMessage): Promise<void> {
-    await this.messageRepository.upsertMessage(message);
+    await this.messageRepository.insertMessage(message);
     this.broadcaster.broadcastChatMessage(message);
   }
 
