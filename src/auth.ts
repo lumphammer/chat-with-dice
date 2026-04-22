@@ -169,7 +169,7 @@ export const auth = betterAuth({
     }),
     admin(),
     anonymous({
-      generateName(ctx) {
+      generateName(_ctx) {
         return generateRandomName();
       },
       onLinkAccount: async ({ anonymousUser, newUser }) => {
