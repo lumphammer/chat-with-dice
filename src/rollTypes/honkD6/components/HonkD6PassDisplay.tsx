@@ -1,5 +1,5 @@
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
-import { useUserInfoContext } from "#/components/DiceRoller/contexts/userInfoContext";
+import { authClient } from "#/utils/auth-client";
 import type { HonkD6Formula, HonkD6Result } from "../honkD6Validators";
 import { DiceRow } from "./DiceRow";
 import { ProblemsDisplay } from "./ProblemsDisplay";
@@ -10,8 +10,8 @@ import { memo, useCallback, useState, type ChangeEvent } from "react";
 // ── Commit section inside pass display ────────────────────────────────────────
 
 const CommitSection = memo(({ messageId }: { messageId: string }) => {
+  const { data: sessionData } = authClient.useSession();
   const sendMessage = useSendMessageContext();
-  const { displayName } = useUserInfoContext();
   const [numDice, setNumDice] = useState(1);
 
   const handleNumDiceChange = useCallback(
@@ -22,6 +22,10 @@ const CommitSection = memo(({ messageId }: { messageId: string }) => {
   );
 
   const handleCommit = useCallback(() => {
+    if (sessionData === null) {
+      return;
+    }
+
     sendMessage({
       type: "chat",
       payload: {
@@ -32,10 +36,10 @@ const CommitSection = memo(({ messageId }: { messageId: string }) => {
           previousMessageId: messageId,
         } satisfies HonkD6Formula,
         chat: null,
-        displayName: displayName ?? "",
+        displayName: sessionData.user.name,
       },
     });
-  }, [numDice, messageId, sendMessage, displayName]);
+  }, [numDice, messageId, sendMessage, sessionData]);
 
   return (
     <div className="flex items-center gap-2">
@@ -67,10 +71,13 @@ const PassResolveButton = memo(
     messageId: string;
     totalSuccesses: number;
   }) => {
-    const sendMessage = useSendMessageContext();
-    const { displayName } = useUserInfoContext();
+    const { data: sessionData } = authClient.useSession();
 
+    const sendMessage = useSendMessageContext();
     const handleResolve = useCallback(() => {
+      if (sessionData === null) {
+        return;
+      }
       sendMessage({
         type: "chat",
         payload: {
@@ -80,10 +87,10 @@ const PassResolveButton = memo(
             previousMessageId: messageId,
           } satisfies HonkD6Formula,
           chat: null,
-          displayName: displayName ?? "",
+          displayName: sessionData.user.name,
         },
       });
-    }, [messageId, sendMessage, displayName]);
+    }, [messageId, sendMessage, sessionData]);
 
     return (
       <button onClick={handleResolve} className="btn btn-success btn-sm">
@@ -104,7 +111,8 @@ export const HonkD6PassDisplay = memo(
     result: Extract<HonkD6Result, { action: "pass" }>;
     messageId: string;
   }) => {
-    const { chatId } = useUserInfoContext();
+    const { data: sessionData } = authClient.useSession();
+    const chatId = sessionData?.user.chatId;
     const {
       faces,
       totalSuccesses,

@@ -1,6 +1,3 @@
-export const CHAT_ID_LOCAL_STORAGE_KEY = "chatId";
-export const DISPLAY_NAME_LOCAL_STORAGE_KEY = "displayName";
-
 export const WS_KEEPALIVE_INTERVAL_MS = 20_000;
 
 export const COOKIE_CONSENT_LOCAL_STORAGE_KEY = "cookie-consent";

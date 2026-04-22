@@ -1,5 +1,6 @@
 import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
 import { ReconnectingWebSocket } from "#/utils/ReconnectingWebSocket";
+import { authClient } from "#/utils/auth-client";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import {
   webSocketServerMessageSchema,
@@ -24,37 +25,34 @@ const MAX_HISTORY_BUFFER_LENGTH = 100;
 
 export const useChatWebSocket = ({
   roomId,
-  chatId,
-  displayName,
   onError,
   setCapabilityInfos,
   setRoomConfig,
   setRoomName,
 }: {
   roomId: string;
-  chatId: string | null;
-  displayName: string | null;
   onError: (error: { errorMessage: string; detail: string }) => void;
   setCapabilityInfos: Dispatch<SetStateAction<CapabilityInfoContextValue>>;
   setRoomConfig: (config: RoomConfig) => void;
   setRoomName: (roomName: string) => void;
 }) => {
+  const { isPending, data: sessionData } = authClient.useSession();
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
   const [usersOnline, setUsersOnline] = useState<OnlineUser[]>([]);
-
   const websocketRef = useRef<ReconnectingWebSocket>(null);
 
   useEffect(() => {
-    if (!chatId || !displayName) {
+    if (isPending || sessionData === null) {
       return;
     }
 
     const url = new URL("../ws/", document.location.href);
     url.searchParams.set("roomId", roomId);
-    url.searchParams.set("chatId", chatId);
-    url.searchParams.set("displayName", displayName);
+    url.searchParams.set("chatId", sessionData.user.chatId);
+    url.searchParams.set("displayName", sessionData.user.name);
 
     // Create WebSocket connection
     const ws = new ReconnectingWebSocket(url.toString(), {
@@ -173,12 +171,12 @@ export const useChatWebSocket = ({
     };
   }, [
     roomId,
-    chatId,
     onError,
     setCapabilityInfos,
     setRoomConfig,
     setRoomName,
-    displayName,
+    isPending,
+    sessionData,
   ]);
 
   const sendMessage = useCallback((content: WebSocketClientMessage) => {

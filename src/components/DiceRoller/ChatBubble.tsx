@@ -4,12 +4,12 @@ import {
 } from "#/capabilities/capabilityRegistry";
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
+import { authClient } from "#/utils/auth-client";
 import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { RollResultErrorBoundary } from "../RollResultErrorBoundary";
 import { ShowMoreDialog } from "./ShowMoreDialog";
 import { TimeDisplay } from "./TimeDisplay";
-import { useUserInfoContext } from "./contexts/userInfoContext";
 import type { UserHueStyle } from "./types";
 import quikdown from "quikdown";
 import {
@@ -40,8 +40,8 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
   const textRef = useRef<HTMLParagraphElement>(null);
   // const [showMore, setShowMore] = useState(false);
   const [showShowMore, setShowShowMore] = useState(false);
-
-  const { chatId } = useUserInfoContext();
+  const { data: sessionData } = authClient.useSession();
+  const chatId = sessionData?.user.chatId;
 
   const html = useMemo(() => {
     return addLinkTargets(

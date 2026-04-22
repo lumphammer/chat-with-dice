@@ -1,6 +1,5 @@
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
-import { chatIdStore, displayNameStore } from "#/stores";
 import { authClient } from "#/utils/auth-client";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
@@ -16,6 +15,7 @@ function getSafeReturnUrl(): string {
 }
 
 export function SigninForm() {
+  const { data: sessionData } = authClient.useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -48,8 +48,6 @@ export function SigninForm() {
       setLoading("idle");
       return;
     } else {
-      chatIdStore.set(null);
-      displayNameStore.set(null);
       window.location.href = getSafeReturnUrl();
     }
   }
@@ -68,15 +66,17 @@ export function SigninForm() {
       provider,
       callbackURL: getSafeReturnUrl(),
       additionalData: {
-        chatId: chatIdStore.get() ?? crypto.randomUUID(),
+        ...(sessionData && sessionData?.user.isAnonymous
+          ? {
+              chatId: sessionData.user.chatId,
+            }
+          : {}),
       },
     });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");
       setLoading("idle");
     } else {
-      chatIdStore.set(null);
-      displayNameStore.set(null);
       // on success the browser is redirected by the OAuth flow
     }
   }

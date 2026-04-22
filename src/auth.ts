@@ -53,8 +53,9 @@ export const auth = betterAuth({
       chatId: {
         type: "string",
         required: true,
-        unique: true,
-        input: true,
+        unique: false,
+        input: false,
+        defaultValue: () => crypto.randomUUID(),
       },
     },
   },

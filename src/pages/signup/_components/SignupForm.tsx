@@ -1,6 +1,5 @@
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
-import { chatIdStore, displayNameStore } from "#/stores";
 import { authClient } from "#/utils/auth-client";
 import { generateRandomName } from "#/utils/generateRandomName";
 import { Dice6, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
@@ -9,6 +8,7 @@ import { useState } from "react";
 type LoadingState = "idle" | "email" | "github" | "google";
 
 export function SignupForm() {
+  const { data: sessionData } = authClient.useSession();
   const [name, setName] = useState(() => generateRandomName());
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,19 +31,22 @@ export function SignupForm() {
     }
 
     setLoading("email");
+
     const { error: authError } = await authClient.signUp.email({
       name,
       email,
       password,
-      chatId: chatIdStore.get() ?? crypto.randomUUID(),
+      ...(sessionData && sessionData?.user.isAnonymous
+        ? {
+            chatId: sessionData.user.chatId,
+          }
+        : {}),
     });
 
     if (authError) {
       setError(authError.message ?? "Sign-up failed. Please try again.");
       setLoading("idle");
     } else {
-      chatIdStore.set(null);
-      displayNameStore.set(null);
       setDone(true);
     }
   }
@@ -54,15 +57,17 @@ export function SignupForm() {
     const { error: authError } = await authClient.signIn.social({
       provider,
       additionalData: {
-        chatId: chatIdStore.get() ?? crypto.randomUUID(),
+        ...(sessionData && sessionData?.user.isAnonymous
+          ? {
+              chatId: sessionData.user.chatId,
+            }
+          : {}),
       },
     });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");
       setLoading("idle");
     } else {
-      chatIdStore.set(null);
-      displayNameStore.set(null);
       // on success the browser is redirected by the OAuth flow
     }
   }

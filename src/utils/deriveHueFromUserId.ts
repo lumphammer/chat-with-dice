@@ -11,8 +11,8 @@ const INITIAL_HASH = 5381;
 const HASH_MULTIPLIER = 33;
 const HUE_DEGREES = 360;
 
-export function deriveHueFromUserId(userId: string | null): number {
-  if (userId === null) {
+export function deriveHueFromUserId(userId: string | null | undefined): number {
+  if (userId === null || userId === undefined) {
     return 0;
   }
   let hash = INITIAL_HASH;

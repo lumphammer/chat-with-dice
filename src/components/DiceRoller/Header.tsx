@@ -1,6 +1,6 @@
+import { authClient } from "#/utils/auth-client";
 import { DisplayNameDialog } from "./DisplayNameDialog";
 import { UsersOnline } from "./UsersOnline";
-import { useUserInfoContext } from "./contexts/userInfoContext";
 import type { ConnectionStatus } from "./types";
 import { memo } from "react";
 
@@ -9,6 +9,7 @@ export const Header = memo(
     connectionStatus,
     roomName,
     usersOnline,
+    roomOwnerId,
   }: {
     roomName: string;
     connectionStatus: ConnectionStatus;
@@ -18,15 +19,13 @@ export const Header = memo(
       loggedIn: boolean;
       image?: string | undefined;
     }[];
+    roomOwnerId: string;
   }) => {
-    const {
-      displayName,
-      handleSetDisplayName,
-      loggedIn,
-      isPending,
-      chatId,
-      roomOwnerId,
-    } = useUserInfoContext();
+    const { isPending, data: sessionData } = authClient.useSession();
+    const displayName = sessionData?.user.name;
+    // const handleSetDisplayName = ;
+    const loggedIn = sessionData !== null;
+    const chatId = sessionData?.user.chatId;
 
     return (
       <header
@@ -35,12 +34,15 @@ export const Header = memo(
       >
         <div className="room-name">{roomName}</div>
         <div className="flex-1" />
-        <DisplayNameDialog
-          displayName={displayName}
-          onSetDisplayName={handleSetDisplayName}
-          loggedIn={loggedIn}
-          isPending={isPending}
-        />
+        {displayName && (
+          <DisplayNameDialog
+            displayName={displayName}
+            // XXX
+            onSetDisplayName={() => {}}
+            loggedIn={loggedIn}
+            isPending={isPending}
+          />
+        )}
         {/*<div className="h-(--size) flex-col justify-center">
     Connection status:
   </div>*/}

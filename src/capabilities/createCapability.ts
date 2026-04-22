@@ -1,8 +1,8 @@
 import { useCapabilityInfo } from "#/capabilities/reactContexts/capabilityInfoContext";
 import { useSetCapabilityStateContext } from "#/capabilities/reactContexts/setCapabilityStateContext";
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
-import { useUserInfoContext } from "#/components/DiceRoller/contexts/userInfoContext";
 import { toAlphanumeric } from "#/utils/alphanumeric";
+import { authClient } from "#/utils/auth-client";
 import type {
   ActionCall,
   JsonValidator,
@@ -223,7 +223,7 @@ export const createCapability = <
     const sendMessage = useSendMessageContext();
     const setCapabilityState = useSetCapabilityStateContext();
     const info = useCapabilityInfo(name);
-    const userIdentity = useUserInfoContext();
+    const { data: sessionData } = authClient.useSession();
 
     // when we map over the actions, TS gives up on typing the value side,
     // presumably because it's a mapped type? Anyway, this is the type of the
@@ -238,7 +238,7 @@ export const createCapability = <
             action,
             (payload: any): void => {
               const correlation = nanoid();
-              if (userIdentity.displayName === null) {
+              if (sessionData === null) {
                 return;
               }
               // construct and send the message
@@ -251,7 +251,7 @@ export const createCapability = <
                     actionName: action,
                     params: payload,
                   },
-                  displayName: userIdentity.displayName,
+                  displayName: sessionData.user.name,
                 },
               });
 

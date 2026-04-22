@@ -1,5 +1,5 @@
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
-import { useUserInfoContext } from "#/components/DiceRoller/contexts/userInfoContext";
+import { authClient } from "#/utils/auth-client";
 import type { HonkD6Formula, HonkD6Result } from "../honkD6Validators";
 import { DiceRow } from "./DiceRow";
 import { HonkD6PassDisplay } from "./HonkD6PassDisplay";
@@ -36,10 +36,13 @@ const RollActionButtons = memo(
     explodableCount: number;
     totalSuccesses: number;
   }) => {
+    const { data: sessionData } = authClient.useSession();
     const sendMessage = useSendMessageContext();
-    const { displayName } = useUserInfoContext();
 
     const handleExplode = useCallback(() => {
+      if (sessionData === null) {
+        return;
+      }
       sendMessage({
         type: "chat",
         payload: {
@@ -49,12 +52,15 @@ const RollActionButtons = memo(
             previousMessageId: messageId,
           } satisfies HonkD6Formula,
           chat: null,
-          displayName: displayName ?? "",
+          displayName: sessionData.user.name,
         },
       });
-    }, [messageId, sendMessage, displayName]);
+    }, [messageId, sendMessage, sessionData]);
 
     const handleResolve = useCallback(() => {
+      if (sessionData === null) {
+        return;
+      }
       sendMessage({
         type: "chat",
         payload: {
@@ -64,12 +70,15 @@ const RollActionButtons = memo(
             previousMessageId: messageId,
           } satisfies HonkD6Formula,
           chat: null,
-          displayName: displayName ?? "",
+          displayName: sessionData.user.name,
         },
       });
-    }, [messageId, sendMessage, displayName]);
+    }, [messageId, sendMessage, sessionData]);
 
     const handlePass = useCallback(() => {
+      if (sessionData === null) {
+        return;
+      }
       sendMessage({
         type: "chat",
         payload: {
@@ -79,10 +88,10 @@ const RollActionButtons = memo(
             previousMessageId: messageId,
           } satisfies HonkD6Formula,
           chat: null,
-          displayName: displayName ?? "",
+          displayName: sessionData.user.name,
         },
       });
-    }, [messageId, sendMessage, displayName]);
+    }, [messageId, sendMessage, sessionData]);
 
     const canPass = totalSuccesses > 1;
 
@@ -133,8 +142,8 @@ const HonkD6RollDisplay = memo(
       previousContributors,
       schemeDescription,
     } = result;
-    const { chatId } = useUserInfoContext();
-
+    const { data: sessionData } = authClient.useSession();
+    const chatId = sessionData?.user.chatId;
     const isFaded = consumed != null;
     const isOwner =
       previousContributors.length > 0 &&
