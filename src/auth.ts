@@ -56,7 +56,7 @@ export const auth = betterAuth({
         required: true,
         unique: false,
         input: false,
-        defaultValue: () => crypto.randomUUID(),
+        defaultValue: "",
       },
     },
   },
@@ -123,6 +123,17 @@ export const auth = betterAuth({
         // this is how we pass the client-provided chatId into the newly created
         // SSO user
         before: async (_user, ctx) => {
+          if (
+            _user.chatId === "" ||
+            _user.chatId === null ||
+            _user.chatId === undefined
+          ) {
+            return {
+              data: {
+                chatId: crypto.randomUUID(),
+              },
+            };
+          }
           if (ctx?.path === "/callback/:id") {
             const additionalData = await getOAuthState();
             if (additionalData?.chatId) {
