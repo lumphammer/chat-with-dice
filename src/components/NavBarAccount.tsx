@@ -1,5 +1,5 @@
 import { authClient } from "#/utils/auth-client";
-import { Dices, LogOut, Settings, Shield } from "lucide-react";
+import { Dices, LogOut, Settings, Shield, PersonStanding } from "lucide-react";
 import { useRef } from "react";
 
 type UserInfo = {
@@ -91,18 +91,30 @@ export function NavBarAccount({
           <p className="truncate text-xs opacity-60">{user.email}</p>
         </div>
         <ul className="menu p-2">
-          <li>
-            <a href="/roller/rooms" onClick={closeMenu}>
-              <Dices size={16} />
-              Your rooms
-            </a>
-          </li>
-          <li>
-            <a href="/account" onClick={closeMenu}>
-              <Settings size={16} />
-              Account Settings
-            </a>
-          </li>
+          {sessionData?.user.isAnonymous && (
+            <li>
+              <a href="/signup" onClick={closeMenu}>
+                <PersonStanding size={16} />
+                Create an account
+              </a>
+            </li>
+          )}
+          {!sessionData?.user.isAnonymous && (
+            <>
+              <li>
+                <a href="/roller/rooms" onClick={closeMenu}>
+                  <Dices size={16} />
+                  Your rooms
+                </a>
+              </li>
+              <li>
+                <a href="/account" onClick={closeMenu}>
+                  <Settings size={16} />
+                  Account Settings
+                </a>
+              </li>
+            </>
+          )}
           {sessionData?.user.role === "admin" && (
             <li>
               <a href="/sysadmin" onClick={closeMenu}>
