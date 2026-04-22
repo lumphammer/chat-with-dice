@@ -302,23 +302,13 @@ export class DiceRollerRoom extends DurableObject {
    * we rebroadcast the online list.
    */
   override async alarm(): Promise<void> {
-    console.log("DiceRollerRoom # alarm: beginning eviction sweep");
     const now = Date.now();
     let evicted = 0;
 
     const wses = this.ctx.getWebSockets();
-    console.log(
-      "DiceRollerRoom # alarm: currently holding this many websockets:",
-      wses.length,
-    );
 
     for (const ws of wses) {
       const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
-      console.log(
-        "DiceRollerRoom # alarm: examining",
-        att.chatId,
-        att.displayName,
-      );
       const lastPing = this.ctx.getWebSocketAutoResponseTimestamp(ws);
       // null means the client hasn't pinged yet — either brand new or never
       // will. Leave it alone; CF will eventually drop a truly dead TCP.
@@ -337,19 +327,8 @@ export class DiceRollerRoom extends DurableObject {
             );
             // already closed/closing; the sweep is best-effort
           }
-        } else {
-          console.log(
-            "DiceRollerRoom # alarm: stale connection in non-open state, skipping",
-            att.chatId,
-            att.displayName,
-          );
         }
         evicted += 1;
-      } else {
-        console.log(
-          "DiceRollerRoom # alarm: active connection, skipping",
-          ws.deserializeAttachment(),
-        );
       }
     }
 
@@ -362,11 +341,10 @@ export class DiceRollerRoom extends DurableObject {
 
     // Re-arm only while there's something worth watching.
     if (this.ctx.getWebSockets().length > 0) {
-      console.log("DiceRollerRoom # alarm: rescheduling eviction sweep");
       await this.ctx.storage.setAlarm(Date.now() + SWEEP_INTERVAL_MS);
     } else {
       console.log(
-        "DiceRollerRoom # alarm: no active connections, not rescheduling sweep",
+        "DiceRollerRoom # alarm: completed with no active connections, not rescheduling sweep",
       );
     }
   }

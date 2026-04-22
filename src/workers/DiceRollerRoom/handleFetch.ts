@@ -62,7 +62,7 @@ export async function handleFetch(
   // last client left and the sweep wound itself down). A short initial delay
   // lets the brand-new socket actually send its first ping.
   if ((await ctx.storage.getAlarm()) === null) {
-    console.log("setting initial alarm for stale sweep");
+    console.log("Setting initial alarm for stale sweep");
     await ctx.storage.setAlarm(Date.now() + 1_000);
   }
 
@@ -75,16 +75,18 @@ export async function handleFetch(
   };
   server.serializeAttachment(attachment);
 
-  log("created WS attachment", attachment);
+  log(`Created WS attachment for ${displayName} (${userId}):`, attachment);
   // this is lame, but FF dev tools fails to show ws messages sent immediately
   // when the socket is opened
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1719394
   setTimeout(async () => {
     const messages = await messageRepository.getRecent();
-    log("Sending catchup message count", messages.length);
+    log(`Sending ${messages.length} messages to ${displayName} (${userId})`);
     broadcaster.sendCatchUp(server, messages);
     for (const capability of capabilities.values()) {
-      log("sending init for", capability.name);
+      log(
+        `Sending "${capability.name}" capability state to ${displayName} (${userId})`,
+      );
       broadcaster.sendCapabilityInit(server, capability);
     }
     broadcaster.broadcastUsersOnline();
