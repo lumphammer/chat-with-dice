@@ -36,7 +36,7 @@ export const useChatWebSocket = ({
   setRoomConfig: (config: RoomConfig) => void;
   setRoomName: (roomName: string) => void;
 }) => {
-  const { isPending, data: sessionData } = authClient.useSession();
+  const { data: sessionData } = authClient.useSession();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connectionStatus, setConnectionStatus] =
@@ -45,7 +45,7 @@ export const useChatWebSocket = ({
   const websocketRef = useRef<ReconnectingWebSocket>(null);
 
   useEffect(() => {
-    if (isPending || sessionData === null) {
+    if (sessionData === null) {
       return;
     }
 
@@ -175,7 +175,7 @@ export const useChatWebSocket = ({
     setCapabilityInfos,
     setRoomConfig,
     setRoomName,
-    isPending,
+
     sessionData,
   ]);
 
