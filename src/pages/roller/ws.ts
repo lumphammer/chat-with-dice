@@ -1,46 +1,22 @@
-import type { User } from "#/auth";
 import { db } from "#/db";
-import { users, rooms } from "#/schemas/chatDB-schema";
+import { rooms } from "#/schemas/chatDB-schema";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { eq, sql } from "drizzle-orm";
 
 export const prerender = false;
 
-async function validateChatId(user: User | null, chatId: string) {
-  if (user && user.chatId === chatId) {
-    return true;
-  }
-  const chatIdIsNotUsedByAnAccount =
-    (
-      await db
-        .select({ n: sql<number>`1` })
-        .from(users)
-        .where(eq(users.chatId, chatId))
-        .limit(1)
-        .all()
-    ).length === 0;
-
-  return chatIdIsNotUsedByAnAccount;
-}
-
 export const GET: APIRoute = async ({ url, request, locals }) => {
   const roomId = url.searchParams.get("roomId");
-  const chatId = url.searchParams.get("chatId");
-  const displayName = url.searchParams.get("displayName");
-
   if (!roomId) return new Response("roomId is required", { status: 400 });
-  if (!chatId) return new Response("chatId is required", { status: 400 });
-  if (!displayName)
-    return new Response("displayName is required", { status: 400 });
 
-  // get the user if these is one and confirm that teh chatId is available
   const user = locals.user;
-  const chatIdOkay = await validateChatId(user, chatId);
-  if (!chatIdOkay)
-    return new Response("chatId is not available", { status: 400 });
+  if (!user) {
+    return new Response("No session found", { status: 401 });
+  }
 
-  // confirm that room exists in d1
+  // confirm that room exists in d1 (without this, technically you could
+  // create arbitrary new rooms from any id.)
   const roomExists =
     (
       await db
@@ -50,7 +26,9 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
         .limit(1)
         .all()
     ).length > 0;
-  if (!roomExists) return new Response("room does not exist", { status: 400 });
+  if (!roomExists) {
+    return new Response("Room does not exist", { status: 404 });
+  }
 
   // Get the ChatRoom Durable Object stub
   const RollerNamespace = env.DiceRollerRoom;
@@ -58,15 +36,15 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
     return new Response("Roller binding not found", { status: 500 });
   const durableObjectStub = RollerNamespace.getByName(roomId);
 
-  const updatedUrl = new URL(url);
-  updatedUrl.pathname = "/ws";
+  const fetchUrl = new URL("https://example.com/ws");
 
-  if (user) {
-    // update params to set userId
-    updatedUrl.searchParams.set("userId", user.id);
-    if (user.image) {
-      updatedUrl.searchParams.set("image", user.image);
-    }
+  fetchUrl.searchParams.set("userId", user.id);
+  fetchUrl.searchParams.set("roomId", roomId);
+  fetchUrl.searchParams.set("chatId", user.chatId);
+  fetchUrl.searchParams.set("displayName", user.name);
+  if (user.image) {
+    fetchUrl.searchParams.set("image", user.image);
   }
-  return durableObjectStub.fetch(new Request(updatedUrl, request));
+
+  return durableObjectStub.fetch(new Request(fetchUrl, request));
 };
