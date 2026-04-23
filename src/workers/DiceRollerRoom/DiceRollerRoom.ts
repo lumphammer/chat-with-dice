@@ -20,7 +20,13 @@ import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
 import { setupDB } from "./setupDB";
 import { sessionAttachmentSchema } from "./types";
-import { describeState, isClosingorClosed, isConnectingOrOpen } from "./utils";
+import {
+  describeState,
+  isClosingorClosed,
+  isConnectingOrOpen,
+  log,
+  logError,
+} from "./utils";
 import { DurableObject } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
@@ -62,6 +68,11 @@ export class DiceRollerRoom extends DurableObject {
       new WebSocketRequestResponsePair("ping", "pong"),
     );
 
+    log(
+      "\n\n=====================================\nDurable object id booting:",
+      ctx.id.toString(),
+    );
+
     this.db = setupDB(ctx);
     this.messageRepository = new MessageRepository(this.db);
     this.broadcaster = new Broadcaster(ctx);
@@ -70,8 +81,6 @@ export class DiceRollerRoom extends DurableObject {
       this.messageRepository,
       this.broadcaster,
     );
-
-    console.log("Durable object id booting:", ctx.id.toString());
 
     // load config from d1
     void this.ctx.blockConcurrencyWhile(async () => {
@@ -83,7 +92,6 @@ export class DiceRollerRoom extends DurableObject {
         .from(rooms)
         .where(eq(rooms.durableObjectId, ctx.id.toString()))
         .limit(1);
-      console.log("database loaded", roomRows);
       const roomRow = roomRows[0];
       if (!roomRow) {
         throw new Error("Room not found");
@@ -164,8 +172,11 @@ export class DiceRollerRoom extends DurableObject {
         ws.deserializeAttachment(),
       );
       if (error) {
-        console.error("Error parsing attachment", error);
-        console.log("Attachment", ws.deserializeAttachment());
+        console.error(
+          "Error parsing attachment",
+          error,
+          ws.deserializeAttachment(),
+        );
         return;
       }
 
@@ -221,7 +232,7 @@ export class DiceRollerRoom extends DurableObject {
           for (const { name } of this.config.capabilities) {
             if (!newCapabilityNames.has(name)) {
               this.capabilities.delete(name);
-              console.log(name, "unmounted");
+              log(name, "unmounted");
             }
           }
 
@@ -249,7 +260,7 @@ export class DiceRollerRoom extends DurableObject {
       } else if (data.type === "updateRoomName") {
         await checkOwner("update room config", async () => {
           const roomName = data.payload.roomName;
-          console.log("Updating room name", roomName, this.ctx.id.toString());
+          log("Updating room name", roomName, this.ctx.id.toString());
           await d1
             .update(rooms)
             .set({ name: roomName })
@@ -272,24 +283,22 @@ export class DiceRollerRoom extends DurableObject {
    */
   override async webSocketClose(ws: WebSocket, code: number): Promise<void> {
     const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
-    console.log("client disconnected", att.chatId, att.displayName);
+    let line = `Client disconnected: ${att.displayName} / ${att.chatId}.`;
     if (isClosingorClosed(ws)) {
-      console.log(
-        `DiceRollerRoom # webSocketClose: WebSocket already ${describeState(ws)}, won't try to close it again`,
-      );
+      line += ` Already ${describeState(ws)}.`;
       return;
     }
     try {
       ws.close(code, "Durable Object is closing WebSocket");
-      console.log(
-        "DiceRollerRoom # webSocketClose: WebSocket closed successfully",
-      );
+      line += " Closed successfully.";
     } catch (error) {
       console.error(
         "DiceRollerRoom # webSocketClose: Error closing WebSocket:",
         error,
       );
+      line += ` Error while closing: ${error instanceof Error ? error.message : String(error)}`;
     }
+    log(line);
     this.broadcaster.broadcastUsersOnline();
   }
 
@@ -307,35 +316,36 @@ export class DiceRollerRoom extends DurableObject {
 
     const wses = this.ctx.getWebSockets();
 
+    const report: string[] = [];
+
     for (const ws of wses) {
       const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
       const lastPing = this.ctx.getWebSocketAutoResponseTimestamp(ws);
+      const since = lastPing ? now - lastPing.getTime() : null;
+      const sinceString = since !== null ? `${since}ms` : "never";
+      let line = `${att.displayName} (${sinceString})`;
       // null means the client hasn't pinged yet — either brand new or never
       // will. Leave it alone; CF will eventually drop a truly dead TCP.
       if (lastPing && now - lastPing.getTime() > STALE_THRESHOLD_MS) {
+        line += " STALE";
         if (isConnectingOrOpen(ws)) {
+          line += " OPEN";
           try {
-            console.log(
-              "DiceRollerRoom # alarm: closing stale connection",
-              att.chatId,
-              att.displayName,
-            );
             ws.close(WEBSOCKET_GOING_AWAY, "stale connection");
-          } catch {
-            console.log(
-              "DiceRollerRoom # alarm: error while closing - continuing",
-            );
+            line += " Closed succesfully";
+          } catch (error) {
             // already closed/closing; the sweep is best-effort
+            line += ` Error while closing: ${error instanceof Error ? error.message : String(error)}`;
           }
         }
         evicted += 1;
       }
+      report.push(line);
     }
 
+    log(`Alarm: Sweep evicted ${evicted}/${wses.length} connection(s)`);
+    log("\nAlarm: Eviction report:\n" + report.join("\n"));
     if (evicted > 0) {
-      console.log(
-        `DiceRollerRoom # alarm: Sweep evicted ${evicted} stale connection(s)`,
-      );
       this.broadcaster.broadcastUsersOnline();
     }
 
@@ -343,8 +353,8 @@ export class DiceRollerRoom extends DurableObject {
     if (this.ctx.getWebSockets().length > 0) {
       await this.ctx.storage.setAlarm(Date.now() + SWEEP_INTERVAL_MS);
     } else {
-      console.log(
-        "DiceRollerRoom # alarm: completed with no active connections, not rescheduling sweep",
+      log(
+        "Alarm: completed with no active connections, not rescheduling sweep",
       );
     }
   }
@@ -365,7 +375,7 @@ export class DiceRollerRoom extends DurableObject {
     if (!isCapabilityName(name)) {
       return null;
     }
-    console.log("mounting capability", name);
+    log("Mounting capability: ", name);
     const capabilityInfo = capabilityRegistry[name];
     const mountedCap = await capabilityInfo.capability.mount({
       doCtx: this.ctx,
@@ -374,10 +384,8 @@ export class DiceRollerRoom extends DurableObject {
       config,
       broadcaster: this.broadcaster,
     });
-    if (mountedCap) {
-      console.log(name, "mounted!");
-    } else {
-      console.log(name, "failed to mount");
+    if (!mountedCap) {
+      logError("Failed to mount", name);
     }
     return mountedCap ?? null;
   }

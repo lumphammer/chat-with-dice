@@ -13,20 +13,21 @@ import { migrate } from "drizzle-orm/durable-sqlite/migrator";
 export function setupDB(ctx: DurableObjectState) {
   const db = drizzle(ctx.storage, { schema: dbSchema });
 
-  log("Schema before migrations", printSchema(ctx));
+  const before = printSchema(ctx);
 
-  log("Running migrations...");
   void ctx.blockConcurrencyWhile(async () => {
     // migrate the db
     try {
-      log("attempting migration");
+      log("setupDB: Attempting migration");
       await migrate(db, migrations);
     } catch (e: unknown) {
       logError("FAILED MIGRATION", e);
     }
   });
-  log("Schema after migrations", printSchema(ctx));
-  log("Database setup complete");
+  const ater = printSchema(ctx);
+  if (before !== ater) {
+    log("setupDB: Schema changed after migration", before, ater);
+  }
 
   return db;
 }
@@ -43,7 +44,6 @@ function printSchema(ctx: DurableObjectState) {
     .fill("?")
     .join(", ");
   const query = `SELECT sql FROM sqlite_master WHERE name IN (${placeHolders})`;
-  log(query, tableNames);
   const printedSchema = ctx.storage.sql
     .exec(query, ...tableNames)
     .toArray()

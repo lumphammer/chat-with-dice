@@ -8,7 +8,7 @@ const HTTP_SWITCHING_PROTOCOLS = 101;
 /**
  * branded log helper
  */
-const log = console.log.bind(console, "[worker]");
+// const log = console.log.bind(console, "[worker]");
 
 /**
  * A function which takes no arguments and returns a Response; this is the type
@@ -38,10 +38,8 @@ export const addPTerryHeader = () =>
   defineMiddleware(async (request, next) => {
     const response = await next();
     if (response.status === HTTP_SWITCHING_PROTOCOLS) {
-      log("websocket - stepping back");
       return response;
     } else {
-      log("setting header for", request.url);
       // clone the response to avoid "TypeError: Can't modify immutable headers"
       const response2 = new Response(response.body, response);
       response2.headers.set("X-Clacks-Overhead", "GNU Terry Pratchett");
@@ -95,8 +93,6 @@ const get404 = async (env: Env) => {
 
 export default {
   async fetch(request, env, ctx) {
-    log("Worker fetch running for", request.url);
-
     // astro middleware doesn't run for static assets, even when
     // `assets.run_worker_first` is set in wrangler.jsonc. But we can do
     // middleware-like things here.
@@ -124,8 +120,8 @@ export default {
 
     return final();
   },
-  async queue(batch, _env) {
-    let messages = JSON.stringify(batch.messages);
-    log(`consumed from our queue: ${messages}`);
+  async queue(_batch, _env) {
+    // let messages = JSON.stringify(batch.messages);
+    // log(`consumed from our queue: ${messages}`);
   },
 } satisfies ExportedHandler<Env>;

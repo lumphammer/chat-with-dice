@@ -3,6 +3,7 @@ import {
   anyChatMessageValidator,
   type ChatMessage,
 } from "#/validators/webSocketMessageSchemas";
+import { logError } from "./utils";
 import { desc, eq } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 import { z } from "zod";
@@ -46,7 +47,6 @@ export class MessageRepository {
   }
 
   async insertMessage(message: ChatMessage): Promise<void> {
-    console.log("inserting into db", JSON.stringify(message, null, 2));
     await this.db.insert(dbSchema.Messages).values(message);
   }
 
@@ -67,7 +67,7 @@ export class MessageRepository {
         if (parsedMessage.success) {
           return parsedMessage.data;
         } else {
-          console.log(
+          logError(
             "Failed parsing message from DB",
             z.prettifyError(parsedMessage.error),
           );
@@ -75,7 +75,6 @@ export class MessageRepository {
         }
       })
       .filter((m): m is ChatMessage => m !== null);
-    console.log("parsed", parsed);
     return parsed;
   }
 }

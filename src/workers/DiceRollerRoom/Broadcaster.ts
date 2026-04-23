@@ -6,21 +6,15 @@ import type {
   WebSocketServerMessage,
 } from "#/validators/webSocketMessageSchemas";
 import { sessionAttachmentSchema } from "./types";
-import { describeState, isClosingorClosed, isConnectingOrOpen } from "./utils";
+import { isConnectingOrOpen, log } from "./utils";
 
 export class Broadcaster {
   constructor(private ctx: DurableObjectState) {}
 
-  send(ws: WebSocket, message: WebSocketServerMessage): void {
-    if (isClosingorClosed(ws)) {
-      console.error(
-        new Error(
-          `Broadcaster # send: Attempted to send to a socket in ${describeState(ws)} state`,
-        ),
-      );
-      return;
+  private send(ws: WebSocket, message: WebSocketServerMessage): void {
+    if (isConnectingOrOpen(ws)) {
+      ws.send(JSON.stringify(message));
     }
-    ws.send(JSON.stringify(message));
   }
 
   broadcast(message: WebSocketServerMessage): void {
@@ -100,13 +94,15 @@ export class Broadcaster {
   }
 
   private getUsersOnline(): OnlineUser[] {
-    const users = this.ctx
-      .getWebSockets()
+    const sockets = this.ctx.getWebSockets();
+    const onlineSockets = sockets.filter((ws) => isConnectingOrOpen(ws));
+
+    const userObjects = onlineSockets
       .map((ws) => {
         const { data: attachment, success } = sessionAttachmentSchema.safeParse(
           ws.deserializeAttachment(),
         );
-        if (success && ws.readyState === WebSocket.OPEN) {
+        if (success) {
           const onlineUser: OnlineUser = {
             chatId: attachment.chatId,
             displayName: attachment.displayName,
@@ -116,18 +112,21 @@ export class Broadcaster {
           return onlineUser;
         }
       })
-      .filter((u): u is OnlineUser => u !== undefined)
-      .reduce<OnlineUser[]>((acc, user) => {
-        const existingIndex = acc.findIndex((u) => u.chatId === user.chatId);
-        if (existingIndex > -1) {
-          acc[existingIndex] = user;
-        } else {
-          acc.push(user);
-        }
-        return acc;
-      }, []);
-    console.log(JSON.stringify(users, null, 2));
-    return users;
+      .filter((u): u is OnlineUser => u !== undefined);
+    // reduce list to deduplicate by chatId
+    const deduped = userObjects.reduce<OnlineUser[]>((acc, user) => {
+      const existingIndex = acc.findIndex((u) => u.chatId === user.chatId);
+      if (existingIndex > -1) {
+        acc[existingIndex] = user;
+      } else {
+        acc.push(user);
+      }
+      return acc;
+    }, []);
+    log(
+      `Online users: ${sockets.length} sockets /  ${onlineSockets.length} online / ${deduped.length} users after deduplication.`,
+    );
+    return deduped;
   }
 
   broadcastUsersOnline(): void {

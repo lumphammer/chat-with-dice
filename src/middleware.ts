@@ -3,16 +3,14 @@ import { magicAnswers } from "./utils/magicAnswers";
 import { defineMiddleware, sequence } from "astro:middleware";
 
 const HTTP_SWITCHING_PROTOCOLS = 101;
-
-const log = console.log.bind(console, "[middleware]");
+//
+// const log = console.log.bind(console, "[middleware]");
 
 const addPotatoHeader = defineMiddleware(async (context, next) => {
   const response = await next();
   if (response.status === HTTP_SWITCHING_PROTOCOLS) {
-    log("websocket - stepping back");
     return response;
   } else {
-    log("setting header for", context.request.url);
     // clone the response to avoid "TypeError: Can't modify immutable headers"
     const response2 = new Response(response.body, response);
     response2.headers.set(
