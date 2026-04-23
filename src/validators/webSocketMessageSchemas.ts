@@ -125,7 +125,7 @@ const onlineUserValidator = z.object({
   displayName: z.string(),
   chatId: z.string(),
   loggedIn: z.boolean(),
-  image: z.url().optional(),
+  image: z.string().optional(),
 });
 
 /**
