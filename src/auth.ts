@@ -1,5 +1,6 @@
 import { db } from "#/db";
 import * as schema from "#/schemas/chatDB-schema";
+import { users, accounts, sessions } from "#/schemas/chatDB-schema";
 import { sendEmail } from "#/utils/sendEmail";
 import { envOrDie } from "./utils/envOrDie";
 import { generateRandomName } from "./utils/generateRandomName";
@@ -10,6 +11,7 @@ import { emailOTP } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { anonymous } from "better-auth/plugins";
 import { waitUntil } from "cloudflare:workers";
+import { eq } from "drizzle-orm";
 
 // see
 // https://github.com/better-auth/better-auth/issues/6766#issuecomment-3704724493
@@ -169,15 +171,65 @@ export const auth = betterAuth({
     }),
     admin(),
     anonymous({
+      disableDeleteAnonymousUser: true,
       generateName(_ctx) {
         return generateRandomName();
       },
       onLinkAccount: async ({ anonymousUser, newUser }) => {
+        // When an anon user upgrades to a full account, `anonymous` gives us
+        // this hook to update data, but fundamentally it's expecting us to
+        // update *every* reference to the old user id to the new one,
+        // everywhere in our database. That's non-viable in some circumstances,
+        // For example, I'm using Durable Objects and their storage is 100%
+        // internal. Other situations might involves massive, error-prone
+        // updates.
+        //
+        // This is the longest chat I could find on this subject:
+        // https://github.com/better-auth/better-auth/issues/4180
+        //
+        // The burbling clanker in that thread seems to indicate that you can
+        // swap user ids in the accounts table
         console.log("anonymousUser", anonymousUser);
         console.log("newUser", newUser);
-        // newUser.user
-        // auth.api.updateUser
-        // perform actions like moving the cart items from anonymous user to the new user
+        // d1 doesn't support true transactions yet :(
+        // https://github.com/drizzle-team/drizzle-orm/issues/2463
+        // https://github.com/drizzle-team/drizzle-orm/issues/4212
+        //
+        // As of writing, the error message if you BEGIN TRANSACTION is a very
+        // confusing message about using `state.storage.transaction`, which a
+        // Durable Object error incorrectly being surfaced here because D1 is
+        // backed by DOs. There is no true transaction API for D1. The best we
+        // can do is use a batch: https://orm.drizzle.team/docs/batch-api
+        await db.batch([
+          db
+            .update(accounts)
+            .set({ userId: anonymousUser.user.id })
+            .where(eq(accounts.userId, newUser.user.id)),
+
+          db
+            .update(sessions)
+            .set({ userId: anonymousUser.user.id })
+            .where(eq(sessions.userId, newUser.user.id)),
+          // db.delete(sessions).where(eq(sessions.userId, newUser.user.id));
+
+          // delete the new user record
+          db.delete(users).where(eq(users.id, newUser.user.id)),
+
+          // update old user to set isAnonymous = 0, copy in name and email from
+          // new user
+          db
+            .update(users)
+            .set({
+              isAnonymous: false,
+              name: newUser.user.name,
+              email: newUser.user.email,
+            })
+            .where(eq(users.id, anonymousUser.user.id)),
+        ]);
+
+        // sadly mutating these objects has no effect :(
+        // newUser.user.chatId = anonymousUser.user.chatId;
+        // newUser.user.name = anonymousUser.user.name;
       },
     }),
   ],
