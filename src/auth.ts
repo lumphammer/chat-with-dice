@@ -21,6 +21,11 @@ import { eq } from "drizzle-orm";
 
 const MIN_PROD_PASSWORD_LENGTH = 8;
 
+const MAX_ACCOUNT_AGE_TO_OVERWRITE_MINS = 5;
+
+const MAX_ACCOUNT_AGE_TO_OVERWRITE_MS =
+  MAX_ACCOUNT_AGE_TO_OVERWRITE_MINS * 60 * 1000;
+
 const {
   GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET,
@@ -191,6 +196,18 @@ export const auth = betterAuth({
         // swap user ids in the accounts table
         console.log("anonymousUser", anonymousUser);
         console.log("newUser", newUser);
+        // if a user with an exsisting account logs in using OAuth while they
+        // are logged in with a temp/anon account, we end up here. There's no
+        // solid way to tell if newUser is really new, or just someone returning
+        // to an account after accidentally visiting a room and being given an
+        // anon account. We use the account creation time, on the basis that if
+        // it's more than 5 minutes old, it's probably "real" and we shouldn't
+        // delete it (but delete the anon account instead.)
+        const newUserAge = Date.now() - newUser.user.createdAt.getTime();
+        if (newUserAge > MAX_ACCOUNT_AGE_TO_OVERWRITE_MS) {
+          db.delete(users).where(eq(users.id, anonymousUser.user.id));
+          return;
+        }
         // d1 doesn't support true transactions yet :(
         // https://github.com/drizzle-team/drizzle-orm/issues/2463
         // https://github.com/drizzle-team/drizzle-orm/issues/4212
@@ -223,6 +240,7 @@ export const auth = betterAuth({
               isAnonymous: false,
               name: newUser.user.name,
               email: newUser.user.email,
+              image: newUser.user.image,
             })
             .where(eq(users.id, anonymousUser.user.id)),
         ]);
