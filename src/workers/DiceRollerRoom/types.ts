@@ -11,6 +11,7 @@ export const sessionAttachmentSchema = z.object({
   displayName: z.string(),
   image: z.string().optional(),
   loggedIn: z.boolean(),
+  createdTime: z.int(),
 });
 
 export type SessionAttachment = z.infer<typeof sessionAttachmentSchema>;

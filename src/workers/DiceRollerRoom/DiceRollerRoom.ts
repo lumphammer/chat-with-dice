@@ -320,13 +320,22 @@ export class DiceRollerRoom extends DurableObject {
 
     for (const ws of wses) {
       const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
-      const lastPing = this.ctx.getWebSocketAutoResponseTimestamp(ws);
-      const since = lastPing ? now - lastPing.getTime() : null;
-      const sinceString = since !== null ? `${since}ms` : "never";
-      let line = `${att.displayName} (${sinceString})`;
-      // null means the client hasn't pinged yet — either brand new or never
-      // will. Leave it alone; CF will eventually drop a truly dead TCP.
-      if (lastPing && now - lastPing.getTime() > STALE_THRESHOLD_MS) {
+      // last seen time is either the last ping on the ws, or the time it was
+      // created
+      const lastSeen =
+        this.ctx.getWebSocketAutoResponseTimestamp(ws)?.getTime() ??
+        att.createdTime;
+      const timeSinceLastSeen = now - lastSeen;
+      // construct a number of !s based on how it's been since we saw the ws
+      const bangs = Array.from(
+        {
+          length: Math.floor(timeSinceLastSeen / SWEEP_INTERVAL_MS),
+        },
+        () => "!",
+      ).join("");
+      const sinceString = `${timeSinceLastSeen}ms`;
+      let line = `${att.displayName} (${sinceString}${bangs})`;
+      if (lastSeen && now - lastSeen > STALE_THRESHOLD_MS) {
         line += " STALE";
         if (isConnectingOrOpen(ws)) {
           line += " OPEN";

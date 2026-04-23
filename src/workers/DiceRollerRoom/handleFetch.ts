@@ -72,6 +72,7 @@ export async function handleFetch(
     loggedIn,
     displayName,
     image: image ?? undefined,
+    createdTime: Date.now(),
   };
   server.serializeAttachment(attachment);
 
