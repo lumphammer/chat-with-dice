@@ -18,6 +18,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import ReconnectingWebSocket from "reconnecting-websocket";
 import z from "zod";
 
 const MAX_HISTORY_BUFFER_LENGTH = 100;
@@ -56,7 +57,7 @@ export const useChatWebSocket = ({
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
   const [usersOnline, setUsersOnline] = useState<OnlineUser[]>([]);
-  const websocketRef = useRef<WebSocket>(null);
+  const websocketRef = useRef<ReconnectingWebSocket>(null);
 
   useEffect(() => {
     if (!hasSession || sessionDataRef.current === null) {
@@ -67,7 +68,7 @@ export const useChatWebSocket = ({
     url.searchParams.set("roomId", roomId);
 
     // Create WebSocket connection
-    const ws = new WebSocket(url.toString());
+    const ws = new ReconnectingWebSocket(url.toString());
 
     ws.addEventListener("open", () => {
       setConnectionStatus("connected");
