@@ -1,15 +1,21 @@
+import { useStateWithRef } from "#/components/DiceRoller/hooks/useStateWithRef";
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
 import { authClient } from "#/utils/auth-client";
 import { generateRandomName } from "#/utils/generateRandomName";
 import { Dice6, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type LoadingState = "idle" | "email" | "github" | "google";
 
 export function SignupForm() {
-  const { data: sessionData } = authClient.useSession();
-  const [name, setName] = useState(() => generateRandomName());
+  const { isPending, data: sessionData } = authClient.useSession();
+  const [name, setName, nameRef] = useStateWithRef("");
+  useEffect(() => {
+    if (!isPending && nameRef.current === "") {
+      setName(sessionData?.user.name ?? generateRandomName());
+    }
+  }, [isPending, sessionData, setName, nameRef]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
