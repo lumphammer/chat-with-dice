@@ -1,6 +1,6 @@
 import { transform as svgr } from "@svgr/core";
 import { readFile } from "node:fs/promises";
-import { type Config as SvgoConfig, loadConfig, optimize } from "svgo";
+import { type Config as SvgoConfig, optimize } from "svgo";
 import { type Plugin, transformWithEsbuild } from "vite";
 
 const { default: svgrJsxPlugin } = await import("@svgr/plugin-jsx");
@@ -18,21 +18,75 @@ export type ReactSVGPluginConfig = {
 async function optimizeSvg(
   content: string,
   path: string,
-  svgoConfig?: SvgoConfig,
+  svgoConfig: SvgoConfig,
 ) {
-  const config = svgoConfig || (await loadConfig());
-  if (config && config.datauri) {
+  if (svgoConfig.datauri) {
     throw new Error(
       "datauri option for svgo is not allowed when you use vite-plugin-react-svg. Remove it or use a falsy value.",
     );
   }
-  const result = optimize(content, Object.assign({}, config, { path }));
+  const result = optimize(content, Object.assign({}, svgoConfig, { path }));
   return result.data;
 }
 
-const defaultConfig = {
+const defaultConfig: ReactSVGPluginConfig = {
   svgoConfig: {
-    default: {},
+    variants: {
+      illustration: {
+        plugins: [
+          {
+            name: "preset-default",
+            params: {
+              overrides: {
+                collapseGroups: false,
+                cleanupIds: false,
+              },
+            },
+          },
+        ],
+      },
+    },
+    default: {
+      // these are plugins to *SVGO*
+      plugins: [
+        {
+          name: "preset-default",
+        },
+        // converts `style=color:red` to color=red
+        {
+          name: "convertStyleToAttrs",
+        },
+        // and then we change every color to `currentColor` which means it
+        // inherits the color from the parent element, so we can use it
+        // inline with text (like an icon) or set a CSS color on the SVG
+        // when we render it.
+        {
+          name: "convertColors",
+          params: {
+            currentColor: true,
+          },
+        },
+        {
+          name: "removeAttrs",
+          params: {
+            attrs: ["fill"],
+          },
+        },
+        {
+          name: "addAttributesToSVGElement",
+          params: {
+            attributes: [
+              {
+                fill: "currentColor",
+              },
+              {
+                stroke: "currentColor",
+              },
+            ],
+          },
+        },
+      ],
+    },
   },
 };
 
@@ -94,35 +148,5 @@ export function reactSvgPlugin(
         map: null, // TODO:
       };
     },
-
-    /**
-     * Having munged the source code, we need to transform it into a solid
-     * component.
-     */
-    // transform(source, id, transformOptions) {
-    //   const [path] = id.split("?");
-    //   if (id.endsWith(".svg?react")) {
-    //     console.log("Source:\n=======\n\n", source, "\n\n");
-    //     const transformFn =
-    //       reactPlugin &&
-    //       "transform" in reactPlugin &&
-    //       (typeof reactPlugin.transform === "function"
-    //         ? reactPlugin.transform
-    //         : reactPlugin.transform?.handler);
-    //     if (transformFn) {
-    //       try {
-    //         return transformFn?.bind(this)(
-    //           source,
-    //           `${path}.tsx`,
-    //           transformOptions,
-    //         );
-    //       } catch {
-    //         console.error("final react transform shat itself");
-    //       }
-    //     } else {
-    //       console.error("No transform function found");
-    //     }
-    //   }
-    // },
   };
 }

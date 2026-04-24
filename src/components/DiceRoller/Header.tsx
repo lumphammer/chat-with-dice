@@ -31,22 +31,23 @@ export const Header = memo(
 
     return (
       <header
-        className="border-base-100 bg-base-100 flex flex-row gap-4 border-b px-4
-          py-1"
+        className="border-base-content bg-base-100 flex flex-row items-center
+          gap-4 border-b px-4 py-1"
       >
-        <svg />
-        <Logo
-          aria-label="Chat with Dice logo"
-          aria-description="A d6 showing sixes on all sides, with a tail like a speech bubble"
-          width={48}
-          height={48}
-          className="[&_.dark-part]:fill-[oklch(from_var(--color-neutral)_0.95_c_h)]
-            [&_.die-pips]:fill-[oklch(from_var(--color-primary)_0.4_c_h)]
-            [&_.light-part]:fill-[oklch(from_var(--color-neutral)_1_c_h)]
-            [&_.stroke]:fill-none
-            [&_.stroke]:stroke-[oklch(from_var(--color-neutral)_0.7_c_h)]
-            [&_.stroke]:stroke-4"
-        />
+        <a href="/" className="link link-hover text-xl font-medium">
+          <Logo
+            aria-label="Chat with Dice logo"
+            aria-description="A d6 showing sixes on all sides, with a tail like a speech bubble"
+            width={24}
+            height={24}
+            className="[&_.dark-part]:fill-[oklch(from_var(--color-neutral)_0.95_c_h)]
+              [&_.die-pips]:fill-[oklch(from_var(--color-primary)_0.4_c_h)]
+              [&_.light-part]:fill-[oklch(from_var(--color-neutral)_1_c_h)]
+              [&_.stroke]:fill-none
+              [&_.stroke]:stroke-[oklch(from_var(--color-neutral)_0.7_c_h)]
+              [&_.stroke]:stroke-4"
+          />
+        </a>
         <div className="room-name">{roomName}</div>
         <div className="flex-1" />
         {displayName && (
