@@ -55,11 +55,9 @@ export function reactSvgPlugin(
     async load(id) {
       const [path, querystring] = id.split("?");
       const params = new URLSearchParams(querystring);
-      // console.log(`load: ${id}`);
       if (!(path.endsWith(".svg") && params.has("react"))) {
         return null;
       }
-      console.log("load is acting!");
 
       const variantId = params.get("variant") ?? "default";
       const activeConfig =
@@ -73,7 +71,6 @@ export function reactSvgPlugin(
 
       const code = await readFile(path, { encoding: "utf8" });
       const optimized = await optimizeSvg(code, path, activeConfig);
-      // const jsCode = compileSvg(optimized);
       const jsCode = await svgr(
         optimized,
         { jsxRuntime: "automatic" },
@@ -85,7 +82,6 @@ export function reactSvgPlugin(
           },
         },
       );
-      // console.log(jsCode);
       console.log("JS Code:\n=======\n\n", jsCode, "\n\n");
       const transformResult = await transformWithEsbuild(jsCode, id, {
         loader: "jsx",
