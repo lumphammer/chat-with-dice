@@ -2,11 +2,13 @@ import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 const SCROLL_THRESHOLD = 100; // pixels from bottom to consider "near bottom"
 
-type UseSmartScrollArgs = {
+export function useSmartScroll({
+  messages,
+  onScroll,
+}: {
   messages: unknown[];
-};
-
-export function useSmartScroll({ messages }: UseSmartScrollArgs) {
+  onScroll?: (x: number, y: number) => void;
+}) {
   const [hasNewMessages, setHasNewMessages] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -23,6 +25,10 @@ export function useSmartScroll({ messages }: UseSmartScrollArgs) {
 
   // Track scroll position to update isNearBottomRef
   const handleScroll = useCallback(() => {
+    onScroll?.(
+      scrollContainerRef.current?.scrollLeft ?? 0,
+      scrollContainerRef.current?.scrollTop ?? 0,
+    );
     const nearBottom = checkIfNearBottom();
     isNearBottomRef.current = nearBottom;
 
@@ -30,7 +36,7 @@ export function useSmartScroll({ messages }: UseSmartScrollArgs) {
     if (nearBottom && hasNewMessages) {
       setHasNewMessages(false);
     }
-  }, [checkIfNearBottom, hasNewMessages]);
+  }, [checkIfNearBottom, hasNewMessages, onScroll]);
 
   // Scroll to bottom and clear indicator
   const scrollToBottom = useCallback(() => {
@@ -40,6 +46,11 @@ export function useSmartScroll({ messages }: UseSmartScrollArgs) {
 
   // Handle auto-scrolling when messages change
   useLayoutEffect(() => {
+    onScroll?.(
+      scrollContainerRef.current?.scrollLeft ?? 0,
+      scrollContainerRef.current?.scrollTop ?? 0,
+    );
+
     if (isNearBottomRef.current) {
       // User was near bottom, auto-scroll to show new messages
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,7 +58,7 @@ export function useSmartScroll({ messages }: UseSmartScrollArgs) {
       // User is scrolled up, show new messages indicator
       setHasNewMessages(true);
     }
-  }, [messages]);
+  }, [messages, onScroll]);
 
   return {
     scrollContainerRef,

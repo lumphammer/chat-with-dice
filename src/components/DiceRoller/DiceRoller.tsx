@@ -27,7 +27,7 @@ import {
   InfoIcon,
   XIcon,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 enablePatches();
 
@@ -50,6 +50,7 @@ export const DiceRoller = memo(
     config: RoomConfig;
     roomOwnerId: string;
   }) => {
+    const outerDivRef = useRef<HTMLDivElement>(null);
     const { isPending, data: sessionData } = authClient.useSession();
     const [roomConfig, setRoomConfig] = useState(initialConfig);
     const [roomName, setRoomName] = useState(initialDisplayName);
@@ -157,7 +158,12 @@ export const DiceRoller = memo(
       scrollToBottom,
       hasNewMessages,
       bottomRef,
-    } = useSmartScroll({ messages });
+    } = useSmartScroll({
+      messages,
+      onScroll: (_x, y) => {
+        outerDivRef.current?.style.setProperty("--bg-offset", `-${y}px`);
+      },
+    });
 
     const handleNewChatMessage = useCallback(
       ({ chat }: { chat: string }) => {
@@ -176,6 +182,8 @@ export const DiceRoller = memo(
       },
       [sendMessage, sessionData],
     );
+
+    // const handleScrollUpdate = useCallback(())
 
     return (
       <CapabilityInfoContextProvider value={capabilityInfos}>
@@ -202,6 +210,7 @@ export const DiceRoller = memo(
               )}
             >
               <div
+                ref={outerDivRef}
                 className="flex h-full w-full flex-col [--bubble-dark-c:0.12]
                   [--bubble-dark-l:36%] [--bubble-light-c:0.12]
                   [--bubble-light-l:82%]
@@ -222,7 +231,7 @@ export const DiceRoller = memo(
                 <div
                   data-part="outer expander"
                   className="main-area group/main @container-[size] relative
-                    flex flex-1 flex-row justify-start overflow-hidden"
+                    flex flex-1 flex-row justify-start overflow-hidden pt-12"
                 >
                   {/* chat scroller and chat form */}
                   <div
@@ -230,7 +239,7 @@ export const DiceRoller = memo(
                     className="mx-auto flex max-w-4xl flex-1 flex-col
                       overflow-hidden"
                   >
-                    <div className="relative flex-1 basis-0">
+                    <div className="relative flex-1 basis-0 pt-12">
                       <div
                         ref={scrollContainerRef}
                         onScroll={handleScroll}
