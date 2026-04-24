@@ -1,3 +1,4 @@
+import { reactSvgPlugin } from "./vitePluginReactSvg";
 import cloudflare from "@astrojs/cloudflare";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
@@ -34,6 +35,7 @@ export default defineConfig({
       },
     },
     plugins: [
+      reactSvgPlugin(),
       tailwindcss(),
       visualizer({
         emitFile: true,
