@@ -27,13 +27,11 @@ export const Header = memo(
     const displayName = sessionData?.user.name;
     const loggedIn = sessionData !== null;
 
-    console.log(Logo);
-
     return (
       <header
-        className="border-base-content bg-base-100 flex flex-row items-center
-          gap-4 border-b px-4 py-1"
+        className="header relative flex flex-row items-center gap-4 px-4 py-1"
       >
+        <div className="header-backdrop" />
         <a href="/" className="text-xl">
           <Logo
             aria-label="Chat with Dice logo"

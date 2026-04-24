@@ -158,6 +158,22 @@
         ),
         var(--color-base-100);
     }
+    .header {
+      /**/
+    }
+    .header-backdrop {
+      position: absolute;
+      inset: 0;
+      height: 200%;
+      z-index: -1;
+      backdrop-filter: blur(16px);
+      mask-image: linear-gradient(
+        to bottom,
+        black 0% 50%,
+        transparent 50% 100%
+      );
+    }
+
     .sidebar {
       background: oklch(from var(--color-base-100) l c h / 50%);
       backdrop-filter: blur(30px);
