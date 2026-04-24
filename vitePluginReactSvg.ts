@@ -86,7 +86,6 @@ export function reactSvgPlugin(): Plugin {
           },
         },
       );
-      console.log("JSX Code:\n=======\n\n", jsxCode, "\n\n");
       const transformResult = await transformWithEsbuild(jsxCode, id, {
         loader: "jsx",
         jsx: "automatic",
