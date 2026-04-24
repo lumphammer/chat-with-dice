@@ -128,23 +128,26 @@
     .main-area {
       --scanline-1: oklch(from var(--color-accent) l c h / 0);
       --scanline-2: oklch(from var(--color-accent) l c h / 0.05);
-
+      --grid-angle: -5deg;
+      --grid-line-width: 1px;
+      --grid-space-width: 50px;
+      --grid-interval: calc(var(--grid-space-width) + var(--grid-line-width));
       background:
         /*// scanlines*/
 
         repeating-linear-gradient(
-          -5deg,
+          var(--grid-angle),
           var(--scanline-1) 0px,
-          var(--scanline-1) 50px,
-          var(--scanline-2) 50px,
-          var(--scanline-2) 51px
+          var(--scanline-1) var(--grid-space-width),
+          var(--scanline-2) var(--grid-space-width),
+          var(--scanline-2) var(--grid-interval)
         ),
         repeating-linear-gradient(
-          85deg,
+          calc(90deg + var(--grid-angle)),
           var(--scanline-1) 0px,
-          var(--scanline-1) 50px,
-          var(--scanline-2) 50px,
-          var(--scanline-2) 51px
+          var(--scanline-1) var(--grid-space-width),
+          var(--scanline-2) var(--grid-space-width),
+          var(--scanline-2) var(--grid-interval)
         ),
         radial-gradient(
           circle at 10% 90%,
@@ -157,6 +160,17 @@
           oklch(from var(--color-accent) 0.3 c h / 0) 50%
         ),
         var(--color-base-100);
+      background-position-y: var(--bg-offset), var(--bg-offset), top, top, top;
+      background-attachment: local, local, fixed, fixed, fixed;
+      background-repeat: repeat;
+      background-size:
+      /* yes, we're doing trig in CSS to calculate the vertical interval of
+      a rotated repeating linear gradient */
+        100% calc(var(--grid-interval) / cos(var(--grid-angle))),
+        100% calc(var(--grid-interval) / cos(calc(90deg + var(--grid-angle)))),
+        cover,
+        cover,
+        cover;
     }
     .header {
       /**/
