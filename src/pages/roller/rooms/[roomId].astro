@@ -21,7 +21,7 @@ if (!room) {
 // due course, but for now, we'll get the room creator's chatId
 const roomOwnerId = (
   await db
-    .select({ roomOwnerId: users.chatId })
+    .select({ roomOwnerId: users.id })
     .from(users)
     .where(eq(users.id, room.created_by_user_id))
     .limit(1)
