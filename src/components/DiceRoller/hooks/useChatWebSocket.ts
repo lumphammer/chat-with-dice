@@ -76,6 +76,9 @@ export const useChatWebSocket = ({
 
     ws.addEventListener("message", (event) => {
       let blob: any;
+      if (event.data === "pong") {
+        return;
+      }
       try {
         blob = JSON.parse(event.data);
       } catch (e: any) {
