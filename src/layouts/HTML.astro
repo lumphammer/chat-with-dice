@@ -26,9 +26,11 @@ const { title, bodyClass = "", theme } = Astro.props;
         console.log("Configured theme is", theme);
         // debugger;
         if (!theme) {
-          theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "havocDark"
-            : "havocLight";
+          // temp until we improve the default light theme
+          theme = "havocDark";
+          // theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+          //   ? "havocDark"
+          //   : "havocLight";
         }
         document.documentElement.setAttribute("data-theme", theme);
       }
