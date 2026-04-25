@@ -40,11 +40,16 @@
 - [x] "Currently online" / ~~"All visitors" view~~
 - [x] Roles/permissions
 - [x] Completely overhaul anonymous login system
+- [ ] Preferences
+  - [ ] Edit mode (delete messages)
+  - [ ] Users online
+  - [ ] Theme
 - [ ] Themes
 
 ## Capabilities
 
 - [x] Basic rolls
+- [x] Lasers & Feelings
 - [ ] Havoc Engine
   - [ ] Objectives/Adversaries/Rolls
 - [ ] FitD
