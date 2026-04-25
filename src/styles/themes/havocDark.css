@@ -231,20 +231,35 @@
     }
 
     .sidebar {
-      border-radius: 2em;
-      background:
-        /* this should be given a backgroud-clip so that it's only visible in a
-        2px strip around the sidebar (following the 2em-border-radius) */
-        repeating-linear-gradient(
-          to bottom,
-          transparent 0%,
-          oklch(from var(--color-accent) l c h / 50%) 100px,
-          transparent 200px
-        ),
-        /* this background should be allowed to cover the whole sidebar */
-          oklch(from var(--color-base-100) l c h / 50%);
+      position: relative;
+      border-radius: 2em 0 0 2em;
+      background: linear-gradient(
+        to bottom,
+        oklch(from var(--color-base-300) l c h / 50%),
+        oklch(from var(--color-base-100) l c h / 50%) 100%
+      );
       backdrop-filter: blur(30px);
-      /*background-clip: ???;*/
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 2px 0 2px 2px;
+        background: repeating-linear-gradient(
+          35deg,
+          oklch(from var(--color-accent) 0.95 c h / 20%) 100px,
+          oklch(from var(--color-accent) 0.8 c h / 10%) 200px,
+          oklch(from var(--color-accent) 0.95 c h / 20%) 300px
+        );
+        /* hollow mask: the two layers cover everything, but exclude leaves
+           only the 2px padding ring visible */
+        mask:
+          linear-gradient(#000, #000) content-box,
+          linear-gradient(#000, #000);
+        mask-composite: exclude;
+        pointer-events: none;
+      }
     }
   }
 }
