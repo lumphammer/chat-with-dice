@@ -49,8 +49,8 @@ export const Header = memo(
         <div className="flex-1" />
         {displayName && (
           <div
-            className="text-middle inline-flex h-(--size) flex-col justify-center
-              text-sm"
+            className="text-middle inline-flex h-(--size) flex-col
+              justify-center text-sm"
           >
             {displayName}
           </div>
