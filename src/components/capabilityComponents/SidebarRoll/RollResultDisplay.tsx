@@ -6,6 +6,8 @@ import {
   type Keep,
   type Operator,
 } from "#/capabilities/rollCapability";
+import { FormulaLine } from "#/components/capabilityComponents/shared/diceDisplay/FormulaLine";
+import { ResultStat } from "#/components/capabilityComponents/shared/diceDisplay/ResultStat";
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { HandfulDisplay } from "./HandfulDisplay";
 import { memo } from "react";
@@ -64,9 +66,7 @@ export const RollResultDisplay = memo(
 
     return (
       <div className="flex flex-col gap-1 py-1">
-        <span className="font-mono text-xs opacity-60">
-          {formatFormula(formula)}
-        </span>
+        <FormulaLine>{formatFormula(formula)}</FormulaLine>
 
         {isFavouredHandfuls(result.faces) ? (
           <div className="flex flex-col gap-1.5">
@@ -85,10 +85,7 @@ export const RollResultDisplay = memo(
           <HandfulDisplay handful={result.faces} />
         )}
 
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-base-content/40 text-xs">total</span>
-          <span className="text-xl font-bold tabular-nums">{result.total}</span>
-        </div>
+        <ResultStat label="total" value={result.total} />
       </div>
     );
   },

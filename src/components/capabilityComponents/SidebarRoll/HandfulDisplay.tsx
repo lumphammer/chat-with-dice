@@ -1,5 +1,6 @@
-import type { Handful } from "#/capabilities/rollCapability";
-import { FaceChip } from "./FaceChip";
+import type { Face, Handful } from "#/capabilities/rollCapability";
+import { DiceRow } from "#/components/capabilityComponents/shared/diceDisplay/DiceRow";
+import { FaceChip } from "#/components/capabilityComponents/shared/diceDisplay/FaceChip";
 
 type HandfulDisplayProps = {
   handful: Handful;
@@ -9,19 +10,36 @@ type HandfulDisplayProps = {
   showSubtotal?: boolean;
 };
 
+function getRollFaceDegree(
+  face: Face,
+): "failure" | "success" | "critical" | undefined {
+  if (!face.kept) return "failure";
+  if (face.exploded) return "critical";
+  if (face.result === face.cardinality) return "success";
+  return undefined;
+}
+
+function getRollFaceAriaLabel(face: Face): string {
+  return `${face.result}${!face.kept ? " (dropped)" : ""}${
+    face.exploded ? " (exploded)" : ""
+  }`;
+}
+
 export function HandfulDisplay({
   handful,
   dimmed = false,
   showSubtotal = false,
 }: HandfulDisplayProps) {
   return (
-    <div
-      className={`flex flex-wrap items-center gap-1 transition-opacity ${
-        dimmed ? "opacity-35" : ""
-      }`}
-    >
+    <DiceRow dimmed={dimmed}>
       {handful.faces.map((face, i) => (
-        <FaceChip key={i} face={face} />
+        <FaceChip
+          key={i}
+          value={face.result}
+          degree={getRollFaceDegree(face)}
+          dropped={!face.kept}
+          ariaLabel={getRollFaceAriaLabel(face)}
+        />
       ))}
       {showSubtotal && (
         <>
@@ -29,6 +47,6 @@ export function HandfulDisplay({
           <span className="font-semibold tabular-nums">{handful.total}</span>
         </>
       )}
-    </div>
+    </DiceRow>
   );
 }
