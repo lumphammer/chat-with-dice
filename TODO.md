@@ -17,8 +17,10 @@
 
 - [x] Mobile layout
 - [x] Help tab
-- [ ] Nanostores for room name, display name, etc.
+- [x] Nanostores for room name, display name, etc.
 - [x] limit connections per room (100?)
+- [x] Fix websocket leakage & instability
+- [ ] Recent rooms list
 - [ ] Swipable sidebar on mobile
 - [ ] Easier feedback channels (built-in?)
 
@@ -35,8 +37,9 @@
   - [x] Admin users
   - [x] List rooms
 - [x] CI / CD
-- [x] "Currently online" / "All visitors" view
+- [x] "Currently online" / ~~"All visitors" view~~
 - [x] Roles/permissions
+- [x] Completely overhaul anonymous login system
 - [ ] Themes
 
 ## Capabilities
