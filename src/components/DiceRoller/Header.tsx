@@ -33,6 +33,7 @@ export const Header = memo(
           items-center gap-4 px-4 py-1"
       >
         <div className="header-backdrop" />
+        <div className="header-backdrop-edge" />
         <a href="/" className="text-xl">
           <Logo
             aria-label="Chat with Dice logo"
