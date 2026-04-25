@@ -32,8 +32,6 @@ export const Header = memo(
         className="header relative top-0 left-0 z-10 flex h-auto w-full flex-row
           flex-wrap items-center justify-between gap-4 px-4 py-1"
       >
-        <div className="header-backdrop" />
-        <div className="header-backdrop-edge" />
         <a href="/" className="text-xl">
           <Logo
             aria-label="Chat with Dice logo"
