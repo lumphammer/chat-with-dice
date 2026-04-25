@@ -29,7 +29,7 @@ export const Header = memo(
 
     return (
       <header
-        className="header fixed top-0 left-0 z-10 flex h-12 w-full flex-row
+        className="header relative top-0 left-0 z-10 flex h-12 w-full flex-row
           items-center gap-4 px-4 py-1"
       >
         <div className="header-backdrop" />

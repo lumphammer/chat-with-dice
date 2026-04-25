@@ -13,6 +13,7 @@ import { ChatForm } from "./ChatForm";
 import { Header } from "./Header";
 import { RoomConfigContextProvider } from "./contexts/roomConfigContext";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
+import styles from "./diceRoller.module.css";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
 import { useSmartScroll } from "./hooks/useSmartScroll";
 import toastStyles from "./toast.module.css";
@@ -211,11 +212,7 @@ export const DiceRoller = memo(
             >
               <div
                 ref={outerDivRef}
-                className="flex h-full w-full flex-col [--bubble-dark-c:0.12]
-                  [--bubble-dark-l:36%] [--bubble-light-c:0.12]
-                  [--bubble-light-l:82%]
-                  [--user-colour:oklch(var(--bubble-light-l)_var(--bubble-light-c)_var(--user-hue))]
-                  dark:[--user-colour:oklch(var(--bubble-dark-l)_var(--bubble-dark-c)_var(--user-hue))]"
+                className={styles.outerDiv}
                 data-theme="unset"
                 style={
                   { "--user-hue": hue } satisfies UserHueStyle as UserHueStyle
@@ -229,17 +226,17 @@ export const DiceRoller = memo(
                 />
                 {/* flex row for main chat and sidebar */}
                 <div
-                  data-part="outer expander"
+                  data-part="scroller, chat, and sidebar"
                   className="main-area group/main @container-[size] relative
-                    flex flex-1 flex-row justify-start overflow-hidden pt-12"
+                    flex flex-1 flex-row justify-start overflow-hidden"
                 >
                   {/* chat scroller and chat form */}
                   <div
-                    data-part="main"
+                    data-part="scroller and chat"
                     className="mx-auto flex max-w-4xl flex-1 flex-col
                       overflow-hidden"
                   >
-                    <div className="relative flex-1 basis-0 pt-12">
+                    <div className="relative flex-1 basis-0">
                       <div
                         ref={scrollContainerRef}
                         onScroll={handleScroll}
