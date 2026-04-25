@@ -31,7 +31,7 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
       <textarea
         ref={textareaRef}
         rows={1}
-        className={`${styles.input} frost max-h-[30cqh] flex-1 resize-none
+        className={`${styles.input} input frost max-h-[30cqh] flex-1 resize-none
           overflow-y-auto px-4 py-2 text-left transition-[height]`}
         value={chat}
         onChange={(e) => setChat(e.target.value)}
