@@ -12,7 +12,7 @@ const D6 = 6;
 const YOUR_NUMBER_MIN = 2;
 const YOUR_NUMBER_MAX = 5;
 const NUMBER_OF_DICE_MIN = 1;
-const NUMBER_OF_DICE_MAX = 3;
+const NUMBER_OF_DICE_MAX = 4;
 
 export const yourNumberValidator = z
   .int()
@@ -48,7 +48,8 @@ const DEFAULT_YOUR_NUMBER_VALUE = 4;
 const DEFAULT_NUMBER_OF_DICE_VALUE = 2;
 
 export const DEFAULT_YOUR_NUMBER: YourNumber = DEFAULT_YOUR_NUMBER_VALUE;
-export const DEFAULT_NUMBER_OF_DICE: NumberOfDice = DEFAULT_NUMBER_OF_DICE_VALUE;
+export const DEFAULT_NUMBER_OF_DICE: NumberOfDice =
+  DEFAULT_NUMBER_OF_DICE_VALUE;
 
 export const modeValidator = z.enum(["lasers", "feelings"]);
 
@@ -83,10 +84,13 @@ function rollD6(): number {
   return Math.floor(Math.random() * D6) + 1;
 }
 
-function evaluateFace(result: number, yourNumber: YourNumber, mode: Mode): Face {
+function evaluateFace(
+  result: number,
+  yourNumber: YourNumber,
+  mode: Mode,
+): Face {
   const laserFeelings = result === yourNumber;
-  const beats =
-    mode === "lasers" ? result < yourNumber : result > yourNumber;
+  const beats = mode === "lasers" ? result < yourNumber : result > yourNumber;
   return {
     result,
     laserFeelings,
@@ -113,7 +117,9 @@ export const laserFeelingsCapability = createCapability({
             evaluateFace(rollD6(), yourNumber, mode),
           );
           const successCount = faces.filter((f) => f.success).length;
-          const laserFeelingsCount = faces.filter((f) => f.laserFeelings).length;
+          const laserFeelingsCount = faces.filter(
+            (f) => f.laserFeelings,
+          ).length;
           sendChatMessage({
             formula: payload,
             result: {
