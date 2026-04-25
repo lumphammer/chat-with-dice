@@ -125,6 +125,10 @@
         0 100%
       );
       border-radius: 0;
+      &[disabled] {
+        --btn-color: var(--color-base-content);
+        opacity: 50%;
+      }
     }
   }
 
@@ -270,6 +274,41 @@
         mask-composite: exclude;
         pointer-events: none;
       }
+    }
+
+    .dialog {
+      @apply backdrop:backdrop-blur-sm;
+      animation: var(--animate-fadeout, fade-out 300ms forwards);
+      &:is([open], :popover-open, :open) {
+        animation: var(--animate-fadein, fade-in 300ms forwards);
+        display: flex;
+        &::backdrop {
+          animation: var(--animate-fadein, fade-in 300ms forwards);
+          backdrop-filter: blur(16px);
+        }
+      }
+      &::backdrop {
+        animation: var(--animate-fadeout, fade-out 300ms forwards);
+      }
+      background: linear-gradient(
+        to bottom,
+        var(--color-base-200) 0%,
+        var(--color-base-100) 100%
+      );
+      position: absolute;
+      margin: auto;
+      max-width: calc(var(--spacing, 0.25rem /* 4px */) * 100);
+      flex-direction: column;
+      padding: 2em;
+      border: 1px dashed oklch(from var(--color-primary) l c h / 50%);
+      transition:
+        display 300ms allow-discrete,
+        overlay 300ms allow-discrete;
+      background-color: color-mix(
+        in oklab,
+        var(--color-black, #000) 50%,
+        transparent
+      );
     }
   }
 }

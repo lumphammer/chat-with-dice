@@ -8,6 +8,7 @@ import {
 import { SetCapabilityStateContextProvider } from "../../capabilities/reactContexts/setCapabilityStateContext";
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { Sidebar } from "../Sidebar/Sidebar";
+import { AnonymousEntryDialog } from "./AnonymousEntryDialog";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { Header } from "./Header";
@@ -58,12 +59,6 @@ export const DiceRoller = memo(
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});
 
-    useEffect(() => {
-      if (!isPending && sessionData === null) {
-        void authClient.signIn.anonymous();
-      }
-    }, [isPending, sessionData]);
-
     const optimisticallySetCapabilityState = useCallback(
       (
         name: string,
@@ -97,6 +92,16 @@ export const DiceRoller = memo(
           max: 10,
         }),
       [],
+    );
+
+    const handleAnonymousNameUpdateError = useCallback(
+      (message: string) => {
+        toaster.error({
+          title: "Couldn't save your display name",
+          description: `${message} You can change it on your account page.`,
+        });
+      },
+      [toaster],
     );
 
     const { connectionStatus, messages, sendMessage, usersOnline } =
@@ -218,6 +223,11 @@ export const DiceRoller = memo(
                   { "--user-hue": hue } satisfies UserHueStyle as UserHueStyle
                 }
               >
+                {!isPending && sessionData === null && (
+                  <AnonymousEntryDialog
+                    onUpdateNameError={handleAnonymousNameUpdateError}
+                  />
+                )}
                 {/* grid-area: header — targeted via > header rule in CSS module */}
                 <Header
                   connectionStatus={connectionStatus}

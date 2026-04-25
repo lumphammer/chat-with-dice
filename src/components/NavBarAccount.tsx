@@ -100,21 +100,19 @@ export function NavBarAccount({
             </li>
           )}
           {!sessionData?.user.isAnonymous && (
-            <>
-              <li>
-                <a href="/roller/rooms" onClick={closeMenu}>
-                  <Dices size={16} />
-                  Your rooms
-                </a>
-              </li>
-              <li>
-                <a href="/account" onClick={closeMenu}>
-                  <Settings size={16} />
-                  Account Settings
-                </a>
-              </li>
-            </>
+            <li>
+              <a href="/roller/rooms" onClick={closeMenu}>
+                <Dices size={16} />
+                Your rooms
+              </a>
+            </li>
           )}
+          <li>
+            <a href="/account" onClick={closeMenu}>
+              <Settings size={16} />
+              Account Settings
+            </a>
+          </li>
           {sessionData?.user.role === "admin" && (
             <li>
               <a href="/sysadmin" onClick={closeMenu}>

@@ -1,7 +1,6 @@
 import Logo from "#/assets/logo.svg?react";
 import { authClient } from "#/utils/auth-client";
 import { NavBarAccount } from "../NavBarAccount";
-import { DisplayNameDialog } from "./DisplayNameDialog";
 import { UsersOnline } from "./UsersOnline";
 import type { ConnectionStatus } from "./types";
 import { memo } from "react";
@@ -23,9 +22,8 @@ export const Header = memo(
     }[];
     roomOwnerId: string;
   }) => {
-    const { isPending, data: sessionData } = authClient.useSession();
+    const { data: sessionData } = authClient.useSession();
     const displayName = sessionData?.user.name;
-    const loggedIn = sessionData !== null;
 
     return (
       <header
@@ -50,13 +48,12 @@ export const Header = memo(
         <div className="room-name">{roomName}</div>
         <div className="flex-1" />
         {displayName && (
-          <DisplayNameDialog
-            displayName={displayName}
-            // XXX
-            onSetDisplayName={() => {}}
-            loggedIn={loggedIn}
-            isPending={isPending}
-          />
+          <div
+            className="text-middle inline-flex h-(--size) flex-col justify-center
+              text-sm"
+          >
+            {displayName}
+          </div>
         )}
         {/*<div className="h-(--size) flex-col justify-center">
     Connection status:

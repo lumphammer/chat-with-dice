@@ -45,7 +45,7 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
       />
       <button
         disabled={chatRef.current.trim() === ""}
-        className="btn btn-primary h-auto w-12 px-6 disabled:opacity-50"
+        className="btn btn-primary h-auto w-12 px-6"
       >
         <span className="relative flex h-5.5 w-5.5 items-center justify-center">
           <SendHorizontal
