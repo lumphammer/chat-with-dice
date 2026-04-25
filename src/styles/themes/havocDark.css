@@ -181,6 +181,7 @@
       height: 200%;
       z-index: -1;
       backdrop-filter: blur(16px);
+      background: oklch(from var(--color-base-100) l c h / 0.5);
       mask-image: linear-gradient(
         to bottom,
         black 0% 50%,
