@@ -113,3 +113,8 @@
 
 @layer components {
 }
+
+@utility frost {
+  background: oklch(from var(--color-base-100) l c h / 30%);
+  backdrop-filter: blur(16px);
+}

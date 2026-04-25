@@ -1,5 +1,7 @@
+/*@reference "../global.css";*/
 @import "@fontsource-variable/orbitron";
 /*@fontsource-variable/nunito-sans*/
+
 /* =============================================================================
  * Dark theme
  * ===========================================================================*/
@@ -106,9 +108,15 @@
   }*/
 }
 
-@layer components {
-  [data-theme="havocDark"] {
+[data-theme="havocDark"] {
+  @layer utilities {
     .btn {
+      background: radial-gradient(
+        ellipse at center,
+        transparent 0%,
+        oklch(from var(--btn-color) l c h / 30%) 100%
+      );
+      color: var(--btn-color);
       clip-path: polygon(
         0 0,
         100% 0,
@@ -118,7 +126,9 @@
       );
       border-radius: 0;
     }
+  }
 
+  @layer components {
     .room-name {
       font-family: "Orbitron Variable";
       font-size: var(--text-xl);

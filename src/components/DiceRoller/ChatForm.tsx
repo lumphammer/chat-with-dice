@@ -4,20 +4,6 @@ import styles from "@/styles/inputs.module.css";
 import { SendHorizontal } from "lucide-react";
 import { type SubmitEvent, memo, useCallback } from "react";
 
-// * Normal (X Y Z) => Total, success?
-//   * Normal
-//   * With advantage
-//   * With disadvantage
-//   * Exploding
-// * F20 (CST=20, T) => Total, success?, is crit?
-//   * Normal
-//   * With advantage
-//   * With disadvantage
-// * Havoc (X) => hits, crits
-// * FitD (X) => Result(Fail, Success with complications, crits?)
-// * Gumshoe (X) => total
-// * Formula (formula) => total
-
 type ChatFormProps = {
   onNewMessage: (args: { chat: string }) => void;
 };
@@ -29,24 +15,24 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   const handleSubmit = useCallback(
     (event: SubmitEvent) => {
       event.preventDefault();
+      if (chatRef.current.trim() === "") {
+        return;
+      }
       onNewMessage({
         chat: chatRef.current,
       });
+      setChat("");
     },
-    [chatRef, onNewMessage],
+    [chatRef, onNewMessage, setChat],
   );
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="border-primary m-4 flex flex-row overflow-hidden rounded-xl
-        border"
-    >
+    <form onSubmit={handleSubmit} className="m-4 flex flex-row">
       <textarea
         ref={textareaRef}
         rows={1}
-        className={`${styles.input} max-h-[30cqh] flex-1 resize-none
-          overflow-y-auto rounded-l-xl px-4 py-2 text-left`}
+        className={`${styles.input} frost max-h-[30cqh] flex-1 resize-none
+          overflow-y-auto px-4 py-2 text-left transition-[height]`}
         value={chat}
         onChange={(e) => setChat(e.target.value)}
         placeholder="Chat"
@@ -57,7 +43,10 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
           }
         }}
       />
-      <button className="btn btn-primary h-auto w-12 px-6">
+      <button
+        disabled={chatRef.current.trim() === ""}
+        className="btn btn-primary h-auto w-12 px-6 disabled:opacity-50"
+      >
         <span className="relative flex h-5.5 w-5.5 items-center justify-center">
           <SendHorizontal
             size={22}
