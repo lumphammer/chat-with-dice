@@ -107,6 +107,19 @@ export const LaserFeelingsForm = memo(({ onRoll }: LaserFeelingsFormProps) => {
         <Zap className="h-5 w-5" />
         Roll Feelings
       </button>
+      <aside className="prose prose-sm opacity-80">
+        {/*<hr />*/}
+        <p>
+          Based on{" "}
+          <a
+            href="http://www.onesevendesign.com/laserfeelings/"
+            target="_blank"
+          >
+            Lasers & Feelings
+          </a>{" "}
+          by John Harper.
+        </p>
+      </aside>
     </div>
   );
 });
