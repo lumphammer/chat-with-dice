@@ -16,7 +16,7 @@ export const SidebarPanel = ({ title, isSaving, children }: Props) => (
         aria-label="Saving…"
       />
     )}
-    <h2 className="text-3xl">{title}</h2>
+    <h2 className="heading">{title}</h2>
     {children}
   </div>
 );

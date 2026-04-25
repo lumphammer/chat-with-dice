@@ -1,4 +1,5 @@
 import { counterCapability } from "#/capabilities/counterCapability";
+import { SidebarPanel } from "./shared/SidebarPanel";
 import { memo } from "react";
 
 export const SidebarCounter = memo(() => {
@@ -9,8 +10,7 @@ export const SidebarCounter = memo(() => {
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-3xl">Counter</h2>
+    <SidebarPanel title="Counter" isSaving={capInfo.patches.length > 0}>
       <p className="sm text-base-content/70">
         A minimal room capability. Click the button to increment the number.
       </p>
@@ -30,6 +30,6 @@ export const SidebarCounter = memo(() => {
         update comes back from the server, the patch is removed.
       </p>
       <pre className="text-sm">{JSON.stringify(capInfo.patches, null, 2)}</pre>
-    </div>
+    </SidebarPanel>
   );
 });
