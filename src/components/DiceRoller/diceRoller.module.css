@@ -30,7 +30,7 @@
 }
 
 .chatArea {
-  grid-area: chat;
+  grid-area: header / header / chat / chat;
   min-height: 0;
   position: relative;
   max-width: 56rem;
