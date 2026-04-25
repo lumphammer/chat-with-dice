@@ -15,7 +15,9 @@ export const SidebarLaserFeelings = memo(() => {
       title="Lasers & Feelings"
       isSaving={capInfo.patches.length > 0}
     >
-      <LaserFeelingsForm onRoll={(formula) => capInfo.actions.doRoll(formula)} />
+      <LaserFeelingsForm
+        onRoll={(formula) => capInfo.actions.doRoll(formula)}
+      />
     </SidebarPanel>
   );
 });
