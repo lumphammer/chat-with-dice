@@ -3,8 +3,14 @@
 .outerDiv {
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-areas:
+    "header  header"
+    "chat    sidebar"
+    "entry   sidebar";
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  container-type: size;
   --bubble-dark-c: 0.12;
   --bubble-dark-l: 36%;
   --bubble-light-c: 0.12;
@@ -17,4 +23,30 @@
       var(--bubble-dark-l) var(--bubble-dark-c) var(--user-hue)
     );
   }
+
+  > header {
+    grid-area: header;
+  }
+}
+
+.chatArea {
+  grid-area: chat;
+  min-height: 0;
+  position: relative;
+  max-width: 56rem;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.entryArea {
+  grid-area: entry;
+  max-width: 56rem;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.sidebarWrapper {
+  grid-area: sidebar;
+  position: relative;
+  display: flex;
 }

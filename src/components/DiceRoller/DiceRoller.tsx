@@ -212,60 +212,53 @@ export const DiceRoller = memo(
             >
               <div
                 ref={outerDivRef}
-                className={styles.outerDiv}
+                className={`main-area ${styles.outerDiv}`}
                 data-theme="unset"
                 style={
                   { "--user-hue": hue } satisfies UserHueStyle as UserHueStyle
                 }
               >
+                {/* grid-area: header — targeted via > header rule in CSS module */}
                 <Header
                   connectionStatus={connectionStatus}
                   roomName={roomName}
                   usersOnline={usersOnline}
                   roomOwnerId={roomOwnerId}
                 />
-                {/* flex row for main chat and sidebar */}
-                <div
-                  data-part="scroller, chat, and sidebar"
-                  className="main-area group/main @container-[size] relative
-                    flex flex-1 flex-row justify-start overflow-hidden"
-                >
-                  {/* chat scroller and chat form */}
+                {/* chat scrolling area — grid-area: chat */}
+                <div data-part="scroller" className={styles.chatArea}>
                   <div
-                    data-part="scroller and chat"
-                    className="mx-auto flex max-w-4xl flex-1 flex-col
-                      overflow-hidden"
+                    ref={scrollContainerRef}
+                    onScroll={handleScroll}
+                    className="absolute inset-0 overflow-auto px-4"
                   >
-                    <div className="relative flex-1 basis-0">
-                      <div
-                        ref={scrollContainerRef}
-                        onScroll={handleScroll}
-                        className="absolute inset-0 overflow-auto px-4"
-                      >
-                        {messages.map((message) => (
-                          <ChatBubble
-                            key={message.id}
-                            message={message}
-                          ></ChatBubble>
-                        ))}
-                        {messages.length === 0 && (
-                          <div className="font-italic">No messages yet</div>
-                        )}
-                        <div ref={bottomRef} />
-                      </div>
-                      {hasNewMessages && (
-                        <button
-                          onClick={scrollToBottom}
-                          className="btn btn-primary btn-sm absolute bottom-4
-                            left-1/2 -translate-x-1/2 shadow-lg"
-                        >
-                          ↓ New messages
-                        </button>
-                      )}
-                    </div>
-                    <ChatForm onNewMessage={handleNewChatMessage} />
+                    {messages.map((message) => (
+                      <ChatBubble
+                        key={message.id}
+                        message={message}
+                      ></ChatBubble>
+                    ))}
+                    {messages.length === 0 && (
+                      <div className="font-italic">No messages yet</div>
+                    )}
+                    <div ref={bottomRef} />
                   </div>
-                  {/* sidebar */}
+                  {hasNewMessages && (
+                    <button
+                      onClick={scrollToBottom}
+                      className="btn btn-primary btn-sm absolute bottom-4
+                        left-1/2 -translate-x-1/2 shadow-lg"
+                    >
+                      ↓ New messages
+                    </button>
+                  )}
+                </div>
+                {/* chat entry bar — grid-area: entry */}
+                <div data-part="entry" className={styles.entryArea}>
+                  <ChatForm onNewMessage={handleNewChatMessage} />
+                </div>
+                {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
+                <div data-part="sidebar" className={styles.sidebarWrapper}>
                   <Sidebar config={roomConfig} roomOwnerId={roomOwnerId} />
                 </div>
               </div>
