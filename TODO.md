@@ -57,7 +57,7 @@
 - [ ] Preferences
   - [ ] Edit mode (delete messages)
   - [ ] Theme
-- [ ] Users online as a panel
+- [x] Users online as a panel
 - [ ] Themes
 - [ ] File uploads
 - [ ] Cards

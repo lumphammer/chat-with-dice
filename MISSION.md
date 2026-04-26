@@ -12,13 +12,13 @@ Technically this will be in the "VTT" space, but taking a fundamentally differen
 
 All values are presented in a "X over Y" format; that is: while Y may be important or valid, we are putting X ahead of it.
 
-### Ease of use over depth of features
+### Fast, obvious, intuitive over rich, detailed, automated
 
 Some VTTs are extremely deep, and require learning through poring over docs, trial and error, and word-of-mouth on a Discord server. The idea with Chat with Dice is that it is immediately obvious how stuff works. The room owner/GM may have to do a teensy bit more work than the players, but it should never feel overwhelming or like you need to give up and do a load of training after the game.
 
 Trade-off: we're never going to have the levels of automation and richness that some VTTs offer.
 
-### Device-agnosticism over desktop-firstism
+### Device-agnostic over desktop-first
 
 Mobile devices (even phones) are first-class citizens, although we acknowledge that desktop will be an easier experience for some times of interaction (mainly those requiring lots of screen real-estate.)
 
