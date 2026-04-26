@@ -1,8 +1,8 @@
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { authClient } from "#/utils/auth-client";
-import { OnlineUserBadge } from "../DiceRoller/OnlineUserBadge";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { useUsersOnlineContext } from "../DiceRoller/contexts/usersOnlineContext";
+import { OnlineUserBadge } from "./OnlineUserBadge";
 import { memo, useMemo } from "react";
 
 const MULTIPLY_USERS_BY = 1;
@@ -32,10 +32,7 @@ export const UsersOnline = memo(() => {
 
   return (
     <SidebarPanel title="Users Online" isSaving={false}>
-      <ul
-        className="list bg-base-100 rounded-box flex-1 overflow-auto pb-4
-          shadow-md"
-      >
+      <ul className="list gap-1 overflow-auto">
         {sorted.map((user, i) => {
           const isYou = user.userId === userId;
           const isAnonymous = user.isAnonymous;

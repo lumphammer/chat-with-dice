@@ -1,6 +1,6 @@
 import { deriveHueFromUserId } from "#/utils/deriveHueFromUserId";
 import type { OnlineUser } from "#/validators/webSocketMessageSchemas";
-import type { UserHueStyle } from "./types";
+import type { UserHueStyle } from "../DiceRoller/types";
 import { memo, useMemo } from "react";
 
 export const OnlineUserBadge = memo(

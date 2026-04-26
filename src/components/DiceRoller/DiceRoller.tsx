@@ -271,7 +271,7 @@ export const DiceRoller = memo(
                   </div>
                   {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
                   <div data-part="sidebar" className={styles.sidebarWrapper}>
-                    <Sidebar config={roomConfig} roomOwnerId={roomOwnerId} />
+                    <Sidebar />
                   </div>
                 </div>
                 <Portal>

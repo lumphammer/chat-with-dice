@@ -1,5 +1,4 @@
 import Logo from "#/assets/logo.svg?react";
-import { authClient } from "#/utils/auth-client";
 import { NavBarAccount } from "../NavBarAccount";
 import type { ConnectionStatus } from "./types";
 import { memo } from "react";
@@ -12,9 +11,6 @@ export const Header = memo(
     roomName: string;
     connectionStatus: ConnectionStatus;
   }) => {
-    const { data: sessionData } = authClient.useSession();
-    const displayName = sessionData?.user.name;
-
     return (
       <header
         className="header relative top-0 left-0 z-10 flex h-auto w-full flex-row
@@ -37,17 +33,6 @@ export const Header = memo(
         </a>
         <div className="room-name">{roomName}</div>
         <div className="flex-1" />
-        {displayName && (
-          <div
-            className="text-middle inline-flex h-(--size) flex-col
-              justify-center text-sm"
-          >
-            {displayName}
-          </div>
-        )}
-        {/*<div className="h-(--size) flex-col justify-center">
-    Connection status:
-  </div>*/}
         <div
           className="text-middle inline-flex h-(--size) flex-col justify-center"
         >
