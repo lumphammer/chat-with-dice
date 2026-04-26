@@ -1,32 +1,28 @@
 ---
 import { db } from "#/db";
 import HTML from "#/layouts/HTML.astro";
-import { rooms, users } from "#/schemas/chatDB-schema";
 import { roomConfigValidator } from "#/validators/roomConfigValidator";
 import { defaultRoomConfig } from "#/workers/DiceRollerRoom/defaultRoomConfig";
 import { DiceRoller } from "@/components/DiceRoller/DiceRoller";
-import { eq } from "drizzle-orm";
 
 export const prerender = false;
 const roomId = Astro.params["roomId"] ?? "";
-const room = (
-  await db.select().from(rooms).where(eq(rooms.id, roomId)).limit(1).all()
-)[0];
+const room = await db.query.rooms.findFirst({
+  where: {
+    id: roomId,
+  },
+  with: {
+    creator: {
+      columns: {
+        chatId: true,
+      },
+    },
+  },
+});
 
 if (!room) {
   return Astro.redirect("/roller");
 }
-
-// this needs to go away by using a relation, and then getting rid of chatId in
-// due course, but for now, we'll get the room creator's chatId
-const roomOwnerId = (
-  await db
-    .select({ roomOwnerId: users.id })
-    .from(users)
-    .where(eq(users.id, room.created_by_user_id))
-    .limit(1)
-    .all()
-)[0]?.roomOwnerId;
 
 const configParseResult = roomConfigValidator.safeParse(room.config);
 const config = configParseResult.success
@@ -43,6 +39,6 @@ if (configParseResult.success === false) {
     roomId={roomId ?? ""}
     config={config}
     displayName={room.name}
-    roomOwnerId={roomOwnerId}
+    roomOwnerId={room.created_by_user_id}
   />
 </HTML>

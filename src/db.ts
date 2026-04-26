@@ -1,4 +1,7 @@
+import { relations } from "./schemas/chatDB-schema";
 import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
 
-export const db = drizzle(env.chatDB);
+export const db = drizzle(env.chatDB, {
+  relations,
+});

@@ -20,6 +20,7 @@
 - [x] Nanostores for room name, display name, etc.
 - [x] limit connections per room (100?)
 - [x] Fix websocket leakage & instability
+- [x] Create proper relations for room owner
 - [ ] Recent rooms list
 - [ ] Swipable sidebar on mobile
 - [ ] Easier feedback channels (built-in?)
@@ -40,11 +41,6 @@
 - [x] "Currently online" / ~~"All visitors" view~~
 - [x] Roles/permissions
 - [x] Completely overhaul anonymous login system
-- [ ] Preferences
-  - [ ] Edit mode (delete messages)
-  - [ ] Users online
-  - [ ] Theme
-- [ ] Themes
 
 ## Capabilities
 
@@ -58,7 +54,14 @@
 
 ## New features
 
+- [ ] Preferences
+  - [ ] Edit mode (delete messages)
+  - [ ] Theme
+- [ ] Users online as a panel
+- [ ] Themes
 - [ ] File uploads
+- [ ] Cards
+- [ ] Roll tables
 - [ ] Collaborative documents
 - [ ] Whiteboards
 - [ ] Room-level roles (e.g. appoint extra admins)
