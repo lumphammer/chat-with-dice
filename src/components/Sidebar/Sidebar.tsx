@@ -6,9 +6,10 @@ import { authClient } from "#/utils/auth-client";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import { Config } from "./Config";
 import { Help } from "./Help";
+import { UsersOnline } from "./UsersOnline";
 import styles from "./sidebar.module.css";
 import { Tabs } from "@ark-ui/react/tabs";
-import { CircleHelp, Cog } from "lucide-react";
+import { CircleHelp, Cog, UsersRound } from "lucide-react";
 import { memo, useMemo, useRef } from "react";
 
 export const Sidebar = memo(
@@ -116,6 +117,28 @@ export const Sidebar = memo(
                 )}
                 <Tabs.Trigger
                   className={styles.tabButton}
+                  value="usersOnline"
+                  onClick={(e) => {
+                    if (!ref.current) {
+                      return;
+                    }
+                    const isSelected = e.currentTarget.ariaSelected === "true";
+                    if ("desktopClosed" in ref.current.dataset) {
+                      delete ref.current.dataset.desktopClosed;
+                    } else if (isSelected) {
+                      ref.current.dataset.desktopClosed = "true";
+                    }
+                    if (!("mobileOpen" in ref.current.dataset)) {
+                      ref.current.dataset.mobileOpen = "true";
+                    } else if (isSelected) {
+                      delete ref.current.dataset.mobileOpen;
+                    }
+                  }}
+                >
+                  <UsersRound />
+                </Tabs.Trigger>{" "}
+                <Tabs.Trigger
+                  className={styles.tabButton}
                   value="help"
                   onClick={(e) => {
                     if (!ref.current) {
@@ -174,6 +197,11 @@ export const Sidebar = memo(
               <Tabs.Content value="help" className={styles.tabContent}>
                 <div className={styles.tabContentInner}>
                   <Help />
+                </div>
+              </Tabs.Content>
+              <Tabs.Content value="usersOnline" className={styles.tabContent}>
+                <div className={styles.tabContentInner}>
+                  <UsersOnline />
                 </div>
               </Tabs.Content>
             </section>

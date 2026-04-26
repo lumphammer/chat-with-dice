@@ -1,7 +1,6 @@
 import Logo from "#/assets/logo.svg?react";
 import { authClient } from "#/utils/auth-client";
 import { NavBarAccount } from "../NavBarAccount";
-import { UsersOnline } from "./UsersOnline";
 import type { ConnectionStatus } from "./types";
 import { memo } from "react";
 
@@ -9,18 +8,9 @@ export const Header = memo(
   ({
     connectionStatus,
     roomName,
-    usersOnline,
-    roomOwnerId,
   }: {
     roomName: string;
     connectionStatus: ConnectionStatus;
-    usersOnline: {
-      displayName: string;
-      userId: string;
-      loggedIn: boolean;
-      image?: string | undefined;
-    }[];
-    roomOwnerId: string;
   }) => {
     const { data: sessionData } = authClient.useSession();
     const displayName = sessionData?.user.name;
@@ -68,7 +58,6 @@ export const Header = memo(
               align-baseline data-[connection-status=connected]:bg-green-500"
           ></span>
         </div>
-        <UsersOnline usersOnline={usersOnline} roomOwnerId={roomOwnerId} />
         <NavBarAccount initialUser={null} />
       </header>
     );

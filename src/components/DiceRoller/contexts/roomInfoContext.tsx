@@ -1,31 +1,29 @@
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import { type PropsWithChildren, createContext, memo, useContext } from "react";
 
-type RoomConfigContextValue = {
+type RoomInfoContextValue = {
   roomConfig: RoomConfig;
   setRoomConfig: (config: RoomConfig) => void;
   roomName: string;
   setRoomName: (newRoomName: string) => void;
   roomId: string;
+  roomOwnerId: string;
 };
 
-const RoomConfigContext = createContext<RoomConfigContextValue | null>(null);
+const RoomInfoContext = createContext<RoomInfoContextValue | null>(null);
 
-export const RoomConfigContextProvider = memo(
-  ({
-    value,
-    children,
-  }: PropsWithChildren<{ value: RoomConfigContextValue }>) => {
+export const RoomInfoContextProvider = memo(
+  ({ value, children }: PropsWithChildren<{ value: RoomInfoContextValue }>) => {
     return (
-      <RoomConfigContext.Provider value={value}>
+      <RoomInfoContext.Provider value={value}>
         {children}
-      </RoomConfigContext.Provider>
+      </RoomInfoContext.Provider>
     );
   },
 );
 
-export const useRoomConfigContext = () => {
-  const context = useContext(RoomConfigContext);
+export const useRoomInfoContext = () => {
+  const context = useContext(RoomInfoContext);
   if (!context) {
     throw new Error(
       "useRoomConfigContext must be used within a RoomConfigContextProvider",

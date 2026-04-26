@@ -5,7 +5,7 @@ import {
 import { DeleteButton } from "#/components/capabilityComponents/shared/DeleteButton";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
-import { useRoomConfigContext } from "../DiceRoller/contexts/roomConfigContext";
+import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -51,7 +51,7 @@ function setCapabilityEnabled(
 
 export const Config = memo(() => {
   const { roomConfig, setRoomConfig, roomName, setRoomName, roomId } =
-    useRoomConfigContext();
+    useRoomInfoContext();
 
   const [roomNameDraft, setRoomNameDraft] = useState(roomName);
   const roomNameDraftRef = useRef(roomNameDraft);

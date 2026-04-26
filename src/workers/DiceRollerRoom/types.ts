@@ -9,7 +9,7 @@ export const sessionAttachmentSchema = z.object({
   userId: z.string(),
   displayName: z.string(),
   image: z.string().optional(),
-  loggedIn: z.boolean(),
+  isAnonymous: z.boolean(),
   createdTime: z.int(),
 });
 

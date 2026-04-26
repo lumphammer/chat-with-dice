@@ -124,7 +124,7 @@ export function parseChatMessage<
 const onlineUserValidator = z.object({
   displayName: z.string(),
   userId: z.string(),
-  loggedIn: z.boolean(),
+  isAnonymous: z.boolean(),
   image: z.string().optional(),
 });
 

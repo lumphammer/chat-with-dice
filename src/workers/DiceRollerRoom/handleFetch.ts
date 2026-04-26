@@ -40,8 +40,8 @@ export async function handleFetch(
   }
 
   const image = URL.parse(request.url)?.searchParams.get("image");
-  const loggedIn =
-    URL.parse(request.url)?.searchParams.get("loggedIn") === "true";
+  const isAnonymous =
+    URL.parse(request.url)?.searchParams.get("isAnonymous") === "true";
 
   log("Accepting WS fetch request, userId: ", userId);
 
@@ -66,7 +66,7 @@ export async function handleFetch(
 
   const attachment: SessionAttachment = {
     userId,
-    loggedIn,
+    isAnonymous,
     displayName,
     image: image ?? undefined,
     createdTime: Date.now(),

@@ -106,7 +106,7 @@ export class Broadcaster {
           const onlineUser: OnlineUser = {
             userId: attachment.userId,
             displayName: attachment.displayName,
-            loggedIn: attachment.userId !== undefined,
+            isAnonymous: attachment.isAnonymous,
             image: attachment.image,
           };
           return onlineUser;

@@ -41,6 +41,9 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
   fetchUrl.searchParams.set("userId", user.id);
   fetchUrl.searchParams.set("roomId", roomId);
   fetchUrl.searchParams.set("displayName", user.name);
+  if (user.isAnonymous) {
+    fetchUrl.searchParams.set("isAnonymous", "true");
+  }
   if (user.image) {
     fetchUrl.searchParams.set("image", user.image);
   }
