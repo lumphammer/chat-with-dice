@@ -44,7 +44,7 @@ function chatMessageValidator<
 ): z.ZodObject<{
   id: z.ZodString;
   displayName: z.ZodString;
-  chatId: z.ZodString;
+  userId: z.ZodString;
   created_time: z.ZodInt;
   rollType: z.ZodNullable<z.ZodString>;
   formula: z.ZodNullable<TFormulaValidator>;
@@ -56,8 +56,8 @@ function chatMessageValidator<
     id: z.string(),
     /** Display name of the user at the time they sent the message */
     displayName: z.string(),
-    /** Chat ID of the user, used for differentiation */
-    chatId: z.string(),
+    /** ID of the user, used for differentiation */
+    userId: z.string(),
     /** When the message was created */
     created_time: z.int(),
     /** The type of the roll - none, formula, havoc etc */
@@ -118,12 +118,12 @@ export function parseChatMessage<
 }
 
 /**
- * A zod validator for an online user, with display name, chat ID, logged-in
+ * A zod validator for an online user, with display name, ID, logged-in
  * status, and optional image URL.
  */
 const onlineUserValidator = z.object({
   displayName: z.string(),
-  chatId: z.string(),
+  userId: z.string(),
   loggedIn: z.boolean(),
   image: z.string().optional(),
 });
@@ -194,7 +194,7 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("userOffline"),
     payload: z.object({
-      chatId: z.string(),
+      userId: z.string(),
     }),
   }),
 ]);

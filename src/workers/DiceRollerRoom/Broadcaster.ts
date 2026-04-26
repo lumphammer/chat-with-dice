@@ -104,7 +104,7 @@ export class Broadcaster {
         );
         if (success) {
           const onlineUser: OnlineUser = {
-            chatId: attachment.chatId,
+            userId: attachment.userId,
             displayName: attachment.displayName,
             loggedIn: attachment.userId !== undefined,
             image: attachment.image,
@@ -113,9 +113,9 @@ export class Broadcaster {
         }
       })
       .filter((u): u is OnlineUser => u !== undefined);
-    // reduce list to deduplicate by chatId
+    // reduce list to deduplicate by userId
     const deduped = userObjects.reduce<OnlineUser[]>((acc, user) => {
-      const existingIndex = acc.findIndex((u) => u.chatId === user.chatId);
+      const existingIndex = acc.findIndex((u) => u.userId === user.userId);
       if (existingIndex > -1) {
         acc[existingIndex] = user;
       } else {

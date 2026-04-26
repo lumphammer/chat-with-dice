@@ -203,7 +203,7 @@ export class DiceRollerRoom extends DurableObject {
         // handle chat
         await this.messageJiggler.chat({
           ...data.payload,
-          chatId: attachment.chatId,
+          userId: attachment.userId,
         });
       } else if (data.type === "action") {
         // handle actions
@@ -213,7 +213,7 @@ export class DiceRollerRoom extends DurableObject {
         }
         await cap.onMessage({
           actionCall: data.payload.actionCall,
-          chatId: attachment.chatId,
+          userId: attachment.userId,
           displayName: data.payload.displayName,
         });
       } else if (data.type === "updateConfig") {
@@ -283,7 +283,7 @@ export class DiceRollerRoom extends DurableObject {
    */
   override async webSocketClose(ws: WebSocket, code: number): Promise<void> {
     const att = sessionAttachmentSchema.parse(ws.deserializeAttachment());
-    let line = `Client disconnected: ${att.displayName} / ${att.chatId}.`;
+    let line = `Client disconnected: ${att.displayName} / ${att.userId}.`;
     if (isClosingorClosed(ws)) {
       line += ` Already ${describeState(ws)}.`;
       return;

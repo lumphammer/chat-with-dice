@@ -143,11 +143,11 @@ const HonkD6RollDisplay = memo(
       schemeDescription,
     } = result;
     const { data: sessionData } = authClient.useSession();
-    const chatId = sessionData?.user.chatId;
+    const userId = sessionData?.user.id;
     const isFaded = consumed != null;
     const isOwner =
       previousContributors.length > 0 &&
-      previousContributors[previousContributors.length - 1].chatId === chatId;
+      previousContributors[previousContributors.length - 1].userId === userId;
     const ownerName = previousContributors[0]?.displayName ?? "Unknown";
     const actorName =
       previousContributors[previousContributors.length - 1]?.displayName ??

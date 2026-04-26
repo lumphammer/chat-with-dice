@@ -16,7 +16,7 @@ export const Header = memo(
     connectionStatus: ConnectionStatus;
     usersOnline: {
       displayName: string;
-      chatId: string;
+      userId: string;
       loggedIn: boolean;
       image?: string | undefined;
     }[];

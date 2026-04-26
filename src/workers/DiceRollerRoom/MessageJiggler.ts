@@ -23,11 +23,11 @@ export class MessageJiggler {
 
   async chat({
     chat,
-    chatId,
+    userId,
     displayName,
   }: {
     chat: string | null;
-    chatId: string;
+    userId: string;
     displayName: string;
   }): Promise<void> {
     const rollerMessage: ChatMessage = {
@@ -37,7 +37,7 @@ export class MessageJiggler {
       formula: null,
       results: null,
       chat,
-      chatId,
+      userId,
       displayName,
     };
     await this.sendChatMessage(rollerMessage);

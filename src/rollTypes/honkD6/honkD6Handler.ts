@@ -19,7 +19,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
   formula,
   getMessage,
   updateMessage,
-  chatId,
+  userId,
   displayName,
 }) => {
   if (formula.action === "start") {
@@ -30,7 +30,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
       totalSuccesses: successCount,
       problemCount: problemCount,
       explodableCount: successCount,
-      previousContributors: [{ chatId, displayName }],
+      previousContributors: [{ userId, displayName }],
       schemeDescription: formula.schemeDescription,
     } satisfies HonkD6Result;
   }
@@ -45,7 +45,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
       throw new Error("Previous message did not result in a pass");
     }
     const [faces, successCount, problemCount] = roll(formula.numDice);
-    previous.results.consumedBy = { chatId, displayName };
+    previous.results.consumedBy = { userId, displayName };
     await updateMessage(previous);
 
     return {
@@ -56,7 +56,7 @@ export const honkD6Handler: RollHandler<HonkD6Formula, HonkD6Result> = async ({
       explodableCount: successCount,
       previousContributors: [
         ...previous.results.previousContributors,
-        { chatId, displayName },
+        { userId, displayName },
       ],
       schemeDescription: previous.results.schemeDescription,
     } satisfies HonkD6Result;

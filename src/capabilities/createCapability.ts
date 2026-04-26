@@ -80,13 +80,13 @@ export const createCapability = <
     stateRepository,
     state,
     actionCall,
-    chatId,
+    userId,
     displayName,
   }: {
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
-    chatId: string;
+    userId: string;
     state: z.infer<TStateValidator>;
     actionCall: ActionCall;
     broadcaster: Broadcaster;
@@ -104,12 +104,12 @@ export const createCapability = <
         payload,
         pureFn: action.pureFn ?? (() => {}),
         broadcaster,
-        chatId,
+        userId,
         displayName,
         sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
           void messageJiggler.sendChatMessage({
             chat: "",
-            chatId,
+            userId,
             created_time: Date.now(),
             displayName,
             formula: {},
@@ -189,7 +189,7 @@ export const createCapability = <
     }
     return {
       name,
-      onMessage: async ({ actionCall, chatId, displayName }) => {
+      onMessage: async ({ actionCall, userId, displayName }) => {
         // XXX just for testing
         if (ARTIFICIAL_LAG_MS > 0) {
           await new Promise((resolve) =>
@@ -204,7 +204,7 @@ export const createCapability = <
           state,
           actionCall,
           broadcaster,
-          chatId,
+          userId,
           displayName,
         });
       },

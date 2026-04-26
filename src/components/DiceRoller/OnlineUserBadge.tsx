@@ -16,8 +16,8 @@ export const OnlineUserBadge = memo(
     large?: boolean;
   }) => {
     const hue = useMemo(() => {
-      return deriveHueFromUserId(user.chatId);
-    }, [user.chatId]);
+      return deriveHueFromUserId(user.userId);
+    }, [user.userId]);
 
     const initials = useMemo(() => {
       const words = user.displayName.split(" ");

@@ -16,7 +16,7 @@ export const UsersOnline = memo(
     roomOwnerId: string;
   }) => {
     const { data: sessionData } = authClient.useSession();
-    const chatId = sessionData?.user.chatId;
+    const userId = sessionData?.user.id;
 
     const dialogRef = useRef<HTMLDialogElement>(null);
     const handleOpen = useCallback(() => {
@@ -29,15 +29,15 @@ export const UsersOnline = memo(
           ? Array.from({ length: MULTIPLY_USERS_BY }, () => usersOnline).flat()
           : usersOnline;
       return multiplied.toSorted((a, b) => {
-        if (a.chatId === chatId && b.chatId !== chatId) {
+        if (a.userId === userId && b.userId !== userId) {
           return -1;
-        } else if (a.chatId !== chatId && b.chatId === chatId) {
+        } else if (a.userId !== userId && b.userId === userId) {
           return 1;
         } else {
-          return a.chatId.localeCompare(b.chatId);
+          return a.userId.localeCompare(b.userId);
         }
       });
-    }, [chatId, usersOnline]);
+    }, [userId, usersOnline]);
 
     return (
       <>
@@ -49,9 +49,9 @@ export const UsersOnline = memo(
           {/*Online:*/}
           {sorted.slice(0, MAX_BADGES).map((user, i) => (
             <OnlineUserBadge
-              key={MULTIPLY_USERS_BY > 1 ? `${user.chatId}:${i}` : user.chatId}
+              key={MULTIPLY_USERS_BY > 1 ? `${user.userId}:${i}` : user.userId}
               user={user}
-              isCurrentUser={user.chatId === chatId}
+              isCurrentUser={user.userId === userId}
             />
           ))}
           {sorted.length > MAX_BADGES && (
@@ -74,7 +74,7 @@ export const UsersOnline = memo(
                 shadow-md"
             >
               {sorted.map((user, i) => {
-                const isYou = user.chatId === chatId;
+                const isYou = user.userId === userId;
                 const isAnonymous = isYou && sessionData?.user.isAnonymous;
                 const loggedIn = !isAnonymous && user.loggedIn;
                 return (
@@ -82,19 +82,19 @@ export const UsersOnline = memo(
                     className="list-row bg-base-200"
                     key={
                       MULTIPLY_USERS_BY > 1
-                        ? `${user.chatId}:${i}`
-                        : user.chatId
+                        ? `${user.userId}:${i}`
+                        : user.userId
                     }
                   >
                     <div>
                       <OnlineUserBadge
                         key={
                           MULTIPLY_USERS_BY > 1
-                            ? `${user.chatId}:${i}`
-                            : user.chatId
+                            ? `${user.userId}:${i}`
+                            : user.userId
                         }
                         user={user}
-                        isCurrentUser={user.chatId === chatId}
+                        isCurrentUser={user.userId === userId}
                         showImage
                         large
                       />
@@ -119,7 +119,7 @@ export const UsersOnline = memo(
                             Anonymous
                           </div>
                         )}
-                        {user.chatId === roomOwnerId && (
+                        {user.userId === roomOwnerId && (
                           <div
                             className="peer text-xs font-semibold uppercase
                               opacity-60 not-first:before:mx-1
