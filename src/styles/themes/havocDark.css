@@ -165,6 +165,10 @@
         opacity: 50%;
       }
     }
+    .input,
+    .select {
+      border-radius: 0;
+    }
   }
 
   @layer components {
