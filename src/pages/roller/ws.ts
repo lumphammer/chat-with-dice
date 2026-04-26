@@ -40,7 +40,6 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
 
   fetchUrl.searchParams.set("userId", user.id);
   fetchUrl.searchParams.set("roomId", roomId);
-  fetchUrl.searchParams.set("chatId", user.chatId);
   fetchUrl.searchParams.set("displayName", user.name);
   if (user.image) {
     fetchUrl.searchParams.set("image", user.image);

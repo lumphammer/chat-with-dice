@@ -156,7 +156,7 @@ export const DiceRoller = memo(
       }
     }, [roomName]);
 
-    const hue = deriveHueFromUserId(sessionData?.user.chatId);
+    const hue = deriveHueFromUserId(sessionData?.user.id);
 
     const {
       scrollContainerRef,

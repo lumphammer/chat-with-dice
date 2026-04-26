@@ -109,7 +109,7 @@ export const createCapability = <
         sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
           void messageJiggler.sendChatMessage({
             chat: "",
-            chatId,
+            userId: chatId,
             created_time: Date.now(),
             displayName,
             formula: {},

@@ -36,12 +36,12 @@ export function addLinkTargets(html: string): string {
 }
 
 export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
-  const hue = deriveHueFromUserId(message.chatId);
+  const hue = deriveHueFromUserId(message.userId);
   const textRef = useRef<HTMLParagraphElement>(null);
   // const [showMore, setShowMore] = useState(false);
   const [showShowMore, setShowShowMore] = useState(false);
   const { data: sessionData } = authClient.useSession();
-  const chatId = sessionData?.user.chatId;
+  const userId = sessionData?.user.id;
 
   const html = useMemo(() => {
     return addLinkTargets(
@@ -94,7 +94,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
 
   return (
     <article
-      data-is-mine={message.chatId === chatId ? "" : undefined}
+      data-is-mine={message.userId === userId ? "" : undefined}
       className="group mb-2 w-full pb-1
         [--user-colour:oklch(var(--bubble-light-l)_var(--bubble-light-c)_var(--user-hue))]
         data-is-mine:text-right

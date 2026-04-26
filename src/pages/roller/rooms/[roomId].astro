@@ -11,13 +11,6 @@ const room = await db.query.rooms.findFirst({
   where: {
     id: roomId,
   },
-  with: {
-    creator: {
-      columns: {
-        chatId: true,
-      },
-    },
-  },
 });
 
 if (!room) {

@@ -6,7 +6,7 @@ const HTTP_SWITCHING_PROTOCOLS = 101;
 //
 // const log = console.log.bind(console, "[middleware]");
 
-const addPotatoHeader = defineMiddleware(async (context, next) => {
+const addPotatoHeader = defineMiddleware(async (_context, next) => {
   const response = await next();
   if (response.status === HTTP_SWITCHING_PROTOCOLS) {
     return response;

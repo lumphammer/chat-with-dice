@@ -112,7 +112,7 @@ export const HonkD6PassDisplay = memo(
     messageId: string;
   }) => {
     const { data: sessionData } = authClient.useSession();
-    const chatId = sessionData?.user.chatId;
+    const userId = sessionData?.user.id;
     const {
       faces,
       totalSuccesses,
@@ -129,9 +129,9 @@ export const HonkD6PassDisplay = memo(
 
     const isOwner =
       previousContributors.length > 0 &&
-      previousContributors[previousContributors.length - 1].chatId === chatId;
+      previousContributors[previousContributors.length - 1].chatId === userId;
     const currentUserContributed = previousContributors.some(
-      (c) => c.chatId === chatId,
+      (c) => c.chatId === userId,
     );
     const showCommitSection =
       consumedBy == null && consumed == null && !currentUserContributed;

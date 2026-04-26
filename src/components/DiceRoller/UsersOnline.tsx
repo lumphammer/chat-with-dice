@@ -16,7 +16,7 @@ export const UsersOnline = memo(
     roomOwnerId: string;
   }) => {
     const { data: sessionData } = authClient.useSession();
-    const chatId = sessionData?.user.chatId;
+    const userId = sessionData?.user.id;
 
     const dialogRef = useRef<HTMLDialogElement>(null);
     const handleOpen = useCallback(() => {
@@ -29,15 +29,15 @@ export const UsersOnline = memo(
           ? Array.from({ length: MULTIPLY_USERS_BY }, () => usersOnline).flat()
           : usersOnline;
       return multiplied.toSorted((a, b) => {
-        if (a.chatId === chatId && b.chatId !== chatId) {
+        if (a.chatId === userId && b.chatId !== userId) {
           return -1;
-        } else if (a.chatId !== chatId && b.chatId === chatId) {
+        } else if (a.chatId !== userId && b.chatId === userId) {
           return 1;
         } else {
           return a.chatId.localeCompare(b.chatId);
         }
       });
-    }, [chatId, usersOnline]);
+    }, [userId, usersOnline]);
 
     return (
       <>
@@ -51,7 +51,7 @@ export const UsersOnline = memo(
             <OnlineUserBadge
               key={MULTIPLY_USERS_BY > 1 ? `${user.chatId}:${i}` : user.chatId}
               user={user}
-              isCurrentUser={user.chatId === chatId}
+              isCurrentUser={user.chatId === userId}
             />
           ))}
           {sorted.length > MAX_BADGES && (
@@ -74,7 +74,7 @@ export const UsersOnline = memo(
                 shadow-md"
             >
               {sorted.map((user, i) => {
-                const isYou = user.chatId === chatId;
+                const isYou = user.chatId === userId;
                 const isAnonymous = isYou && sessionData?.user.isAnonymous;
                 const loggedIn = !isAnonymous && user.loggedIn;
                 return (
@@ -94,7 +94,7 @@ export const UsersOnline = memo(
                             : user.chatId
                         }
                         user={user}
-                        isCurrentUser={user.chatId === chatId}
+                        isCurrentUser={user.chatId === userId}
                         showImage
                         large
                       />

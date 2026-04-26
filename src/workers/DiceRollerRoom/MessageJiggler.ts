@@ -37,7 +37,7 @@ export class MessageJiggler {
       formula: null,
       results: null,
       chat,
-      chatId,
+      userId: chatId,
       displayName,
     };
     await this.sendChatMessage(rollerMessage);

@@ -1,0 +1,1 @@
+ALTER TABLE `Messages` RENAME COLUMN `chatId` TO `userId`;

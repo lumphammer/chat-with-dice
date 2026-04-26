@@ -15,7 +15,6 @@ function getSafeReturnUrl(): string {
 }
 
 export function SigninForm() {
-  const { data: sessionData } = authClient.useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -65,13 +64,6 @@ export function SigninForm() {
     const { error: authError } = await authClient.signIn.social({
       provider,
       callbackURL: getSafeReturnUrl(),
-      additionalData: {
-        ...(sessionData && sessionData?.user.isAnonymous
-          ? {
-              chatId: sessionData.user.chatId,
-            }
-          : {}),
-      },
     });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");

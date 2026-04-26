@@ -42,11 +42,6 @@ export function SignupForm() {
       name,
       email,
       password,
-      ...(sessionData && sessionData?.user.isAnonymous
-        ? {
-            chatId: sessionData.user.chatId,
-          }
-        : {}),
     });
 
     if (authError) {
@@ -60,16 +55,7 @@ export function SignupForm() {
   async function handleSocialSignIn(provider: "github" | "google") {
     setError(null);
     setLoading(provider);
-    const { error: authError } = await authClient.signIn.social({
-      provider,
-      additionalData: {
-        ...(sessionData && sessionData?.user.isAnonymous
-          ? {
-              chatId: sessionData.user.chatId,
-            }
-          : {}),
-      },
-    });
+    const { error: authError } = await authClient.signIn.social({ provider });
     if (authError) {
       setError(authError.message ?? "Sign-in failed. Please try again.");
       setLoading("idle");

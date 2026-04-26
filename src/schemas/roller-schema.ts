@@ -7,8 +7,8 @@ export const Messages = sqliteTable("Messages", {
     .$defaultFn(() => crypto.randomUUID()),
   /** Display name of the user at the time they sent the message */
   displayName: text().notNull(),
-  /** Chat ID of the user, used for differentiation */
-  chatId: text().notNull(),
+  /** ID of the user, used for differentiation */
+  userId: text().notNull(),
   /** When the message was created */
   created_time: int().notNull(),
   /** The type of the roll - none, formula, havoc etc */

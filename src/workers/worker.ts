@@ -35,7 +35,7 @@ function defineMiddleware(cb: Middleware): Middleware {
  * Middleware to add the pTerry header
  */
 export const addPTerryHeader = () =>
-  defineMiddleware(async (request, next) => {
+  defineMiddleware(async (_request, next) => {
     const response = await next();
     if (response.status === HTTP_SWITCHING_PROTOCOLS) {
       return response;
