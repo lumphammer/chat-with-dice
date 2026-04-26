@@ -19,7 +19,7 @@ export type ServerMountedCapability = {
   name: Alphanumeric;
   onMessage: (tools: {
     actionCall: ActionCall;
-    chatId: string;
+    userId: string;
     displayName: string;
   }) => Promise<void>;
   getInitPayload: () => { capability: string; state: unknown; config: unknown };
@@ -63,7 +63,7 @@ type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
   pureFn: PureActionFn<TState, TPayload>;
   stateDraft: Draft<TState>;
   payload: TPayload;
-  chatId: string;
+  userId: string;
   displayName: string;
 }) => void | Promise<void>;
 

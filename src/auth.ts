@@ -6,7 +6,6 @@ import { envOrDie } from "./utils/envOrDie";
 import { generateRandomName } from "./utils/generateRandomName";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
-import { getOAuthState } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { anonymous } from "better-auth/plugins";
@@ -110,39 +109,6 @@ export const auth = betterAuth({
     },
   },
 
-  databaseHooks: {
-    user: {
-      create: {
-        // https://better-auth.com/docs/concepts/oauth#accessing-additional-data-in-hooks
-        // this is how we pass the client-provided chatId into the newly created
-        // SSO user
-        before: async (_user, ctx) => {
-          if (
-            _user.chatId === "" ||
-            _user.chatId === null ||
-            _user.chatId === undefined
-          ) {
-            return {
-              data: {
-                chatId: crypto.randomUUID(),
-              },
-            };
-          }
-          if (ctx?.path === "/callback/:id") {
-            const additionalData = await getOAuthState();
-            if (additionalData?.chatId) {
-              return {
-                data: {
-                  chatId: additionalData.chatId,
-                },
-              };
-            }
-          }
-        },
-      },
-    },
-  },
-
   plugins: [
     emailOTP({
       // Avoid awaiting to prevent timing attacks.
@@ -231,10 +197,6 @@ export const auth = betterAuth({
             })
             .where(eq(users.id, anonymousUser.user.id)),
         ]);
-
-        // sadly mutating these objects has no effect :(
-        // newUser.user.chatId = anonymousUser.user.chatId;
-        // newUser.user.name = anonymousUser.user.name;
       },
     }),
   ],

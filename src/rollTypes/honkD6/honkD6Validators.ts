@@ -43,7 +43,7 @@ export const honkD6ResultValidator = z.discriminatedUnion("action", [
     explodableCount: z.int(),
     consumed: z.enum(["explode", "resolve", "pass"]).optional(),
     previousContributors: z.array(
-      z.object({ chatId: z.string(), displayName: z.string() }),
+      z.object({ userId: z.string(), displayName: z.string() }),
     ),
     schemeDescription: z.string().min(1).optional(),
   }),
@@ -53,7 +53,7 @@ export const honkD6ResultValidator = z.discriminatedUnion("action", [
     totalSuccesses: z.int(),
     problemCount: z.int(),
     previousContributors: z.array(
-      z.object({ chatId: z.string(), displayName: z.string() }),
+      z.object({ userId: z.string(), displayName: z.string() }),
     ),
     schemeDescription: z.string().min(1).optional(),
   }),
@@ -63,11 +63,11 @@ export const honkD6ResultValidator = z.discriminatedUnion("action", [
     totalSuccesses: z.int(),
     problemCount: z.int(),
     previousContributors: z.array(
-      z.object({ chatId: z.string(), displayName: z.string() }),
+      z.object({ userId: z.string(), displayName: z.string() }),
     ),
     consumedBy: z
       .object({
-        chatId: z.string(),
+        userId: z.string(),
         displayName: z.string(),
       })
       .optional(),

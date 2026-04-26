@@ -27,13 +27,11 @@ export async function handleFetch(
     return new Response("Too many active connections", { status: 503 });
   }
 
-  const chatId = URL.parse(request.url)?.searchParams.get("chatId");
-  if (!chatId) {
-    logError("chatId was falsy");
-    return new Response("chatId is required", { status: 400 });
-  }
-
   const userId = URL.parse(request.url)?.searchParams.get("userId") ?? null;
+  if (!userId) {
+    logError("userId was falsy");
+    return new Response("userId is required", { status: 400 });
+  }
 
   const displayName = URL.parse(request.url)?.searchParams.get("displayName");
   if (!displayName) {
@@ -45,7 +43,7 @@ export async function handleFetch(
   const loggedIn =
     URL.parse(request.url)?.searchParams.get("loggedIn") === "true";
 
-  log("Accepting WS fetch request, chatId: ", chatId, "userId: ", userId);
+  log("Accepting WS fetch request, userId: ", userId);
 
   // Create a WebSocket pair (client and server)
   const pair = new WebSocketPair();
@@ -67,8 +65,7 @@ export async function handleFetch(
   }
 
   const attachment: SessionAttachment = {
-    chatId,
-    userId: userId ?? undefined,
+    userId,
     loggedIn,
     displayName,
     image: image ?? undefined,

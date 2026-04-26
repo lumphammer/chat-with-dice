@@ -129,9 +129,9 @@ export const HonkD6PassDisplay = memo(
 
     const isOwner =
       previousContributors.length > 0 &&
-      previousContributors[previousContributors.length - 1].chatId === userId;
+      previousContributors[previousContributors.length - 1].userId === userId;
     const currentUserContributed = previousContributors.some(
-      (c) => c.chatId === userId,
+      (c) => c.userId === userId,
     );
     const showCommitSection =
       consumedBy == null && consumed == null && !currentUserContributed;

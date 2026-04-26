@@ -147,7 +147,7 @@ const HonkD6RollDisplay = memo(
     const isFaded = consumed != null;
     const isOwner =
       previousContributors.length > 0 &&
-      previousContributors[previousContributors.length - 1].chatId === userId;
+      previousContributors[previousContributors.length - 1].userId === userId;
     const ownerName = previousContributors[0]?.displayName ?? "Unknown";
     const actorName =
       previousContributors[previousContributors.length - 1]?.displayName ??

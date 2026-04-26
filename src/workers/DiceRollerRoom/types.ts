@@ -6,8 +6,7 @@ import { z } from "zod/v4";
 // DiceRoll.toJSON().rolls from @dice-roller/rpg-dice-roller
 
 export const sessionAttachmentSchema = z.object({
-  chatId: z.uuid(),
-  userId: z.string().optional(),
+  userId: z.string(),
   displayName: z.string(),
   image: z.string().optional(),
   loggedIn: z.boolean(),

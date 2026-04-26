@@ -19,7 +19,7 @@ export type RollHandler<
   formula: TFormula;
   getMessage: (id: string) => Promise<ChatMessage<TFormula, TResult>>;
   updateMessage: (message: ChatMessage) => Promise<void>;
-  chatId: string;
+  userId: string;
   displayName: string;
 }) => TResult | Promise<TResult>;
 
@@ -57,7 +57,7 @@ export type RollType<
   handler: (tools: {
     formula: JsonData;
     messageJiggler: MessageJiggler;
-    chatId: string;
+    userId: string;
     displayName: string;
   }) => Promise<z.infer<TResultValidator>>;
   formulaValidator: TFormulaValidator;
@@ -111,7 +111,7 @@ export function createRollType<
     handler: async (tools: {
       formula: JsonData;
       messageJiggler: MessageJiggler;
-      chatId: string;
+      userId: string;
       displayName: string;
     }) => {
       const formula = def.formulaValidator.parse(tools.formula);
@@ -125,7 +125,7 @@ export function createRollType<
           ),
         updateMessage: async (message: ChatMessage) =>
           await tools.messageJiggler.updateMessage(message),
-        chatId: tools.chatId,
+        userId: tools.userId,
         displayName: tools.displayName,
       });
       return result;
