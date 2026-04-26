@@ -4,8 +4,8 @@ import {
 } from "#/capabilities/capabilityRegistry";
 import { authClient } from "#/utils/auth-client";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
-import { Config } from "../config/Config";
-import { Help } from "../help/Help";
+import { Config } from "./Config";
+import { Help } from "./Help";
 import styles from "./sidebar.module.css";
 import { Tabs } from "@ark-ui/react/tabs";
 import { CircleHelp, Cog } from "lucide-react";
