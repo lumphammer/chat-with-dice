@@ -57,11 +57,13 @@ export const auth = betterAuth({
         fieldName: "storage_quota_bytes",
         type: "number",
         defaultValue: 0,
+        required: true,
       },
       storageUsedBytes: {
         fieldName: "storage_used_bytes",
         type: "number",
         defaultValue: 0,
+        required: true,
       },
     },
   },
