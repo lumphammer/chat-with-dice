@@ -92,6 +92,10 @@
       "bucket_name": "chat-with-dice",
       "binding": "ChatWithDiceBucket",
     },
+    {
+      "bucket_name": "chat-with-dice-private",
+      "binding": "PrivateBucket",
+    },
   ],
   "vars": {
     "BETTER_AUTH_URL": "https://chatwithdice.lumphammer.net/",
