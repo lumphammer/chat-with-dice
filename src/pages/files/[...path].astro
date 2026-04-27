@@ -1,0 +1,18 @@
+---
+import Layout from "#/layouts/Layout.astro";
+// import { AccountSettingsForm } from "./_components/AccountSettingsForm";
+
+const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect("/signin");
+}
+
+export const prerender = false;
+
+const path = Astro.params.path;
+---
+
+<Layout title="Files" class="flex justify-center p-8">
+  <!--  -->
+</Layout>

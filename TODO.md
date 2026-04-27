@@ -24,6 +24,7 @@
 - [ ] Recent rooms list
 - [ ] Swipable sidebar on mobile
 - [ ] Easier feedback channels (built-in?)
+- [ ] Move capability state storage into drizzle
 
 ## Big items
 

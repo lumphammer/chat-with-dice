@@ -52,6 +52,18 @@ export const auth = betterAuth({
     changeEmail: {
       enabled: true,
     },
+    additionalFields: {
+      storageQuotaBytes: {
+        fieldName: "storage_quota_bytes",
+        type: "number",
+        defaultValue: 0,
+      },
+      storageUsedBytes: {
+        fieldName: "storage_used_bytes",
+        type: "number",
+        defaultValue: 0,
+      },
+    },
   },
 
   emailVerification: {
