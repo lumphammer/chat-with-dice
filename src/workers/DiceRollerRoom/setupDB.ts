@@ -19,14 +19,14 @@ export function setupDB(ctx: DurableObjectState) {
     // migrate the db
     try {
       log("setupDB: Attempting migration");
-      await migrate(db, migrations);
+      migrate(db, migrations);
     } catch (e: unknown) {
       logError("FAILED MIGRATION", e);
     }
   });
-  const ater = printSchema(ctx);
-  if (before !== ater) {
-    log("setupDB: Schema changed after migration", before, ater);
+  const after = printSchema(ctx);
+  if (before !== after) {
+    log("setupDB: Schema changed after migration", before, after);
   }
 
   return db;
