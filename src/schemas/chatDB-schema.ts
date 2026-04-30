@@ -61,7 +61,10 @@ export const files = sqliteTable(
       table.name,
     ),
     // (status, created_time) feeds the reconciler: pending rows older than N minutes
-    index("files__status__created_time_idx").on(table.status, table.created_time),
+    index("files__status__created_time_idx").on(
+      table.status,
+      table.created_time,
+    ),
     index("files__deleted_time_idx").on(table.deleted_time),
   ],
 );
