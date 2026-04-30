@@ -51,12 +51,6 @@
   ],
   "d1_databases": [
     {
-      "binding": "todos",
-      "database_name": "todos",
-      "database_id": "a0f7d176-26be-4bde-ae3b-d71768d46c7c",
-      "migrations_dir": "./migrations/todos",
-    },
-    {
       "binding": "chatDB",
       "database_name": "chat-with-dice-prod",
       "database_id": "5731c416-a44c-433a-9e16-080a97f50053",
@@ -74,11 +68,6 @@
         ],
       },
       "d1_databases": [
-        {
-          "binding": "todos",
-          "database_name": "todos-preview",
-          "database_id": "b7a13c53-a008-474b-8986-813e414477b1",
-        },
         {
           "binding": "chatDB",
           "database_name": "chat-with-dice-staging",
