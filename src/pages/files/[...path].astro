@@ -1,4 +1,5 @@
 ---
+import { db } from "#/db";
 import Layout from "#/layouts/Layout.astro";
 // import { AccountSettingsForm } from "./_components/AccountSettingsForm";
 
@@ -11,6 +12,20 @@ if (!user) {
 export const prerender = false;
 
 const path = Astro.params.path;
+
+// db.query
+
+db.query.folders.findFirst({
+  where: {
+    owner_user_id: user.id,
+    parent_folder_id: {
+      isNull: true,
+    },
+  },
+  with: {
+    files: true,
+  },
+});
 ---
 
 <Layout title="Files" class="flex justify-center p-8">
