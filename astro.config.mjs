@@ -2,7 +2,7 @@ import { reactSvgPlugin } from "./vitePluginReactSvg";
 import cloudflare from "@astrojs/cloudflare";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "astro/config";
+import { defineConfig, svgoOptimizer } from "astro/config";
 import { fileURLToPath } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";
 
@@ -11,7 +11,7 @@ export default defineConfig({
   adapter: cloudflare({}),
   integrations: [react()],
   experimental: {
-    svgo: {
+    svgOptimizer: svgoOptimizer({
       multipass: true,
       plugins: [
         {
@@ -24,7 +24,7 @@ export default defineConfig({
           },
         },
       ],
-    },
+    }),
   },
 
   vite: {
