@@ -99,6 +99,19 @@ export const POST: APIRoute = async (ctx) => {
       httpMetadata: { contentType },
     });
 
+    // verify actual size after upload (Content-Length may be absent/spoofed)
+    if (r2Object.size > MAX_BYTES) {
+      await bucket.delete(r2Key);
+      await db.batch([
+        db.delete(nodes).where(eq(nodes.id, id)),
+        db.delete(files).where(eq(files.id, id)),
+      ]);
+      return json(
+        { error: "File must be smaller than 100 MB" },
+        HTTP_PAYLOAD_TOO_LARGE,
+      );
+    }
+
     // phase 3: mark as ready + update ancestor folder sizes
     await db
       .update(files)
