@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { actions } from "astro:actions";
 import { Breadcrumbs, type BreadcrumbSegment } from "./Breadcrumbs";
 import { DropOverlay } from "./DropOverlay";
@@ -68,24 +68,78 @@ export const FileManager = memo(
       [nodes],
     );
 
-    const navigateTo = useCallback(
-      async (folderId: string | null, path: string) => {
+    // history state shape stored with each pushState/replaceState
+    type HistoryState = {
+      folderId: string | null;
+      breadcrumbs: BreadcrumbSegment[];
+      previewFileId: string | null;
+    };
+
+    const pushHistoryState = useCallback(
+      (path: string, state: HistoryState) => {
+        window.history.pushState(state, "", path);
+      },
+      [],
+    );
+
+    // load a folder's contents and update React state (no history manipulation)
+    const loadFolder = useCallback(
+      async (folderId: string | null, newBreadcrumbs: BreadcrumbSegment[]) => {
         setIsLoading(true);
         setPreviewNode(null);
-
-        window.history.pushState(null, "", path);
-
-        // update breadcrumbs based on navigation
-        if (folderId === null) {
-          setBreadcrumbs([]);
-        }
+        setBreadcrumbs(newBreadcrumbs);
+        setCurrentFolderId(folderId);
 
         await refetchNodes(folderId);
-        setCurrentFolderId(folderId);
         setIsLoading(false);
       },
       [refetchNodes],
     );
+
+    // set initial history state so back button has something to restore
+    const hasSetInitialState = useRef(false);
+    useEffect(() => {
+      if (hasSetInitialState.current) return;
+      hasSetInitialState.current = true;
+
+      const state: HistoryState = {
+        folderId: initialFolderId,
+        breadcrumbs: initialBreadcrumbs,
+        previewFileId: initialPreviewFileId,
+      };
+      window.history.replaceState(state, "", window.location.pathname);
+    }, [initialFolderId, initialBreadcrumbs, initialPreviewFileId]);
+
+    // handle browser back/forward
+    useEffect(() => {
+      const handlePopState = (e: PopStateEvent) => {
+        const state = e.state as HistoryState | null;
+        if (!state) {
+          // no state means we've gone back to before our SPA navigation —
+          // fall back to a full page load
+          window.location.reload();
+          return;
+        }
+
+        setBreadcrumbs(state.breadcrumbs);
+        setCurrentFolderId(state.folderId);
+
+        if (state.previewFileId) {
+          // try to find the preview node in current nodes
+          const found = nodes.find((n) => n.id === state.previewFileId);
+          if (found) {
+            setPreviewNode(found);
+            return;
+          }
+        }
+
+        setPreviewNode(null);
+        void refetchNodes(state.folderId);
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => window.removeEventListener("popstate", handlePopState);
+    }, [nodes, refetchNodes]);
 
     const handleFolderClick = useCallback(
       (node: FileNode) => {
@@ -93,12 +147,16 @@ export const FileManager = memo(
           ...breadcrumbs,
           { id: node.id, name: node.name },
         ];
-        setBreadcrumbs(newBreadcrumbs);
         const path =
           "/files/" + newBreadcrumbs.map((s) => s.name).join("/");
-        void navigateTo(node.id, path);
+        pushHistoryState(path, {
+          folderId: node.id,
+          breadcrumbs: newBreadcrumbs,
+          previewFileId: null,
+        });
+        void loadFolder(node.id, newBreadcrumbs);
       },
-      [breadcrumbs, navigateTo],
+      [breadcrumbs, loadFolder, pushHistoryState],
     );
 
     const handleFileClick = useCallback(
@@ -106,10 +164,14 @@ export const FileManager = memo(
         const path =
           "/files/" +
           [...breadcrumbs.map((s) => s.name), node.name].join("/");
-        window.history.pushState(null, "", path);
+        pushHistoryState(path, {
+          folderId: currentFolderId,
+          breadcrumbs,
+          previewFileId: node.id,
+        });
         setPreviewNode(node);
       },
-      [breadcrumbs],
+      [breadcrumbs, currentFolderId, pushHistoryState],
     );
 
     const handleClosePreview = useCallback(() => {
@@ -117,9 +179,13 @@ export const FileManager = memo(
         breadcrumbs.length > 0
           ? "/files/" + breadcrumbs.map((s) => s.name).join("/")
           : "/files";
-      window.history.pushState(null, "", path);
+      pushHistoryState(path, {
+        folderId: currentFolderId,
+        breadcrumbs,
+        previewFileId: null,
+      });
       setPreviewNode(null);
-    }, [breadcrumbs]);
+    }, [breadcrumbs, currentFolderId, pushHistoryState]);
 
     const handleDeleted = useCallback((nodeId: string) => {
       setNodes((prev) => prev.filter((n) => n.id !== nodeId));
@@ -133,17 +199,22 @@ export const FileManager = memo(
 
     const handleBreadcrumbNavigate = useCallback(
       (folderId: string | null, path: string) => {
+        let newBreadcrumbs: BreadcrumbSegment[];
         if (folderId === null) {
-          setBreadcrumbs([]);
+          newBreadcrumbs = [];
         } else {
           const index = breadcrumbs.findIndex((s) => s.id === folderId);
-          if (index !== -1) {
-            setBreadcrumbs(breadcrumbs.slice(0, index + 1));
-          }
+          newBreadcrumbs =
+            index !== -1 ? breadcrumbs.slice(0, index + 1) : breadcrumbs;
         }
-        void navigateTo(folderId, path);
+        pushHistoryState(path, {
+          folderId,
+          breadcrumbs: newBreadcrumbs,
+          previewFileId: null,
+        });
+        void loadFolder(folderId, newBreadcrumbs);
       },
-      [breadcrumbs, navigateTo],
+      [breadcrumbs, loadFolder, pushHistoryState],
     );
 
     // drag and drop handlers
