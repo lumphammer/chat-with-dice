@@ -31,7 +31,7 @@ export const Breadcrumbs = memo(
               "/files/" +
               segments
                 .slice(0, i + 1)
-                .map((s) => s.name)
+                .map((s) => encodeURIComponent(s.name))
                 .join("/");
             const isLast = i === segments.length - 1;
 
@@ -39,7 +39,7 @@ export const Breadcrumbs = memo(
               <li key={segment.id}>
                 {isLast ? (
                   <span className="btn btn-ghost btn-sm font-semibold">
-                    {segment.name}
+                    {segment.name} {i + 1}/{segments.length}
                   </span>
                 ) : (
                   <button

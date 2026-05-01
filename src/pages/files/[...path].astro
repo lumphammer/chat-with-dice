@@ -12,7 +12,7 @@ if (!user) {
 }
 
 const rawPath = Astro.params.path ?? "";
-const pathSegments = rawPath.split("/").filter(Boolean);
+const pathSegments = rawPath.split("/").filter(Boolean).map(decodeURIComponent);
 
 const resolution = await resolvePathToFolder(user.id, pathSegments);
 

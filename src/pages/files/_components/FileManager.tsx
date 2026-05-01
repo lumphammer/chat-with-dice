@@ -128,9 +128,7 @@ export const FileManager = memo(
           setNodes(result.data);
 
           if (state.previewFileId) {
-            const found = result.data.find(
-              (n) => n.id === state.previewFileId,
-            );
+            const found = result.data.find((n) => n.id === state.previewFileId);
             setPreviewNode(found ?? null);
           } else {
             setPreviewNode(null);
@@ -148,7 +146,9 @@ export const FileManager = memo(
           ...breadcrumbs,
           { id: node.id, name: node.name },
         ];
-        const path = "/files/" + newBreadcrumbs.map((s) => s.name).join("/");
+        const path =
+          "/files/" +
+          newBreadcrumbs.map((s) => encodeURIComponent(s.name)).join("/");
         pushHistoryState(path, {
           folderId: node.id,
           breadcrumbs: newBreadcrumbs,
@@ -162,7 +162,11 @@ export const FileManager = memo(
     const handleFileClick = useCallback(
       (node: FileNode) => {
         const path =
-          "/files/" + [...breadcrumbs.map((s) => s.name), node.name].join("/");
+          "/files/" +
+          [
+            ...breadcrumbs.map((s) => encodeURIComponent(s.name)),
+            node.name,
+          ].join("/");
         pushHistoryState(path, {
           folderId: currentFolderId,
           breadcrumbs,
