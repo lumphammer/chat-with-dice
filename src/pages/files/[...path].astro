@@ -1,33 +1,19 @@
 ---
-import { db } from "#/db";
 import Layout from "#/layouts/Layout.astro";
-// import { AccountSettingsForm } from "./_components/AccountSettingsForm";
+import { FileManager } from "./_components/FileManager";
+import { getUserNodes } from "./_components/queries";
+
+export const prerender = false;
 
 const user = Astro.locals.user;
-
 if (!user) {
   return Astro.redirect("/signin");
 }
 
-export const prerender = false;
-
-const path = Astro.params.path;
-
-// db.query
-
-db.query.folders.findFirst({
-  where: {
-    owner_user_id: user.id,
-    parent_folder_id: {
-      isNull: true,
-    },
-  },
-  with: {
-    files: true,
-  },
-});
+// const path = Astro.params.path;
+const rootNodes = await getUserNodes(user.id);
 ---
 
-<Layout title="Files" class="flex justify-center p-8">
-  <!--  -->
+<Layout client:load title="Files" class="flex justify-center p-8">
+  <FileManager initialNodes={rootNodes} />
 </Layout>

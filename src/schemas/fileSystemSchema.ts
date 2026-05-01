@@ -10,6 +10,11 @@ import {
   unique,
 } from "drizzle-orm/sqlite-core";
 
+export type FolderSelect = typeof folders.$inferSelect;
+export type FileSelect = typeof files.$inferSelect;
+
+export type NodeSelect = typeof nodes.$inferSelect;
+
 // I'm leaving the SQL originals in here for the time being because I know they
 // work, so if there's any difference in how I've adapted to Drizzle we can
 // compare and contrast. Delete the SQL originals when we start modifying the

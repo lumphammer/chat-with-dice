@@ -1,5 +1,12 @@
 import { authClient } from "#/utils/auth-client";
-import { Dices, LogOut, Settings, Shield, PersonStanding } from "lucide-react";
+import {
+  Dices,
+  LogOut,
+  Settings,
+  Shield,
+  PersonStanding,
+  File,
+} from "lucide-react";
 import { useRef } from "react";
 
 type UserInfo = {
@@ -104,6 +111,14 @@ export function NavBarAccount({
               <a href="/roller/rooms" onClick={closeMenu}>
                 <Dices size={16} />
                 Your rooms
+              </a>
+            </li>
+          )}
+          {!sessionData?.user.isAnonymous && (
+            <li>
+              <a href="/files" onClick={closeMenu}>
+                <File size={16} />
+                Your files
               </a>
             </li>
           )}
