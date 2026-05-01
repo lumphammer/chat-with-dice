@@ -87,11 +87,14 @@ export const FileListItem = memo(
     };
 
     return (
-      <li>
+      <li
+        className="hover:bg-base-200 flex items-center gap-3 rounded-lg px-3
+          py-2 transition-colors"
+      >
         <button
           type="button"
-          className="hover:bg-base-200 flex w-full cursor-pointer items-center
-            gap-3 rounded-lg px-3 py-2 text-left transition-colors"
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3
+            text-left"
           onClick={isRenaming ? undefined : onClick}
           onKeyDown={isRenaming ? undefined : handleKeyDown}
         >
@@ -128,8 +131,8 @@ export const FileListItem = memo(
               {formatBytes(node.folder.recursive_size_bytes)}
             </span>
           )}
-          <KebabMenu onRename={handleStartRename} onDelete={handleDelete} />
         </button>
+        <KebabMenu onRename={handleStartRename} onDelete={handleDelete} />
       </li>
     );
   },
