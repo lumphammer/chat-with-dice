@@ -39,7 +39,7 @@ export const Breadcrumbs = memo(
               <li key={segment.id}>
                 {isLast ? (
                   <span className="btn btn-ghost btn-sm font-semibold">
-                    {segment.name} {i + 1}/{segments.length}
+                    {segment.name}
                   </span>
                 ) : (
                   <button
