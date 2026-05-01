@@ -15,15 +15,23 @@ export const FileManager = memo(
     initialNodes,
     initialFolderId = null,
     initialBreadcrumbs = [],
+    initialPreviewFileId = null,
   }: {
     initialNodes: FileNode[];
     initialFolderId?: string | null;
     initialBreadcrumbs?: BreadcrumbSegment[];
+    initialPreviewFileId?: string | null;
   }) => {
     const [nodes, setNodes] = useState(initialNodes);
     const [currentFolderId, setCurrentFolderId] = useState(initialFolderId);
     const [breadcrumbs, setBreadcrumbs] = useState(initialBreadcrumbs);
-    const [previewNode, setPreviewNode] = useState<FileNode | null>(null);
+
+    const initialPreview = initialPreviewFileId
+      ? (initialNodes.find((n) => n.id === initialPreviewFileId) ?? null)
+      : null;
+    const [previewNode, setPreviewNode] = useState<FileNode | null>(
+      initialPreview,
+    );
     const [isDragOver, setIsDragOver] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
