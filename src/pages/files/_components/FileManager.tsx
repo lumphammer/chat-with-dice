@@ -112,8 +112,6 @@ export const FileManager = memo(
       const handlePopState = (e: PopStateEvent) => {
         const state = e.state as HistoryState | null;
         if (!state) {
-          // no state means we've gone back to before our SPA navigation —
-          // fall back to a full page load
           window.location.reload();
           return;
         }
@@ -121,22 +119,28 @@ export const FileManager = memo(
         setBreadcrumbs(state.breadcrumbs);
         setCurrentFolderId(state.folderId);
 
-        if (state.previewFileId) {
-          // try to find the preview node in current nodes
-          const found = nodes.find((n) => n.id === state.previewFileId);
-          if (found) {
-            setPreviewNode(found);
+        void (async () => {
+          const result = await actions.getNodes({ folderId: state.folderId });
+          if (result.error) {
+            console.error("Failed to fetch nodes:", result.error);
             return;
           }
-        }
+          setNodes(result.data);
 
-        setPreviewNode(null);
-        void refetchNodes(state.folderId);
+          if (state.previewFileId) {
+            const found = result.data.find(
+              (n) => n.id === state.previewFileId,
+            );
+            setPreviewNode(found ?? null);
+          } else {
+            setPreviewNode(null);
+          }
+        })();
       };
 
       window.addEventListener("popstate", handlePopState);
       return () => window.removeEventListener("popstate", handlePopState);
-    }, [nodes, refetchNodes]);
+    }, []);
 
     const handleFolderClick = useCallback(
       (node: FileNode) => {
