@@ -1,10 +1,10 @@
-import { Folder } from "lucide-react";
-import { memo, useRef, useState } from "react";
-import { actions } from "astro:actions";
+import { KebabMenu } from "./KebabMenu";
 import { fileTypeIcon } from "./fileTypeIcon";
 import { formatBytes } from "./formatBytes";
-import { KebabMenu } from "./KebabMenu";
 import type { FileNode } from "./types";
+import { actions } from "astro:actions";
+import { Folder } from "lucide-react";
+import { memo, useRef, useState } from "react";
 
 export const FileListItem = memo(
   ({
@@ -90,7 +90,8 @@ export const FileListItem = memo(
       <li>
         <button
           type="button"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-base-200 cursor-pointer text-left"
+          className="hover:bg-base-200 flex w-full cursor-pointer items-center
+            gap-3 rounded-lg px-3 py-2 text-left transition-colors"
           onClick={isRenaming ? undefined : onClick}
           onKeyDown={isRenaming ? undefined : handleKeyDown}
         >

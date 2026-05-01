@@ -26,8 +26,7 @@ const initialNodes = await getUserNodes(user.id, folderId ?? undefined);
 
 // if the path resolved to a file, we need to find the file node in the list
 // so the client can immediately open the preview
-const previewFileId =
-  resolution.kind === "file" ? resolution.fileNodeId : null;
+const previewFileId = resolution.kind === "file" ? resolution.fileNodeId : null;
 ---
 
 <Layout title="Files" class="flex justify-center p-8">

@@ -1,6 +1,6 @@
+import { actions } from "astro:actions";
 import { FolderPlus } from "lucide-react";
 import { memo, useRef, useState } from "react";
-import { actions } from "astro:actions";
 
 export const NewFolderDialog = memo(
   ({

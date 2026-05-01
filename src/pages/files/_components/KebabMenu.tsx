@@ -2,13 +2,7 @@ import { EllipsisVertical, Pencil, Trash2 } from "lucide-react";
 import { memo, useId, useRef } from "react";
 
 export const KebabMenu = memo(
-  ({
-    onRename,
-    onDelete,
-  }: {
-    onRename: () => void;
-    onDelete: () => void;
-  }) => {
+  ({ onRename, onDelete }: { onRename: () => void; onDelete: () => void }) => {
     const menuId = useId();
     const anchorName = `--kebab-${menuId.replaceAll(":", "")}`;
     const menuRef = useRef<HTMLDivElement>(null);
@@ -33,7 +27,8 @@ export const KebabMenu = memo(
           id={menuId}
           ref={menuRef}
           popover="auto"
-          className="dropdown rounded-box bg-base-100 ring-base-200 w-44 shadow-lg ring-1"
+          className="dropdown rounded-box bg-base-100 ring-base-200 w-44
+            shadow-lg ring-1"
           style={{ positionAnchor: anchorName } as React.CSSProperties}
           onClick={(e) => e.stopPropagation()}
         >

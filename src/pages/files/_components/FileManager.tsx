@@ -1,14 +1,14 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { actions } from "astro:actions";
 import { Breadcrumbs, type BreadcrumbSegment } from "./Breadcrumbs";
 import { DropOverlay } from "./DropOverlay";
 import { EmptyState } from "./EmptyState";
 import { FileListItem } from "./FileListItem";
 import { FilePreview } from "./FilePreview";
 import { Toolbar } from "./Toolbar";
-import type { FileNode } from "./types";
 import { UploadingList } from "./UploadingList";
+import type { FileNode } from "./types";
 import { useUpload } from "./useUpload";
+import { actions } from "astro:actions";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export const FileManager = memo(
   ({
@@ -35,17 +35,14 @@ export const FileManager = memo(
     const [isDragOver, setIsDragOver] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const refetchNodes = useCallback(
-      async (folderId: string | null) => {
-        const result = await actions.getNodes({ folderId });
-        if (result.error) {
-          console.error("Failed to fetch nodes:", result.error);
-          return;
-        }
-        setNodes(result.data);
-      },
-      [],
-    );
+    const refetchNodes = useCallback(async (folderId: string | null) => {
+      const result = await actions.getNodes({ folderId });
+      if (result.error) {
+        console.error("Failed to fetch nodes:", result.error);
+        return;
+      }
+      setNodes(result.data);
+    }, []);
 
     const { uploading, uploadFiles, dismissError } = useUpload(
       currentFolderId,
@@ -147,8 +144,7 @@ export const FileManager = memo(
           ...breadcrumbs,
           { id: node.id, name: node.name },
         ];
-        const path =
-          "/files/" + newBreadcrumbs.map((s) => s.name).join("/");
+        const path = "/files/" + newBreadcrumbs.map((s) => s.name).join("/");
         pushHistoryState(path, {
           folderId: node.id,
           breadcrumbs: newBreadcrumbs,
@@ -162,8 +158,7 @@ export const FileManager = memo(
     const handleFileClick = useCallback(
       (node: FileNode) => {
         const path =
-          "/files/" +
-          [...breadcrumbs.map((s) => s.name), node.name].join("/");
+          "/files/" + [...breadcrumbs.map((s) => s.name), node.name].join("/");
         pushHistoryState(path, {
           folderId: currentFolderId,
           breadcrumbs,

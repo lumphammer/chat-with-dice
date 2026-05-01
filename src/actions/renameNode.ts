@@ -1,8 +1,8 @@
 import { db } from "#/db";
 import { nodes } from "#/schemas/chatDB-schema";
-import { and, eq, isNull } from "drizzle-orm";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
+import { and, eq, isNull } from "drizzle-orm";
 
 const MAX_NAME_LENGTH = 128;
 
@@ -37,9 +37,12 @@ export const renameNode = defineAction({
         error instanceof Error &&
         error.message.includes("UNIQUE constraint failed")
       ) {
-        throw new Error("An item with that name already exists in this folder", {
-          cause: error,
-        });
+        throw new Error(
+          "An item with that name already exists in this folder",
+          {
+            cause: error,
+          },
+        );
       }
       throw error;
     }

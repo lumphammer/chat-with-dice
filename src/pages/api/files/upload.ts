@@ -1,8 +1,8 @@
-import type { APIRoute } from "astro";
 import { db } from "#/db";
 import { files, nodes } from "#/schemas/chatDB-schema";
-import { eq } from "drizzle-orm";
+import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
+import { eq } from "drizzle-orm";
 
 export const prerender = false;
 
@@ -38,15 +38,13 @@ export const POST: APIRoute = async (ctx) => {
 
   const url = new URL(ctx.request.url);
   const filename = url.searchParams.get("filename");
-  const contentType = url.searchParams.get("contentType") ?? "application/octet-stream";
+  const contentType =
+    url.searchParams.get("contentType") ?? "application/octet-stream";
   const folderId = url.searchParams.get("folderId");
 
   const MAX_NAME_LENGTH = 128;
   if (!filename || filename.length > MAX_NAME_LENGTH) {
-    return json(
-      { error: "Missing or invalid filename" },
-      HTTP_BAD_REQUEST,
-    );
+    return json({ error: "Missing or invalid filename" }, HTTP_BAD_REQUEST);
   }
 
   const contentLength = ctx.request.headers.get("content-length");

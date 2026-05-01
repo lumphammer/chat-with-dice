@@ -1,6 +1,6 @@
+import { NewFolderDialog } from "./NewFolderDialog";
 import { Upload } from "lucide-react";
 import { memo, useRef } from "react";
-import { NewFolderDialog } from "./NewFolderDialog";
 
 export const Toolbar = memo(
   ({

@@ -3,7 +3,12 @@ import { sql } from "drizzle-orm";
 
 type PathResolution =
   | { kind: "folder"; folderId: string | null; breadcrumbs: Breadcrumb[] }
-  | { kind: "file"; folderId: string | null; fileNodeId: string; breadcrumbs: Breadcrumb[] }
+  | {
+      kind: "file";
+      folderId: string | null;
+      fileNodeId: string;
+      breadcrumbs: Breadcrumb[];
+    }
   | { kind: "not-found" };
 
 type Breadcrumb = { id: string; name: string };
@@ -79,7 +84,8 @@ export async function resolvePathToFolder(
 
   // all-but-last resolved — check if the last segment is a file
   if (rows.length === pathSegments.length - 1) {
-    const parentFolderId = rows.length > 0 ? rows[rows.length - 1].folder_id : null;
+    const parentFolderId =
+      rows.length > 0 ? rows[rows.length - 1].folder_id : null;
     const fileName = pathSegments[pathSegments.length - 1];
 
     const fileNode = await db.query.nodes.findFirst({

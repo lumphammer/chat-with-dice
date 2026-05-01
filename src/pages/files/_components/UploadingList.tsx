@@ -1,6 +1,6 @@
+import type { UploadingFile } from "./useUpload";
 import { AlertCircle, LoaderCircle, X } from "lucide-react";
 import { memo } from "react";
-import type { UploadingFile } from "./useUpload";
 
 export const UploadingList = memo(
   ({
@@ -17,10 +17,11 @@ export const UploadingList = memo(
         {files.map((file) => (
           <li
             key={file.localId}
-            className="flex items-center gap-3 rounded-lg px-3 py-2 bg-base-200/50"
+            className="bg-base-200/50 flex items-center gap-3 rounded-lg px-3
+              py-2"
           >
             {file.status === "uploading" && (
-              <LoaderCircle size={16} className="animate-spin text-primary" />
+              <LoaderCircle size={16} className="text-primary animate-spin" />
             )}
             {file.status === "error" && (
               <AlertCircle size={16} className="text-error" />

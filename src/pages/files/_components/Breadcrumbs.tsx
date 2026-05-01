@@ -1,4 +1,4 @@
-import { ChevronRight, Home } from "lucide-react";
+import { Home } from "lucide-react";
 import { memo } from "react";
 
 export type BreadcrumbSegment = {
@@ -37,7 +37,6 @@ export const Breadcrumbs = memo(
 
             return (
               <li key={segment.id}>
-                <ChevronRight size={14} className="text-base-content/30" />
                 {isLast ? (
                   <span className="btn btn-ghost btn-sm font-semibold">
                     {segment.name}
