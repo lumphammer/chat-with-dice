@@ -90,8 +90,8 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 
 - [ ] loadFolder/refetchNodes can race when navigating quickly: a slower earlier request can resolve after a later one and overwrite nodes (and isLoading) with stale data. Consider tracking a request id/abort signal and only applying results for the latest navigation.
 - [x] FileListItem renders a KebabMenu inside a button. nesting interactive HTML is invalid and bad for accessibility. Restructure so the KebabMenu is not inside the button.
-- [ ] in upload.ts, the size limit is only enforced via the Content-Length header, which may be absent/incorrect for streaming uploads. Consider checking r2Object.size after upload and deleting/rejecting files that exceed MAX_BYTES (and cleaning up both DB + R2) to enforce the limit reliably.
-- [ ] Uniqueness is not enforced for root nodes
+- [x] in upload.ts, the size limit is only enforced via the Content-Length header, which may be absent/incorrect for streaming uploads. Consider checking r2Object.size after upload and deleting/rejecting files that exceed MAX_BYTES (and cleaning up both DB + R2) to enforce the limit reliably.
+- [x] Uniqueness is not enforced for root nodes
 - [ ] Skeleton should fade in slowly to avoid a flash on fast transitions.
 - [ ] File preview should show file in breadcrumbs and allow breadcrumb navigation to containing folder.
 - [ ] Uploading too-large files should be clearer about what went wrong.

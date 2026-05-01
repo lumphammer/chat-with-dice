@@ -117,6 +117,11 @@ export const nodes = sqliteTable(
     uniqueIndex("nodes_parent_name_live")
       .on(table.parent_folder_id, table.name)
       .where(sql`${table.deleted_time} IS NULL`),
+    uniqueIndex("nodes_root_name_live")
+      .on(table.name)
+      .where(
+        sql`${table.parent_folder_id} IS NULL AND ${table.deleted_time} IS NULL`,
+      ),
     check(
       "id_equals_metadata_fk",
       sql`(
