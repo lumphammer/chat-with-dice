@@ -2,6 +2,7 @@
 import Layout from "#/layouts/Layout.astro";
 import { FileManager } from "./_components/FileManager";
 import { getUserNodes } from "./_components/queries";
+import { resolvePathToFolder } from "./_components/resolvePathToFolder";
 
 export const prerender = false;
 
@@ -10,10 +11,30 @@ if (!user) {
   return Astro.redirect("/signin");
 }
 
-// const path = Astro.params.path;
-const rootNodes = await getUserNodes(user.id);
+const rawPath = Astro.params.path ?? "";
+const pathSegments = rawPath.split("/").filter(Boolean).map(decodeURIComponent);
+
+const resolution = await resolvePathToFolder(user.id, pathSegments);
+
+if (resolution.kind === "not-found") {
+  return new Response("Not found", { status: 404 });
+}
+
+const folderId = resolution.folderId;
+const breadcrumbs = resolution.breadcrumbs;
+const initialNodes = await getUserNodes(user.id, folderId ?? undefined);
+
+// if the path resolved to a file, we need to find the file node in the list
+// so the client can immediately open the preview
+const previewFileId = resolution.kind === "file" ? resolution.fileNodeId : null;
 ---
 
 <Layout title="Files" class="flex justify-center p-8">
-  <FileManager client:only initialNodes={rootNodes} />
+  <FileManager
+    client:only
+    initialNodes={initialNodes}
+    initialFolderId={folderId}
+    initialBreadcrumbs={breadcrumbs}
+    initialPreviewFileId={previewFileId}
+  />
 </Layout>
