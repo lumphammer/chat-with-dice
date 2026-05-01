@@ -43,3 +43,17 @@ When you've finished your changes, run `pnpm run types:check` to check types, an
 * Informal, honest language is fine — "first stab at …", "start making …", "work towards …"
 * For multi-step work use phase suffixes: `foo phase 1`, `foo phase 2`
 * Never include issue numbers or PR links
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`lumphammer/chat-with-dice`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo — `CONTEXT.md` + `docs/adr/` at the root. See `docs/agents/domain.md`.
