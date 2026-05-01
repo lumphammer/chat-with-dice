@@ -123,6 +123,11 @@ export const FileListItem = memo(
               {formatBytes(node.file.size_bytes)}
             </span>
           )}
+          {node.folder && node.folder.recursive_size_bytes > 0 && (
+            <span className="text-base-content/50 text-sm">
+              {formatBytes(node.folder.recursive_size_bytes)}
+            </span>
+          )}
           <KebabMenu onRename={handleStartRename} onDelete={handleDelete} />
         </button>
       </li>
