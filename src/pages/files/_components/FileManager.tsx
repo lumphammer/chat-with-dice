@@ -165,7 +165,7 @@ export const FileManager = memo(
           "/files/" +
           [
             ...breadcrumbs.map((s) => encodeURIComponent(s.name)),
-            node.name,
+            encodeURIComponent(node.name),
           ].join("/");
         pushHistoryState(path, {
           folderId: currentFolderId,
@@ -180,7 +180,8 @@ export const FileManager = memo(
     const handleClosePreview = useCallback(() => {
       const path =
         breadcrumbs.length > 0
-          ? "/files/" + breadcrumbs.map((s) => s.name).join("/")
+          ? "/files/" +
+            breadcrumbs.map((s) => encodeURIComponent(s.name)).join("/")
           : "/files";
       pushHistoryState(path, {
         folderId: currentFolderId,
