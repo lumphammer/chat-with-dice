@@ -1,4 +1,5 @@
-import { type getUserNodes } from "./queries";
+import type { getUserNodes } from "./queries";
+import { actions } from "astro:actions";
 import { memo, useMemo, useState } from "react";
 
 export const FileManager = memo(
@@ -27,6 +28,15 @@ export const FileManager = memo(
           ))}
         </ul>
         <h2>Folders</h2>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            console.log("CLICK");
+            actions.createFolder({ name: "foo" });
+          }}
+        >
+          Create Folder
+        </button>
         <ul>
           {folderNodes.map((folderNode) => (
             <li key={folderNode.id}>{folderNode.name}</li>
