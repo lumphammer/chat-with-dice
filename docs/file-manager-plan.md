@@ -86,6 +86,13 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 - Ownership + deletion check before serving
 - Aggressive caching headers (`Cache-Control: private`)
 
+## Bugs in need of fixing
+
+- [ ] loadFolder/refetchNodes can race when navigating quickly: a slower earlier request can resolve after a later one and overwrite nodes (and isLoading) with stale data. Consider tracking a request id/abort signal and only applying results for the latest navigation.
+- [ ] FileListItem renders a KebabMenu inside a button. nesting interactive HTML is invalid and bad for accessibility. Restructure so the KebabMenu is not inside the button.
+- [ ] in upload.ts, the size limit is only enforced via the Content-Length header, which may be absent/incorrect for streaming uploads. Consider checking r2Object.size after upload and deleting/rejecting files that exceed MAX_BYTES (and cleaning up both DB + R2) to enforce the limit reliably.
+- [ ] Uniqueness is not enforced for root nodes
+
 ## Deferred for later
 
 - Grid/thumbnail view
@@ -96,3 +103,6 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 - Sharing files to rooms (via `roomResourceShares`)
 - Trash/recycle bin UI for restoring soft-deleted items
 - Preview for PDFs, audio, text/markdown
+- Periodic purge of deleted files
+- Quota enforcement
+- Quota usage and control in admin
