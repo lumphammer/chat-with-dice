@@ -2,7 +2,7 @@ import { db } from "#/db";
 import { files, nodes } from "#/schemas/chatDB-schema";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export const prerender = false;
 
@@ -99,7 +99,7 @@ export const POST: APIRoute = async (ctx) => {
       httpMetadata: { contentType },
     });
 
-    // phase 3: mark as ready
+    // phase 3: mark as ready + update ancestor folder sizes
     await db
       .update(files)
       .set({
@@ -107,6 +107,22 @@ export const POST: APIRoute = async (ctx) => {
         size_bytes: r2Object.size,
       })
       .where(eq(files.id, id));
+
+    if (folderId) {
+      await db.run(sql`
+        WITH RECURSIVE ancestors(folder_id) AS (
+          SELECT ${folderId}
+          UNION ALL
+          SELECT nodes.parent_folder_id
+          FROM ancestors
+          JOIN nodes ON nodes.folder_id = ancestors.folder_id
+          WHERE nodes.parent_folder_id IS NOT NULL
+        )
+        UPDATE folders
+        SET recursive_size_bytes = recursive_size_bytes + ${r2Object.size}
+        WHERE id IN (SELECT folder_id FROM ancestors)
+      `);
+    }
 
     return json(
       {
