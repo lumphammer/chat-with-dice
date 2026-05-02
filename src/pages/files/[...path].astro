@@ -31,7 +31,7 @@ const previewFileId = resolution.kind === "file" ? resolution.fileNodeId : null;
 
 <Layout title="Files" class="flex justify-center p-8">
   <FileManager
-    client:only
+    client:load
     initialNodes={initialNodes}
     initialFolderId={folderId}
     initialBreadcrumbs={breadcrumbs}
