@@ -39,7 +39,7 @@ export const FileManager = memo(
     const navigationIdRef = useRef(0);
 
     const refetchNodes = useCallback(async (folderId: string | null) => {
-      const requestId = ++navigationIdRef.current;
+      const requestId = navigationIdRef.current;
       const result = await actions.getNodes({ folderId });
       if (requestId !== navigationIdRef.current) return; // stale
       if (result.error) {
@@ -87,12 +87,12 @@ export const FileManager = memo(
     // load a folder's contents and update React state (no history manipulation)
     const loadFolder = useCallback(
       async (folderId: string | null, newBreadcrumbs: BreadcrumbSegment[]) => {
+        const requestId = ++navigationIdRef.current;
         setIsLoading(true);
         setPreviewNode(null);
         setBreadcrumbs(newBreadcrumbs);
         setCurrentFolderId(folderId);
 
-        const requestId = navigationIdRef.current;
         await refetchNodes(folderId);
         if (requestId === navigationIdRef.current) {
           setIsLoading(false);
