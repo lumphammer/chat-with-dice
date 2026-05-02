@@ -115,3 +115,4 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 - Quota enforcement.
 - Quota usage and control in admin.
 - Search by filename.
+- Annotation/alt
