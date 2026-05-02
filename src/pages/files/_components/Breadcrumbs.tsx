@@ -19,7 +19,7 @@ export const Breadcrumbs = memo(
         <ul>
           <li>
             <button
-              className="btn btn-ghost btn-sm gap-1"
+              className="btn btn-ghost btn-sm gap-1 px-0"
               onClick={() => onNavigate(null, "/files")}
             >
               <Home size={14} />
@@ -38,12 +38,12 @@ export const Breadcrumbs = memo(
             return (
               <li key={segment.id}>
                 {isLast ? (
-                  <span className="btn btn-ghost btn-sm font-semibold">
+                  <span className="btn btn-ghost btn-sm px-0 font-semibold">
                     {segment.name}
                   </span>
                 ) : (
                   <button
-                    className="btn btn-ghost btn-sm"
+                    className="btn btn-ghost btn-sm px-0"
                     onClick={() => onNavigate(segment.id, path)}
                   >
                     {segment.name}
