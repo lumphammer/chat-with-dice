@@ -126,9 +126,11 @@ export const FileListItem = memo(
               {formatBytes(node.file.size_bytes)}
             </span>
           )}
-          {node.folder && node.folder.recursive_size_bytes > 0 && (
+          {node.folder && (
             <span className="text-base-content/50 text-sm">
-              {formatBytes(node.folder.recursive_size_bytes)}
+              {node.folder.recursive_size_bytes > 0
+                ? formatBytes(node.folder.recursive_size_bytes)
+                : "Empty"}
             </span>
           )}
         </button>
