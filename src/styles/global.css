@@ -61,6 +61,8 @@
   --spacing-4: 1rem;
   --animate-fadein: fade-in 300ms forwards;
   --animate-fadeout: fade-out 300ms forwards;
+  --animate-fadein-slow: fade-in 1000ms forwards;
+  --animate-fadeout-slow: fade-out 1000ms forwards;
   @keyframes fade-in {
     from {
       opacity: 0;

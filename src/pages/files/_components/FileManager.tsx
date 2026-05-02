@@ -284,7 +284,7 @@ export const FileManager = memo(
         </div>
 
         {isLoading ? (
-          <div className="flex animate-fadein flex-col gap-2 py-4">
+          <div className="animate-fadein-slow flex flex-col gap-2 py-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="skeleton h-10 w-full rounded-lg" />
             ))}
