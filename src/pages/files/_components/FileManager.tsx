@@ -259,18 +259,6 @@ export const FileManager = memo(
       [uploadFiles],
     );
 
-    if (previewNode) {
-      return (
-        <div className="w-full max-w-2xl">
-          <Breadcrumbs
-            segments={breadcrumbs}
-            onNavigate={handleBreadcrumbNavigate}
-          />
-          <FilePreview node={previewNode} onClose={handleClosePreview} />
-        </div>
-      );
-    }
-
     return (
       <div
         className="relative w-full max-w-2xl"
@@ -327,6 +315,10 @@ export const FileManager = memo(
         )}
 
         <UploadingList files={uploading} onDismiss={dismissError} />
+
+        {previewNode && (
+          <FilePreview node={previewNode} onClose={handleClosePreview} />
+        )}
       </div>
     );
   },
