@@ -95,6 +95,7 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 - [x] Skeleton should fade in slowly to avoid a flash on fast transitions.
 - [ ] File preview should show file in breadcrumbs and allow breadcrumb navigation to containing folder.
 - [ ] Uploading too-large files should be clearer about what went wrong.
+- [ ] Paging for large folders.
 
 ## Deferred for later
 
@@ -107,6 +108,8 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 - Trash/recycle bin UI for restoring soft-deleted items
 - Preview for PDFs, audio, text/markdown
 - Periodic purge of deleted files
+- Quota and usage display
 - Quota enforcement
 - Quota usage and control in admin
 - Thumbnails
+- Search by filename
