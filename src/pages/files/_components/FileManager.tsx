@@ -294,7 +294,7 @@ export const FileManager = memo(
           uploading.length === 0 ? (
           <EmptyState />
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="animate-fadein flex flex-col gap-1">
             {folderNodes.map((node) => (
               <FileListItem
                 key={node.id}
