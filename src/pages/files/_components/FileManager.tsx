@@ -35,8 +35,13 @@ export const FileManager = memo(
     const [isDragOver, setIsDragOver] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    // monotonic counter to discard stale responses from earlier navigations
+    const navigationIdRef = useRef(0);
+
     const refetchNodes = useCallback(async (folderId: string | null) => {
+      const requestId = ++navigationIdRef.current;
       const result = await actions.getNodes({ folderId });
+      if (requestId !== navigationIdRef.current) return; // stale
       if (result.error) {
         console.error("Failed to fetch nodes:", result.error);
         return;
@@ -87,8 +92,11 @@ export const FileManager = memo(
         setBreadcrumbs(newBreadcrumbs);
         setCurrentFolderId(folderId);
 
+        const requestId = navigationIdRef.current;
         await refetchNodes(folderId);
-        setIsLoading(false);
+        if (requestId === navigationIdRef.current) {
+          setIsLoading(false);
+        }
       },
       [refetchNodes],
     );
@@ -119,8 +127,10 @@ export const FileManager = memo(
         setBreadcrumbs(state.breadcrumbs);
         setCurrentFolderId(state.folderId);
 
+        const requestId = ++navigationIdRef.current;
         void (async () => {
           const result = await actions.getNodes({ folderId: state.folderId });
+          if (requestId !== navigationIdRef.current) return;
           if (result.error) {
             console.error("Failed to fetch nodes:", result.error);
             return;
