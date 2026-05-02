@@ -15,7 +15,7 @@ export const Toolbar = memo(
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     return (
-      <div className="flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2">
         <NewFolderDialog
           currentFolderId={currentFolderId}
           onCreated={onFolderCreated}

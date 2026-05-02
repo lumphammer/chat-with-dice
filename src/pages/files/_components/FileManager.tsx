@@ -271,7 +271,7 @@ export const FileManager = memo(
       >
         {isDragOver && <DropOverlay />}
 
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-wrap items-center justify-between">
           <Breadcrumbs
             segments={breadcrumbs}
             onNavigate={handleBreadcrumbNavigate}
