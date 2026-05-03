@@ -19,12 +19,19 @@ const items = [
 <Layout title="Astro Syntax Test">
   {
     items.map(({ title, published }) => {
-      // you *can* use markup expressions in code inside the component body, like this
-      function wrap(thing: any) {
-        return <Wrapper>{thing}</Wrapper>;
-      }
+      // you *can't* use markup expressions in code inside the component body, like this
+      // any more since Astro 7
+      // function wrap(thing: any) {
+      //   return <Wrapper>{thing}</Wrapper>;
+      // }
 
-      return published ? <h2>{title}</h2> : wrap(<i>(redacted)</i>);
+      return published ? (
+        <h2>{title}</h2>
+      ) : (
+        <Wrapper>
+          <i>(redacted)</i>
+        </Wrapper>
+      );
     })
   }
   <!-- {

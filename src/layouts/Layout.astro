@@ -23,8 +23,8 @@ const initialUser = serverUser
 
 <HTML title={title}>
   <header
-    class="navbar bg-base-300 dark:bg-base-900 p-3 text-stone-600
-      dark:text-stone-100"
+    class={`navbar bg-base-300 dark:bg-base-900 p-3 text-stone-600
+      dark:text-stone-100`}
   >
     <div class="navbar-start">
       <a href="/" class="link link-primary link-hover text-xl font-medium"
@@ -33,13 +33,13 @@ const initialUser = serverUser
           aria-description="A d6 showing sixes on all sides, with a tail like a speech bubble"
           fill={undefined}
           stroke={undefined}
-          class="h-10 w-10
+          class={`h-10 w-10
             [&_.dark-part]:fill-[oklch(from_var(--color-neutral)_0.9_c_h)]
             [&_.die-pips]:fill-[oklch(from_var(--color-primary)_0.6_c_h)]
             [&_.light-part]:fill-[oklch(from_var(--color-neutral)_1_c_h)]
             [&_.stroke]:fill-none
             [&_.stroke]:stroke-[oklch(from_var(--color-neutral)_0.7_c_h)]
-            [&_.stroke]:stroke-8"
+            [&_.stroke]:stroke-8`}
         /></a
       >
     </div>
