@@ -1,4 +1,4 @@
-import * as dbSchema from "#/schemas/roller-schema";
+import * as dbSchema from "#/schemas/ChatRoomDO-schema";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 import { z } from "zod/v4";
 

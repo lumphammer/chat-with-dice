@@ -1,3 +1,4 @@
+import { parseJSONC } from "#/utils/parseJSONC";
 import fs from "fs";
 import crypto from "node:crypto";
 import path from "node:path";
@@ -21,16 +22,6 @@ function durableObjectNamespaceIdFromName(uniqueKey: string, name: string) {
     .digest()
     .subarray(0, HMAC_TRIM_LENGTH);
   return Buffer.concat([nameHmac, hmac]).toString("hex");
-}
-
-// copied from https://github.com/fabiospampinato/tiny-jsonc/blob/bb722089210174ec9cb53afcce15245e7ee21b9a/src/index.ts
-function parseJSONC(text: string): any {
-  const stringOrCommentRe = /("(?:\\?[^])*?")|(\/\/.*)|(\/\*[^]*?\*\/)/g;
-  const stringOrTrailingCommaRe = /("(?:\\?[^])*?")|(,\s*)(?=]|})/g;
-  const stripped = text
-    .replace(stringOrCommentRe, "$1")
-    .replace(stringOrTrailingCommaRe, "$1");
-  return JSON.parse(stripped);
 }
 
 export function getLocalPathForD1Binding(binding: string) {

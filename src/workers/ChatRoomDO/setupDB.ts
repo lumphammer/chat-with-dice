@@ -1,8 +1,10 @@
-import migrations from "#/durable-object-migrations/roller/migrations";
-import * as dbSchema from "#/schemas/roller-schema";
+import * as dbSchema from "#/schemas/ChatRoomDO-schema";
 import { log, logError } from "./utils";
 import { drizzle } from "drizzle-orm/durable-sqlite";
 import { migrate } from "drizzle-orm/durable-sqlite/migrator";
+
+// this doesn't seem to be exported, so a little type-fu is needed
+type MigrationConfig = Parameters<typeof migrate>[1];
 
 /**
  * Create a drizzle interface to the db and run migrations.
@@ -10,7 +12,7 @@ import { migrate } from "drizzle-orm/durable-sqlite/migrator";
  * @param ctx the Durable Object ctx object
  * @returns
  */
-export function setupDB(ctx: DurableObjectState) {
+export function setupDB(ctx: DurableObjectState, migrations: MigrationConfig) {
   const db = drizzle(ctx.storage, { schema: dbSchema });
 
   const before = printSchema(ctx);

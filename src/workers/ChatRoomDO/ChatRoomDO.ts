@@ -4,8 +4,9 @@ import {
 } from "#/capabilities/capabilityRegistry";
 import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
 import { db as d1 } from "#/db";
+import migrations from "#/durable-object-migrations/ChatRoomDO/migrations";
+import * as dbSchema from "#/schemas/ChatRoomDO-schema";
 import { rooms } from "#/schemas/coreD1-schema";
-import * as dbSchema from "#/schemas/roller-schema";
 import {
   roomConfigValidator,
   type RoomConfig,
@@ -73,7 +74,7 @@ export class ChatRoomDO extends DurableObject {
       ctx.id.toString(),
     );
 
-    this.db = setupDB(ctx);
+    this.db = setupDB(ctx, migrations);
     this.messageRepository = new MessageRepository(this.db);
     this.broadcaster = new Broadcaster(ctx);
     this.stateRepository = new CapabilityStateRepository(ctx.storage.kv);

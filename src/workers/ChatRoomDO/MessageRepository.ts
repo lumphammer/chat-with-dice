@@ -1,4 +1,4 @@
-import * as dbSchema from "#/schemas/roller-schema";
+import * as dbSchema from "#/schemas/ChatRoomDO-schema";
 import {
   anyChatMessageValidator,
   type ChatMessage,

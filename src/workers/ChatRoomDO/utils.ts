@@ -1,5 +1,5 @@
-export const log = console.log.bind(console, "[Roller DO]");
-export const logError = console.error.bind(console, "[Roller DO]");
+export const log = console.log.bind(console, "[ChatRoomDO]");
+export const logError = console.error.bind(console, "[ChatRoomDO]");
 
 export const isClosingorClosed = (ws: WebSocket) =>
   ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING;
