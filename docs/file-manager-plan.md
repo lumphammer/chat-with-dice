@@ -31,8 +31,8 @@ The `folders` table stores: `recursive_size_bytes` (should stay in sync with chi
 
 ### R2 configuration
 
-- **Private bucket binding**: `PrivateBucket` (use this for user files)
-- **Public bucket binding**: `ChatWithDiceBucket` (used for avatars, not for user files)
+- **Private bucket binding**: `PRIVATE_R2` (use this for user files)
+- **Public bucket binding**: `PUBLIC_R2` (used for avatars, not for user files)
 - **Public URL**: `BUCKET_PUBLIC_URL` env var (for the public bucket only)
 
 ### Auth pattern
@@ -75,7 +75,7 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 - Drag-and-drop with a full overlay ("drop files here to upload")
 - Always uploads to the currently viewed folder
 - Flat file list only — no recursive folder upload
-- Streaming upload: raw file body to `POST /api/files/upload?folderId=xxx&filename=yyy`, piped directly to R2's `PrivateBucket`
+- Streaming upload: raw file body to `POST /api/files/upload?folderId=xxx&filename=yyy`, piped directly to R2's `PRIVATE_R2`
 - Two-phase: insert DB record → stream to R2 → set `is_ready = 1`
 - 100MB limit
 - Files appear in the list immediately in an "uploading" state

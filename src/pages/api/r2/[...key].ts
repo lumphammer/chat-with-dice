@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ params }) => {
     return new Response("Bad Request", { status: HTTP_BAD_REQUEST });
   }
 
-  const bucket = env.ChatWithDiceBucket;
+  const bucket = env.PUBLIC_R2;
   if (!bucket) {
     return new Response("Storage not configured", {
       status: HTTP_INTERNAL_SERVER_ERROR,

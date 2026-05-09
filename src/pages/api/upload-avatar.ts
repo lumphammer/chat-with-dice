@@ -29,7 +29,7 @@ export const POST: APIRoute = async (ctx) => {
     return json({ error: "Unauthorized" }, HTTP_UNAUTHORIZED);
   }
 
-  const bucket = env.ChatWithDiceBucket;
+  const bucket = env.PUBLIC_R2;
   if (!bucket) {
     return json(
       { error: "Storage not configured" },

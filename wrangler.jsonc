@@ -83,11 +83,11 @@
   "r2_buckets": [
     {
       "bucket_name": "chat-with-dice",
-      "binding": "ChatWithDiceBucket",
+      "binding": "PUBLIC_R2",
     },
     {
       "bucket_name": "chat-with-dice-private",
-      "binding": "PrivateBucket",
+      "binding": "PRIVATE_R2",
     },
   ],
   "vars": {
