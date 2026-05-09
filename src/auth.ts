@@ -163,7 +163,7 @@ export const auth = betterAuth({
         // swap user ids in the accounts table
         console.log("anonymousUser", anonymousUser);
         console.log("newUser", newUser);
-        // if a user with an exsisting account logs in using OAuth while they
+        // if a user with an existing account logs in using OAuth while they
         // are logged in with a temp/anon account, we end up here. There's no
         // solid way to tell if newUser is really new, or just someone returning
         // to an account after accidentally visiting a room and being given an
