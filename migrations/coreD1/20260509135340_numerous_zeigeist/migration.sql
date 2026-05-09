@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `nodes_root_name_live` ON `nodes` (`name`) WHERE "nodes"."parent_folder_id" IS NULL AND "nodes"."deleted_time" IS NULL;

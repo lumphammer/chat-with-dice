@@ -1,4 +1,5 @@
 import { envOrDie } from "#/utils/envOrDie";
+import { screamingSnakeToCamel } from "#/utils/screamingSnakeToCamel";
 import {
   getIdForD1Binding,
   getLocalPathForD1Binding,
@@ -22,8 +23,8 @@ const { CLOUDFLARE_ACCOUNT_ID, D1_TOKEN, DATABASE_BINDING } = envOrDie([
 ]);
 
 export default defineConfig({
-  schema: `./src/schemas/${DATABASE_BINDING}-schema.ts`,
-  out: `./migrations/${DATABASE_BINDING}`,
+  schema: `./src/schemas/${screamingSnakeToCamel(DATABASE_BINDING)}-schema.ts`,
+  out: `./migrations/${screamingSnakeToCamel(DATABASE_BINDING)}`,
   dialect: "sqlite",
   ...(LOCAL
     ? {
