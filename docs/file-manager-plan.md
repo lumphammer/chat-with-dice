@@ -96,7 +96,7 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 - [x] Uploading too-large files should be clearer about what went wrong.
 - [ ] File preview should show file in breadcrumbs and allow breadcrumb navigation to containing folder.
 - [ ] Paging for large folders.
-- [ ] Previews should be in a full-screen dialog
+- [x] Previews should be in a full-screen dialog
 
 ## Deferred for later
 
