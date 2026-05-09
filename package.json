@@ -32,6 +32,7 @@
     "@ark-ui/react": "^5.36.2",
     "@astrojs/check": "0.9.9",
     "@astrojs/cloudflare": "13.3.0",
+    "@astrojs/compiler-rs": "^0.1.10",
     "@astrojs/react": "5.0.4",
     "@better-auth/drizzle-adapter": "https://pkg.pr.new/@better-auth/drizzle-adapter@9489",
     "@dice-roller/rpg-dice-roller": "^5.5.1",
