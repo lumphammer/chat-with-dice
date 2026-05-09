@@ -1,5 +1,5 @@
-import * as dbSchema from "#/schemas/ChatRoomDO-schema";
-import { log, logError } from "./utils";
+// import * as dbSchema from "#/schemas/ChatRoomDO-schema";
+import { log, logError } from "../ChatRoomDO/utils";
 import { drizzle } from "drizzle-orm/durable-sqlite";
 import { migrate } from "drizzle-orm/durable-sqlite/migrator";
 
@@ -12,10 +12,14 @@ type MigrationConfig = Parameters<typeof migrate>[1];
  * @param ctx the Durable Object ctx object
  * @returns
  */
-export function setupDB(ctx: DurableObjectState, migrations: MigrationConfig) {
-  const db = drizzle(ctx.storage, { schema: dbSchema });
+export function setupDB<T extends Record<string, unknown>>(
+  ctx: DurableObjectState,
+  migrations: MigrationConfig,
+  schema: T,
+) {
+  const db = drizzle(ctx.storage, { schema: schema });
 
-  const before = printSchema(ctx);
+  const before = printSchema(ctx, schema);
 
   void ctx.blockConcurrencyWhile(async () => {
     // migrate the db
@@ -26,7 +30,7 @@ export function setupDB(ctx: DurableObjectState, migrations: MigrationConfig) {
       logError("FAILED MIGRATION", e);
     }
   });
-  const after = printSchema(ctx);
+  const after = printSchema(ctx, schema);
   if (before !== after) {
     log("setupDB: Schema changed after migration", before, after);
   }
@@ -40,8 +44,8 @@ export function setupDB(ctx: DurableObjectState, migrations: MigrationConfig) {
  * @param ctx the Durable Object ctx object
  * @returns the printed schema as a string
  */
-function printSchema(ctx: DurableObjectState) {
-  const tableNames = Object.keys(dbSchema);
+function printSchema(ctx: DurableObjectState, schema: Record<string, unknown>) {
+  const tableNames = Object.keys(schema);
   const placeHolders = Array.from({ length: tableNames.length })
     .fill("?")
     .join(", ");
