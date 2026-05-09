@@ -174,7 +174,7 @@ export const createStateReducer = <
     if (!sliceCase) return state;
     return produce(state, (draft) => {
       sliceCase.apply(draft, action);
-    }) as TState;
+    });
   };
 
   return {
