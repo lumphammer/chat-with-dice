@@ -7,19 +7,17 @@ import { db as d1 } from "#/db";
 import migrations from "#/durable-object-migrations/ChatRoomDO/migrations";
 import * as dbSchema from "#/schemas/ChatRoomDO-schema";
 import { rooms } from "#/schemas/coreD1-schema";
-import {
-  roomConfigValidator,
-  type RoomConfig,
-} from "#/validators/roomConfigValidator";
+import { type RoomConfig } from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
 import { type ServerMountedCapability } from "../../capabilities/types";
+import { setupDB } from "../utils/setupDB";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
 import { MessageJiggler } from "./MessageJiggler";
 import { MessageRepository } from "./MessageRepository";
 import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
-import { setupDB } from "./setupDB";
+import { loadConfigFromD1OrDie } from "./loadConfigFromD1OrDie";
 import { sessionAttachmentSchema } from "./types";
 import {
   describeState,
@@ -51,78 +49,61 @@ const STALE_SWEEP_FACTOR = 3;
 const STALE_THRESHOLD_MS = SWEEP_INTERVAL_MS * STALE_SWEEP_FACTOR;
 
 export class ChatRoomDO extends DurableObject {
-  private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
-  private messageRepository: MessageRepository;
-  private broadcaster: Broadcaster;
+  private db!: DrizzleSqliteDODatabase<typeof dbSchema>;
+  private messageRepository!: MessageRepository;
+  private broadcaster!: Broadcaster;
   private capabilities: Map<string, ServerMountedCapability> = new Map();
   private config: RoomConfig = defaultRoomConfig;
-  private stateRepository: CapabilityStateRepository;
-  private messageJiggler: MessageJiggler;
-  private createdByUserId: string = "";
+  private stateRepository!: CapabilityStateRepository;
+  private messageJiggler!: MessageJiggler;
+  private createdByUserId!: string;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
 
-    // Set up automatic ping/pong responses
-    // This keeps connections alive without waking the DO
-    this.ctx.setWebSocketAutoResponse(
-      new WebSocketRequestResponsePair("ping", "pong"),
-    );
-
     log(
-      "\n\n=====================================\nDurable object id booting:",
+      "\n\n=====================================\nChatRoomDO id booting:",
       ctx.id.toString(),
     );
 
-    this.db = setupDB(ctx, migrations);
-    this.messageRepository = new MessageRepository(this.db);
-    this.broadcaster = new Broadcaster(ctx);
-    this.stateRepository = new CapabilityStateRepository(ctx.storage.kv);
-    this.messageJiggler = new MessageJiggler(
-      this.messageRepository,
-      this.broadcaster,
-    );
-
-    // load config from d1
+    // initialisation - do this in a blockConcurrencyWhile so we can check this
+    // is a legitimate instantiation before we allow anything else to happen.
     void this.ctx.blockConcurrencyWhile(async () => {
-      const roomRows = await d1
-        .select({
-          config: rooms.config,
-          createByUserId: rooms.createdByUserId,
-        })
-        .from(rooms)
-        .where(eq(rooms.durableObjectId, ctx.id.toString()))
-        .limit(1);
-      const roomRow = roomRows[0];
-      if (!roomRow) {
-        throw new Error("Room not found");
-      }
-      const parsedConfig = roomConfigValidator.safeParse(roomRow.config);
-      if (parsedConfig.success) {
-        this.config = parsedConfig.data;
-      } else {
-        console.error(
-          "Room Config failed validation, falling back to defaults",
-          parsedConfig.error,
-        );
-      }
-      this.createdByUserId = roomRow.createByUserId;
-    });
+      // load room from d1 or crash out
+      const { config, createdByUserId } = await loadConfigFromD1OrDie(ctx);
+      this.config = config;
+      this.createdByUserId = createdByUserId;
 
-    // Mount all capabilities before handling any events.
-    // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
-    void this.ctx.blockConcurrencyWhile(async () => {
+      // it's now safe to init the local db
+      this.db = setupDB(ctx, migrations);
+
+      // and assemble all our helpers etc.
+      this.broadcaster = new Broadcaster(ctx);
+      this.messageRepository = new MessageRepository(this.db);
+      this.stateRepository = new CapabilityStateRepository(ctx.storage.kv);
+      this.messageJiggler = new MessageJiggler(
+        this.messageRepository,
+        this.broadcaster,
+      );
+
+      // Set up automatic ping/pong responses
+      // This keeps connections alive without waking the DO
+      this.ctx.setWebSocketAutoResponse(
+        new WebSocketRequestResponsePair("ping", "pong"),
+      );
+
+      // Mount all capabilities before handling any events.
+      // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
       await Promise.all(
-        this.config.capabilities.map(async ({ name, config }) => {
-          const mountedCap = await this.mountCapability(name, config);
+        this.config.capabilities.map(async ({ name, config: capConfig }) => {
+          const mountedCap = await this.mountCapability(name, capConfig);
           if (mountedCap) {
             this.capabilities.set(name, mountedCap);
           }
         }),
       );
+      this.broadcaster.broadcastUsersOnline();
     });
-
-    this.broadcaster.broadcastUsersOnline();
   }
 
   /**

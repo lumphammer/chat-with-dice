@@ -1,8 +1,5 @@
-import { db } from "#/db";
-import { rooms } from "#/schemas/coreD1-schema";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
-import { eq, sql } from "drizzle-orm";
 
 export const prerender = false;
 
@@ -13,21 +10,6 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
   const user = locals.user;
   if (!user) {
     return new Response("No session found", { status: 401 });
-  }
-
-  // confirm that room exists in d1 (without this, technically you could
-  // create arbitrary new rooms from any id.)
-  const roomExists =
-    (
-      await db
-        .select({ n: sql<number>`1` })
-        .from(rooms)
-        .where(eq(rooms.id, roomId))
-        .limit(1)
-        .all()
-    ).length > 0;
-  if (!roomExists) {
-    return new Response("Room does not exist", { status: 404 });
   }
 
   // Get the ChatRoom Durable Object stub
