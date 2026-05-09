@@ -1,5 +1,5 @@
 import { db } from "#/db";
-import { nodes } from "#/schemas/chatDB-schema";
+import { nodes } from "#/schemas/coreD1-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { eq, sql } from "drizzle-orm";

@@ -1,5 +1,5 @@
 import { roomTypes } from "#/roomTypes";
-import type { rooms } from "#/schemas/chatDB-schema";
+import type { rooms } from "#/schemas/coreD1-schema";
 import { InfoIcon } from "lucide-react";
 import { memo } from "react";
 

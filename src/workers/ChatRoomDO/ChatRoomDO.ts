@@ -4,7 +4,7 @@ import {
 } from "#/capabilities/capabilityRegistry";
 import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
 import { db as d1 } from "#/db";
-import { rooms } from "#/schemas/chatDB-schema";
+import { rooms } from "#/schemas/coreD1-schema";
 import * as dbSchema from "#/schemas/roller-schema";
 import {
   roomConfigValidator,

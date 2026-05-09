@@ -1,4 +1,4 @@
-import type { rooms } from "#/schemas/chatDB-schema";
+import type { rooms } from "#/schemas/coreD1-schema";
 import { AdminRoomRow } from "./AdminRoomRow";
 import { memo, useState } from "react";
 

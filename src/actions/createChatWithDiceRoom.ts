@@ -1,6 +1,6 @@
 import { db } from "#/db";
 import { ROOM_TYPE_NAMES, roomTypes } from "#/roomTypes";
-import { rooms } from "#/schemas/chatDB-schema";
+import { rooms } from "#/schemas/coreD1-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";

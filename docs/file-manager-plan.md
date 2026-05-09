@@ -8,7 +8,7 @@
 - **React component**: `src/pages/files/_components/FileManager.tsx` — the client-only React island (stub exists)
 - **Queries**: `src/pages/files/_components/queries.ts` — `getUserNodes(userId, folderId?)` fetches nodes for a folder
 - **Schema**: `src/schemas/fileSystemSchema.ts` — defines `nodes`, `files`, `folders`, `roomResourceShares` tables
-- **Relations**: `src/schemas/chatDB-schema.ts` — defines Drizzle relations between all tables
+- **Relations**: `src/schemas/coreD1-schema.ts` — defines Drizzle relations between all tables
 - **Existing action**: `src/actions/createFolder.ts` — partially implemented, good reference for new actions
 - **Avatar upload**: `src/pages/api/upload-avatar.ts` — reference for upload endpoint pattern (but note: this buffers into memory via `formData()`, which we must NOT do — see streaming notes below)
 - **R2 dev proxy**: `src/pages/api/r2/[...key].ts` — dev-only R2 read proxy, reference for streaming responses

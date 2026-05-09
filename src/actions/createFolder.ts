@@ -1,5 +1,5 @@
 import { db } from "#/db";
-import { folders, nodes } from "#/schemas/chatDB-schema";
+import { folders, nodes } from "#/schemas/coreD1-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 

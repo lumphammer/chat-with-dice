@@ -55,10 +55,10 @@
   ],
   "d1_databases": [
     {
-      "binding": "chatDB",
+      "binding": "CORE_D1",
       "database_name": "chat-with-dice-prod",
       "database_id": "5731c416-a44c-433a-9e16-080a97f50053",
-      "migrations_dir": "./migrations/chatDB",
+      "migrations_dir": "./migrations/coreD1",
     },
   ],
   "env": {
@@ -73,7 +73,7 @@
       },
       "d1_databases": [
         {
-          "binding": "chatDB",
+          "binding": "CORE_D1",
           "database_name": "chat-with-dice-staging",
           "database_id": "454c91ea-ab3d-4966-a8e3-9c4063e28eda",
         },

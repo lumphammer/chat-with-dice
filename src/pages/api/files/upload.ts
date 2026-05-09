@@ -1,5 +1,5 @@
 import { db } from "#/db";
-import { files, nodes } from "#/schemas/chatDB-schema";
+import { files, nodes } from "#/schemas/coreD1-schema";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { eq, sql } from "drizzle-orm";

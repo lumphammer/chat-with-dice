@@ -19,14 +19,14 @@
     "check": "pnpm run types:check && pnpm run lint:check && pnpm run format:check && pnpm run build",
     "types:generate:cloudflare": "wrangler types src/worker-configuration.d.ts",
     "db:generateauthschema": "npx https://pkg.pr.new/better-auth/better-auth/auth@9489 generate --output=src/schemas/auth-schema.ts",
-    "db:generate:chatdb": " DATABASE_BINDING=chatDB drizzle-kit generate",
+    "db:generate:coreD1": " DATABASE_BINDING=CORE_D1 drizzle-kit generate",
     "db:generate:roller": "drizzle-kit generate --config=./drizzle.config.roller.ts",
-    "db:migrate:chatdb:local": "DATABASE_BINDING=chatDB LOCAL=yes drizzle-kit migrate",
-    "db:migrate:chatdb:prod": "DATABASE_BINDING=chatDB drizzle-kit migrate",
-    "db:migrate:chatdb:staging": "DATABASE_BINDING=chatDB ENV=staging  drizzle-kit migrate",
-    "db:studio:chatdb:local": "DATABASE_BINDING=chatDB LOCAL=yes drizzle-kit studio",
-    "db:studio:chatdb:prod": "DATABASE_BINDING=chatDB drizzle-kit studio",
-    "db:studio:chatdb:staging": "DATABASE_BINDING=chatDB ENV=staging drizzle-kit studio"
+    "db:migrate:coreD1:local": "DATABASE_BINDING=CORE_D1 LOCAL=yes drizzle-kit migrate",
+    "db:migrate:coreD1:prod": "DATABASE_BINDING=CORE_D1 drizzle-kit migrate",
+    "db:migrate:coreD1:staging": "DATABASE_BINDING=CORE_D1 ENV=staging  drizzle-kit migrate",
+    "db:studio:coreD1:local": "DATABASE_BINDING=CORE_D1 LOCAL=yes drizzle-kit studio",
+    "db:studio:coreD1:prod": "DATABASE_BINDING=CORE_D1 drizzle-kit studio",
+    "db:studio:coreD1:staging": "DATABASE_BINDING=CORE_D1 ENV=staging drizzle-kit studio"
   },
   "dependencies": {
     "@ark-ui/react": "^5.36.2",

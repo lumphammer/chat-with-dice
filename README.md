@@ -40,11 +40,11 @@ Set up your database.
 You may need to run this:
 
 ```sh
-npx wrangler d1 create chatDB
+npx wrangler d1 create coreD1
 ```
 
 ```sh
-pnpm run db:migrate:chatdb:local
+pnpm run db:migrate:coreD1:local
 ```
 
 See `package.json` for other useful commands.

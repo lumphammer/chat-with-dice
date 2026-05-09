@@ -1,6 +1,6 @@
 import { db } from "#/db";
-import * as schema from "#/schemas/chatDB-schema";
-import { users, accounts, sessions } from "#/schemas/chatDB-schema";
+import * as schema from "#/schemas/coreD1-schema";
+import { users, accounts, sessions } from "#/schemas/coreD1-schema";
 import { sendEmail } from "#/utils/sendEmail";
 import { envOrDie } from "./utils/envOrDie";
 import { generateRandomName } from "./utils/generateRandomName";
