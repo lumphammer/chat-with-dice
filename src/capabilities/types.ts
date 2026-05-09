@@ -4,9 +4,9 @@ import type {
   JsonData,
   JsonValidator,
 } from "#/validators/webSocketMessageSchemas";
-import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
-import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
-import type { MessageJiggler } from "#/workers/DiceRollerRoom/MessageJiggler";
+import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
+import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
+import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import type { Draft, Patch } from "immer";
 import type { z } from "zod";
 

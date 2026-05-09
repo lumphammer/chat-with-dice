@@ -17,8 +17,8 @@
   "durable_objects": {
     "bindings": [
       {
-        "name": "DiceRollerRoom",
-        "class_name": "DiceRollerRoom",
+        "name": "CHAT_ROOM_DO",
+        "class_name": "ChatRoomDO",
       },
     ],
   },
@@ -48,6 +48,10 @@
       "tag": "v5",
       "deleted_classes": ["ChatRoom", "Counter"],
     },
+    {
+      "tag": "v6",
+      "renamed_classes": [{ "from": "DiceRollerRoom", "to": "ChatRoomDO" }],
+    },
   ],
   "d1_databases": [
     {
@@ -62,8 +66,8 @@
       "durable_objects": {
         "bindings": [
           {
-            "name": "DiceRollerRoom",
-            "class_name": "DiceRollerRoom",
+            "name": "CHAT_ROOM_DO",
+            "class_name": "ChatRoomDO",
           },
         ],
       },

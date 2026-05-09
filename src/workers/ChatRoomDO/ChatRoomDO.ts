@@ -49,7 +49,7 @@ const STALE_SWEEP_FACTOR = 3;
  */
 const STALE_THRESHOLD_MS = SWEEP_INTERVAL_MS * STALE_SWEEP_FACTOR;
 
-export class DiceRollerRoom extends DurableObject {
+export class ChatRoomDO extends DurableObject {
   private readonly db: DrizzleSqliteDODatabase<typeof dbSchema>;
   private messageRepository: MessageRepository;
   private broadcaster: Broadcaster;
@@ -293,7 +293,7 @@ export class DiceRollerRoom extends DurableObject {
       line += " Closed successfully.";
     } catch (error) {
       console.error(
-        "DiceRollerRoom # webSocketClose: Error closing WebSocket:",
+        "ChatRoomDO # webSocketClose: Error closing WebSocket:",
         error,
       );
       line += ` Error while closing: ${error instanceof Error ? error.message : String(error)}`;

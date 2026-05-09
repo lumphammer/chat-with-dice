@@ -7,9 +7,9 @@ import type {
   ActionCall,
   JsonValidator,
 } from "#/validators/webSocketMessageSchemas";
-import type { Broadcaster } from "#/workers/DiceRollerRoom/Broadcaster";
-import type { CapabilityStateRepository } from "#/workers/DiceRollerRoom/CapabilityStateRepository";
-import { MessageJiggler } from "#/workers/DiceRollerRoom/MessageJiggler";
+import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
+import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
+import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import type {
   Capability,
   CapabilityDefinition,

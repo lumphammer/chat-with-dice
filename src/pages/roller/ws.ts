@@ -31,10 +31,10 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
   }
 
   // Get the ChatRoom Durable Object stub
-  const RollerNamespace = env.DiceRollerRoom;
-  if (!RollerNamespace)
-    return new Response("Roller binding not found", { status: 500 });
-  const durableObjectStub = RollerNamespace.getByName(roomId);
+  const ChatRoomNamespace = env.CHAT_ROOM_DO;
+  if (!ChatRoomNamespace)
+    return new Response("CHAT_ROOM_DO binding not found", { status: 500 });
+  const durableObjectStub = ChatRoomNamespace.getByName(roomId);
 
   const fetchUrl = new URL("https://example.com/ws");
 

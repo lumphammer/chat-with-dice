@@ -20,15 +20,15 @@ export const createChatWithDiceRoom = defineAction({
     if (!user) {
       return new Response("Unauthorized", { status: 401 });
     }
-    const RollerNamespace = env.DiceRollerRoom;
-    if (!RollerNamespace)
-      return new Response("Roller binding not found", { status: 500 });
+    const ChatRoomNamespace = env.CHAT_ROOM_DO;
+    if (!ChatRoomNamespace)
+      return new Response("CHAT_ROOM_DO binding not found", { status: 500 });
 
     const roomId = nanoid();
 
     // Get a Durable Object ID for this room
     // idFromName ensures the same room ID always maps to the same Durable Object
-    const durableObjectId = RollerNamespace.idFromName(roomId).toString();
+    const durableObjectId = ChatRoomNamespace.idFromName(roomId).toString();
 
     const config = roomTypes[input.type].config;
 
