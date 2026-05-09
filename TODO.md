@@ -26,8 +26,8 @@
 - [ ] Easier feedback channels (built-in?)
 - [ ] Move capability state storage into drizzle
 - [ ] Room should check it exists in D1 and not deleted BEFORE running DB migrations
-- [ ] ws endponut can stop checking d1 fircroom existence 
- - ws endopunt can move under room in oages tree
+- [ ] ws endponut can stop checking d1 fircroom existence
+- ws endopunt can move under room in oages tree
 
 ## Big items
 
