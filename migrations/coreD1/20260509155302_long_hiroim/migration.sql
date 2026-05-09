@@ -1,0 +1,1 @@
+ALTER TABLE `rooms` RENAME COLUMN `durableObjectId` TO `durable_object_id`;

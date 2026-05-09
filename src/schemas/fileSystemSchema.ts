@@ -3,11 +3,11 @@ import { rooms } from "./roomSchema";
 import { sql } from "drizzle-orm";
 import {
   int,
-  sqliteTable,
   text,
   index,
   check,
   uniqueIndex,
+  snakeCase,
 } from "drizzle-orm/sqlite-core";
 
 export type FolderSelect = typeof folders.$inferSelect;
@@ -28,9 +28,9 @@ CREATE TABLE `folders` (
 );
 */
 
-export const folders = sqliteTable("folders", {
+export const folders = snakeCase.table("folders", {
   id: text().primaryKey(),
-  recursive_size_bytes: int().notNull(),
+  recursiveSizeBytes: int().notNull(),
 });
 
 /*
@@ -43,12 +43,12 @@ CREATE TABLE `files` (
 );
 */
 
-export const files = sqliteTable("files", {
+export const files = snakeCase.table("files", {
   id: text().primaryKey(),
-  size_bytes: int().notNull(),
-  is_ready: int().notNull().default(0),
-  r2_key: text().notNull(),
-  content_type: text().notNull(),
+  sizeBytes: int().notNull(),
+  isReady: int().notNull().default(0),
+  r2Key: text().notNull(),
+  contentType: text().notNull(),
 });
 
 /*
@@ -97,72 +97,72 @@ CREATE TABLE `nodes` (
 );
 */
 
-export const nodes = sqliteTable(
+export const nodes = snakeCase.table(
   "nodes",
   {
     id: text().primaryKey(),
     name: text().notNull(),
-    parent_folder_id: text().references(() => folders.id, {
+    parentFolderId: text().references(() => folders.id, {
       onDelete: "cascade",
     }),
-    created_time: int()
+    createdTime: int()
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
-    deleted_time: int(),
-    folder_id: text().references(() => folders.id, { onDelete: "cascade" }),
-    file_id: text().references(() => files.id, { onDelete: "cascade" }),
-    owner_user_id: text().references(() => users.id, { onDelete: "cascade" }),
+    deletedTime: int(),
+    folderId: text().references(() => folders.id, { onDelete: "cascade" }),
+    fileId: text().references(() => files.id, { onDelete: "cascade" }),
+    ownerUserId: text().references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [
     uniqueIndex("nodes_parent_name_live")
-      .on(table.parent_folder_id, table.name)
-      .where(sql`${table.deleted_time} IS NULL`),
+      .on(table.parentFolderId, table.name)
+      .where(sql`${table.deletedTime} IS NULL`),
     uniqueIndex("nodes_root_name_live")
       .on(table.name)
       .where(
-        sql`${table.parent_folder_id} IS NULL AND ${table.deleted_time} IS NULL`,
+        sql`${table.parentFolderId} IS NULL AND ${table.deletedTime} IS NULL`,
       ),
     check(
       "id_equals_metadata_fk",
       sql`(
-        (${table.file_id} IS NOT NULL)
-        AND (${table.id} == ${table.file_id})
+        (${table.fileId} IS NOT NULL)
+        AND (${table.id} == ${table.fileId})
       )
       OR (
-        (${table.folder_id} IS NOT NULL)
-        AND (${table.id} == ${table.folder_id})
+        (${table.folderId} IS NOT NULL)
+        AND (${table.id} == ${table.folderId})
       )`,
     ),
     check(
       "nodes__file_id_or_folder_id",
       sql`(
-        ${table.file_id} IS NOT NULL
-        AND ${table.folder_id} IS NULL
+        ${table.fileId} IS NOT NULL
+        AND ${table.folderId} IS NULL
       )
       OR (
-        ${table.file_id} IS NULL
-        AND ${table.folder_id} IS NOT NULL
+        ${table.fileId} IS NULL
+        AND ${table.folderId} IS NOT NULL
       )`,
     ),
   ],
 );
 
-export const roomResourceShares = sqliteTable(
+export const roomResourceShares = snakeCase.table(
   "room_resource_shares",
   {
     id: text().primaryKey(),
-    room_id: text()
+    roomId: text()
       .notNull()
       .references(() => rooms.id, { onDelete: "cascade" }),
-    node_id: text().references(() => nodes.id, { onDelete: "cascade" }),
-    shared_time: int()
+    nodeId: text().references(() => nodes.id, { onDelete: "cascade" }),
+    sharedTime: int()
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [
     index("room_resource_shares__room_id__node_id_idx").on(
-      table.room_id,
-      table.node_id,
+      table.roomId,
+      table.nodeId,
     ),
   ],
 );

@@ -90,11 +90,11 @@ export async function resolvePathToFolder(
 
     const fileNode = await db.query.nodes.findFirst({
       where: {
-        parent_folder_id: parentFolderId ?? { isNull: true },
-        owner_user_id: userId,
-        deleted_time: { isNull: true },
+        parentFolderId: parentFolderId ?? { isNull: true },
+        ownerUserId: userId,
+        deletedTime: { isNull: true },
         name: fileName,
-        file_id: { isNotNull: true },
+        fileId: { isNotNull: true },
       },
     });
 

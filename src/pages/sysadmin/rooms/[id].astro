@@ -18,7 +18,7 @@ if (!room) return Astro.redirect("/sysadmin/rooms/");
 let creator: User | null = null;
 try {
   creator = await auth.api.getUser({
-    query: { id: room.created_by_user_id },
+    query: { id: room.createdByUserId },
     headers: Astro.request.headers,
   });
 } catch {

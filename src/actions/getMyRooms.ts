@@ -16,9 +16,9 @@ export const getMyRooms = defineAction({
       .select()
       .from(rooms)
       .where(
-        and(eq(rooms.created_by_user_id, user.id), isNull(rooms.deleted_time)),
+        and(eq(rooms.createdByUserId, user.id), isNull(rooms.deleted_time)),
       )
-      .orderBy(desc(rooms.created_time))
+      .orderBy(desc(rooms.createdTime))
       .limit(MAX_RECENT_ROOMS);
     return result;
   },

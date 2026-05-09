@@ -63,12 +63,12 @@ export const RoomInfoPanel = memo(
                 </a>
               ) : (
                 <span className="font-mono text-xs">
-                  {room.created_by_user_id}
+                  {room.createdByUserId}
                 </span>
               )}
             </Field>
             <Field label="Created">
-              {new Date(room.created_time).toLocaleString()}
+              {new Date(room.createdTime).toLocaleString()}
             </Field>
             <Field label="Durable Object ID">
               {room.durableObjectId ? (

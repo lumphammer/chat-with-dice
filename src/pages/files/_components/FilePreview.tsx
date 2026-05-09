@@ -19,9 +19,9 @@ export const FilePreview = memo(
 
     if (!node.file) return null;
 
-    const isImage = node.file.content_type.startsWith("image/");
+    const isImage = node.file.contentType.startsWith("image/");
     const downloadUrl = `/api/files/${node.id}`;
-    const Icon = fileTypeIcon(node.file.content_type);
+    const Icon = fileTypeIcon(node.file.contentType);
 
     return (
       <dialog ref={dialogRef} closedby="any" className="modal">
@@ -66,8 +66,8 @@ export const FilePreview = memo(
               <div className="text-center">
                 <p className="font-medium">{node.name}</p>
                 <p className="text-base-content/50 text-sm">
-                  {node.file.content_type} &middot;{" "}
-                  {formatBytes(node.file.size_bytes)}
+                  {node.file.contentType} &middot;{" "}
+                  {formatBytes(node.file.sizeBytes)}
                 </p>
               </div>
             </div>

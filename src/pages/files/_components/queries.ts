@@ -3,11 +3,11 @@ import { db } from "#/db";
 export const getUserNodes = async (userId: string, folderId?: string) => {
   const nodes = await db.query.nodes.findMany({
     where: {
-      owner_user_id: userId,
-      deleted_time: {
+      ownerUserId: userId,
+      deletedTime: {
         isNull: true,
       },
-      parent_folder_id: folderId ?? {
+      parentFolderId: folderId ?? {
         isNull: true,
       },
     },

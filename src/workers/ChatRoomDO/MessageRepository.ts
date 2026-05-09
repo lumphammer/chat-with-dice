@@ -57,7 +57,7 @@ export class MessageRepository {
       await this.db
         .select()
         .from(dbSchema.Messages)
-        .orderBy(desc(dbSchema.Messages.created_time))
+        .orderBy(desc(dbSchema.Messages.createdTime))
         .limit(limit)
         .execute()
     ).toReversed();

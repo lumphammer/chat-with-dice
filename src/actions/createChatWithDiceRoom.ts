@@ -35,8 +35,8 @@ export const createChatWithDiceRoom = defineAction({
     // we *could* use the DO id as the pk, but that feels leaky
 
     await db.insert(rooms).values({
-      created_by_user_id: user.id,
-      created_time: Date.now(),
+      createdByUserId: user.id,
+      createdTime: Date.now(),
       name: input.roomName,
       description: input.description,
       id: roomId,

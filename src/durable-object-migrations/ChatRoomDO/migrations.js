@@ -15,6 +15,7 @@ import m0013 from './20260315235204_tricky_otto_octavius/migration.sql';
 import m0014 from './20260316134615_mute_vengeance/migration.sql';
 import m0015 from './20260418104051_worried_magik/migration.sql';
 import m0016 from './20260426092654_gray_bill_hollister/migration.sql';
+import m0017 from './20260509154623_regular_overlord/migration.sql';
 
   export default {
     migrations: {
@@ -34,7 +35,8 @@ import m0016 from './20260426092654_gray_bill_hollister/migration.sql';
 "20260315235204_tricky_otto_octavius": m0013,
 "20260316134615_mute_vengeance": m0014,
 "20260418104051_worried_magik": m0015,
-"20260426092654_gray_bill_hollister": m0016
+"20260426092654_gray_bill_hollister": m0016,
+"20260509154623_regular_overlord": m0017
 }
   }
   

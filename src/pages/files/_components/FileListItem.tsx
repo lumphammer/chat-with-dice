@@ -26,7 +26,7 @@ export const FileListItem = memo(
     const isFolder = !!node.folder;
     const Icon = isFolder
       ? Folder
-      : fileTypeIcon(node.file?.content_type ?? "application/octet-stream");
+      : fileTypeIcon(node.file?.contentType ?? "application/octet-stream");
 
     const handleDelete = async () => {
       const result = await actions.deleteNode({ nodeId: node.id });
@@ -123,13 +123,13 @@ export const FileListItem = memo(
           </div>
           {node.file && (
             <span className="text-base-content/50 text-sm">
-              {formatBytes(node.file.size_bytes)}
+              {formatBytes(node.file.sizeBytes)}
             </span>
           )}
           {node.folder && (
             <span className="text-base-content/50 text-sm">
-              {node.folder.recursive_size_bytes > 0
-                ? formatBytes(node.folder.recursive_size_bytes)
+              {node.folder.recursiveSizeBytes > 0
+                ? formatBytes(node.folder.recursiveSizeBytes)
                 : "Empty"}
             </span>
           )}

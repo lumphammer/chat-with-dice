@@ -67,17 +67,17 @@ export const POST: APIRoute = async (ctx) => {
     await db.batch([
       db.insert(files).values({
         id,
-        size_bytes: 0,
-        is_ready: 0,
-        r2_key: r2Key,
-        content_type: contentType,
+        sizeBytes: 0,
+        isReady: 0,
+        r2Key,
+        contentType,
       }),
       db.insert(nodes).values({
         id,
         name: filename,
-        file_id: id,
-        owner_user_id: user.id,
-        parent_folder_id: folderId,
+        fileId: id,
+        ownerUserId: user.id,
+        parentFolderId: folderId,
       }),
     ]);
   } catch (error) {
@@ -116,8 +116,8 @@ export const POST: APIRoute = async (ctx) => {
     await db
       .update(files)
       .set({
-        is_ready: 1,
-        size_bytes: r2Object.size,
+        isReady: 1,
+        sizeBytes: r2Object.size,
       })
       .where(eq(files.id, id));
 

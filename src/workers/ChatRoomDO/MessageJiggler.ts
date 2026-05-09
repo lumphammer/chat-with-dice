@@ -31,7 +31,7 @@ export class MessageJiggler {
     displayName: string;
   }): Promise<void> {
     const rollerMessage: ChatMessage = {
-      created_time: Date.now(),
+      createdTime: Date.now(),
       id: crypto.randomUUID(),
       rollType: null,
       formula: null,

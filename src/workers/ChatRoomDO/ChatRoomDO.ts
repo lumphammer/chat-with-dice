@@ -88,7 +88,7 @@ export class ChatRoomDO extends DurableObject {
       const roomRows = await d1
         .select({
           config: rooms.config,
-          createByUserId: rooms.created_by_user_id,
+          createByUserId: rooms.createdByUserId,
         })
         .from(rooms)
         .where(eq(rooms.durableObjectId, ctx.id.toString()))

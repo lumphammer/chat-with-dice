@@ -110,7 +110,7 @@ export const createCapability = <
           void messageJiggler.sendChatMessage({
             chat: "",
             userId,
-            created_time: Date.now(),
+            createdTime: Date.now(),
             displayName,
             formula: {},
             id: nanoid(),

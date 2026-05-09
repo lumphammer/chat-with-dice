@@ -103,7 +103,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
     >
       <header className="text-sm">
         <span className="mr-4">{message.displayName}</span>
-        <TimeDisplay timeStamp={message.created_time} />
+        <TimeDisplay timeStamp={message.createdTime} />
       </header>
       <div
         className="w-fit rounded-xl bg-(--user-colour) px-4 pt-1 pb-1 text-base

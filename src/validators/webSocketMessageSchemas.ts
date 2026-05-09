@@ -45,7 +45,7 @@ function chatMessageValidator<
   id: z.ZodString;
   displayName: z.ZodString;
   userId: z.ZodString;
-  created_time: z.ZodInt;
+  createdTime: z.ZodInt;
   rollType: z.ZodNullable<z.ZodString>;
   formula: z.ZodNullable<TFormulaValidator>;
   results: z.ZodNullable<TResultValidator>;
@@ -59,7 +59,7 @@ function chatMessageValidator<
     /** ID of the user, used for differentiation */
     userId: z.string(),
     /** When the message was created */
-    created_time: z.int(),
+    createdTime: z.int(),
     /** The type of the roll - none, formula, havoc etc */
     rollType: z.string().nullable(),
     /**  */

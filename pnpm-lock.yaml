@@ -27,7 +27,7 @@ importers:
         version: 5.0.4(@types/node@25.6.0)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(jiti@2.6.1)(lightningcss@1.32.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(yaml@2.8.3)
       '@better-auth/drizzle-adapter':
         specifier: https://pkg.pr.new/@better-auth/drizzle-adapter@9489
-        version: https://pkg.pr.new/@better-auth/drizzle-adapter@9489(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))
+        version: https://pkg.pr.new/@better-auth/drizzle-adapter@9489(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))
       '@dice-roller/rpg-dice-roller':
         specifier: ^5.5.1
         version: 5.5.1
@@ -72,7 +72,7 @@ importers:
         version: 6.2.1(@azure/identity@4.13.1)(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.2)(typescript@5.9.3)(yaml@2.8.3)
       better-auth:
         specifier: https://pkg.pr.new/better-auth@9489
-        version: https://pkg.pr.new/better-auth@9489(better-sqlite3@12.9.0)(drizzle-kit@1.0.0-beta.22)(drizzle-orm@1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@types/node@25.6.0)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(yaml@2.8.3)))
+        version: https://pkg.pr.new/better-auth@9489(better-sqlite3@12.9.0)(drizzle-kit@1.0.0-rc.2)(drizzle-orm@1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@types/node@25.6.0)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(yaml@2.8.3)))
       better-sqlite3:
         specifier: ^12.9.0
         version: 12.9.0
@@ -83,11 +83,11 @@ importers:
         specifier: ^17.4.2
         version: 17.4.2
       drizzle-kit:
-        specifier: 1.0.0-beta.22
-        version: 1.0.0-beta.22
+        specifier: 1.0.0-rc.2
+        version: 1.0.0-rc.2
       drizzle-orm:
-        specifier: 1.0.0-beta.22
-        version: 1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1)
+        specifier: 1.0.0-rc.2
+        version: 1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1)
       immer:
         specifier: ^11.1.4
         version: 11.1.4
@@ -410,7 +410,7 @@ packages:
         optional: true
 
   '@better-auth/core@https://pkg.pr.new/better-auth/better-auth/@better-auth/core@4829b2a':
-    resolution: {integrity: sha512-4MRxLZggpEzaTajzgh0ySc4EAhNUv9i1A9glffTawWayNU1v8fUiSgRLxN6oR2sMkD6Vi8Qt2wiIPAQRSSmRhg==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/core@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/core@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/utils': 0.4.0
@@ -450,7 +450,7 @@ packages:
         optional: true
 
   '@better-auth/kysely-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/kysely-adapter@4829b2a':
-    resolution: {integrity: sha512-nC8VPP1hiIR9OkXjXHeCjSyjJhA4rpOriZtf0YOWmfF1tNwZavAjH3pq3XKk7ruNxk8HHsWKbEqdjdABwHb3zw==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/kysely-adapter@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/kysely-adapter@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -461,14 +461,14 @@ packages:
         optional: true
 
   '@better-auth/memory-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/memory-adapter@4829b2a':
-    resolution: {integrity: sha512-OK9lEQNempu/hiSZFM7A1UZXYTWkI2ozkxt2sgBSNKyki4tkf/L94eQKUTB4LtFBeRPRMQM4b5i/sdIz9dj69Q==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/memory-adapter@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/memory-adapter@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
       '@better-auth/utils': 0.4.0
 
   '@better-auth/mongo-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@4829b2a':
-    resolution: {integrity: sha512-yEDnCB+PM7uckQOcohlTBDYOIVK2phcZiBgLltfrz4vcSbUioWgjEzTbn8zd1fxAXvc3+pl3CfEw92E6O+PlOw==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -479,7 +479,7 @@ packages:
         optional: true
 
   '@better-auth/prisma-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@4829b2a':
-    resolution: {integrity: sha512-331/8mORazukVPgQf1sWVCiGbIoya+7r8dDmqISZoD7OPoycsuxIUuYU+h8ZfplRH7lbld/NCxVPP9hYWfb6pw==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -493,7 +493,7 @@ packages:
         optional: true
 
   '@better-auth/telemetry@https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@4829b2a':
-    resolution: {integrity: sha512-xNarIlBnNvWa35kUlQPE5+yh6zf4R5ok1beOSqnl1CrFTz+r0tQ6t0eNyc9jo5APl5TnJ3mcrr3kgMr8s2QOXA==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -2604,17 +2604,16 @@ packages:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
-  drizzle-kit@1.0.0-beta.22:
-    resolution: {integrity: sha512-9HTZuQRljQKTgCx4UhiGn8KYYfHGk4+B/bRR1714W67kz0qgJvdrG527i8rQD8uUyET9UTGR1u8syySJD4znGw==}
+  drizzle-kit@1.0.0-rc.2:
+    resolution: {integrity: sha512-TRxUmj1wDA2QCt3GvuhfamvIa66wJ7+MzSxBMKkpRtYScjHTumT9BE+x6daSzuEacSrPEuUH5/cW1uo5RkoPIg==}
     hasBin: true
 
-  drizzle-orm@1.0.0-beta.22:
-    resolution: {integrity: sha512-F+DZyVIvH0oVKa/w08Cle1xfoH+pc+htIXHG/frnMLG72aby9NYYr9oc+9XvghnoO4umxFItduz0OMmQJMnenw==}
+  drizzle-orm@1.0.0-rc.2:
+    resolution: {integrity: sha512-UXYDkbplF5wX0hwxll+80QhEwUvAJLBu+tAK/d4fna18kLE6VuliAzufF/ieDEIJeSnLRYgtmsXD6x1Xuy1kIg==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
-      '@effect/sql': ^0.48.5
-      '@effect/sql-pg': ^0.49.7
+      '@effect/sql-pg': '>=4.0.0-beta.58 || >=4.0.0'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -2638,8 +2637,8 @@ packages:
       arktype: '>=2.0.0'
       better-sqlite3: '>=9.3.0'
       bun-types: '*'
+      effect: '>=4.0.0-beta.58 || >=4.0.0'
       expo-sqlite: '>=14.0.0'
-      gel: '>=2'
       mssql: ^11.0.1
       mysql2: '>=2'
       pg: '>=8'
@@ -2653,8 +2652,6 @@ packages:
       '@aws-sdk/client-rds-data':
         optional: true
       '@cloudflare/workers-types':
-        optional: true
-      '@effect/sql':
         optional: true
       '@effect/sql-pg':
         optional: true
@@ -2704,9 +2701,9 @@ packages:
         optional: true
       bun-types:
         optional: true
-      expo-sqlite:
+      effect:
         optional: true
-      gel:
+      expo-sqlite:
         optional: true
       mssql:
         optional: true
@@ -4974,19 +4971,19 @@ snapshots:
       nanostores: 1.3.0
       zod: 4.4.1
 
-  '@better-auth/drizzle-adapter@https://pkg.pr.new/@better-auth/drizzle-adapter@9489(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))':
+  '@better-auth/drizzle-adapter@https://pkg.pr.new/@better-auth/drizzle-adapter@9489(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))':
     dependencies:
       '@better-auth/core': 1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0)
       '@better-auth/utils': 0.4.0
     optionalDependencies:
-      drizzle-orm: 1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1)
+      drizzle-orm: 1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1)
 
-  '@better-auth/drizzle-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@4829b2a(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))':
+  '@better-auth/drizzle-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@4829b2a(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))':
     dependencies:
       '@better-auth/core': 1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0)
       '@better-auth/utils': 0.4.0
     optionalDependencies:
-      drizzle-orm: 1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1)
+      drizzle-orm: 1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1)
 
   '@better-auth/kysely-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/kysely-adapter@4829b2a(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(kysely@0.28.16)':
     dependencies:
@@ -6804,10 +6801,10 @@ snapshots:
 
   baseline-browser-mapping@2.10.24: {}
 
-  better-auth@https://pkg.pr.new/better-auth@9489(better-sqlite3@12.9.0)(drizzle-kit@1.0.0-beta.22)(drizzle-orm@1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@types/node@25.6.0)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(yaml@2.8.3))):
+  better-auth@https://pkg.pr.new/better-auth@9489(better-sqlite3@12.9.0)(drizzle-kit@1.0.0-rc.2)(drizzle-orm@1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@types/node@25.6.0)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(yaml@2.8.3))):
     dependencies:
       '@better-auth/core': https://pkg.pr.new/better-auth/better-auth/@better-auth/core@4829b2a(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0)
-      '@better-auth/drizzle-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@4829b2a(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))
+      '@better-auth/drizzle-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@4829b2a(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1))
       '@better-auth/kysely-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/kysely-adapter@4829b2a(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(kysely@0.28.16)
       '@better-auth/memory-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/memory-adapter@4829b2a(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)
       '@better-auth/mongo-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@4829b2a(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-call@1.3.5(zod@4.4.1))(jose@6.2.3)(kysely@0.28.16)(nanostores@1.3.0))(@better-auth/utils@0.4.0)
@@ -6825,8 +6822,8 @@ snapshots:
       zod: 4.4.1
     optionalDependencies:
       better-sqlite3: 12.9.0
-      drizzle-kit: 1.0.0-beta.22
-      drizzle-orm: 1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1)
+      drizzle-kit: 1.0.0-rc.2
+      drizzle-orm: 1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1)
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
       vitest: 4.1.5(@types/node@25.6.0)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.32.0)(yaml@2.8.3))
@@ -7075,7 +7072,7 @@ snapshots:
 
   dotenv@17.4.2: {}
 
-  drizzle-kit@1.0.0-beta.22:
+  drizzle-kit@1.0.0-rc.2:
     dependencies:
       '@drizzle-team/brocli': 0.11.0
       '@js-temporal/polyfill': 0.5.1
@@ -7083,7 +7080,7 @@ snapshots:
       get-tsconfig: 4.14.0
       jiti: 2.6.1
 
-  drizzle-orm@1.0.0-beta.22(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1):
+  drizzle-orm@1.0.0-rc.2(@types/mssql@9.1.11(@azure/core-client@1.10.1))(better-sqlite3@12.9.0)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.1):
     optionalDependencies:
       '@types/mssql': 9.1.11(@azure/core-client@1.10.1)
       better-sqlite3: 12.9.0

@@ -1,0 +1,108 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "68555d7f-aff8-48a7-8a76-e2e142960ce0",
+  "prevIds": [
+    "51fa0dca-7bd9-40a0-b346-a0ed179299f9"
+  ],
+  "ddl": [
+    {
+      "name": "Messages",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "display_name",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_time",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "roll_type",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "formula",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "results",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "chat",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "Messages_pk",
+      "table": "Messages",
+      "entityType": "pks"
+    }
+  ],
+  "renames": [
+    "Messages.displayName->Messages.display_name",
+    "Messages.userId->Messages.user_id",
+    "Messages.rollType->Messages.roll_type"
+  ]
+}

@@ -1,6 +1,6 @@
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { int, text, snakeCase } from "drizzle-orm/sqlite-core";
 
-export const Messages = sqliteTable("Messages", {
+export const Messages = snakeCase.table("Messages", {
   /** Primary key */
   id: text()
     .primaryKey()
@@ -10,7 +10,7 @@ export const Messages = sqliteTable("Messages", {
   /** ID of the user, used for differentiation */
   userId: text().notNull(),
   /** When the message was created */
-  created_time: int().notNull(),
+  createdTime: int().notNull(),
   /** The type of the roll - none, formula, havoc etc */
   rollType: text(),
   /** Either a dice formula or JSON */

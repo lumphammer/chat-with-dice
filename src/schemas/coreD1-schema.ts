@@ -17,24 +17,24 @@ const relationsPart = defineRelationsPart(
   (r) => ({
     rooms: {
       creator: r.one.users({
-        from: r.rooms.created_by_user_id,
+        from: r.rooms.createdByUserId,
         to: r.users.id,
       }),
       shares: r.many.nodes({
-        from: r.rooms.id.through(r.roomResourceShares.room_id),
-        to: r.nodes.id.through(r.roomResourceShares.node_id),
+        from: r.rooms.id.through(r.roomResourceShares.roomId),
+        to: r.nodes.id.through(r.roomResourceShares.nodeId),
       }),
     },
     users: {
       rooms: r.many.rooms({
         from: r.users.id,
-        to: r.rooms.created_by_user_id,
+        to: r.rooms.createdByUserId,
       }),
       rootNodes: r.many.nodes({
         from: r.users.id,
-        to: r.nodes.owner_user_id,
+        to: r.nodes.ownerUserId,
         where: {
-          parent_folder_id: {
+          parentFolderId: {
             isNull: true,
           },
         },
@@ -44,7 +44,7 @@ const relationsPart = defineRelationsPart(
        * don't have a way to filter on the junction table.
        */
       files: r.many.files({
-        from: r.users.id.through(r.nodes.owner_user_id),
+        from: r.users.id.through(r.nodes.ownerUserId),
         to: r.files.id.through(r.nodes.id),
       }),
       /**
@@ -52,25 +52,25 @@ const relationsPart = defineRelationsPart(
        * don't have a way to filter on the junction table.
        */
       folders: r.many.folders({
-        from: r.users.id.through(r.nodes.owner_user_id),
+        from: r.users.id.through(r.nodes.ownerUserId),
         to: r.folders.id.through(r.nodes.id),
       }),
     },
     nodes: {
       file: r.one.files({
-        from: r.nodes.file_id,
+        from: r.nodes.fileId,
         to: r.files.id,
       }),
       folder: r.one.folders({
-        from: r.nodes.folder_id,
+        from: r.nodes.folderId,
         to: r.folders.id,
       }),
       parentFolder: r.one.folders({
-        from: r.nodes.parent_folder_id,
+        from: r.nodes.parentFolderId,
         to: r.folders.id,
       }),
       owner: r.one.users({
-        from: r.nodes.owner_user_id,
+        from: r.nodes.ownerUserId,
         to: r.users.id,
       }),
     },

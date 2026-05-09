@@ -22,14 +22,14 @@ export const createFolder = defineAction({
       await db.batch([
         db.insert(folders).values({
           id,
-          recursive_size_bytes: 0,
+          recursiveSizeBytes: 0,
         }),
         db.insert(nodes).values({
           id,
           name,
-          folder_id: id,
-          owner_user_id: user.id,
-          parent_folder_id: parentFolderId,
+          folderId: id,
+          ownerUserId: user.id,
+          parentFolderId: parentFolderId,
         }),
       ]);
     } catch (error) {

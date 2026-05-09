@@ -15,7 +15,7 @@ type Props = {
 export const AdminRoomRow = memo(({ room }: Props) => {
   const typeInfo = roomTypes[room.type];
   const creatorLabel =
-    room.creatorName ?? room.creatorEmail ?? room.created_by_user_id;
+    room.creatorName ?? room.creatorEmail ?? room.createdByUserId;
   const isDeleted = room.deleted_time != null;
 
   return (
@@ -44,14 +44,14 @@ export const AdminRoomRow = memo(({ room }: Props) => {
       </td>
       <td>
         <a
-          href={`/sysadmin/users/${room.created_by_user_id}/`}
+          href={`/sysadmin/users/${room.createdByUserId}/`}
           className="link link-hover text-sm"
         >
           {creatorLabel}
         </a>
       </td>
       <td className="text-sm">
-        {new Date(room.created_time).toLocaleDateString()}
+        {new Date(room.createdTime).toLocaleDateString()}
       </td>
       <td>
         <a

@@ -18,8 +18,8 @@ export const deleteNode = defineAction({
     const node = await db.query.nodes.findFirst({
       where: {
         id: nodeId,
-        owner_user_id: user.id,
-        deleted_time: { isNull: true },
+        ownerUserId: user.id,
+        deletedTime: { isNull: true },
       },
       with: {
         file: true,
@@ -34,18 +34,18 @@ export const deleteNode = defineAction({
     // soft delete
     await db
       .update(nodes)
-      .set({ deleted_time: Date.now() })
+      .set({ deletedTime: Date.now() })
       .where(eq(nodes.id, nodeId));
 
     // decrement ancestor folder sizes
     const sizeToSubtract = node.file
-      ? node.file.size_bytes
-      : (node.folder?.recursive_size_bytes ?? 0);
+      ? node.file.sizeBytes
+      : (node.folder?.recursiveSizeBytes ?? 0);
 
-    if (node.parent_folder_id && sizeToSubtract > 0) {
+    if (node.parentFolderId && sizeToSubtract > 0) {
       await db.run(sql`
         WITH RECURSIVE ancestors(folder_id) AS (
-          SELECT ${node.parent_folder_id}
+          SELECT ${node.parentFolderId}
           UNION ALL
           SELECT nodes.parent_folder_id
           FROM ancestors

@@ -37,8 +37,8 @@ export const GET: APIRoute = async (ctx) => {
   const node = await db.query.nodes.findFirst({
     where: {
       id: nodeId,
-      owner_user_id: user.id,
-      deleted_time: { isNull: true },
+      ownerUserId: user.id,
+      deletedTime: { isNull: true },
     },
     with: {
       file: true,
@@ -49,11 +49,11 @@ export const GET: APIRoute = async (ctx) => {
     return json({ error: "File not found" }, HTTP_NOT_FOUND);
   }
 
-  if (!node.file.is_ready) {
+  if (!node.file.isReady) {
     return json({ error: "File is not ready" }, HTTP_NOT_FOUND);
   }
 
-  const r2Object = await bucket.get(node.file.r2_key);
+  const r2Object = await bucket.get(node.file.r2Key);
   if (!r2Object) {
     return json({ error: "File not found in storage" }, HTTP_NOT_FOUND);
   }
@@ -63,7 +63,7 @@ export const GET: APIRoute = async (ctx) => {
   headers.set("etag", r2Object.httpEtag);
   headers.set("cache-control", "private, max-age=3600, immutable");
 
-  const isImage = node.file.content_type.startsWith("image/");
+  const isImage = node.file.contentType.startsWith("image/");
   headers.set(
     "content-disposition",
     isImage ? "inline" : `attachment; filename="${node.name}"`,

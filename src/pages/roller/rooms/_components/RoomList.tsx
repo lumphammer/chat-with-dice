@@ -7,8 +7,8 @@ type Room = {
   id: string;
   name: string;
   description: string | null;
-  created_by_user_id: string;
-  created_time: number;
+  createdByUserId: string;
+  createdTime: number;
   type: RoomTypeName;
 };
 
@@ -89,7 +89,7 @@ export const RoomList = () => {
 function RoomCard({ room }: { room: Room }) {
   const formattedDate = new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
-  }).format(new Date(room.created_time));
+  }).format(new Date(room.createdTime));
 
   return (
     <li className="card bg-base-300 transition-shadow hover:shadow-md">

@@ -24,8 +24,8 @@ export const renameNode = defineAction({
         .where(
           and(
             eq(nodes.id, nodeId),
-            eq(nodes.owner_user_id, user.id),
-            isNull(nodes.deleted_time),
+            eq(nodes.ownerUserId, user.id),
+            isNull(nodes.deletedTime),
           ),
         );
 
