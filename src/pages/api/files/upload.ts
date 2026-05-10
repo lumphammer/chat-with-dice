@@ -1,5 +1,4 @@
 import { db } from "#/db";
-import { files, nodes } from "#/schemas/coreD1-schema";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { eq, sql } from "drizzle-orm";
@@ -59,39 +58,7 @@ export const POST: APIRoute = async (ctx) => {
     return json({ error: "No file body provided" }, HTTP_BAD_REQUEST);
   }
 
-  const id = crypto.randomUUID();
-  const r2Key = `user-files/${user.id}/${id}`;
-
   // phase 1: insert db records with is_ready = 0
-  try {
-    await db.batch([
-      db.insert(files).values({
-        id,
-        sizeBytes: 0,
-        isReady: 0,
-        r2Key,
-        contentType,
-      }),
-      db.insert(nodes).values({
-        id,
-        name: filename,
-        fileId: id,
-        ownerUserId: user.id,
-        parentFolderId: folderId,
-      }),
-    ]);
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message.includes("UNIQUE constraint failed")
-    ) {
-      return json(
-        { error: "A file with that name already exists in this folder" },
-        HTTP_CONFLICT,
-      );
-    }
-    throw error;
-  }
 
   // phase 2: stream to R2
   try {

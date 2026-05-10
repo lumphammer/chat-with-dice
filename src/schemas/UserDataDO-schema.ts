@@ -1,4 +1,3 @@
-import { users } from "./auth-schema";
 import { rooms } from "./roomSchema";
 import { defineRelations, sql } from "drizzle-orm";
 import {
@@ -37,7 +36,6 @@ export const nodes = snakeCase.table(
     deletedTime: int(),
     folderId: text().references(() => folders.id, { onDelete: "cascade" }),
     fileId: text().references(() => files.id, { onDelete: "cascade" }),
-    ownerUserId: text().references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [
     uniqueIndex("nodes_parent_name_live")

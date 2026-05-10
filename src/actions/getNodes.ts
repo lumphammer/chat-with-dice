@@ -1,6 +1,6 @@
-import { getUserNodes } from "#/pages/files/_components/queries";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
+import { env } from "cloudflare:workers";
 
 export const getNodes = defineAction({
   input: z.object({
@@ -12,6 +12,8 @@ export const getNodes = defineAction({
       throw new Error("Unauthorized");
     }
 
-    return getUserNodes(user.id, folderId ?? undefined);
+    const userDataDO = env.USER_DATA_DO.getByName(user.id);
+    const result = await userDataDO.getNodes(folderId);
+    return result;
   },
 });

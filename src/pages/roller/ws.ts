@@ -14,12 +14,12 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
 
   // Get the ChatRoom Durable Object stub
   const ChatRoomNamespace = env.CHAT_ROOM_DO;
-  if (!ChatRoomNamespace)
+  if (!ChatRoomNamespace) {
     return new Response("CHAT_ROOM_DO binding not found", { status: 500 });
+  }
   const durableObjectStub = ChatRoomNamespace.getByName(roomId);
 
   const fetchUrl = new URL("https://example.com/ws");
-
   fetchUrl.searchParams.set("userId", user.id);
   fetchUrl.searchParams.set("roomId", roomId);
   fetchUrl.searchParams.set("displayName", user.name);

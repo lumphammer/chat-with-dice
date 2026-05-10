@@ -10,7 +10,7 @@ export { rooms };
 // https://orm.drizzle.team/docs/relations-v2#relations-parts
 //
 // We're  doing it here for all of "our" tables because otherwise the import
-// diagram gets a bit loopy.
+// diagram can get a bit loopy.
 const relationsPart = defineRelationsPart({ users, rooms }, (r) => ({
   rooms: {
     creator: r.one.users({

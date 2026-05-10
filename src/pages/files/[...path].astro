@@ -1,8 +1,7 @@
 ---
 import Layout from "#/layouts/Layout.astro";
+import { env } from "cloudflare:workers";
 import { FileManager } from "./_components/FileManager";
-import { getUserNodes } from "./_components/queries";
-import { resolvePathToFolder } from "./_components/resolvePathToFolder";
 
 export const prerender = false;
 
@@ -14,7 +13,21 @@ if (!user) {
 const rawPath = Astro.params.path ?? "";
 const pathSegments = rawPath.split("/").filter(Boolean).map(decodeURIComponent);
 
-const resolution = await resolvePathToFolder(user.id, pathSegments);
+if (Astro.locals.user === null) {
+  return Astro.redirect(
+    `/signin?returnUrl=${encodeURIComponent(Astro.request.url)}`,
+  );
+}
+
+if (Astro.locals.user.isAnonymous) {
+  return Astro.redirect(
+    `/signup?returnUrl=${encodeURIComponent(Astro.request.url)}`,
+  );
+}
+
+const userDataDO = env.USER_DATA_DO.getByName(Astro.locals.user.id);
+
+const resolution = await userDataDO.resolvePathToFolder(pathSegments);
 
 if (resolution.kind === "not-found") {
   return new Response("Not found", { status: 404 });
@@ -22,7 +35,7 @@ if (resolution.kind === "not-found") {
 
 const folderId = resolution.folderId;
 const breadcrumbs = resolution.breadcrumbs;
-const initialNodes = await getUserNodes(user.id, folderId ?? undefined);
+const initialNodes = await userDataDO.getNodes(folderId ?? undefined);
 
 // if the path resolved to a file, we need to find the file node in the list
 // so the client can immediately open the preview

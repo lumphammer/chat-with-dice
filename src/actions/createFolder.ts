@@ -1,7 +1,6 @@
-import { db } from "#/db";
-import { folders, nodes } from "#/schemas/coreD1-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
+import { env } from "cloudflare:workers";
 
 const MAX_NAME_LENGTH = 128;
 
@@ -10,40 +9,12 @@ export const createFolder = defineAction({
     name: z.string().min(1).max(MAX_NAME_LENGTH),
     parentFolderId: z.string().nullable().optional(),
   }),
-  handler: async ({ name, parentFolderId }, context) => {
-    const user = context.locals.user;
+  handler: async ({ name, parentFolderId }, { locals: { user } }) => {
     if (!user || user.isAnonymous) {
       throw new Error("Unauthorized");
     }
-
-    const id = crypto.randomUUID();
-
-    try {
-      await db.batch([
-        db.insert(folders).values({
-          id,
-          recursiveSizeBytes: 0,
-        }),
-        db.insert(nodes).values({
-          id,
-          name,
-          folderId: id,
-          ownerUserId: user.id,
-          parentFolderId: parentFolderId,
-        }),
-      ]);
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message.includes("UNIQUE constraint failed")
-      ) {
-        throw new Error("A folder with that name already exists here", {
-          cause: error,
-        });
-      }
-      throw error;
-    }
-
-    return { id, name };
+    const userDataDO = env.USER_DATA_DO.getByName(user.id);
+    const result = await userDataDO.createFolder(name, parentFolderId);
+    return result;
   },
 });

@@ -53,6 +53,11 @@ export const auth = betterAuth({
       enabled: true,
     },
     additionalFields: {
+      userDataDOId: {
+        fieldName: "user_data_do_id",
+        type: "string",
+        required: true,
+      },
       storageQuotaBytes: {
         fieldName: "storage_quota_bytes",
         type: "number",
