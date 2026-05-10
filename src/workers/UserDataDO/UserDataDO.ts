@@ -3,7 +3,7 @@ import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
 import type { PathResolution } from "./types";
-import { log } from "./utils";
+import { log, logError } from "./utils";
 import { DurableObject } from "cloudflare:workers";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
@@ -60,6 +60,9 @@ export class UserDataDO extends DurableObject {
    */
   async resolvePathToFolder(pathSegments: string[]): Promise<PathResolution> {
     // empty path = root folder
+    // throw new Error(
+    //   `resolvePathToFolder: pathSegments=${JSON.stringify(pathSegments)}`,
+    // );
     if (pathSegments.length === 0) {
       return { kind: "folder", folderId: null, breadcrumbs: [] };
     }
@@ -90,7 +93,7 @@ export class UserDataDO extends DurableObject {
             JOIN json_each(${pathJson}) je ON je.key = pw.depth + 1
             JOIN nodes ON nodes.parent_folder_id = pw.folder_id
           WHERE
-            AND nodes.deleted_time IS NULL
+            nodes.deleted_time IS NULL
             AND nodes.folder_id IS NOT NULL
             AND nodes.name = je.value
         )
@@ -168,8 +171,8 @@ export class UserDataDO extends DurableObject {
   }
 
   createFolder(name: string, parentFolderId?: string | null) {
-    // const id = crypto.randomUUID();
-    const id = nanoid();
+    const id = crypto.randomUUID();
+    // const id = nanoid();
 
     try {
       this.db.transaction((tx) => {
@@ -252,30 +255,34 @@ export class UserDataDO extends DurableObject {
     });
   }
 
-  createFile(
+  async createFile(
     filename: string,
     contentType: string,
     folderId: string | null | undefined,
   ) {
     const id = crypto.randomUUID();
     const r2Key = `user-files/${this.userId}/${id}`;
+    log(`createFile: ${filename}, ${r2Key}`);
     try {
-      this.db.transaction((tx) => {
-        tx.insert(dbSchema.files).values({
-          id,
-          sizeBytes: 0,
-          isReady: 0,
-          r2Key,
-          contentType,
-        });
-        tx.insert(dbSchema.nodes).values({
-          id,
-          name: filename,
-          fileId: id,
-          parentFolderId: folderId,
-        });
+      await this.db.insert(dbSchema.files).values({
+        id,
+        sizeBytes: 0,
+        isReady: 0,
+        r2Key,
+        contentType,
       });
+      log("finished inserting to files");
+      await this.db.insert(dbSchema.nodes).values({
+        id,
+        name: filename,
+        fileId: id,
+        parentFolderId: folderId,
+      });
+      log("finished inserting to nodes");
+      // this.db.transaction((tx) => {tx.});
+      log("insert complete");
     } catch (cause) {
+      logError(cause);
       if (
         cause instanceof Error &&
         cause.message.includes("UNIQUE constraint failed")
@@ -359,7 +366,7 @@ export class UserDataDO extends DurableObject {
     });
 
     if (!node || !node.file) {
-      throw new Error("File not found");
+      throw new Error(`File not found in database: ${nodeId}`);
     }
     return node as Expand<
       Omit<typeof node, "file"> & { file: Exclude<(typeof node)["file"], null> }

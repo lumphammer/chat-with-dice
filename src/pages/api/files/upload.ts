@@ -14,6 +14,7 @@ export const prerender = false;
 const MAX_BYTES = 104_857_600; // 100 MB
 
 export const POST: APIRoute = async (ctx) => {
+  console.log("POST to upload");
   const user = ctx.locals.user;
   if (!user || user.isAnonymous) {
     return jsonResponse({ error: "Unauthorized" }, HTTP_UNAUTHORIZED);

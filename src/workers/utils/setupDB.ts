@@ -1,11 +1,13 @@
 // import * as dbSchema from "#/schemas/ChatRoomDO-schema";
-import { log, logError } from "../ChatRoomDO/utils";
 import type { TablesRelationalConfig } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/durable-sqlite";
 import { migrate } from "drizzle-orm/durable-sqlite/migrator";
 
 // this doesn't seem to be exported, so a little type-fu is needed
 type MigrationConfig = Parameters<typeof migrate>[1];
+
+const log = console.log.bind(console, "[setupDB]");
+const logError = console.error.bind(console, "[setupDB]");
 
 /**
  * Create a drizzle interface to the db and run migrations.
@@ -29,7 +31,7 @@ export function setupDB<
   void ctx.blockConcurrencyWhile(async () => {
     // migrate the db
     try {
-      log("setupDB: Attempting migration");
+      log("Attempting migration");
       migrate(db, migrations);
     } catch (e: unknown) {
       logError("FAILED MIGRATION", e);
@@ -37,7 +39,7 @@ export function setupDB<
   });
   const after = printSchema(ctx, schema);
   if (before !== after) {
-    log("setupDB: Schema changed after migration", before, after);
+    log("Schema changed after migration", before, after);
   }
 
   return db;

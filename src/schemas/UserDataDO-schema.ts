@@ -1,4 +1,3 @@
-import { rooms } from "./roomSchema";
 import { defineRelations, sql } from "drizzle-orm";
 import {
   int,
@@ -75,9 +74,7 @@ export const roomResourceShares = snakeCase.table(
   "room_resource_shares",
   {
     id: text().primaryKey(),
-    roomId: text()
-      .notNull()
-      .references(() => rooms.id, { onDelete: "cascade" }),
+    roomId: text().notNull(),
     nodeId: text().references(() => nodes.id, { onDelete: "cascade" }),
     sharedTime: int()
       .notNull()

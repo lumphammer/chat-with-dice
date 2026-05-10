@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "1bec684a-db1c-48f9-8082-75e68b319740",
+  "id": "a2ae8d5a-bd22-4c07-b94d-494b955c1e2f",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -168,16 +168,6 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "owner_user_id",
-      "entityType": "columns",
-      "table": "nodes"
-    },
-    {
-      "type": "text",
-      "notNull": false,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
       "name": "id",
       "entityType": "columns",
       "table": "room_resource_shares"
@@ -256,36 +246,6 @@
       "name": "fk_nodes_file_id_files_id_fk",
       "entityType": "fks",
       "table": "nodes"
-    },
-    {
-      "columns": [
-        "owner_user_id"
-      ],
-      "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "nameExplicit": false,
-      "name": "fk_nodes_owner_user_id_users_id_fk",
-      "entityType": "fks",
-      "table": "nodes"
-    },
-    {
-      "columns": [
-        "room_id"
-      ],
-      "tableTo": "rooms",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "nameExplicit": false,
-      "name": "fk_room_resource_shares_room_id_rooms_id_fk",
-      "entityType": "fks",
-      "table": "room_resource_shares"
     },
     {
       "columns": [
