@@ -12,7 +12,7 @@ export const deleteNode = defineAction({
       throw new Error("Unauthorized");
     }
     const userDataDO = env.USER_DATA_DO.getByName(user.id);
-    const result = await userDataDO.deleteNode(nodeId);
+    const result = await userDataDO.softDeleteNode(nodeId);
     return result;
   },
 });

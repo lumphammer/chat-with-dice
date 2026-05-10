@@ -1,7 +1,6 @@
-// import { db as d1 } from "#/db";
+import { db as d1 } from "#/db";
 import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
-import { folders, nodes } from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
 import type { PathResolution } from "./types";
 import { log } from "./utils";
@@ -15,6 +14,7 @@ export class UserDataDO extends DurableObject {
     typeof dbSchema,
     typeof dbSchema.relations
   >;
+  private userId!: string;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -25,11 +25,26 @@ export class UserDataDO extends DurableObject {
     );
 
     this.ctx.blockConcurrencyWhile(async () => {
-      // d1.query.users.findFirst({
-      //   where: {
-      //     id:
-      //   }
-      // })
+      // Get the cached userId (it should never change), or if it's not in KV,
+      // check min with D1 to see if out DO ID appears there and get the userId
+      // that way.
+      const cachedUserId = this.ctx.storage.kv.get("userId");
+      if (typeof cachedUserId === "string") {
+        this.userId = cachedUserId;
+      } else {
+        const user = await d1.query.users.findFirst({
+          where: {
+            user_data_do_id: this.ctx.id.toString(),
+          },
+        });
+        if (!user) {
+          throw new Error(
+            `User does not exist in database with user_data_do_id ${this.ctx.id.toString()}`,
+          );
+        }
+        this.ctx.storage.kv.put("userId", user.id);
+        this.userId = user.id;
+      }
       this.db = setupDB(ctx, migrations, dbSchema, dbSchema.relations);
     });
   }
@@ -158,11 +173,11 @@ export class UserDataDO extends DurableObject {
 
     try {
       this.db.transaction((tx) => {
-        tx.insert(folders).values({
+        tx.insert(dbSchema.folders).values({
           id,
           recursiveSizeBytes: 0,
         });
-        tx.insert(nodes).values({
+        tx.insert(dbSchema.nodes).values({
           id,
           name,
           folderId: id,
@@ -184,7 +199,7 @@ export class UserDataDO extends DurableObject {
     return { id, name };
   }
 
-  async deleteNode(nodeId: string) {
+  async softDeleteNode(nodeId: string) {
     // fetch node + relations to determine size to subtract
     const node = await this.db.query.nodes.findFirst({
       where: {
@@ -203,9 +218,9 @@ export class UserDataDO extends DurableObject {
 
     // soft delete
     await this.db
-      .update(nodes)
+      .update(dbSchema.nodes)
       .set({ deletedTime: Date.now() })
-      .where(eq(nodes.id, nodeId));
+      .where(eq(dbSchema.nodes.id, nodeId));
 
     // decrement ancestor folder sizes
     const sizeToSubtract = node.file
@@ -229,37 +244,74 @@ export class UserDataDO extends DurableObject {
     }
   }
 
-  async createFile() {
+  hardDeleteNode(nodeId: string) {
+    this.db.transaction((tx) => {
+      tx.delete(dbSchema.nodes).where(eq(dbSchema.nodes.id, nodeId));
+      tx.delete(dbSchema.files).where(eq(dbSchema.files.id, nodeId));
+      tx.delete(dbSchema.folders).where(eq(dbSchema.folders.id, nodeId));
+    });
+  }
+
+  createFile(
+    filename: string,
+    contentType: string,
+    folderId: string | null | undefined,
+  ) {
     const id = crypto.randomUUID();
-    const r2Key = `user-files/${user.id}/${id}`;
+    const r2Key = `user-files/${this.userId}/${id}`;
     try {
-      await db.batch([
-        db.insert(files).values({
+      this.db.transaction((tx) => {
+        tx.insert(dbSchema.files).values({
           id,
           sizeBytes: 0,
           isReady: 0,
           r2Key,
           contentType,
-        }),
-        db.insert(nodes).values({
+        });
+        tx.insert(dbSchema.nodes).values({
           id,
           name: filename,
           fileId: id,
-          ownerUserId: user.id,
           parentFolderId: folderId,
-        }),
-      ]);
-    } catch (error) {
+        });
+      });
+    } catch (cause) {
       if (
-        error instanceof Error &&
-        error.message.includes("UNIQUE constraint failed")
+        cause instanceof Error &&
+        cause.message.includes("UNIQUE constraint failed")
       ) {
-        return json(
-          { error: "A file with that name already exists in this folder" },
-          HTTP_CONFLICT,
-        );
+        throw new Error("A file with that name already exists in this folder", {
+          cause,
+        });
       }
-      throw error;
+      throw cause;
+    }
+    return { id, r2Key };
+  }
+
+  markFileReady(id: string, sizeBytes: number, folderId?: string | null) {
+    this.db
+      .update(dbSchema.files)
+      .set({
+        isReady: 1,
+        sizeBytes: sizeBytes,
+      })
+      .where(eq(dbSchema.files.id, id));
+
+    if (folderId) {
+      this.db.run(sql`
+        WITH RECURSIVE ancestors(folder_id) AS (
+          SELECT ${folderId}
+          UNION ALL
+          SELECT nodes.parent_folder_id
+          FROM ancestors
+          JOIN nodes ON nodes.folder_id = ancestors.folder_id
+          WHERE nodes.parent_folder_id IS NOT NULL
+        )
+        UPDATE folders
+        SET recursive_size_bytes = recursive_size_bytes + ${sizeBytes}
+        WHERE id IN (SELECT folder_id FROM ancestors)
+      `);
     }
   }
 }
