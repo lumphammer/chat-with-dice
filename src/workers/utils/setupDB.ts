@@ -20,7 +20,7 @@ export function setupDB<
   ctx: DurableObjectState,
   migrations: MigrationConfig,
   schema: TSchema,
-  relations: TRelations,
+  relations?: TRelations,
 ) {
   const db = drizzle(ctx.storage, { schema, relations });
 

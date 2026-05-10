@@ -5,7 +5,7 @@ import { setupDB } from "../utils/setupDB";
 import type { PathResolution } from "./types";
 import { log } from "./utils";
 import { DurableObject } from "cloudflare:workers";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 import { nanoid } from "nanoid";
 
@@ -313,5 +313,56 @@ export class UserDataDO extends DurableObject {
         WHERE id IN (SELECT folder_id FROM ancestors)
       `);
     }
+  }
+
+  async renameNode(id: string, newName: string) {
+    try {
+      const result = await this.db
+        .update(dbSchema.nodes)
+        .set({ name: newName })
+        .where(
+          and(eq(dbSchema.nodes.id, id), isNull(dbSchema.nodes.deletedTime)),
+        );
+
+      if (result.rowsWritten === 0) {
+        throw new Error("File or folder not found");
+      }
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("UNIQUE constraint failed")
+      ) {
+        throw new Error(
+          "An item with that name already exists in this folder",
+          {
+            cause: error,
+          },
+        );
+      }
+      throw error;
+    }
+  }
+
+  async getFile(nodeId: string) {
+    const node = await this.db.query.nodes.findFirst({
+      where: {
+        id: nodeId,
+        deletedTime: { isNull: true },
+      },
+      with: {
+        file: {
+          where: {
+            isReady: 1,
+          },
+        },
+      },
+    });
+
+    if (!node || !node.file) {
+      throw new Error("File not found");
+    }
+    return node as Expand<
+      Omit<typeof node, "file"> & { file: Exclude<(typeof node)["file"], null> }
+    >;
   }
 }

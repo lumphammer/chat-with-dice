@@ -1,8 +1,6 @@
-import { db } from "#/db";
-import { nodes } from "#/schemas/coreD1-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
-import { and, eq, isNull } from "drizzle-orm";
+import { env } from "cloudflare:workers";
 
 const MAX_NAME_LENGTH = 128;
 
@@ -17,34 +15,7 @@ export const renameNode = defineAction({
       throw new Error("Unauthorized");
     }
 
-    try {
-      const result = await db
-        .update(nodes)
-        .set({ name: newName })
-        .where(
-          and(
-            eq(nodes.id, nodeId),
-            eq(nodes.ownerUserId, user.id),
-            isNull(nodes.deletedTime),
-          ),
-        );
-
-      if (result.meta.changes === 0) {
-        throw new Error("File or folder not found");
-      }
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message.includes("UNIQUE constraint failed")
-      ) {
-        throw new Error(
-          "An item with that name already exists in this folder",
-          {
-            cause: error,
-          },
-        );
-      }
-      throw error;
-    }
+    const userDataDO = env.USER_DATA_DO.getByName(user.id);
+    userDataDO.renameNode(nodeId, newName);
   },
 });

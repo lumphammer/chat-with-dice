@@ -1,4 +1,3 @@
-import { db } from "#/db";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 
@@ -34,24 +33,9 @@ export const GET: APIRoute = async (ctx) => {
     return json({ error: "Missing node ID" }, HTTP_NOT_FOUND);
   }
 
-  const node = await db.query.nodes.findFirst({
-    where: {
-      id: nodeId,
-      ownerUserId: user.id,
-      deletedTime: { isNull: true },
-    },
-    with: {
-      file: true,
-    },
-  });
-
-  if (!node?.file) {
-    return json({ error: "File not found" }, HTTP_NOT_FOUND);
-  }
-
-  if (!node.file.isReady) {
-    return json({ error: "File is not ready" }, HTTP_NOT_FOUND);
-  }
+  // here
+  const userDataDO = env.USER_DATA_DO.getByName(user.id);
+  const node = await userDataDO.getFile(nodeId);
 
   const r2Object = await bucket.get(node.file.r2Key);
   if (!r2Object) {
