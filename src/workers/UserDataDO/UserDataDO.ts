@@ -296,8 +296,8 @@ export class UserDataDO extends DurableObject {
     return { id, r2Key };
   }
 
-  markFileReady(id: string, sizeBytes: number, folderId?: string | null) {
-    this.db
+  async markFileReady(id: string, sizeBytes: number, folderId?: string | null) {
+    await this.db
       .update(dbSchema.files)
       .set({
         isReady: 1,

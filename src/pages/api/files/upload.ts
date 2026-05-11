@@ -79,7 +79,7 @@ export const POST: APIRoute = async (ctx) => {
     }
 
     // phase 3: mark as ready + update ancestor folder sizes
-    userDataDO.markFileReady(id, r2Object.size);
+    await userDataDO.markFileReady(id, r2Object.size, folderId);
     return jsonResponse(
       {
         id,
