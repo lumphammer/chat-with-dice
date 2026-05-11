@@ -16,6 +16,6 @@ export const renameNode = defineAction({
     }
 
     const userDataDO = env.USER_DATA_DO.getByName(user.id);
-    userDataDO.renameNode(nodeId, newName);
+    await userDataDO.renameNode(nodeId, newName);
   },
 });

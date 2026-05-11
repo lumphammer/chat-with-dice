@@ -170,22 +170,20 @@ export class UserDataDO extends DurableObject {
     return childNodes;
   }
 
-  createFolder(name: string, parentFolderId?: string | null) {
-    const id = crypto.randomUUID();
-    // const id = nanoid();
+  async createFolder(name: string, parentFolderId?: string | null) {
+    // const id = crypto.randomUUID();
+    const id = nanoid();
 
     try {
-      this.db.transaction((tx) => {
-        tx.insert(dbSchema.folders).values({
-          id,
-          recursiveSizeBytes: 0,
-        });
-        tx.insert(dbSchema.nodes).values({
-          id,
-          name,
-          folderId: id,
-          parentFolderId,
-        });
+      await this.db.insert(dbSchema.folders).values({
+        id,
+        recursiveSizeBytes: 0,
+      });
+      await this.db.insert(dbSchema.nodes).values({
+        id,
+        name,
+        folderId: id,
+        parentFolderId,
       });
     } catch (error) {
       if (
@@ -247,12 +245,12 @@ export class UserDataDO extends DurableObject {
     }
   }
 
-  hardDeleteNode(nodeId: string) {
-    this.db.transaction((tx) => {
-      tx.delete(dbSchema.nodes).where(eq(dbSchema.nodes.id, nodeId));
-      tx.delete(dbSchema.files).where(eq(dbSchema.files.id, nodeId));
-      tx.delete(dbSchema.folders).where(eq(dbSchema.folders.id, nodeId));
-    });
+  async hardDeleteNode(nodeId: string) {
+    await this.db.delete(dbSchema.nodes).where(eq(dbSchema.nodes.id, nodeId));
+    await this.db.delete(dbSchema.files).where(eq(dbSchema.files.id, nodeId));
+    await this.db
+      .delete(dbSchema.folders)
+      .where(eq(dbSchema.folders.id, nodeId));
   }
 
   async createFile(
@@ -279,7 +277,6 @@ export class UserDataDO extends DurableObject {
         parentFolderId: folderId,
       });
       log("finished inserting to nodes");
-      // this.db.transaction((tx) => {tx.});
       log("insert complete");
     } catch (cause) {
       logError(cause);
