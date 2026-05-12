@@ -174,7 +174,7 @@ export function SigninForm() {
         <div className="flex flex-col gap-2">
           <button
             type="button"
-            className="btn btn-neutral w-full"
+            className="btn btn-outline w-full"
             onClick={() => handleSocialSignIn("github")}
             disabled={isLoading}
           >
