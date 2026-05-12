@@ -236,7 +236,10 @@ export const FileManager = memo(
     // drag and drop handlers
     const handleDragEnter = useCallback((e: React.DragEvent) => {
       e.preventDefault();
-      setIsDragOver(true);
+      const hasFiles = [...e.dataTransfer.types].includes("Files");
+      if (hasFiles) {
+        setIsDragOver(true);
+      }
     }, []);
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
