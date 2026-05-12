@@ -55,10 +55,12 @@ export const GET: APIRoute = async (ctx) => {
   headers.set("etag", r2Object.httpEtag);
   headers.set("cache-control", "private, max-age=3600, immutable");
 
-  const isImage = node.file.contentType.startsWith("image/");
+  const isInlinePreviewable =
+    node.file.contentType.startsWith("image/") ||
+    node.file.contentType === "application/pdf";
   headers.set(
     "content-disposition",
-    isImage ? "inline" : `attachment; filename="${node.name}"`,
+    isInlinePreviewable ? "inline" : `attachment; filename="${node.name}"`,
   );
 
   return new Response(r2Object.body, { headers });

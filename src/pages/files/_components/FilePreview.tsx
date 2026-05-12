@@ -1,4 +1,5 @@
 import { ImagePreview } from "./ImagePreview";
+import { PdfPreview } from "./PdfPreview";
 import { fileTypeIcon } from "./fileTypeIcon";
 import { formatBytes } from "./formatBytes";
 import type { FileNode } from "./types";
@@ -20,6 +21,7 @@ export const FilePreview = memo(
     if (!node.file) return null;
 
     const isImage = node.file.contentType.startsWith("image/");
+    const isPdf = node.file.contentType === "application/pdf";
     const downloadUrl = `/api/files/${node.id}`;
     const Icon = fileTypeIcon(node.file.contentType);
 
@@ -53,6 +55,8 @@ export const FilePreview = memo(
 
           {isImage ? (
             <ImagePreview src={downloadUrl} alt={node.name} />
+          ) : isPdf ? (
+            <PdfPreview src={downloadUrl} title={node.name} />
           ) : (
             <div
               className="flex flex-1 flex-col items-center justify-center gap-4
