@@ -11,7 +11,7 @@ export default defineConfig({
   adapter: cloudflare({}),
   integrations: [react()],
   experimental: {
-    rustCompiler: true,
+    // rustCompiler: true,
     svgOptimizer: svgoOptimizer({
       multipass: true,
       plugins: [
