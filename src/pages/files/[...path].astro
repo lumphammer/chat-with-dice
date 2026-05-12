@@ -1,5 +1,7 @@
 ---
+import { db } from "#/db";
 import Layout from "#/layouts/Layout.astro";
+import { users } from "#/schemas/coreD1-schema";
 import { env } from "cloudflare:workers";
 import { FileManager } from "./_components/FileManager";
 
@@ -25,7 +27,19 @@ if (Astro.locals.user.isAnonymous) {
   );
 }
 
-const userDataDO = env.USER_DATA_DO.getByName(Astro.locals.user.id);
+let doIdString = Astro.locals.user.userDataDOId;
+
+// we can probably drop this in due course - backfill the doId
+if (!doIdString) {
+  doIdString = env.USER_DATA_DO.idFromName(user.id).toString();
+  await db.update(users).set({
+    user_data_do_id: doIdString,
+  });
+}
+
+const userDataDO = env.USER_DATA_DO.get(
+  env.USER_DATA_DO.idFromString(doIdString),
+);
 
 const resolution = await userDataDO.resolvePathToFolder(pathSegments);
 
