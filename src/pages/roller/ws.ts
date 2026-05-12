@@ -1,3 +1,4 @@
+import { db } from "#/db";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 
@@ -12,12 +13,26 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
     return new Response("No session found", { status: 401 });
   }
 
-  // Get the ChatRoom Durable Object stub
-  const ChatRoomNamespace = env.CHAT_ROOM_DO;
-  if (!ChatRoomNamespace) {
-    return new Response("CHAT_ROOM_DO binding not found", { status: 500 });
+  // Get the ChatRoom Durable Object stub based on the store do id in d1.
+  // This is a funny one - the DO will also check D1 before fully booting, as a
+  // safety mechanism. In theory we could always derive the DO id from the room
+  // id, but that can cause issues if the DO binding changes (the binding name
+  // and/or DO class name are use in the hashing process to create the DO id.)
+  const room = await db.query.rooms.findFirst({
+    where: {
+      id: roomId,
+      deleted_time: { isNull: true },
+    },
+  });
+  if (!room || !room.durableObjectId) {
+    return new Response("Room not found", { status: 404 });
   }
-  const durableObjectStub = ChatRoomNamespace.getByName(roomId);
+
+  const chatRoomDO = env.CHAT_ROOM_DO.get(
+    env.CHAT_ROOM_DO.idFromString(room.durableObjectId),
+  );
+
+  env.CHAT_ROOM_DO.get(env.CHAT_ROOM_DO.idFromString(room.durableObjectId));
 
   const fetchUrl = new URL("https://example.com/ws");
   fetchUrl.searchParams.set("userId", user.id);
@@ -30,5 +45,5 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
     fetchUrl.searchParams.set("image", user.image);
   }
 
-  return durableObjectStub.fetch(new Request(fetchUrl, request));
+  return chatRoomDO.fetch(new Request(fetchUrl, request));
 };
