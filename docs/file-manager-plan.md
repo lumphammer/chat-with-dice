@@ -100,20 +100,20 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 
 ## Deferred for later
 
-- Preview for PDFs, audio, text/markdown.
-- Thumbnails.
-- Grid view (larger thumbnail).
-- Copy.
-- Move.
-- Multi-select for bulk operations.
-- Recursive folder upload from OS.
-- Replace/overwrite existing files.
-- Sharing files to rooms (via `roomResourceShares`).
-- Trash/recycle bin UI for restoring soft-deleted items.
-- Periodic purge of deleted files.
-- Quota and usage display.
-- Quota enforcement.
-- Quota usage and control in admin.
-- Search by filename.
-- Annotation/alt text
-- Goddammit, user data should be its own DO
+- [ ] Preview for PDFs, audio, text/markdown.
+- [ ] Thumbnails.
+- [ ] Grid view (larger thumbnail).
+- [ ] Copy.
+- [ ] Move.
+- [ ] Multi-select for bulk operations.
+- [ ] Recursive folder upload from OS.
+- [ ] Replace/overwrite existing files.
+- [ ] Sharing files to rooms (via `roomResourceShares`).
+- [ ] Trash/recycle bin UI for restoring soft-deleted items.
+- [ ] Periodic purge of deleted files.
+- [ ] Quota and usage display.
+- [ ] Quota enforcement.
+- [ ] Quota usage and control in admin.
+- [ ] Search by filename.
+- [ ] Annotation/alt text
+- [x] Goddammit, user data should be its own DO

@@ -24,7 +24,7 @@ export class UserDataDO extends DurableObject {
       ctx.id.toString(),
     );
 
-    this.ctx.blockConcurrencyWhile(async () => {
+    void this.ctx.blockConcurrencyWhile(async () => {
       // Get the cached userId (it should never change), or if it's not in KV,
       // check min with D1 to see if out DO ID appears there and get the userId
       // that way.
@@ -365,7 +365,7 @@ export class UserDataDO extends DurableObject {
     if (!node || !node.file) {
       throw new Error(`File not found in database: ${nodeId}`);
     }
-    return node as Expand<
+    return node as RecursiveExpand<
       Omit<typeof node, "file"> & { file: Exclude<(typeof node)["file"], null> }
     >;
   }
