@@ -29,7 +29,7 @@ export const FileListItem = memo(
       : fileTypeIcon(node.file?.contentType ?? "application/octet-stream");
 
     const handleDelete = async () => {
-      const result = await actions.deleteNode({ nodeId: node.id });
+      const result = await actions.files.deleteNode({ nodeId: node.id });
       if (result.error) {
         console.error("Failed to delete:", result.error);
         return;
@@ -55,7 +55,7 @@ export const FileListItem = memo(
         return;
       }
 
-      const result = await actions.renameNode({
+      const result = await actions.files.renameNode({
         nodeId: node.id,
         newName: trimmed,
       });

@@ -1,10 +1,13 @@
-import * as dbSchema from "#/schemas/ChatRoomDO-schema";
-import { log, logError } from "./utils";
+// import * as dbSchema from "#/schemas/ChatRoomDO-schema";
+import type { TablesRelationalConfig } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/durable-sqlite";
 import { migrate } from "drizzle-orm/durable-sqlite/migrator";
 
 // this doesn't seem to be exported, so a little type-fu is needed
 type MigrationConfig = Parameters<typeof migrate>[1];
+
+const log = console.log.bind(console, "[setupDB]");
+const logError = console.error.bind(console, "[setupDB]");
 
 /**
  * Create a drizzle interface to the db and run migrations.
@@ -12,23 +15,31 @@ type MigrationConfig = Parameters<typeof migrate>[1];
  * @param ctx the Durable Object ctx object
  * @returns
  */
-export function setupDB(ctx: DurableObjectState, migrations: MigrationConfig) {
-  const db = drizzle(ctx.storage, { schema: dbSchema });
+export function setupDB<
+  TSchema extends Record<string, unknown>,
+  TRelations extends TablesRelationalConfig,
+>(
+  ctx: DurableObjectState,
+  migrations: MigrationConfig,
+  schema: TSchema,
+  relations?: TRelations,
+) {
+  const db = drizzle(ctx.storage, { schema, relations });
 
-  const before = printSchema(ctx);
+  const before = printSchema(ctx, schema);
 
   void ctx.blockConcurrencyWhile(async () => {
     // migrate the db
     try {
-      log("setupDB: Attempting migration");
+      log("Attempting migration");
       migrate(db, migrations);
     } catch (e: unknown) {
       logError("FAILED MIGRATION", e);
     }
   });
-  const after = printSchema(ctx);
+  const after = printSchema(ctx, schema);
   if (before !== after) {
-    log("setupDB: Schema changed after migration", before, after);
+    log("Schema changed after migration", before, after);
   }
 
   return db;
@@ -40,8 +51,8 @@ export function setupDB(ctx: DurableObjectState, migrations: MigrationConfig) {
  * @param ctx the Durable Object ctx object
  * @returns the printed schema as a string
  */
-function printSchema(ctx: DurableObjectState) {
-  const tableNames = Object.keys(dbSchema);
+function printSchema(ctx: DurableObjectState, schema: Record<string, unknown>) {
+  const tableNames = Object.keys(schema);
   const placeHolders = Array.from({ length: tableNames.length })
     .fill("?")
     .join(", ");

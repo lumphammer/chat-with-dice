@@ -1,4 +1,3 @@
-import { db } from "#/db";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 
@@ -31,27 +30,20 @@ export const GET: APIRoute = async (ctx) => {
 
   const { nodeId } = ctx.params;
   if (!nodeId) {
-    return json({ error: "Missing node ID" }, HTTP_NOT_FOUND);
+    return json({ error: "Missing node ID parameter" }, HTTP_NOT_FOUND);
+  }
+  if (!user.userDataDOId) {
+    return json(
+      { error: "User does not have a durable object id" },
+      HTTP_NOT_FOUND,
+    );
   }
 
-  const node = await db.query.nodes.findFirst({
-    where: {
-      id: nodeId,
-      ownerUserId: user.id,
-      deletedTime: { isNull: true },
-    },
-    with: {
-      file: true,
-    },
-  });
-
-  if (!node?.file) {
-    return json({ error: "File not found" }, HTTP_NOT_FOUND);
-  }
-
-  if (!node.file.isReady) {
-    return json({ error: "File is not ready" }, HTTP_NOT_FOUND);
-  }
+  // here
+  const userDataDO = env.USER_DATA_DO.get(
+    env.USER_DATA_DO.idFromString(user.userDataDOId),
+  );
+  const node = await userDataDO.getFile(nodeId);
 
   const r2Object = await bucket.get(node.file.r2Key);
   if (!r2Object) {

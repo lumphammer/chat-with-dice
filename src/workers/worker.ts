@@ -2,6 +2,7 @@ import { auth } from "#/auth";
 import handler from "@astrojs/cloudflare/entrypoints/server";
 
 export { ChatRoomDO } from "./ChatRoomDO/ChatRoomDO";
+export { UserDataDO } from "./UserDataDO/UserDataDO";
 
 const HTTP_SWITCHING_PROTOCOLS = 101;
 

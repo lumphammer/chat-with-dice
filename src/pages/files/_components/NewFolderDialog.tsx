@@ -29,7 +29,7 @@ export const NewFolderDialog = memo(
       setIsSubmitting(true);
       setError(null);
 
-      const result = await actions.createFolder({
+      const result = await actions.files.createFolder({
         name: trimmed,
         parentFolderId: currentFolderId,
       });

@@ -6,10 +6,11 @@ import { envOrDie } from "./utils/envOrDie";
 import { generateRandomName } from "./utils/generateRandomName";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { anonymous } from "better-auth/plugins";
-import { waitUntil } from "cloudflare:workers";
+import { env, waitUntil } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 
 // see
@@ -48,11 +49,51 @@ export const auth = betterAuth({
     usePlural: true,
   }),
 
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/sign-in") {
+        // on login, update the user with their durable object id if missing
+        const headers = ctx.request?.headers;
+        if (!headers) {
+          return;
+        }
+        const session = await auth.api.getSession({
+          headers,
+        });
+        if (!session) {
+          return;
+        }
+        const user = session.user;
+        if (
+          user.userDataDOId === null ||
+          user.userDataDOId === undefined ||
+          user.userDataDOId === ""
+        ) {
+          const durableObjectId = env.USER_DATA_DO.idFromName(
+            user.id,
+          ).toString();
+          await db.update(users).set({ user_data_do_id: durableObjectId });
+        }
+      }
+      // if (ctx.path === "/sign-in/email") {
+      //     // Track login analytics
+      // }
+    }),
+  },
+
   user: {
     changeEmail: {
       enabled: true,
     },
     additionalFields: {
+      userDataDOId: {
+        fieldName: "user_data_do_id",
+        type: "string",
+        required: false,
+        defaultValue: null,
+        index: true,
+        input: true,
+      },
       storageQuotaBytes: {
         fieldName: "storage_quota_bytes",
         type: "number",

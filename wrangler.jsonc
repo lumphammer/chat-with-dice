@@ -20,6 +20,10 @@
         "name": "CHAT_ROOM_DO",
         "class_name": "ChatRoomDO",
       },
+      {
+        "name": "USER_DATA_DO",
+        "class_name": "UserDataDO",
+      },
     ],
   },
   "migrations": [
@@ -52,6 +56,10 @@
       "tag": "v6",
       "renamed_classes": [{ "from": "DiceRollerRoom", "to": "ChatRoomDO" }],
     },
+    {
+      "tag": "v7",
+      "new_sqlite_classes": ["UserDataDO"],
+    },
   ],
   "d1_databases": [
     {
@@ -68,6 +76,10 @@
           {
             "name": "CHAT_ROOM_DO",
             "class_name": "ChatRoomDO",
+          },
+          {
+            "name": "USER_DATA_DO",
+            "class_name": "UserDataDO",
           },
         ],
       },

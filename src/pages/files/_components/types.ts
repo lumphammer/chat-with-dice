@@ -1,3 +1,5 @@
-import type { getUserNodes } from "./queries";
+import type { UserDataDO } from "#/workers/UserDataDO/UserDataDO";
 
-export type FileNode = Awaited<ReturnType<typeof getUserNodes>>[number];
+export type FileNode = Awaited<
+  ReturnType<InstanceType<typeof UserDataDO>["getNodes"]>
+>[number];

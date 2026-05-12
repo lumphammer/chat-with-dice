@@ -40,7 +40,7 @@ export const FileManager = memo(
 
     const refetchNodes = useCallback(async (folderId: string | null) => {
       const requestId = navigationIdRef.current;
-      const result = await actions.getNodes({ folderId });
+      const result = await actions.files.getNodes({ folderId });
       if (requestId !== navigationIdRef.current) return; // stale
       if (result.error) {
         console.error("Failed to fetch nodes:", result.error);
@@ -129,7 +129,9 @@ export const FileManager = memo(
 
         const requestId = ++navigationIdRef.current;
         void (async () => {
-          const result = await actions.getNodes({ folderId: state.folderId });
+          const result = await actions.files.getNodes({
+            folderId: state.folderId,
+          });
           if (requestId !== navigationIdRef.current) return;
           if (result.error) {
             console.error("Failed to fetch nodes:", result.error);

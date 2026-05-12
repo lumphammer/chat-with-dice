@@ -1,11 +1,10 @@
 import { db as d1 } from "#/db";
-import { rooms } from "#/schemas/coreD1-schema";
 import {
   roomConfigValidator,
   type RoomConfig,
 } from "#/validators/roomConfigValidator";
 import { defaultRoomConfig } from "./defaultRoomConfig";
-import { eq } from "drizzle-orm";
+import { logError } from "./utils";
 
 export async function loadConfigFromD1OrDie(
   ctx: DurableObjectState,
@@ -13,29 +12,28 @@ export async function loadConfigFromD1OrDie(
   let config: RoomConfig | null = null;
   let createdByUserId: string | null = null;
 
-  const roomRows = await d1
-    .select({
-      config: rooms.config,
-      createByUserId: rooms.createdByUserId,
-    })
-    .from(rooms)
-    .where(eq(rooms.durableObjectId, ctx.id.toString()))
-    .limit(1);
-  const roomRow = roomRows[0];
+  const roomRow = await d1.query.rooms.findFirst({
+    where: {
+      durableObjectId: ctx.id.toString(),
+      deleted_time: {
+        isNull: true,
+      },
+    },
+  });
   if (!roomRow) {
-    throw new Error(`Room data not found for DO id: ${ctx.id}`);
+    throw new Error(`Room data not found for DO id: ${ctx.id.toString()}`);
   }
   const parsedConfig = roomConfigValidator.safeParse(roomRow.config);
   if (parsedConfig.success) {
     config = parsedConfig.data;
   } else {
-    console.error(
+    logError(
       "Room Config failed validation, falling back to defaults",
       parsedConfig.error,
     );
     config = defaultRoomConfig;
   }
-  createdByUserId = roomRow.createByUserId;
+  createdByUserId = roomRow.createdByUserId;
 
   return { config, createdByUserId };
 }

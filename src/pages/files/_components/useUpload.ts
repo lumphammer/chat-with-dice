@@ -15,6 +15,7 @@ export function useUpload(
 
   const uploadFiles = useCallback(
     async (fileList: FileList | File[]) => {
+      console.log("uploadFiles");
       const files = Array.from(fileList);
       if (files.length === 0) return;
 

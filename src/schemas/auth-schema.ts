@@ -1,29 +1,34 @@
 import { defineRelations, sql } from "drizzle-orm";
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "boolean" })
-    .default(false)
-    .notNull(),
-  image: text("image"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
-  role: text("role"),
-  banned: integer("banned", { mode: "boolean" }).default(false),
-  banReason: text("ban_reason"),
-  banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
-  isAnonymous: integer("is_anonymous", { mode: "boolean" }).default(false),
-  storage_quota_bytes: integer("storage_quota_bytes").default(0).notNull(),
-  storage_used_bytes: integer("storage_used_bytes").default(0).notNull(),
-});
+export const users = sqliteTable(
+  "users",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    emailVerified: integer("email_verified", { mode: "boolean" })
+      .default(false)
+      .notNull(),
+    image: text("image"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    role: text("role"),
+    banned: integer("banned", { mode: "boolean" }).default(false),
+    banReason: text("ban_reason"),
+    banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
+    isAnonymous: integer("is_anonymous", { mode: "boolean" }).default(false),
+    user_data_do_id: text("user_data_do_id"),
+    storage_quota_bytes: integer("storage_quota_bytes").default(0).notNull(),
+    storage_used_bytes: integer("storage_used_bytes").default(0).notNull(),
+  },
+  (table) => [index("users_user_data_do_id_idx").on(table.user_data_do_id)],
+);
 
 export const sessions = sqliteTable(
   "sessions",

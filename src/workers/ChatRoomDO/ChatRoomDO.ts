@@ -75,7 +75,7 @@ export class ChatRoomDO extends DurableObject {
       this.createdByUserId = createdByUserId;
 
       // it's now safe to init the local db
-      this.db = setupDB(ctx, migrations);
+      this.db = setupDB(ctx, migrations, dbSchema);
 
       // and assemble all our helpers etc.
       this.broadcaster = new Broadcaster(ctx);
