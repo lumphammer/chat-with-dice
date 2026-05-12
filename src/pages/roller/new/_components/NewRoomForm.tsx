@@ -32,7 +32,7 @@ export const NewRoomForm = () => {
       setLoading(true);
 
       try {
-        const result = await actions.createChatWithDiceRoom({
+        const result = await actions.rooms.createChatWithDiceRoom({
           roomName: trimmed,
           type: roomType,
         });

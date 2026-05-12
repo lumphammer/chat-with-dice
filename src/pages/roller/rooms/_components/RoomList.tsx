@@ -20,7 +20,7 @@ export const RoomList = () => {
   } = useQuery({
     queryKey: ["myRooms"],
     queryFn: async () => {
-      const result = await actions.getMyRooms();
+      const result = await actions.rooms.getMyRooms();
       if (result.error) throw result.error;
       const data = result.data;
       if (!Array.isArray(data))
