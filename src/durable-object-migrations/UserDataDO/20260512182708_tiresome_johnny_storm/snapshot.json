@@ -1,0 +1,395 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "460f8c0c-9387-41aa-addb-aa67154a6aa7",
+  "prevIds": [
+    "a2ae8d5a-bd22-4c07-b94d-494b955c1e2f"
+  ],
+  "ddl": [
+    {
+      "name": "files",
+      "entityType": "tables"
+    },
+    {
+      "name": "folders",
+      "entityType": "tables"
+    },
+    {
+      "name": "nodes",
+      "entityType": "tables"
+    },
+    {
+      "name": "room_resource_shares",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "files"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "size_bytes",
+      "entityType": "columns",
+      "table": "files"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "0",
+      "generated": null,
+      "name": "is_ready",
+      "entityType": "columns",
+      "table": "files"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "r2_key",
+      "entityType": "columns",
+      "table": "files"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "content_type",
+      "entityType": "columns",
+      "table": "files"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "thumbnail_r_2_key",
+      "entityType": "columns",
+      "table": "files"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "thumbnail_content_type",
+      "entityType": "columns",
+      "table": "files"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "thumbnail_size_bytes",
+      "entityType": "columns",
+      "table": "files"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "folders"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "recursive_size_bytes",
+      "entityType": "columns",
+      "table": "folders"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "nodes"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "nodes"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "parent_folder_id",
+      "entityType": "columns",
+      "table": "nodes"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "CURRENT_TIMESTAMP",
+      "generated": null,
+      "name": "created_time",
+      "entityType": "columns",
+      "table": "nodes"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "deleted_time",
+      "entityType": "columns",
+      "table": "nodes"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "folder_id",
+      "entityType": "columns",
+      "table": "nodes"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "file_id",
+      "entityType": "columns",
+      "table": "nodes"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "room_resource_shares"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "room_id",
+      "entityType": "columns",
+      "table": "room_resource_shares"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "node_id",
+      "entityType": "columns",
+      "table": "room_resource_shares"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "CURRENT_TIMESTAMP",
+      "generated": null,
+      "name": "shared_time",
+      "entityType": "columns",
+      "table": "room_resource_shares"
+    },
+    {
+      "columns": [
+        "parent_folder_id"
+      ],
+      "tableTo": "folders",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_nodes_parent_folder_id_folders_id_fk",
+      "entityType": "fks",
+      "table": "nodes"
+    },
+    {
+      "columns": [
+        "folder_id"
+      ],
+      "tableTo": "folders",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_nodes_folder_id_folders_id_fk",
+      "entityType": "fks",
+      "table": "nodes"
+    },
+    {
+      "columns": [
+        "file_id"
+      ],
+      "tableTo": "files",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_nodes_file_id_files_id_fk",
+      "entityType": "fks",
+      "table": "nodes"
+    },
+    {
+      "columns": [
+        "node_id"
+      ],
+      "tableTo": "nodes",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_room_resource_shares_node_id_nodes_id_fk",
+      "entityType": "fks",
+      "table": "room_resource_shares"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "files_pk",
+      "table": "files",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "folders_pk",
+      "table": "folders",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "nodes_pk",
+      "table": "nodes",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "room_resource_shares_pk",
+      "table": "room_resource_shares",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        {
+          "value": "parent_folder_id",
+          "isExpression": false
+        },
+        {
+          "value": "name",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": "\"nodes\".\"deleted_time\" IS NULL",
+      "origin": "manual",
+      "name": "nodes_parent_name_live",
+      "entityType": "indexes",
+      "table": "nodes"
+    },
+    {
+      "columns": [
+        {
+          "value": "name",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": "\"nodes\".\"parent_folder_id\" IS NULL AND \"nodes\".\"deleted_time\" IS NULL",
+      "origin": "manual",
+      "name": "nodes_root_name_live",
+      "entityType": "indexes",
+      "table": "nodes"
+    },
+    {
+      "columns": [
+        {
+          "value": "room_id",
+          "isExpression": false
+        },
+        {
+          "value": "node_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "room_resource_shares__room_id__node_id_idx",
+      "entityType": "indexes",
+      "table": "room_resource_shares"
+    },
+    {
+      "value": "(\n        (\"file_id\" IS NOT NULL)\n        AND (\"id\" == \"file_id\")\n      )\n      OR (\n        (\"folder_id\" IS NOT NULL)\n        AND (\"id\" == \"folder_id\")\n      )",
+      "name": "id_equals_metadata_fk",
+      "entityType": "checks",
+      "table": "nodes"
+    },
+    {
+      "value": "(\n        \"file_id\" IS NOT NULL\n        AND \"folder_id\" IS NULL\n      )\n      OR (\n        \"file_id\" IS NULL\n        AND \"folder_id\" IS NOT NULL\n      )",
+      "name": "nodes__file_id_or_folder_id",
+      "entityType": "checks",
+      "table": "nodes"
+    }
+  ],
+  "renames": []
+}

@@ -319,6 +319,26 @@ export class UserDataDO extends DurableObject {
     }
   }
 
+  async markFileThumbnailReady(
+    id: string,
+    thumbnailR2Key: string,
+    thumbnailContentType: string,
+    thumbnailSizeBytes: number,
+  ) {
+    const result = await this.db
+      .update(dbSchema.files)
+      .set({
+        thumbnailR2Key,
+        thumbnailContentType,
+        thumbnailSizeBytes,
+      })
+      .where(eq(dbSchema.files.id, id));
+
+    if (result.rowsWritten === 0) {
+      throw new Error("File not found");
+    }
+  }
+
   async renameNode(id: string, newName: string) {
     try {
       const result = await this.db

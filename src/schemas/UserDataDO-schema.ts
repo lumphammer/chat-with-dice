@@ -19,6 +19,9 @@ export const files = snakeCase.table("files", {
   isReady: int().notNull().default(0),
   r2Key: text().notNull(),
   contentType: text().notNull(),
+  thumbnailR2Key: text(),
+  thumbnailContentType: text(),
+  thumbnailSizeBytes: int(),
 });
 
 export const nodes = snakeCase.table(

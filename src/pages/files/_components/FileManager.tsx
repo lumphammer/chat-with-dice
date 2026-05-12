@@ -10,6 +10,8 @@ import { useUpload } from "./useUpload";
 import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+const VIEW_MODE_STORAGE_KEY = "file-manager-view-mode";
+
 export const FileManager = memo(
   ({
     initialNodes,
@@ -32,6 +34,7 @@ export const FileManager = memo(
     const [previewNode, setPreviewNode] = useState<FileNode | null>(
       initialPreview,
     );
+    const [viewMode, setViewMode] = useState<"list" | "grid">("list");
     const [isDragOver, setIsDragOver] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -52,6 +55,21 @@ export const FileManager = memo(
     const { uploading, uploadFiles, dismissError } = useUpload(
       currentFolderId,
       () => refetchNodes(currentFolderId),
+    );
+
+    useEffect(() => {
+      const storedViewMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+      if (storedViewMode === "list" || storedViewMode === "grid") {
+        setViewMode(storedViewMode);
+      }
+    }, []);
+
+    const handleViewModeChange = useCallback(
+      (nextViewMode: "list" | "grid") => {
+        setViewMode(nextViewMode);
+        window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextViewMode);
+      },
+      [],
     );
 
     const folderNodes = useMemo(
@@ -283,6 +301,8 @@ export const FileManager = memo(
             currentFolderId={currentFolderId}
             onFolderCreated={() => refetchNodes(currentFolderId)}
             onFilesSelected={uploadFiles}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
           />
         </div>
 
@@ -297,11 +317,19 @@ export const FileManager = memo(
           uploading.length === 0 ? (
           <EmptyState />
         ) : (
-          <ul className="animate-fadein flex flex-col gap-1">
+          <ul
+            className={
+              viewMode === "grid"
+                ? `animate-fadein grid grid-cols-2 gap-3 sm:grid-cols-3
+                  md:grid-cols-4`
+                : "animate-fadein flex flex-col gap-1"
+            }
+          >
             {folderNodes.map((node) => (
               <FileListItem
                 key={node.id}
                 node={node}
+                variant={viewMode}
                 onClick={() => handleFolderClick(node)}
                 onDeleted={handleDeleted}
                 onRenamed={handleRenamed}
@@ -311,6 +339,7 @@ export const FileManager = memo(
               <FileListItem
                 key={node.id}
                 node={node}
+                variant={viewMode}
                 onClick={() => handleFileClick(node)}
                 onDeleted={handleDeleted}
                 onRenamed={handleRenamed}

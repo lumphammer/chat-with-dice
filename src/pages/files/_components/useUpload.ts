@@ -1,11 +1,69 @@
 import { useCallback, useState } from "react";
 
+const THUMBNAIL_MAX_DIMENSION = 512;
+const THUMBNAIL_QUALITY = 0.82;
+
 export type UploadingFile = {
   localId: string;
   name: string;
   status: "uploading" | "done" | "error";
   errorMessage?: string;
 };
+
+async function generateImageThumbnail(file: File) {
+  if (!file.type.startsWith("image/")) return null;
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch (error) {
+    console.warn("Failed to decode image for thumbnail:", error);
+    return null;
+  }
+
+  try {
+    const scale = Math.min(
+      THUMBNAIL_MAX_DIMENSION / bitmap.width,
+      THUMBNAIL_MAX_DIMENSION / bitmap.height,
+      1,
+    );
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) return null;
+
+    context.drawImage(bitmap, 0, 0, width, height);
+
+    return await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, "image/webp", THUMBNAIL_QUALITY);
+    });
+  } finally {
+    bitmap.close();
+  }
+}
+
+async function uploadThumbnail(fileId: string, thumbnail: Blob) {
+  const response = await fetch(`/api/files/${fileId}/thumbnail`, {
+    method: "POST",
+    headers: {
+      "content-type": "image/webp",
+    },
+    body: thumbnail,
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    const message =
+      (body as { error?: string } | null)?.error ??
+      `Thumbnail upload failed (${response.status})`;
+    throw new Error(message);
+  }
+}
 
 export function useUpload(
   currentFolderId: string | null,
@@ -48,6 +106,16 @@ export function useUpload(
               (body as { error?: string } | null)?.error ??
               `Upload failed (${response.status})`;
             throw new Error(message);
+          }
+
+          const body = (await response.json()) as { id: string };
+          const thumbnail = await generateImageThumbnail(file);
+          if (thumbnail) {
+            try {
+              await uploadThumbnail(body.id, thumbnail);
+            } catch (error) {
+              console.warn("Failed to upload thumbnail:", error);
+            }
           }
 
           return { localId: newEntries[i].localId };
