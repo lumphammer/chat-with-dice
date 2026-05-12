@@ -21,6 +21,8 @@ export const FilePreview = memo(
     if (!node.file) return null;
 
     const isImage = node.file.contentType.startsWith("image/");
+    const isAudio = node.file.contentType.startsWith("audio/");
+    const isVideo = node.file.contentType.startsWith("video/");
     const isPdf = node.file.contentType === "application/pdf";
     const downloadUrl = `/api/files/${node.id}`;
     const Icon = fileTypeIcon(node.file.contentType);
@@ -57,6 +59,40 @@ export const FilePreview = memo(
             <ImagePreview src={downloadUrl} alt={node.name} />
           ) : isPdf ? (
             <PdfPreview src={downloadUrl} title={node.name} />
+          ) : isAudio ? (
+            <div
+              className="bg-base-200 flex min-h-0 flex-1 flex-col items-center
+                justify-center gap-6 rounded p-8"
+            >
+              <Icon
+                size={64}
+                strokeWidth={1}
+                className="text-base-content/50"
+              />
+              {/* oxlint-disable-next-line jsx-a11y/media-has-caption */}
+              <audio
+                controls
+                preload="metadata"
+                src={downloadUrl}
+                className="w-full max-w-xl"
+              >
+                <a href={downloadUrl} download={node.name}>
+                  Download audio
+                </a>
+              </audio>
+            </div>
+          ) : isVideo ? (
+            // oxlint-disable-next-line jsx-a11y/media-has-caption
+            <video
+              controls
+              preload="metadata"
+              src={downloadUrl}
+              className="bg-base-200 min-h-0 flex-1 rounded object-contain"
+            >
+              <a href={downloadUrl} download={node.name}>
+                Download video
+              </a>
+            </video>
           ) : (
             <div
               className="flex flex-1 flex-col items-center justify-center gap-4
