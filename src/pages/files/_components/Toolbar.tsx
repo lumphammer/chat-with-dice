@@ -2,6 +2,11 @@ import { NewFolderDialog } from "./NewFolderDialog";
 import { Grid3X3, List, Upload } from "lucide-react";
 import { memo, useRef } from "react";
 
+type CreatedFolder = {
+  id: string;
+  name: string;
+};
+
 export const Toolbar = memo(
   ({
     currentFolderId,
@@ -11,7 +16,7 @@ export const Toolbar = memo(
     onViewModeChange,
   }: {
     currentFolderId: string | null;
-    onFolderCreated: () => void;
+    onFolderCreated: (folder: CreatedFolder) => void;
     onFilesSelected: (files: FileList) => void;
     viewMode: "list" | "grid";
     onViewModeChange: (viewMode: "list" | "grid") => void;

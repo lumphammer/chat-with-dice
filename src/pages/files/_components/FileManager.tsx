@@ -189,6 +189,22 @@ export const FileManager = memo(
       [breadcrumbs, loadFolder, pushHistoryState],
     );
 
+    const handleFolderCreated = useCallback(
+      (folder: { id: string; name: string }) => {
+        const newBreadcrumbs = [...breadcrumbs, folder];
+        const path =
+          "/files/" +
+          newBreadcrumbs.map((s) => encodeURIComponent(s.name)).join("/");
+        pushHistoryState(path, {
+          folderId: folder.id,
+          breadcrumbs: newBreadcrumbs,
+          previewFileId: null,
+        });
+        void loadFolder(folder.id, newBreadcrumbs);
+      },
+      [breadcrumbs, loadFolder, pushHistoryState],
+    );
+
     const handleFileClick = useCallback(
       (node: FileNode) => {
         const path =
@@ -299,7 +315,7 @@ export const FileManager = memo(
           />
           <Toolbar
             currentFolderId={currentFolderId}
-            onFolderCreated={() => refetchNodes(currentFolderId)}
+            onFolderCreated={handleFolderCreated}
             onFilesSelected={uploadFiles}
             viewMode={viewMode}
             onViewModeChange={handleViewModeChange}

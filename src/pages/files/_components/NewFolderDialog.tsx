@@ -2,13 +2,18 @@ import { actions } from "astro:actions";
 import { FolderPlus } from "lucide-react";
 import { memo, useRef, useState } from "react";
 
+type CreatedFolder = {
+  id: string;
+  name: string;
+};
+
 export const NewFolderDialog = memo(
   ({
     currentFolderId,
     onCreated,
   }: {
     currentFolderId: string | null;
-    onCreated: () => void;
+    onCreated: (folder: CreatedFolder) => void;
   }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [name, setName] = useState("");
@@ -42,7 +47,7 @@ export const NewFolderDialog = memo(
       }
 
       dialogRef.current?.close();
-      onCreated();
+      onCreated(result.data);
     };
 
     return (
