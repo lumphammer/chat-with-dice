@@ -11,6 +11,14 @@ import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const VIEW_MODE_STORAGE_KEY = "file-manager-view-mode";
+type ViewMode = "list" | "grid";
+
+const getStoredViewMode = (): ViewMode => {
+  if (typeof window === "undefined") return "list";
+
+  const storedViewMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+  return storedViewMode === "grid" ? "grid" : "list";
+};
 
 export const FileManager = memo(
   ({
@@ -34,7 +42,7 @@ export const FileManager = memo(
     const [previewNode, setPreviewNode] = useState<FileNode | null>(
       initialPreview,
     );
-    const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+    const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
     const [isDragOver, setIsDragOver] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -57,20 +65,10 @@ export const FileManager = memo(
       () => refetchNodes(currentFolderId),
     );
 
-    useEffect(() => {
-      const storedViewMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-      if (storedViewMode === "list" || storedViewMode === "grid") {
-        setViewMode(storedViewMode);
-      }
+    const handleViewModeChange = useCallback((nextViewMode: ViewMode) => {
+      setViewMode(nextViewMode);
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextViewMode);
     }, []);
-
-    const handleViewModeChange = useCallback(
-      (nextViewMode: "list" | "grid") => {
-        setViewMode(nextViewMode);
-        window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextViewMode);
-      },
-      [],
-    );
 
     const folderNodes = useMemo(
       () =>
