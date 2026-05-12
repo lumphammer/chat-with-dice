@@ -16,13 +16,24 @@ import Layout from "#/layouts/HTML.astro";
             <p class="p text-primary-text">.text-primary-text</p>
             <p class="p text-secondary-text">.text-secondary-text</p>
             <p class="p text-accent-text">.text-accent-text</p>
+            <!-- buttons  -->
             <div class="btn btn-primary">.btn-primary</div>
             <div class="btn btn-secondary">.btn-secondary</div>
             <div class="btn btn-accent">.btn-accent</div>
             <div class="btn btn-neutral">.btn-neutral</div>
-            <div class="btn btn-soft btn-primary">.btn-primary</div>
-            <div class="btn btn-soft btn-secondary">.btn-secondary</div>
-            <div class="btn btn-soft btn-accent">.btn-accent</div>
+            <div class="btn btn-soft btn-primary">.btn-soft.btn-primary</div>
+            <div class="btn btn-soft btn-secondary">
+              .btn-soft.btn-secondary
+            </div>
+            <div class="btn btn-soft btn-accent">.btn-soft.btn-accent</div>
+            <div class="btn btn-soft btn-neutral">.btn-soft.btn-accent</div>
+            <div class="btn btn-outline btn-primary">.btn-outline.btn-primary</div>
+            <div class="btn btn-outline btn-secondary">
+              .btn-outline.btn-secondary
+            </div>
+            <div class="btn btn-outline btn-accent">.btn-outline.btn-accent</div>
+            <div class="btn btn-outline btn-neutral">.btn-outline.btn-accent</div>
+
             {["bg-base-100", "bg-base-200", "bg-base-300"].map((bg) => {
               return (
                 <div class={`m-2 rounded p-2 ${bg} inline-block h-20 w-50`}>

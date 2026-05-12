@@ -21,7 +21,7 @@
   this is just here to make --l-colored-text be a theme variable in tailwind's
   world. The actual value from the Daisy theme will take precedence.
   */
-  --l-colored-text: 0.7;
+  --l-colored-text: 0.9;
 
   /* ---------------------------------------------------------------------------
    * extra colour variables based on daisy
@@ -88,20 +88,26 @@
   }
 }
 
+/*@utility btn {
+  color: var(--btn-color-text);
+  border-color: var(--btn-color);
+}*/
+
 @utility btn-primary {
-  --color-btn-soft: var(--color-primary-text);
+  /*--color-btn-soft: var(--color-primary-text);*/
+  --btn-color-text: var(--color-primary-text);
 }
 
 @utility btn-secondary {
-  --color-btn-soft: var(--color-secondary-text);
+  --btn-color-text: var(--color-secondary-text);
 }
 
 @utility btn-accent {
-  --color-btn-soft: var(--color-accent-text);
+  --btn-color-text: var(--color-accent-text);
 }
 
 @utility btn-soft {
-  color: var(--color-btn-soft);
+  /*color: var(--color-btn-soft);*/
   &:hover {
     color: var(--btn-fg);
   }

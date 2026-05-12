@@ -37,7 +37,7 @@
   --c-base: 0.01;
 
   /* lightness for text based on saturated colours (accent, success, etc) */
-  --l-colored-text: 0.7;
+  --l-colored-text: 0.9;
 
   /* ---------------------------------------------------------------------------
    * Daisy theme variables
@@ -151,7 +151,9 @@
         transparent 0%,
         oklch(from var(--btn-color) l c h / 30%) 100%
       );
-      color: var(--btn-color);
+      color: var(--btn-color-text);
+      border: 1px solid var(--btn-color);
+
       clip-path: polygon(
         0 0,
         100% 0,
@@ -164,6 +166,21 @@
         --btn-color: var(--color-base-content);
         opacity: 50%;
       }
+      &:hover {
+        background: radial-gradient(
+          ellipse at center,
+          transparent 0%,
+          oklch(from var(--btn-color) l c h / 15%) 100%
+        );
+
+        /*scale: 1.1;*/
+      }
+    }
+    .btn-soft {
+      border: none;
+    }
+    .btn-outline {
+      background: none;
     }
     .input,
     .select {

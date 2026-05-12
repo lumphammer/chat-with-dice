@@ -174,7 +174,7 @@ export function SigninForm() {
         <div className="flex flex-col gap-2">
           <button
             type="button"
-            className="btn btn-outline w-full"
+            className="btn btn-neutral w-full"
             onClick={() => handleSocialSignIn("github")}
             disabled={isLoading}
           >
@@ -188,7 +188,7 @@ export function SigninForm() {
 
           <button
             type="button"
-            className="btn btn-outline w-full"
+            className="btn btn-neutral w-full"
             onClick={() => handleSocialSignIn("google")}
             disabled={isLoading}
           >
