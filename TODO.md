@@ -46,6 +46,31 @@
 - [x] Roles/permissions
 - [x] Completely overhaul anonymous login system
 
+## File Manager
+
+- [x] File manager with upload, browse, preview, rename delete.
+- [x] Preview for PDFs, audio, text/markdown.
+- [x] Thumbnails.
+- [x] Grid view (larger thumbnail).
+- [x] Goddammit, user data should be its own DO
+
+### Deferred file manager items
+
+- [ ] Paging for large folders.
+- [ ] Copy.
+- [ ] Move.
+- [ ] Multi-select for bulk operations.
+- [ ] Recursive folder upload from OS.
+- [ ] Replace/overwrite existing files.
+- [ ] Sharing files to rooms (via `roomResourceShares`).
+- [ ] Trash/recycle bin UI for restoring soft-deleted items.
+- [ ] Periodic purge of deleted files.
+- [ ] Quota and usage display.
+- [ ] Quota enforcement.
+- [ ] Quota usage and control in admin.
+- [ ] Search by filename.
+- [ ] Annotation/alt text
+
 ## Capabilities
 
 - [x] Basic rolls
