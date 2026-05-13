@@ -4,19 +4,19 @@ This is a tabletop RPG chat app which allows the users to make dice rolls alongs
 
 ## Tech stack
 
-* Astro 6.0 + react islands
-* Cloudflare workers with Drizzle ORM over a D1 database
-* Cloudflare Durable Objects
+- Astro 6.0 + react islands
+- Cloudflare workers with Drizzle ORM over a D1 database
+- Cloudflare Durable Objects
 
 ## Rules and gotchas
 
-Remember that `React.FormEvent` is deprecated. The deprecation notice is: 
+Remember that `React.FormEvent` is deprecated. The deprecation notice is:
 
 > FormEvent doesn’t actually exist. You probably meant to use ChangeEvent, InputEvent, SubmitEvent, or just SyntheticEvent instead depending on the event type.
 
 Favour keeping component files short by breaking out subcomponents, even if they're only used on one place.
 
-In our `pages/` tree, any page with more than trivial complexity should be expressed as a React component, located nearby under  `src/components` folder.
+In our `pages/` tree, any page with more than trivial complexity should be expressed as a React component, located nearby under `src/components` folder.
 
 Icons in react components should come from lucide-react where possible.
 
@@ -34,15 +34,15 @@ When you've finished your changes, run `pnpm run check`. This will check types, 
 
 ## Commit message style
 
-* All lowercase — never capitalise the first word (exception: all-caps single-word notes like `TODO` or `MISSION`)
-* No trailing punctuation
-* No conventional-commits prefixes (`feat:`, `fix:`, `chore:`, etc.)
-* Single line only — no body, no footer
-* Short and punchy — aim for 3–6 words
-* Start with an action verb: `add`, `fix`, `make`, `rename`, `strip`, `allow`, `start`, `plumb`, etc.
-* Informal, honest language is fine — "first stab at …", "start making …", "work towards …"
-* For multi-step work use phase suffixes: `foo phase 1`, `foo phase 2`
-* Never include issue numbers or PR links
+- All lowercase — never capitalise the first word (exception: all-caps single-word notes like `TODO` or `MISSION`)
+- No trailing punctuation
+- No conventional-commits prefixes (`feat:`, `fix:`, `chore:`, etc.)
+- Single line only — no body, no footer
+- Short and punchy — aim for 3–6 words
+- Start with an action verb: `add`, `fix`, `make`, `rename`, `strip`, `allow`, `start`, `plumb`, etc.
+- Informal, honest language is fine — "first stab at …", "start making …", "work towards …"
+- For multi-step work use phase suffixes: `foo phase 1`, `foo phase 2`
+- Never include issue numbers or PR links
 
 ## Agent skills
 
