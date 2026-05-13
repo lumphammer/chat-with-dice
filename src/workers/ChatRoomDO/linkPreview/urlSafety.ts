@@ -1,5 +1,20 @@
 /* eslint-disable no-magic-numbers */
 
+/*
+ * SSRF threat model
+ * -----------------
+ * These checks reject URLs whose *literal* hostname is a private IP, loopback,
+ * link-local, or IPv4-mapped IPv6 address. They do NOT cover DNS rebinding:
+ * an attacker-controlled hostname can still resolve to a private IP at fetch
+ * time and bypass this layer.
+ *
+ * We rely on Cloudflare Workers' egress to provide that second line of
+ * defence — Workers' outbound `fetch` does not have direct access to private
+ * networks or cloud metadata endpoints, so even a rebound DNS answer cannot
+ * reach those targets from a deployed Worker. The checks here are belt-and-
+ * braces for the obvious cases (and for local dev, where egress is wide open).
+ */
+
 const PRIVATE_IPV4_RANGES: Array<[number, number, number, number]> = [
   [0, 0, 0, 0xff000000],
   [10, 0, 0, 0xff000000],
@@ -53,8 +68,13 @@ function normalizeIpv6Hostname(hostname: string): string {
 
 function isPrivateOrLocalIpv6(hostname: string): boolean {
   const normalized = normalizeIpv6Hostname(hostname);
+  // Anything in the `::/96` block covers IPv4-mapped (`::ffff:a.b.c.d`,
+  // canonicalised to `::ffff:N:M`), IPv4-compatible (`::a.b.c.d`), unspecified
+  // (`::`) and loopback (`::1`). Global unicast addresses start with `2` or
+  // `3`, so rejecting the whole `::` prefix has no legitimate cost and shuts
+  // the IPv4-escape-hatch door.
+  if (normalized.startsWith("::")) return true;
   return (
-    normalized === "::1" ||
     normalized.startsWith("fc") ||
     normalized.startsWith("fd") ||
     normalized.startsWith("fe8") ||
