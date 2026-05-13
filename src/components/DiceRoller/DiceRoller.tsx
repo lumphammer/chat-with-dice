@@ -244,16 +244,18 @@ export const DiceRoller = memo(
                       onScroll={handleScroll}
                       className="absolute inset-0 overflow-auto px-4"
                     >
-                      {messages.map((message) => (
-                        <ChatBubble
-                          key={message.id}
-                          message={message}
-                        ></ChatBubble>
-                      ))}
-                      {messages.length === 0 && (
-                        <div className="font-italic">No messages yet</div>
-                      )}
-                      <div ref={bottomRef} />
+                      <div className={styles.chatMessages}>
+                        {messages.map((message) => (
+                          <ChatBubble
+                            key={message.id}
+                            message={message}
+                          ></ChatBubble>
+                        ))}
+                        {messages.length === 0 && (
+                          <div className="font-italic">No messages yet</div>
+                        )}
+                        <div ref={bottomRef} />
+                      </div>
                     </div>
                     {hasNewMessages && (
                       <button

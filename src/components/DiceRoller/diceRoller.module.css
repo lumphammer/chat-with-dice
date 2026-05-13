@@ -38,6 +38,17 @@
   margin-inline: auto;
 }
 
+.chatMessages {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatMessages::before {
+  content: "";
+  flex: 1 0 auto;
+}
+
 .entryArea {
   grid-area: entry;
   max-width: 56rem;
