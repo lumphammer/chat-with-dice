@@ -51,9 +51,8 @@ function LinkPreviewCard({ preview }: { preview: LinkPreview }) {
       href={preview.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-2 flex max-w-md gap-3 rounded-md border border-black/15
-        bg-white/25 p-2 text-left no-underline transition hover:bg-white/35
-        dark:border-white/15 dark:bg-black/20 dark:hover:bg-black/30"
+      className="border-base-content/15 bg-base-100 hover:bg-base-200 mt-2 flex
+        max-w-md gap-3 rounded-md border p-2 text-left no-underline transition"
     >
       <span className="min-w-0 flex-1">
         {preview.siteName && (
