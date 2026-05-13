@@ -60,7 +60,10 @@ export class MessageJiggler {
       const linkPreview = await fetchLinkPreview(previewUrl);
       if (!linkPreview) return;
 
-      await this.updateMessage({ ...message, linkPreview });
+      // Re-read the message so concurrent edits between send and crawl
+      // aren't clobbered by our stale snapshot.
+      const current = await this.messageRepository.getById(message.id);
+      await this.updateMessage({ ...current, linkPreview });
     } catch {
       // Link previews are best-effort. The original message has already been
       // sent, so crawler failures should never surface as chat errors.
