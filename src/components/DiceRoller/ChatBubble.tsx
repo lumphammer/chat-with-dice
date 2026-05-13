@@ -5,7 +5,10 @@ import {
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import { authClient } from "#/utils/auth-client";
-import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
+import type {
+  ChatMessage,
+  LinkPreview,
+} from "#/validators/webSocketMessageSchemas";
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { RollResultErrorBoundary } from "../RollResultErrorBoundary";
 import { ShowMoreDialog } from "./ShowMoreDialog";
@@ -26,13 +29,56 @@ type ChatBubbleProps = {
 };
 
 export function addLinkTargets(html: string): string {
-  return html.replace(/<a\b([^>]*?)>/gi, (match, attrs) => {
+  return html.replace(/<a\b([^>]*?)>/gi, (_match, attrs) => {
+    let nextAttrs = attrs;
+
     // If a target is already set, leave it alone
-    if (/\btarget\s*=/i.test(attrs)) {
-      return match;
+    if (!/\btarget\s*=/i.test(nextAttrs)) {
+      nextAttrs += ' target="_blank"';
     }
-    return `<a${attrs} target="_new">`;
+
+    if (!/\brel\s*=/i.test(nextAttrs)) {
+      nextAttrs += ' rel="noopener noreferrer"';
+    }
+
+    return `<a${nextAttrs}>`;
   });
+}
+
+function LinkPreviewCard({ preview }: { preview: LinkPreview }) {
+  return (
+    <a
+      href={preview.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="border-base-content/15 bg-base-100 hover:bg-base-200 mt-2 flex
+        max-w-md gap-3 rounded-md border p-2 text-left no-underline transition"
+    >
+      <span className="min-w-0 flex-1">
+        {preview.siteName && (
+          <span className="block truncate text-xs opacity-70">
+            {preview.siteName}
+          </span>
+        )}
+        <span className="line-clamp-2 font-semibold text-current">
+          {preview.title}
+        </span>
+        {preview.description && (
+          <span className="mt-1 line-clamp-2 text-sm opacity-80">
+            {preview.description}
+          </span>
+        )}
+      </span>
+      {preview.imageUrl && (
+        <img
+          src={preview.imageUrl}
+          alt=""
+          loading="lazy"
+          className="h-16 w-16 shrink-0 rounded object-cover"
+        />
+      )}
+    </a>
+  );
 }
 
 export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
@@ -117,6 +163,9 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
               className="prose m-0 line-clamp-3 p-0"
             />
             {showShowMore && <ShowMoreDialog html={html} />}
+            {message.linkPreview && (
+              <LinkPreviewCard preview={message.linkPreview} />
+            )}
           </>
         )}
         <RollResultErrorBoundary>{display}</RollResultErrorBoundary>

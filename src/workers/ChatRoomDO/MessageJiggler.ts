@@ -6,6 +6,8 @@ import {
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "./Broadcaster";
 import type { MessageRepository } from "./MessageRepository";
+import { extractPreviewUrl } from "./linkPreview/extractPreviewUrl";
+import { fetchLinkPreview } from "./linkPreview/fetchLinkPreview";
 import { produce, type Draft } from "immer";
 import type { z } from "zod/v4";
 
@@ -37,15 +39,35 @@ export class MessageJiggler {
       formula: null,
       results: null,
       chat,
+      linkPreview: null,
       userId,
       displayName,
     };
     await this.sendChatMessage(rollerMessage);
+    void this.attachLinkPreview(rollerMessage);
   }
 
   async sendChatMessage(message: ChatMessage): Promise<void> {
     await this.messageRepository.insertMessage(message);
     this.broadcaster.broadcastChatMessage(message);
+  }
+
+  private async attachLinkPreview(message: ChatMessage): Promise<void> {
+    try {
+      const previewUrl = extractPreviewUrl(message.chat);
+      if (!previewUrl) return;
+
+      const linkPreview = await fetchLinkPreview(previewUrl);
+      if (!linkPreview) return;
+
+      // Re-read the message so concurrent edits between send and crawl
+      // aren't clobbered by our stale snapshot.
+      const current = await this.messageRepository.getById(message.id);
+      await this.updateMessage({ ...current, linkPreview });
+    } catch {
+      // Link previews are best-effort. The original message has already been
+      // sent, so crawler failures should never surface as chat errors.
+    }
   }
 
   async modifyMesage<

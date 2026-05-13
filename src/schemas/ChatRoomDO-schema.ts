@@ -19,4 +19,6 @@ export const Messages = snakeCase.table("Messages", {
   results: text({ mode: "json" }),
   /** Chat text */
   chat: text(),
+  /** Metadata for the first previewable URL in the chat text */
+  linkPreview: text({ mode: "json" }),
 });

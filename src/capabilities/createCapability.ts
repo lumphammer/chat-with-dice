@@ -114,6 +114,7 @@ export const createCapability = <
             displayName,
             formula: {},
             id: nanoid(),
+            linkPreview: null,
             results: data ?? {},
             rollType: name,
           }),

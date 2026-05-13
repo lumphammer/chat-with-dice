@@ -16,6 +16,7 @@ import m0014 from './20260316134615_mute_vengeance/migration.sql';
 import m0015 from './20260418104051_worried_magik/migration.sql';
 import m0016 from './20260426092654_gray_bill_hollister/migration.sql';
 import m0017 from './20260509154623_regular_overlord/migration.sql';
+import m0018 from './20260513133146_thin_elektra/migration.sql';
 
   export default {
     migrations: {
@@ -36,7 +37,8 @@ import m0017 from './20260509154623_regular_overlord/migration.sql';
 "20260316134615_mute_vengeance": m0014,
 "20260418104051_worried_magik": m0015,
 "20260426092654_gray_bill_hollister": m0016,
-"20260509154623_regular_overlord": m0017
+"20260509154623_regular_overlord": m0017,
+"20260513133146_thin_elektra": m0018
 }
   }
   

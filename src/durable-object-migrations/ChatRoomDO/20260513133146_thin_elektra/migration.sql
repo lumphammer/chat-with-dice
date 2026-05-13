@@ -1,0 +1,1 @@
+ALTER TABLE `Messages` ADD `link_preview` text;
