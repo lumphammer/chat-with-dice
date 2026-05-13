@@ -1,4 +1,5 @@
 import type { LinkPreview } from "#/validators/webSocketMessageSchemas";
+import { decodeHtmlEntities } from "./decodeHtmlEntities";
 import { extractMetadataFromHtml } from "./extractMetadataFromHtml";
 import { parsePreviewableUrl } from "./urlSafety";
 
@@ -25,7 +26,7 @@ function truncate(
   maxLength: number,
 ): string | undefined {
   if (!value) return undefined;
-  const normalized = value.trim().replace(/\s+/g, " ");
+  const normalized = decodeHtmlEntities(value).trim().replace(/\s+/g, " ");
   return normalized.length > maxLength
     ? `${normalized.slice(0, maxLength - 1)}...`
     : normalized;
@@ -83,7 +84,7 @@ function resolvePreviewImage(
 ): string | undefined {
   if (!imageUrl) return undefined;
   try {
-    const parsed = new URL(imageUrl, pageUrl);
+    const parsed = new URL(decodeHtmlEntities(imageUrl), pageUrl);
     return parsePreviewableUrl(parsed.toString())?.toString();
   } catch {
     return undefined;

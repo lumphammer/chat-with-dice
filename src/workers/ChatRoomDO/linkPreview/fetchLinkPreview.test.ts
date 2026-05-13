@@ -95,4 +95,35 @@ describe("fetchLinkPreview", () => {
       siteName: "Example Site",
     });
   });
+
+  test("decodes HTML entities into plain preview text", async () => {
+    vi.stubGlobal("HTMLRewriter", FakeHtmlRewriter);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        return new Response(
+          `
+          <meta property="og:site_name" content="Example &amp; Co">
+          <meta property="og:title" content="A &quot;quoted&quot; title">
+          <meta property="og:description" content="5 &lt; 10 &amp; still safe">
+          <meta property="og:image" content="/preview.jpg?name=one&amp;size=large">`,
+          {
+            headers: {
+              "content-type": "text/html; charset=utf-8",
+            },
+          },
+        );
+      }),
+    );
+
+    await expect(
+      fetchLinkPreview(new URL("https://example.com/post")),
+    ).resolves.toEqual({
+      url: "https://example.com/post",
+      title: 'A "quoted" title',
+      description: "5 < 10 & still safe",
+      imageUrl: "https://example.com/preview.jpg?name=one&size=large",
+      siteName: "Example & Co",
+    });
+  });
 });
