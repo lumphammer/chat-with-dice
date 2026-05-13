@@ -25,7 +25,7 @@ export type HtmlMetadata = {
 export type CreateHtmlRewriter = () => HtmlRewriterLike;
 
 function defaultCreateHtmlRewriter(): HtmlRewriterLike {
-  return new HTMLRewriter() as HtmlRewriterLike;
+  return new HTMLRewriter();
 }
 
 function normalizeMetaKey(key: string | null): string | null {
