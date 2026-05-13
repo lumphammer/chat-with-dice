@@ -3,6 +3,16 @@ import { z } from "zod/v4";
 
 const USERNAME_MAX_LENGTH = 128;
 
+export const linkPreviewValidator = z.object({
+  url: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  imageUrl: z.string().optional(),
+  siteName: z.string().optional(),
+});
+
+export type LinkPreview = z.infer<typeof linkPreviewValidator>;
+
 /**
  * A restricted type for JSON-serializable data which *must* be an object at the
  * top level.
@@ -50,6 +60,7 @@ function chatMessageValidator<
   formula: z.ZodNullable<TFormulaValidator>;
   results: z.ZodNullable<TResultValidator>;
   chat: z.ZodNullable<z.ZodString>;
+  linkPreview: z.ZodNullable<typeof linkPreviewValidator>;
 }> {
   return z.object({
     /** Primary key */
@@ -68,6 +79,8 @@ function chatMessageValidator<
     results: resultsValidator.nullable(),
     /** Chat text */
     chat: z.string().nullable(),
+    /** Metadata for the first previewable URL in the chat text */
+    linkPreview: linkPreviewValidator.nullable(),
   });
 }
 
