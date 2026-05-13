@@ -1,7 +1,9 @@
 import { ImagePreview } from "./ImagePreview";
 import { PdfPreview } from "./PdfPreview";
+import { TextPreview } from "./TextPreview";
 import { fileTypeIcon } from "./fileTypeIcon";
 import { formatBytes } from "./formatBytes";
+import { isTextPreviewable } from "./textPreviewTypes";
 import type { FileNode } from "./types";
 import { Download, X } from "lucide-react";
 import { memo, useEffect, useRef } from "react";
@@ -24,6 +26,7 @@ export const FilePreview = memo(
     const isAudio = node.file.contentType.startsWith("audio/");
     const isVideo = node.file.contentType.startsWith("video/");
     const isPdf = node.file.contentType === "application/pdf";
+    const isText = isTextPreviewable(node.name, node.file.contentType);
     const downloadUrl = `/api/files/${node.id}`;
     const Icon = fileTypeIcon(node.file.contentType);
 
@@ -59,6 +62,13 @@ export const FilePreview = memo(
             <ImagePreview src={downloadUrl} alt={node.name} />
           ) : isPdf ? (
             <PdfPreview src={downloadUrl} title={node.name} />
+          ) : isText ? (
+            <TextPreview
+              contentType={node.file.contentType}
+              filename={node.name}
+              sizeBytes={node.file.sizeBytes}
+              src={downloadUrl}
+            />
           ) : isAudio ? (
             <div
               className="bg-base-200 flex min-h-0 flex-1 flex-col items-center

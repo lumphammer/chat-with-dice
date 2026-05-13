@@ -100,9 +100,9 @@ To resolve a URL path like `campaigns/maps` to a folder ID, use a recursive CTE 
 
 ## Deferred for later
 
-- [ ] Preview for PDFs, audio, text/markdown.
-- [ ] Thumbnails.
-- [ ] Grid view (larger thumbnail).
+- [x] Preview for PDFs, audio, text/markdown.
+- [x] Thumbnails.
+- [x] Grid view (larger thumbnail).
 - [ ] Copy.
 - [ ] Move.
 - [ ] Multi-select for bulk operations.
