@@ -6,6 +6,7 @@ import type {
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
+import type { FileShareManager } from "#/workers/ChatRoomDO/FileShareManager";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import type { Draft, Patch } from "immer";
 import type { z } from "zod";
@@ -65,6 +66,7 @@ type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
   payload: TPayload;
   userId: string;
   displayName: string;
+  fileShareManager: FileShareManager;
 }) => void | Promise<void>;
 
 /**
@@ -160,6 +162,7 @@ export type AnyCapability = {
     stateRepository: CapabilityStateRepository;
 
     config: unknown;
+    fileShareManager: FileShareManager;
     broadcaster: Broadcaster;
   }) => Promise<ServerMountedCapability | null>;
 };
@@ -181,6 +184,7 @@ export type Capability<
     messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
     config: unknown;
+    fileShareManager: FileShareManager;
     broadcaster: Broadcaster;
   }) => Promise<ServerMountedCapability | null>;
   useMount: () => ClientMountedCapability<TState, TActions>;

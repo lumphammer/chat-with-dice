@@ -36,8 +36,7 @@ When you've finished your changes, run `pnpm run check`. This will check types, 
 
 Database schema migrations are creating by editing the Drizzle schema definition in `src/schemas/*` and then running `pnpm run db:generate:...` (where ... corresponds to the schema you udated.)
 
-Do not write migrations yourself. They are *only* generated. If we need a schema change that generates an impossible migration (e.g. adding a not-null column to a table that already has rows) stop and ask the user how to resolve it.
-
+Do not write migrations yourself. They are _only_ generated. If we need a schema change that generates an impossible migration (e.g. adding a not-null column to a table that already has rows) stop and ask the user how to resolve it.
 
 ## Commit message style
 
@@ -53,7 +52,7 @@ Do not write migrations yourself. They are *only* generated. If we need a schema
 
 ## We are not using TDD
 
-You don't have to write tests for everything. You *can* write tests where the subject is neatly self-contained and you can write tests without having to do mad levels of mocking and faking.
+You don't have to write tests for everything. You _can_ write tests where the subject is neatly self-contained and you can write tests without having to do mad levels of mocking and faking.
 
 ## Agent skills
 

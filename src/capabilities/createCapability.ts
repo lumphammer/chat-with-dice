@@ -9,6 +9,7 @@ import type {
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
+import type { FileShareManager } from "#/workers/ChatRoomDO/FileShareManager";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import type {
   Capability,
@@ -82,6 +83,7 @@ export const createCapability = <
     actionCall,
     userId,
     displayName,
+    fileShareManager,
   }: {
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
@@ -91,6 +93,7 @@ export const createCapability = <
     actionCall: ActionCall;
     broadcaster: Broadcaster;
     displayName: string;
+    fileShareManager: FileShareManager;
   }) => {
     const action = actions[actionCall.actionName];
     if (!action) throw new Error(`Unknown action: ${actionCall.actionName}`);
@@ -106,6 +109,7 @@ export const createCapability = <
         broadcaster,
         userId,
         displayName,
+        fileShareManager,
         sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
           void messageJiggler.sendChatMessage({
             chat: "",
@@ -146,12 +150,14 @@ export const createCapability = <
     doCtx,
     messageJiggler,
     stateRepository,
+    fileShareManager,
   }: {
     broadcaster: Broadcaster;
     config: unknown;
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
+    fileShareManager: FileShareManager;
   }): Promise<ServerMountedCapability | null> => {
     // get config
     const configParseResult = def.configValidator.safeParse(config);
@@ -207,6 +213,7 @@ export const createCapability = <
           broadcaster,
           userId,
           displayName,
+          fileShareManager,
         });
       },
       getInitPayload: () => ({

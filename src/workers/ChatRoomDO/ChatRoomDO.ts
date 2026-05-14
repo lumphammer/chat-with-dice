@@ -13,6 +13,7 @@ import { type ServerMountedCapability } from "../../capabilities/types";
 import { setupDB } from "../utils/setupDB";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
+import { FileShareManager } from "./FileShareManager";
 import { MessageJiggler } from "./MessageJiggler";
 import { MessageRepository } from "./MessageRepository";
 import { defaultRoomConfig } from "./defaultRoomConfig";
@@ -57,6 +58,8 @@ export class ChatRoomDO extends DurableObject {
   private stateRepository!: CapabilityStateRepository;
   private messageJiggler!: MessageJiggler;
   private createdByUserId!: string;
+  private fileShareManager!: FileShareManager;
+  private roomId!: string;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -70,9 +73,11 @@ export class ChatRoomDO extends DurableObject {
     // is a legitimate instantiation before we allow anything else to happen.
     void this.ctx.blockConcurrencyWhile(async () => {
       // load room from d1 or crash out
-      const { config, createdByUserId } = await loadConfigFromD1OrDie(ctx);
+      const { config, createdByUserId, roomId } =
+        await loadConfigFromD1OrDie(ctx);
       this.config = config;
       this.createdByUserId = createdByUserId;
+      this.roomId = roomId;
 
       // it's now safe to init the local db
       this.db = setupDB(ctx, migrations, dbSchema);
@@ -85,6 +90,7 @@ export class ChatRoomDO extends DurableObject {
         this.messageRepository,
         this.broadcaster,
       );
+      this.fileShareManager = new FileShareManager(this.ctx, this.roomId);
 
       // Set up automatic ping/pong responses
       // This keeps connections alive without waking the DO
@@ -374,6 +380,7 @@ export class ChatRoomDO extends DurableObject {
       stateRepository: this.stateRepository,
       config,
       broadcaster: this.broadcaster,
+      fileShareManager: this.fileShareManager,
     });
     if (!mountedCap) {
       logError("Failed to mount", name);

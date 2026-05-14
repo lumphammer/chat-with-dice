@@ -389,4 +389,18 @@ export class UserDataDO extends DurableObject {
       Omit<typeof node, "file"> & { file: Exclude<(typeof node)["file"], null> }
     >;
   }
+
+  async shareNodeWithRoom({
+    nodeId,
+    roomId,
+    chatRoomDurableObjectId,
+  }: {
+    nodeId: string;
+    roomId: string;
+    chatRoomDurableObjectId: string;
+  }) {
+    console.log(
+      `Sharing node ${nodeId} with room ${roomId} (${chatRoomDurableObjectId})`,
+    );
+  }
 }
