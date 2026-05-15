@@ -1,6 +1,7 @@
 import { db as d1 } from "#/db";
 import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
+import type { NodeShareResult } from "../ChatRoomDO/types";
 import { setupDB } from "../utils/setupDB";
 import type { PathResolution } from "./types";
 import { log, logError } from "./utils";
@@ -390,17 +391,105 @@ export class UserDataDO extends DurableObject {
     >;
   }
 
+  /**
+   * Share a node with a room. This gets called by the room DO in question
+   */
   async shareNodeWithRoom({
     nodeId,
     roomId,
-    chatRoomDurableObjectId,
+    roomDurableObjectId,
   }: {
     nodeId: string;
     roomId: string;
-    chatRoomDurableObjectId: string;
-  }) {
-    console.log(
-      `Sharing node ${nodeId} with room ${roomId} (${chatRoomDurableObjectId})`,
-    );
+    roomDurableObjectId: string;
+  }): Promise<NodeShareResult> {
+    // see if there's an existing share
+    const exisitingShare = await this.db.query.roomResourceShares.findFirst({
+      where: {
+        nodeId,
+        roomDurableObjectId,
+      },
+      with: {
+        node: {
+          with: {
+            file: true,
+            folder: true,
+          },
+        },
+      },
+    });
+
+    if (exisitingShare) {
+      return exisitingShare.node.file
+        ? {
+            result: "existing",
+            kind: "file",
+            name: exisitingShare.node.name,
+            r2Key: exisitingShare.node.file?.r2Key,
+          }
+        : {
+            result: "existing",
+            kind: "folder",
+            name: exisitingShare.node.name,
+          };
+    }
+
+    const node = await this.db.query.nodes.findFirst({
+      where: {
+        id: nodeId,
+        deletedTime: {
+          isNull: true,
+        },
+      },
+      with: {
+        file: true,
+        folder: true,
+      },
+    });
+
+    if (!node) {
+      return {
+        result: "error",
+        reason: `Node not found: ${nodeId}`,
+      };
+    }
+
+    await this.db.insert(dbSchema.roomResourceShares).values({
+      id: nanoid(),
+      roomDurableObjectId: roomDurableObjectId,
+      roomId,
+      nodeId,
+    });
+
+    return node.file
+      ? {
+          result: "created",
+          kind: "file",
+          name: node.name,
+          r2Key: node.file?.r2Key,
+        }
+      : {
+          result: "created",
+          kind: "folder",
+          name: node.name,
+        };
+
+    // recursive cte to find out if this node id is already covered by a share
+    // this.db.run(sql`
+    //   WITH RECURSIVE ancestors(node_id) AS (
+    //     SELECT ${nodeId}
+    //     UNION ALL
+    //     SELECT parent_folder_id FROM nodes WHERE folder_id = ${nodeId}
+    //     UNION ALL
+    //     SELECT nodes.parent_folder_id
+    //     FROM ancestors
+    //     JOIN nodes ON nodes.folder_id = ancestors.node_id
+    //     WHERE nodes.parent_folder_id IS NOT NULL
+    //   )
+    //   SELECT ancestors.node_id, room_resource_shares.id
+    //   FROM ancestors
+    //   INNER JOIN room_resource_shares
+    //   ON ancestors.node_id = room_resource_shares.node_id
+    // `);
   }
 }

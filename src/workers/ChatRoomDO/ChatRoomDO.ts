@@ -13,9 +13,9 @@ import { type ServerMountedCapability } from "../../capabilities/types";
 import { setupDB } from "../utils/setupDB";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
-import { FileShareManager } from "./FileShareManager";
 import { MessageJiggler } from "./MessageJiggler";
 import { MessageRepository } from "./MessageRepository";
+import { NodeShareManager } from "./NodeShareManager";
 import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
 import { loadConfigFromD1OrDie } from "./loadConfigFromD1OrDie";
@@ -58,7 +58,7 @@ export class ChatRoomDO extends DurableObject {
   private stateRepository!: CapabilityStateRepository;
   private messageJiggler!: MessageJiggler;
   private createdByUserId!: string;
-  private fileShareManager!: FileShareManager;
+  private nodeShareManager!: NodeShareManager;
   private roomId!: string;
 
   constructor(ctx: DurableObjectState, env: Env) {
@@ -90,7 +90,11 @@ export class ChatRoomDO extends DurableObject {
         this.messageRepository,
         this.broadcaster,
       );
-      this.fileShareManager = new FileShareManager(this.ctx, this.roomId);
+      this.nodeShareManager = new NodeShareManager(
+        this.ctx,
+        this.roomId,
+        this.db,
+      );
 
       // Set up automatic ping/pong responses
       // This keeps connections alive without waking the DO
@@ -380,7 +384,7 @@ export class ChatRoomDO extends DurableObject {
       stateRepository: this.stateRepository,
       config,
       broadcaster: this.broadcaster,
-      fileShareManager: this.fileShareManager,
+      nodeShareManager: this.nodeShareManager,
     });
     if (!mountedCap) {
       logError("Failed to mount", name);

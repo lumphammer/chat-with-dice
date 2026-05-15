@@ -79,7 +79,9 @@ export const roomResourceShares = snakeCase.table(
     id: text().primaryKey(),
     roomId: text().notNull(),
     roomDurableObjectId: text().notNull(),
-    nodeId: text().references(() => nodes.id, { onDelete: "cascade" }),
+    nodeId: text()
+      .notNull()
+      .references(() => nodes.id, { onDelete: "cascade" }),
     sharedTime: int()
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
@@ -129,6 +131,7 @@ export const relations = defineRelations(
       node: r.one.nodes({
         from: r.roomResourceShares.nodeId,
         to: r.nodes.id,
+        optional: false,
       }),
     },
   }),

@@ -1,7 +1,7 @@
 import { createCapability } from "./createCapability";
 import { z } from "zod";
 
-export const filesCapabaility = createCapability({
+export const filesCapability = createCapability({
   name: "files",
   displayName: "Files",
   configValidator: z.object(),
@@ -19,12 +19,18 @@ export const filesCapabaility = createCapability({
         effectfulFn: async ({
           payload: { nodeId },
           userId,
-          fileShareManager,
+          nodeShareManager,
+          broadcaster,
         }) => {
-          const shareResult = fileShareManager.shareUserNodeId({
+          const shareResult = await nodeShareManager.shareUserNodeId({
             userId,
             nodeId,
           });
+
+          if (shareResult.result === "error") {
+            broadcaster.sendErrorToUserId(userId, shareResult.reason);
+            return;
+          }
           console.log(shareResult);
         },
       }),

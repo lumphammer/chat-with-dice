@@ -9,8 +9,8 @@ import type {
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
-import type { FileShareManager } from "#/workers/ChatRoomDO/FileShareManager";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
+import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
 import type {
   Capability,
   CapabilityDefinition,
@@ -83,7 +83,7 @@ export const createCapability = <
     actionCall,
     userId,
     displayName,
-    fileShareManager,
+    nodeShareManager,
   }: {
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
@@ -93,7 +93,7 @@ export const createCapability = <
     actionCall: ActionCall;
     broadcaster: Broadcaster;
     displayName: string;
-    fileShareManager: FileShareManager;
+    nodeShareManager: NodeShareManager;
   }) => {
     const action = actions[actionCall.actionName];
     if (!action) throw new Error(`Unknown action: ${actionCall.actionName}`);
@@ -109,7 +109,7 @@ export const createCapability = <
         broadcaster,
         userId,
         displayName,
-        fileShareManager,
+        nodeShareManager,
         sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
           void messageJiggler.sendChatMessage({
             chat: "",
@@ -150,14 +150,14 @@ export const createCapability = <
     doCtx,
     messageJiggler,
     stateRepository,
-    fileShareManager,
+    nodeShareManager,
   }: {
     broadcaster: Broadcaster;
     config: unknown;
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
-    fileShareManager: FileShareManager;
+    nodeShareManager: NodeShareManager;
   }): Promise<ServerMountedCapability | null> => {
     // get config
     const configParseResult = def.configValidator.safeParse(config);
@@ -213,7 +213,7 @@ export const createCapability = <
           broadcaster,
           userId,
           displayName,
-          fileShareManager,
+          nodeShareManager: nodeShareManager,
         });
       },
       getInitPayload: () => ({
