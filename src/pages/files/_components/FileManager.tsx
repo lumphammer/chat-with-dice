@@ -240,7 +240,7 @@ export const FileManager = memo(
 
     return (
       <div
-        className="relative w-full max-w-2xl"
+        className="relative w-full max-w-2xl min-w-0"
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -248,7 +248,9 @@ export const FileManager = memo(
       >
         {isDragOver && <DropOverlay />}
 
-        <div className="mb-4 flex flex-wrap items-center justify-between">
+        <div
+          className="mb-4 flex min-w-0 flex-wrap items-center justify-between"
+        >
           <Breadcrumbs
             segments={location.breadcrumbs}
             onNavigate={handleBreadcrumbNavigate}
@@ -276,9 +278,9 @@ export const FileManager = memo(
           <ul
             className={
               viewMode === "grid"
-                ? `animate-fadein grid grid-cols-2 gap-3 sm:grid-cols-3
+                ? `animate-fadein grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3
                   md:grid-cols-4`
-                : "animate-fadein flex flex-col gap-1"
+                : "animate-fadein flex min-w-0 flex-col gap-1"
             }
           >
             {folderNodes.map((node) => (

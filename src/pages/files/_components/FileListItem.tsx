@@ -166,8 +166,8 @@ export const FileListItem = memo(
 
     return (
       <li
-        className="hover:bg-base-200 flex items-center gap-3 rounded-lg px-3
-          py-2 transition-colors"
+        className="hover:bg-base-200 flex min-w-0 items-center gap-3 rounded-lg
+          px-3 py-2 transition-colors"
       >
         <button
           type="button"
@@ -210,7 +210,7 @@ export const FileListItem = memo(
                 )}
               </div>
             ) : (
-              <span className="truncate">{node.name}</span>
+              <span className="block truncate">{node.name}</span>
             )}
           </div>
           {metadata && (

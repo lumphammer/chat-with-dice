@@ -24,23 +24,32 @@ export const SidebarFiles = memo(() => {
   return (
     <SidebarPanel title="Files" isSaving={capInfo.patches.length > 0}>
       <Tabs.Root
-        className="tabs tabs-border"
-        defaultValue={"shared"}
+        className="absolute inset-0 flex flex-col overflow-hidden"
+        defaultValue={"mine"}
         orientation="horizontal"
         // asChild
       >
         <Tabs.List className="tabs tabs-lift w-full">
-          <Tabs.Trigger className="tab aria-selected:tab-active" value="shared">
-            Shared
+          <Tabs.Trigger
+            className="tab aria-selected:tab-active flex-1 basis-0"
+            value="shared"
+          >
+            Shared with Room
           </Tabs.Trigger>
-          <Tabs.Trigger className="tab aria-selected:tab-active" value="mine">
-            Mine
+          <Tabs.Trigger
+            className="tab aria-selected:tab-active flex-1 basis-0"
+            value="mine"
+          >
+            My Files
           </Tabs.Trigger>
         </Tabs.List>
-        <Tabs.Content className="" value="shared">
+        <Tabs.Content
+          className="relative flex-1 overflow-y-auto"
+          value="shared"
+        >
           Shared files
         </Tabs.Content>
-        <Tabs.Content className="" value="mine">
+        <Tabs.Content className="relative flex-1 overflow-y-auto" value="mine">
           <FileManager
             location={fileLocation}
             onLocationChange={setFileLocation}
