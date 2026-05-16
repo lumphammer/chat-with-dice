@@ -175,32 +175,24 @@ export const Sidebar = memo(() => {
                     <Tabs.Content
                       key={`${name}.${key}`}
                       value={`${name}.${key}`}
-                      className={styles.tabContent}
+                      className={styles.contentDrawer}
                     >
-                      <div className={styles.tabContentInner}>
-                        <SidebarComponent />
-                      </div>
+                      <SidebarComponent />
                     </Tabs.Content>
                   )
                 );
               });
             })}
             {isOwner && (
-              <Tabs.Content value="config" className={styles.tabContent}>
-                <div className={styles.tabContentInner}>
-                  <Config />
-                </div>
+              <Tabs.Content value="config" className={styles.contentDrawer}>
+                <Config />
               </Tabs.Content>
             )}
-            <Tabs.Content value="help" className={styles.tabContent}>
-              <div className={styles.tabContentInner}>
-                <Help />
-              </div>
+            <Tabs.Content value="help" className={styles.contentDrawer}>
+              <Help />
             </Tabs.Content>
-            <Tabs.Content value="usersOnline" className={styles.tabContent}>
-              <div className={styles.tabContentInner}>
-                <UsersOnline />
-              </div>
+            <Tabs.Content value="usersOnline" className={styles.contentDrawer}>
+              <UsersOnline />
             </Tabs.Content>
           </section>
         </aside>

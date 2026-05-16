@@ -16,3 +16,21 @@ export const sessionAttachmentSchema = z.object({
 export type SessionAttachment = z.infer<typeof sessionAttachmentSchema>;
 
 export type DBHandle = DrizzleSqliteDODatabase<typeof dbSchema>;
+
+export type NodeShareResult =
+  | {
+      result: "error";
+      reason: string;
+    }
+  | ({
+      result: "existing" | "created";
+      name: string;
+    } & (
+      | {
+          kind: "file";
+          r2Key: string;
+        }
+      | {
+          kind: "folder";
+        }
+    ));

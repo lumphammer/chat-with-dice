@@ -1,17 +1,23 @@
-import { Breadcrumbs, type BreadcrumbSegment } from "./Breadcrumbs";
+import { Breadcrumbs } from "./Breadcrumbs";
 import { DropOverlay } from "./DropOverlay";
 import { EmptyState } from "./EmptyState";
 import { FileListItem } from "./FileListItem";
 import { FilePreview } from "./FilePreview";
 import { Toolbar } from "./Toolbar";
 import { UploadingList } from "./UploadingList";
-import type { FileNode } from "./types";
+import type { BreadcrumbSegment, FileManagerLocation, FileNode } from "./types";
 import { useUpload } from "./useUpload";
 import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const VIEW_MODE_STORAGE_KEY = "file-manager-view-mode";
 type ViewMode = "list" | "grid";
+
+export type FileManagerProps = {
+  initialNodes?: FileNode[];
+  location: FileManagerLocation;
+  onLocationChange: (location: FileManagerLocation) => void;
+};
 
 const getStoredViewMode = (): ViewMode => {
   if (typeof window === "undefined") return "list";
@@ -21,48 +27,58 @@ const getStoredViewMode = (): ViewMode => {
 };
 
 export const FileManager = memo(
-  ({
-    initialNodes,
-    initialFolderId = null,
-    initialBreadcrumbs = [],
-    initialPreviewFileId = null,
-  }: {
-    initialNodes: FileNode[];
-    initialFolderId?: string | null;
-    initialBreadcrumbs?: BreadcrumbSegment[];
-    initialPreviewFileId?: string | null;
-  }) => {
-    const [nodes, setNodes] = useState(initialNodes);
-    const [currentFolderId, setCurrentFolderId] = useState(initialFolderId);
-    const [breadcrumbs, setBreadcrumbs] = useState(initialBreadcrumbs);
-
-    const initialPreview = initialPreviewFileId
-      ? (initialNodes.find((n) => n.id === initialPreviewFileId) ?? null)
-      : null;
-    const [previewNode, setPreviewNode] = useState<FileNode | null>(
-      initialPreview,
-    );
+  ({ initialNodes, location, onLocationChange }: FileManagerProps) => {
+    const [nodes, setNodes] = useState<FileNode[]>(() => initialNodes ?? []);
     const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
     const [isDragOver, setIsDragOver] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(initialNodes === undefined);
 
     // monotonic counter to discard stale responses from earlier navigations
     const navigationIdRef = useRef(0);
+    const shouldSkipInitialFetch = useRef(initialNodes !== undefined);
 
-    const refetchNodes = useCallback(async (folderId: string | null) => {
-      const requestId = navigationIdRef.current;
-      const result = await actions.files.getNodes({ folderId });
-      if (requestId !== navigationIdRef.current) return; // stale
-      if (result.error) {
-        console.error("Failed to fetch nodes:", result.error);
+    const fetchNodes = useCallback(
+      async (folderId: string | null, requestId: number) => {
+        const result = await actions.files.getNodes({ folderId });
+        if (requestId !== navigationIdRef.current) return false;
+        if (result.error) {
+          console.error("Failed to fetch nodes:", result.error);
+          return true;
+        }
+        setNodes(result.data);
+        return true;
+      },
+      [],
+    );
+
+    const refetchNodes = useCallback(
+      async (folderId: string | null) => {
+        const requestId = navigationIdRef.current;
+        await fetchNodes(folderId, requestId);
+      },
+      [fetchNodes],
+    );
+
+    useEffect(() => {
+      if (shouldSkipInitialFetch.current) {
+        shouldSkipInitialFetch.current = false;
         return;
       }
-      setNodes(result.data);
-    }, []);
+
+      const requestId = ++navigationIdRef.current;
+      setIsLoading(true);
+
+      void (async () => {
+        const isCurrent = await fetchNodes(location.folderId, requestId);
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      })();
+    }, [fetchNodes, location.folderId]);
 
     const { uploading, uploadFiles, dismissError } = useUpload(
-      currentFolderId,
-      () => refetchNodes(currentFolderId),
+      location.folderId,
+      () => refetchNodes(location.folderId),
     );
 
     const handleViewModeChange = useCallback((nextViewMode: ViewMode) => {
@@ -86,158 +102,76 @@ export const FileManager = memo(
       [nodes],
     );
 
-    // history state shape stored with each pushState/replaceState
-    type HistoryState = {
-      folderId: string | null;
-      breadcrumbs: BreadcrumbSegment[];
-      previewFileId: string | null;
-    };
-
-    const pushHistoryState = useCallback(
-      (path: string, state: HistoryState) => {
-        window.history.pushState(state, "", path);
-      },
-      [],
+    const previewNode = useMemo(
+      () =>
+        location.previewFileId
+          ? (nodes.find((node) => node.id === location.previewFileId) ?? null)
+          : null,
+      [location.previewFileId, nodes],
     );
-
-    // load a folder's contents and update React state (no history manipulation)
-    const loadFolder = useCallback(
-      async (folderId: string | null, newBreadcrumbs: BreadcrumbSegment[]) => {
-        const requestId = ++navigationIdRef.current;
-        setIsLoading(true);
-        setPreviewNode(null);
-        setBreadcrumbs(newBreadcrumbs);
-        setCurrentFolderId(folderId);
-
-        await refetchNodes(folderId);
-        if (requestId === navigationIdRef.current) {
-          setIsLoading(false);
-        }
-      },
-      [refetchNodes],
-    );
-
-    // set initial history state so back button has something to restore
-    const hasSetInitialState = useRef(false);
-    useEffect(() => {
-      if (hasSetInitialState.current) return;
-      hasSetInitialState.current = true;
-
-      const state: HistoryState = {
-        folderId: initialFolderId,
-        breadcrumbs: initialBreadcrumbs,
-        previewFileId: initialPreviewFileId,
-      };
-      window.history.replaceState(state, "", window.location.pathname);
-    }, [initialFolderId, initialBreadcrumbs, initialPreviewFileId]);
-
-    // handle browser back/forward
-    useEffect(() => {
-      const handlePopState = (e: PopStateEvent) => {
-        const state = e.state as HistoryState | null;
-        if (!state) {
-          window.location.reload();
-          return;
-        }
-
-        setBreadcrumbs(state.breadcrumbs);
-        setCurrentFolderId(state.folderId);
-
-        const requestId = ++navigationIdRef.current;
-        void (async () => {
-          const result = await actions.files.getNodes({
-            folderId: state.folderId,
-          });
-          if (requestId !== navigationIdRef.current) return;
-          if (result.error) {
-            console.error("Failed to fetch nodes:", result.error);
-            return;
-          }
-          setNodes(result.data);
-
-          if (state.previewFileId) {
-            const found = result.data.find((n) => n.id === state.previewFileId);
-            setPreviewNode(found ?? null);
-          } else {
-            setPreviewNode(null);
-          }
-        })();
-      };
-
-      window.addEventListener("popstate", handlePopState);
-      return () => window.removeEventListener("popstate", handlePopState);
-    }, []);
 
     const handleFolderClick = useCallback(
       (node: FileNode) => {
-        const newBreadcrumbs = [
-          ...breadcrumbs,
-          { id: node.id, name: node.name },
-        ];
-        const path =
-          "/files/" +
-          newBreadcrumbs.map((s) => encodeURIComponent(s.name)).join("/");
-        pushHistoryState(path, {
+        onLocationChange({
           folderId: node.id,
-          breadcrumbs: newBreadcrumbs,
+          breadcrumbs: [
+            ...location.breadcrumbs,
+            { id: node.id, name: node.name },
+          ],
           previewFileId: null,
+          previewFileName: null,
         });
-        void loadFolder(node.id, newBreadcrumbs);
       },
-      [breadcrumbs, loadFolder, pushHistoryState],
+      [location.breadcrumbs, onLocationChange],
     );
 
     const handleFolderCreated = useCallback(
       (folder: { id: string; name: string }) => {
-        const newBreadcrumbs = [...breadcrumbs, folder];
-        const path =
-          "/files/" +
-          newBreadcrumbs.map((s) => encodeURIComponent(s.name)).join("/");
-        pushHistoryState(path, {
+        onLocationChange({
           folderId: folder.id,
-          breadcrumbs: newBreadcrumbs,
+          breadcrumbs: [...location.breadcrumbs, folder],
           previewFileId: null,
+          previewFileName: null,
         });
-        void loadFolder(folder.id, newBreadcrumbs);
       },
-      [breadcrumbs, loadFolder, pushHistoryState],
+      [location.breadcrumbs, onLocationChange],
     );
 
     const handleFileClick = useCallback(
       (node: FileNode) => {
-        const path =
-          "/files/" +
-          [
-            ...breadcrumbs.map((s) => encodeURIComponent(s.name)),
-            encodeURIComponent(node.name),
-          ].join("/");
-        pushHistoryState(path, {
-          folderId: currentFolderId,
-          breadcrumbs,
+        onLocationChange({
+          folderId: location.folderId,
+          breadcrumbs: location.breadcrumbs,
           previewFileId: node.id,
+          previewFileName: node.name,
         });
-        setPreviewNode(node);
       },
-      [breadcrumbs, currentFolderId, pushHistoryState],
+      [location, onLocationChange],
     );
 
     const handleClosePreview = useCallback(() => {
-      const path =
-        breadcrumbs.length > 0
-          ? "/files/" +
-            breadcrumbs.map((s) => encodeURIComponent(s.name)).join("/")
-          : "/files";
-      pushHistoryState(path, {
-        folderId: currentFolderId,
-        breadcrumbs,
+      onLocationChange({
+        folderId: location.folderId,
+        breadcrumbs: location.breadcrumbs,
         previewFileId: null,
+        previewFileName: null,
       });
-      setPreviewNode(null);
-    }, [breadcrumbs, currentFolderId, pushHistoryState]);
+    }, [location, onLocationChange]);
 
-    const handleDeleted = useCallback((nodeId: string) => {
-      setNodes((prev) => prev.filter((n) => n.id !== nodeId));
-    }, []);
+    const handleDeleted = useCallback(
+      (nodeId: string) => {
+        setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+        if (nodeId === location.previewFileId) {
+          onLocationChange({
+            folderId: location.folderId,
+            breadcrumbs: location.breadcrumbs,
+            previewFileId: null,
+            previewFileName: null,
+          });
+        }
+      },
+      [location, onLocationChange],
+    );
 
     const handleRenamed = useCallback((nodeId: string, newName: string) => {
       setNodes((prev) =>
@@ -246,49 +180,57 @@ export const FileManager = memo(
     }, []);
 
     const handleBreadcrumbNavigate = useCallback(
-      (folderId: string | null, path: string) => {
-        let newBreadcrumbs: BreadcrumbSegment[];
+      (folderId: string | null) => {
+        let breadcrumbs: BreadcrumbSegment[];
         if (folderId === null) {
-          newBreadcrumbs = [];
+          breadcrumbs = [];
         } else {
-          const index = breadcrumbs.findIndex((s) => s.id === folderId);
-          newBreadcrumbs =
-            index !== -1 ? breadcrumbs.slice(0, index + 1) : breadcrumbs;
+          const index = location.breadcrumbs.findIndex(
+            (segment) => segment.id === folderId,
+          );
+          breadcrumbs =
+            index !== -1
+              ? location.breadcrumbs.slice(0, index + 1)
+              : location.breadcrumbs;
         }
-        pushHistoryState(path, {
+        onLocationChange({
           folderId,
-          breadcrumbs: newBreadcrumbs,
+          breadcrumbs,
           previewFileId: null,
+          previewFileName: null,
         });
-        void loadFolder(folderId, newBreadcrumbs);
       },
-      [breadcrumbs, loadFolder, pushHistoryState],
+      [location.breadcrumbs, onLocationChange],
     );
 
-    // drag and drop handlers
-    const handleDragEnter = useCallback((e: React.DragEvent) => {
-      e.preventDefault();
-      const hasFiles = [...e.dataTransfer.types].includes("Files");
+    const handleDragEnter = useCallback((event: React.DragEvent) => {
+      event.preventDefault();
+      const hasFiles = [...event.dataTransfer.types].includes("Files");
       if (hasFiles) {
         setIsDragOver(true);
       }
     }, []);
 
-    const handleDragOver = useCallback((e: React.DragEvent) => {
-      e.preventDefault();
+    const handleDragOver = useCallback((event: React.DragEvent) => {
+      event.preventDefault();
     }, []);
 
-    const handleDragLeave = useCallback((e: React.DragEvent) => {
-      // only hide overlay when leaving the container itself
-      if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    const handleDragLeave = useCallback((event: React.DragEvent) => {
+      const relatedTarget = event.relatedTarget;
+      if (
+        relatedTarget instanceof Node &&
+        event.currentTarget.contains(relatedTarget)
+      ) {
+        return;
+      }
       setIsDragOver(false);
     }, []);
 
     const handleDrop = useCallback(
-      (e: React.DragEvent) => {
-        e.preventDefault();
+      (event: React.DragEvent) => {
+        event.preventDefault();
         setIsDragOver(false);
-        const files = e.dataTransfer.files;
+        const files = event.dataTransfer.files;
         if (files.length > 0) {
           void uploadFiles(files);
         }
@@ -298,7 +240,7 @@ export const FileManager = memo(
 
     return (
       <div
-        className="relative w-full max-w-2xl"
+        className="relative w-full max-w-2xl min-w-0"
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -306,13 +248,15 @@ export const FileManager = memo(
       >
         {isDragOver && <DropOverlay />}
 
-        <div className="mb-4 flex flex-wrap items-center justify-between">
+        <div
+          className="mb-4 flex min-w-0 flex-wrap items-center justify-between"
+        >
           <Breadcrumbs
-            segments={breadcrumbs}
+            segments={location.breadcrumbs}
             onNavigate={handleBreadcrumbNavigate}
           />
           <Toolbar
-            currentFolderId={currentFolderId}
+            currentFolderId={location.folderId}
             onFolderCreated={handleFolderCreated}
             onFilesSelected={uploadFiles}
             viewMode={viewMode}
@@ -334,9 +278,9 @@ export const FileManager = memo(
           <ul
             className={
               viewMode === "grid"
-                ? `animate-fadein grid grid-cols-2 gap-3 sm:grid-cols-3
+                ? `animate-fadein grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3
                   md:grid-cols-4`
-                : "animate-fadein flex flex-col gap-1"
+                : "animate-fadein flex min-w-0 flex-col gap-1"
             }
           >
             {folderNodes.map((node) => (

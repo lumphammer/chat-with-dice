@@ -1,3 +1,4 @@
+import { SidebarFiles } from "#/components/capabilityComponents/Files/SidebarFiles";
 import { SidebarAdversaries } from "#/components/capabilityComponents/SidebarAdversaries/SidebarAdversaries";
 import { SidebarCounter } from "#/components/capabilityComponents/SidebarCounter";
 import { LaserFeelingsResultDisplay } from "#/components/capabilityComponents/SidebarLaserFeelings/LaserFeelingsResultDisplay";
@@ -8,11 +9,12 @@ import { SidebarRoll } from "#/components/capabilityComponents/SidebarRoll/Sideb
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { adversariesCapability } from "./adversariesCapability";
 import { counterCapability } from "./counterCapability";
+import { filesCapability } from "./filesCapability";
 import { laserFeelingsCapability } from "./laserFeelingsCapability";
 import { objectivesCapability } from "./objectivesCapability";
 import { rollCapability } from "./rollCapability";
 import type { AnyCapability } from "./types";
-import { Check, Dices, SquarePlus, Swords, Zap } from "lucide-react";
+import { Check, Dices, SquarePlus, Swords, Zap, Folder } from "lucide-react";
 import type { ComponentType } from "react";
 
 type CapabilityInfo = {
@@ -37,7 +39,9 @@ const capabilityNames = [
   "adversaries",
   "roll",
   "laserfeelings",
+  "files",
 ] as const;
+
 export type CapabilityName = (typeof capabilityNames)[number];
 
 export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
@@ -92,6 +96,16 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
       },
     ],
     ChatDisplayComponent: LaserFeelingsResultDisplay,
+  },
+  files: {
+    capability: filesCapability,
+    sidebarInfos: [
+      {
+        key: "files",
+        SidebarComponent: SidebarFiles,
+        IconComponent: Folder,
+      },
+    ],
   },
 };
 

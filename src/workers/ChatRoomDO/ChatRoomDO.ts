@@ -15,6 +15,7 @@ import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
 import { MessageJiggler } from "./MessageJiggler";
 import { MessageRepository } from "./MessageRepository";
+import { NodeShareManager } from "./NodeShareManager";
 import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
 import { loadConfigFromD1OrDie } from "./loadConfigFromD1OrDie";
@@ -57,6 +58,8 @@ export class ChatRoomDO extends DurableObject {
   private stateRepository!: CapabilityStateRepository;
   private messageJiggler!: MessageJiggler;
   private createdByUserId!: string;
+  private nodeShareManager!: NodeShareManager;
+  private roomId!: string;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -70,9 +73,11 @@ export class ChatRoomDO extends DurableObject {
     // is a legitimate instantiation before we allow anything else to happen.
     void this.ctx.blockConcurrencyWhile(async () => {
       // load room from d1 or crash out
-      const { config, createdByUserId } = await loadConfigFromD1OrDie(ctx);
+      const { config, createdByUserId, roomId } =
+        await loadConfigFromD1OrDie(ctx);
       this.config = config;
       this.createdByUserId = createdByUserId;
+      this.roomId = roomId;
 
       // it's now safe to init the local db
       this.db = setupDB(ctx, migrations, dbSchema);
@@ -84,6 +89,11 @@ export class ChatRoomDO extends DurableObject {
       this.messageJiggler = new MessageJiggler(
         this.messageRepository,
         this.broadcaster,
+      );
+      this.nodeShareManager = new NodeShareManager(
+        this.ctx,
+        this.roomId,
+        this.db,
       );
 
       // Set up automatic ping/pong responses
@@ -374,6 +384,7 @@ export class ChatRoomDO extends DurableObject {
       stateRepository: this.stateRepository,
       config,
       broadcaster: this.broadcaster,
+      nodeShareManager: this.nodeShareManager,
     });
     if (!mountedCap) {
       logError("Failed to mount", name);

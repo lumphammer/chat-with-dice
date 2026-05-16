@@ -1,7 +1,7 @@
 import { transform as svgr } from "@svgr/core";
 import { readFile } from "node:fs/promises";
 import { type Config as SvgoConfig, optimize } from "svgo";
-import { type Plugin, transformWithEsbuild } from "vite";
+import { type Plugin, transformWithOxc } from "vite";
 
 const { default: svgrJsxPlugin } = await import("@svgr/plugin-jsx");
 
@@ -86,9 +86,8 @@ export function reactSvgPlugin(): Plugin {
           },
         },
       );
-      const transformResult = await transformWithEsbuild(jsxCode, id, {
-        loader: "jsx",
-        jsx: "automatic",
+      const transformResult = await transformWithOxc(jsxCode, id, {
+        lang: "jsx",
       });
 
       return {

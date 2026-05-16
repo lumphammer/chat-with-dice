@@ -22,3 +22,14 @@ export const Messages = snakeCase.table("Messages", {
   /** Metadata for the first previewable URL in the chat text */
   linkPreview: text({ mode: "json" }),
 });
+
+export const SharedNodes = snakeCase.table("shared_nodes", {
+  id: text()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text().notNull(),
+  // roomId: text().notNull(),
+  nodeId: text().notNull(),
+  kind: text({ enum: ["file", "folder"] }).notNull(),
+  r2Key: text(),
+});
