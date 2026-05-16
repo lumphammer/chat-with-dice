@@ -3,7 +3,7 @@ import { db } from "#/db";
 import Layout from "#/layouts/Layout.astro";
 import { users } from "#/schemas/coreD1-schema";
 import { env } from "cloudflare:workers";
-import { FileManager } from "./_components/FileManager";
+import { StandaloneFileManager } from "./_components/StandaloneFileManager";
 
 export const prerender = false;
 
@@ -54,14 +54,21 @@ const initialNodes = await userDataDO.getNodes(folderId ?? undefined);
 // if the path resolved to a file, we need to find the file node in the list
 // so the client can immediately open the preview
 const previewFileId = resolution.kind === "file" ? resolution.fileNodeId : null;
+const previewFileName =
+  previewFileId === null
+    ? null
+    : (initialNodes.find((node) => node.id === previewFileId)?.name ?? null);
 ---
 
 <Layout title="Files" class="flex justify-center p-8">
-  <FileManager
+  <StandaloneFileManager
     client:only="react"
     initialNodes={initialNodes}
-    initialFolderId={folderId}
-    initialBreadcrumbs={breadcrumbs}
-    initialPreviewFileId={previewFileId}
+    initialLocation={{
+      folderId,
+      breadcrumbs,
+      previewFileId,
+      previewFileName,
+    }}
   />
 </Layout>

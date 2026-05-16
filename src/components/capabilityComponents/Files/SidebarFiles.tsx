@@ -1,13 +1,21 @@
 import { filesCapability } from "#/capabilities/filesCapability";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { FileManager } from "#/pages/files/_components/FileManager";
+import type { FileManagerLocation } from "#/pages/files/_components/types";
 import { Tabs } from "@ark-ui/react/tabs";
-import { memo } from "react";
+import { memo, useState } from "react";
 
-const emptyArray: any[] = [];
+const createRootLocation = (): FileManagerLocation => ({
+  folderId: null,
+  breadcrumbs: [],
+  previewFileId: null,
+  previewFileName: null,
+});
 
 export const SidebarFiles = memo(() => {
   const capInfo = filesCapability.useMount();
+  const [fileLocation, setFileLocation] =
+    useState<FileManagerLocation>(createRootLocation);
 
   if (!capInfo.initialised) {
     return "Loading...";
@@ -33,7 +41,10 @@ export const SidebarFiles = memo(() => {
           Shared files
         </Tabs.Content>
         <Tabs.Content className="" value="mine">
-          <FileManager initialNodes={emptyArray} />
+          <FileManager
+            location={fileLocation}
+            onLocationChange={setFileLocation}
+          />
         </Tabs.Content>
       </Tabs.Root>
     </SidebarPanel>

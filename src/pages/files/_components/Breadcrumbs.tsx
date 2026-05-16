@@ -1,10 +1,6 @@
+import type { BreadcrumbSegment } from "./types";
 import { Home } from "lucide-react";
 import { memo } from "react";
-
-export type BreadcrumbSegment = {
-  id: string;
-  name: string;
-};
 
 export const Breadcrumbs = memo(
   ({
@@ -12,7 +8,7 @@ export const Breadcrumbs = memo(
     onNavigate,
   }: {
     segments: BreadcrumbSegment[];
-    onNavigate: (folderId: string | null, path: string) => void;
+    onNavigate: (folderId: string | null) => void;
   }) => {
     return (
       <nav className="breadcrumbs text-sm">
@@ -20,19 +16,13 @@ export const Breadcrumbs = memo(
           <li>
             <button
               className="btn btn-ghost btn-sm gap-1 px-0"
-              onClick={() => onNavigate(null, "/files")}
+              onClick={() => onNavigate(null)}
             >
               <Home size={14} />
               Files
             </button>
           </li>
           {segments.map((segment, i) => {
-            const path =
-              "/files/" +
-              segments
-                .slice(0, i + 1)
-                .map((s) => encodeURIComponent(s.name))
-                .join("/");
             const isLast = i === segments.length - 1;
 
             return (
@@ -44,7 +34,7 @@ export const Breadcrumbs = memo(
                 ) : (
                   <button
                     className="btn btn-ghost btn-sm px-0"
-                    onClick={() => onNavigate(segment.id, path)}
+                    onClick={() => onNavigate(segment.id)}
                   >
                     {segment.name}
                   </button>
