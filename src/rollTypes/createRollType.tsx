@@ -5,7 +5,7 @@ import type {
 } from "#/validators/webSocketMessageSchemas";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import { useCallback, useEffect, type ComponentType } from "react";
-import type { z } from "zod";
+import type * as z from "zod";
 
 export type RollInputComponent<TFormula extends JsonData> =
   React.ComponentType<{

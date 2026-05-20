@@ -1,7 +1,9 @@
 import { KebabMenu } from "./KebabMenu";
 import { fileTypeIcon } from "./fileTypeIcon";
+import { buildFileUrl } from "./fileUrl";
 import { formatBytes } from "./formatBytes";
 import type { FileNode } from "./types";
+import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
 import { Folder } from "lucide-react";
 import { memo, useRef, useState } from "react";
@@ -13,24 +15,40 @@ export const FileListItem = memo(
     onDeleted,
     onRenamed,
     variant = "list",
+    ownerUserId,
+    roomId,
+    readOnly = false,
   }: {
     node: FileNode;
     onClick: () => void;
     onDeleted: (nodeId: string) => void;
     onRenamed: (nodeId: string, newName: string) => void;
     variant?: "list" | "grid";
+    ownerUserId?: string;
+    roomId?: string;
+    readOnly?: boolean;
   }) => {
     const [isRenaming, setIsRenaming] = useState(false);
     const [renameValue, setRenameValue] = useState(node.name);
     const [renameError, setRenameError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const {
+      canShareWithRoom,
+      shareWithRoom,
+      canUnshareFromRoom,
+      unshareFromRoom,
+      isSharedWithRoom,
+    } = useShareWithRoom(readOnly ? null : node.id);
 
     const isFolder = !!node.folder;
     const Icon = isFolder
       ? Folder
       : fileTypeIcon(node.file?.contentType ?? "application/octet-stream");
     const thumbnailUrl = node.file?.thumbnailR2Key
-      ? `/api/files/${node.id}/thumbnail`
+      ? buildFileUrl(ownerUserId, node.id, {
+          roomId,
+          suffix: "thumbnail",
+        })
       : null;
 
     const handleDelete = async () => {
@@ -158,7 +176,25 @@ export const FileListItem = memo(
             </div>
           </button>
           <div className="absolute top-2 right-2">
-            <KebabMenu onRename={handleStartRename} onDelete={handleDelete} />
+            <KebabMenu
+              onRename={readOnly ? undefined : handleStartRename}
+              onDelete={readOnly ? undefined : handleDelete}
+              isSharedWithRoom={isSharedWithRoom}
+              onShareWithRoom={
+                readOnly
+                  ? undefined
+                  : canShareWithRoom
+                    ? shareWithRoom
+                    : undefined
+              }
+              onUnshareFromRoom={
+                readOnly
+                  ? undefined
+                  : canUnshareFromRoom
+                    ? unshareFromRoom
+                    : undefined
+              }
+            />
           </div>
         </li>
       );
@@ -166,8 +202,8 @@ export const FileListItem = memo(
 
     return (
       <li
-        className="hover:bg-base-200 flex items-center gap-3 rounded-lg px-3
-          py-2 transition-colors"
+        className="hover:bg-base-200 flex min-w-0 items-center gap-3 rounded-lg
+          px-3 py-2 transition-colors"
       >
         <button
           type="button"
@@ -210,14 +246,28 @@ export const FileListItem = memo(
                 )}
               </div>
             ) : (
-              <span className="truncate">{node.name}</span>
+              <span className="block truncate">{node.name}</span>
             )}
           </div>
           {metadata && (
             <span className="text-base-content/50 text-sm">{metadata}</span>
           )}
         </button>
-        <KebabMenu onRename={handleStartRename} onDelete={handleDelete} />
+        <KebabMenu
+          onRename={readOnly ? undefined : handleStartRename}
+          onDelete={readOnly ? undefined : handleDelete}
+          isSharedWithRoom={isSharedWithRoom}
+          onShareWithRoom={
+            readOnly ? undefined : canShareWithRoom ? shareWithRoom : undefined
+          }
+          onUnshareFromRoom={
+            readOnly
+              ? undefined
+              : canUnshareFromRoom
+                ? unshareFromRoom
+                : undefined
+          }
+        />
       </li>
     );
   },

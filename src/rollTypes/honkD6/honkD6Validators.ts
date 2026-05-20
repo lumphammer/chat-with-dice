@@ -1,5 +1,5 @@
 import { SIX } from "#/constants";
-import { z } from "zod";
+import * as z from "zod";
 
 const rollFacesValidator = z.array(z.array(z.int().min(1).max(SIX)));
 

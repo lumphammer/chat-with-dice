@@ -21,13 +21,14 @@
 - [x] limit connections per room (100?)
 - [x] Fix websocket leakage & instability
 - [x] Create proper relations for room owner
+- [x] websocket endpoint can stop checking d1 for room existence (WONTFIX - still need to fetch authoritative DO id)
 - [ ] Recent rooms list
 - [ ] Swipable sidebar on mobile
 - [ ] Easier feedback channels (built-in?)
 - [ ] Move capability state storage into drizzle
 - [ ] Room should check it exists in D1 and not deleted BEFORE running DB migrations
-- [ ] ws endponut can stop checking d1 fircroom existence
-- ws endopunt can move under room in oages tree
+- [ ] websocket endpoint can move under `rooms` in pages tree
+- [ ] grid view storage should be a gated atom
 
 ## Big items
 

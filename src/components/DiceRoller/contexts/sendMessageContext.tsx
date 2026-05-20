@@ -19,8 +19,12 @@ export const SendMessageContextProvider = ({
   );
 };
 
+export const useSendMessageContextSafe = () => {
+  return useContext(sendMessageContext);
+};
+
 export const useSendMessageContext = () => {
-  const context = useContext(sendMessageContext);
+  const context = useSendMessageContextSafe();
   if (context === null) {
     throw new Error(
       "useSendMessageContext must be used within a SendMessageContextProvider",

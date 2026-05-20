@@ -2,10 +2,10 @@ import { defineRelations, sql } from "drizzle-orm";
 import {
   int,
   text,
-  index,
   check,
   uniqueIndex,
   snakeCase,
+  unique,
 } from "drizzle-orm/sqlite-core";
 
 export const folders = snakeCase.table("folders", {
@@ -78,13 +78,16 @@ export const roomResourceShares = snakeCase.table(
   {
     id: text().primaryKey(),
     roomId: text().notNull(),
-    nodeId: text().references(() => nodes.id, { onDelete: "cascade" }),
+    roomDurableObjectId: text().notNull(),
+    nodeId: text()
+      .notNull()
+      .references(() => nodes.id, { onDelete: "cascade" }),
     sharedTime: int()
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [
-    index("room_resource_shares__room_id__node_id_idx").on(
+    unique("room_resource_shares__room_id__node_id_idx").on(
       table.roomId,
       table.nodeId,
     ),
@@ -107,6 +110,10 @@ export const relations = defineRelations(
         from: r.nodes.parentFolderId,
         to: r.folders.id,
       }),
+      shares: r.many.roomResourceShares({
+        from: r.nodes.id,
+        to: r.roomResourceShares.nodeId,
+      }),
     },
     files: {
       node: r.one.nodes({
@@ -118,6 +125,13 @@ export const relations = defineRelations(
       node: r.one.nodes({
         from: r.folders.id,
         to: r.nodes.id,
+      }),
+    },
+    roomResourceShares: {
+      node: r.one.nodes({
+        from: r.roomResourceShares.nodeId,
+        to: r.nodes.id,
+        optional: false,
       }),
     },
   }),

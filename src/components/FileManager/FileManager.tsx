@@ -1,0 +1,418 @@
+import { Breadcrumbs } from "./Breadcrumbs";
+import { DropOverlay } from "./DropOverlay";
+import { EmptyState } from "./EmptyState";
+import { FileListItem } from "./FileListItem";
+import { FilePreview } from "./FilePreview";
+import { Toolbar } from "./Toolbar";
+import { UploadingList } from "./UploadingList";
+import type { BreadcrumbSegment, FileManagerLocation, FileNode } from "./types";
+import { useUpload } from "./useUpload";
+import { actions } from "astro:actions";
+import type { LucideIcon } from "lucide-react";
+import {
+  memo,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+const VIEW_MODE_STORAGE_KEY = "file-manager-view-mode";
+const HEADER_GAP_PX = 8;
+const MIN_BREADCRUMB_WIDTH_PX = 180;
+type ViewMode = "list" | "grid";
+
+const getStoredViewMode = (): ViewMode => {
+  if (typeof window === "undefined") return "list";
+
+  const storedViewMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+  return storedViewMode === "grid" ? "grid" : "list";
+};
+
+const useElementWidth = <T extends HTMLElement>(
+  ref: RefObject<T | null>,
+): number => {
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const updateWidth = () => {
+      setWidth(element.getBoundingClientRect().width);
+    };
+
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return width;
+};
+
+type ReadOnlyProps =
+  | { ownerUserId?: undefined; roomId?: undefined }
+  | { ownerUserId: string; roomId: string };
+
+export const FileManager = memo(
+  ({
+    initialNodes,
+    location,
+    onLocationChange,
+    ownerUserId,
+    roomId,
+    rootIcon,
+    rootLabel,
+  }: {
+    initialNodes?: FileNode[];
+    location: FileManagerLocation;
+    onLocationChange: (location: FileManagerLocation) => void;
+    rootIcon?: LucideIcon;
+    rootLabel?: string;
+  } & ReadOnlyProps) => {
+    const readOnly = ownerUserId !== undefined;
+    const [nodes, setNodes] = useState<FileNode[]>(() => initialNodes ?? []);
+    const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
+    const [isDragOver, setIsDragOver] = useState(false);
+    const [isLoading, setIsLoading] = useState(initialNodes === undefined);
+    const [breadcrumbWidths, setBreadcrumbWidths] = useState({
+      compact: 0,
+      full: 0,
+    });
+    const [inlineToolbarWidth, setInlineToolbarWidth] = useState(0);
+    const headerRef = useRef<HTMLDivElement>(null);
+    const toolbarRef = useRef<HTMLDivElement>(null);
+    const headerWidth = useElementWidth(headerRef);
+    const toolbarWidth = useElementWidth(toolbarRef);
+    const hasHeaderMeasurements = headerWidth > 0 && inlineToolbarWidth > 0;
+    const isToolbarCompact =
+      hasHeaderMeasurements &&
+      headerWidth - inlineToolbarWidth - HEADER_GAP_PX <
+        MIN_BREADCRUMB_WIDTH_PX;
+    const activeToolbarWidth = toolbarWidth || inlineToolbarWidth;
+    const breadcrumbAvailableWidth =
+      headerWidth > 0
+        ? Math.max(0, headerWidth - activeToolbarWidth - HEADER_GAP_PX)
+        : undefined;
+    const shouldCollapseBreadcrumbs =
+      breadcrumbAvailableWidth !== undefined &&
+      location.breadcrumbs.length > 1 &&
+      breadcrumbWidths.full > breadcrumbAvailableWidth;
+
+    // monotonic counter to discard stale responses from earlier navigations
+    const navigationIdRef = useRef(0);
+    const shouldSkipInitialFetch = useRef(initialNodes !== undefined);
+
+    useEffect(() => {
+      if (isToolbarCompact || toolbarWidth === 0) return;
+      setInlineToolbarWidth(toolbarWidth);
+    }, [isToolbarCompact, toolbarWidth]);
+
+    const fetchNodes = useCallback(
+      async (folderId: string | null, requestId: number) => {
+        const result = await actions.files.getNodes({
+          folderId,
+          ownerUserId,
+          roomId,
+        });
+        if (requestId !== navigationIdRef.current) return false;
+        if (result.error) {
+          console.error("Failed to fetch nodes:", result.error);
+          return true;
+        }
+        setNodes(result.data);
+        return true;
+      },
+      [ownerUserId, roomId],
+    );
+
+    const refetchNodes = useCallback(
+      async (folderId: string | null) => {
+        const requestId = navigationIdRef.current;
+        await fetchNodes(folderId, requestId);
+      },
+      [fetchNodes],
+    );
+
+    useEffect(() => {
+      if (shouldSkipInitialFetch.current) {
+        shouldSkipInitialFetch.current = false;
+        return;
+      }
+
+      const requestId = ++navigationIdRef.current;
+      setIsLoading(true);
+
+      void (async () => {
+        const isCurrent = await fetchNodes(location.folderId, requestId);
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      })();
+    }, [fetchNodes, location.folderId]);
+
+    const { uploading, uploadFiles, dismissError } = useUpload(
+      location.folderId,
+      () => refetchNodes(location.folderId),
+    );
+
+    const handleViewModeChange = useCallback((nextViewMode: ViewMode) => {
+      setViewMode(nextViewMode);
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextViewMode);
+    }, []);
+
+    const folderNodes = useMemo(
+      () =>
+        nodes
+          .filter((n) => n.folder)
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      [nodes],
+    );
+
+    const fileNodes = useMemo(
+      () =>
+        nodes
+          .filter((n) => n.file)
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      [nodes],
+    );
+
+    const previewNode = useMemo(
+      () =>
+        location.previewFileId
+          ? (nodes.find((node) => node.id === location.previewFileId) ?? null)
+          : null,
+      [location.previewFileId, nodes],
+    );
+
+    const handleFolderClick = useCallback(
+      (node: FileNode) => {
+        onLocationChange({
+          folderId: node.id,
+          breadcrumbs: [
+            ...location.breadcrumbs,
+            { id: node.id, name: node.name },
+          ],
+          previewFileId: null,
+          previewFileName: null,
+        });
+      },
+      [location.breadcrumbs, onLocationChange],
+    );
+
+    const handleFolderCreated = useCallback(
+      (folder: { id: string; name: string }) => {
+        onLocationChange({
+          folderId: folder.id,
+          breadcrumbs: [...location.breadcrumbs, folder],
+          previewFileId: null,
+          previewFileName: null,
+        });
+      },
+      [location.breadcrumbs, onLocationChange],
+    );
+
+    const handleFileClick = useCallback(
+      (node: FileNode) => {
+        onLocationChange({
+          folderId: location.folderId,
+          breadcrumbs: location.breadcrumbs,
+          previewFileId: node.id,
+          previewFileName: node.name,
+        });
+      },
+      [location, onLocationChange],
+    );
+
+    const handleClosePreview = useCallback(() => {
+      onLocationChange({
+        folderId: location.folderId,
+        breadcrumbs: location.breadcrumbs,
+        previewFileId: null,
+        previewFileName: null,
+      });
+    }, [location, onLocationChange]);
+
+    const handleDeleted = useCallback(
+      (nodeId: string) => {
+        setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+        if (nodeId === location.previewFileId) {
+          onLocationChange({
+            folderId: location.folderId,
+            breadcrumbs: location.breadcrumbs,
+            previewFileId: null,
+            previewFileName: null,
+          });
+        }
+      },
+      [location, onLocationChange],
+    );
+
+    const handleRenamed = useCallback((nodeId: string, newName: string) => {
+      setNodes((prev) =>
+        prev.map((n) => (n.id === nodeId ? { ...n, name: newName } : n)),
+      );
+    }, []);
+
+    const handleBreadcrumbNavigate = useCallback(
+      (folderId: string | null) => {
+        let breadcrumbs: BreadcrumbSegment[];
+        if (folderId === null) {
+          breadcrumbs = [];
+        } else {
+          const index = location.breadcrumbs.findIndex(
+            (segment) => segment.id === folderId,
+          );
+          breadcrumbs =
+            index !== -1
+              ? location.breadcrumbs.slice(0, index + 1)
+              : location.breadcrumbs;
+        }
+        onLocationChange({
+          folderId,
+          breadcrumbs,
+          previewFileId: null,
+          previewFileName: null,
+        });
+      },
+      [location.breadcrumbs, onLocationChange],
+    );
+
+    const handleDragEnter = useCallback((event: React.DragEvent) => {
+      event.preventDefault();
+      const hasFiles = [...event.dataTransfer.types].includes("Files");
+      if (hasFiles) {
+        setIsDragOver(true);
+      }
+    }, []);
+
+    const handleDragOver = useCallback((event: React.DragEvent) => {
+      event.preventDefault();
+    }, []);
+
+    const handleDragLeave = useCallback((event: React.DragEvent) => {
+      const relatedTarget = event.relatedTarget;
+      if (
+        relatedTarget instanceof Node &&
+        event.currentTarget.contains(relatedTarget)
+      ) {
+        return;
+      }
+      setIsDragOver(false);
+    }, []);
+
+    const handleDrop = useCallback(
+      (event: React.DragEvent) => {
+        event.preventDefault();
+        setIsDragOver(false);
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+          void uploadFiles(files);
+        }
+      },
+      [uploadFiles],
+    );
+
+    return (
+      <div
+        className="@container relative w-full max-w-2xl min-w-0"
+        onDragEnter={readOnly ? undefined : handleDragEnter}
+        onDragOver={readOnly ? undefined : handleDragOver}
+        onDragLeave={readOnly ? undefined : handleDragLeave}
+        onDrop={readOnly ? undefined : handleDrop}
+      >
+        {isDragOver && !readOnly && <DropOverlay />}
+
+        <div ref={headerRef} className="mb-4 flex min-w-0 items-center gap-2">
+          <Breadcrumbs
+            collapsed={shouldCollapseBreadcrumbs}
+            onMeasuredWidths={setBreadcrumbWidths}
+            segments={location.breadcrumbs}
+            onNavigate={handleBreadcrumbNavigate}
+            rootIcon={rootIcon}
+            rootLabel={rootLabel}
+          />
+          <div ref={toolbarRef} className="shrink-0">
+            <Toolbar
+              compact={isToolbarCompact}
+              currentFolderId={location.folderId}
+              onFolderCreated={handleFolderCreated}
+              onFilesSelected={uploadFiles}
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+              readOnly={readOnly}
+            />
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="animate-fadein-slow flex flex-col gap-2 py-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="skeleton h-10 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : folderNodes.length === 0 &&
+          fileNodes.length === 0 &&
+          uploading.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <ul
+            className={
+              viewMode === "grid"
+                ? `animate-fadein grid min-w-0 grid-cols-2 gap-3 @sm:grid-cols-3
+                  @md:grid-cols-4`
+                : "animate-fadein flex min-w-0 flex-col gap-1"
+            }
+          >
+            {folderNodes.map((node) => (
+              <FileListItem
+                key={node.id}
+                node={node}
+                variant={viewMode}
+                onClick={() => handleFolderClick(node)}
+                onDeleted={handleDeleted}
+                onRenamed={handleRenamed}
+                ownerUserId={ownerUserId}
+                roomId={roomId}
+                readOnly={readOnly}
+              />
+            ))}
+            {fileNodes.map((node) => (
+              <FileListItem
+                key={node.id}
+                node={node}
+                variant={viewMode}
+                onClick={() => handleFileClick(node)}
+                onDeleted={handleDeleted}
+                onRenamed={handleRenamed}
+                ownerUserId={ownerUserId}
+                roomId={roomId}
+                readOnly={readOnly}
+              />
+            ))}
+          </ul>
+        )}
+
+        {!readOnly && (
+          <UploadingList files={uploading} onDismiss={dismissError} />
+        )}
+
+        {previewNode && (
+          <FilePreview
+            node={previewNode}
+            onClose={handleClosePreview}
+            ownerUserId={ownerUserId}
+            roomId={roomId}
+            readOnly={readOnly}
+          />
+        )}
+      </div>
+    );
+  },
+);
+
+FileManager.displayName = "FileManager";

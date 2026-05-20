@@ -5,7 +5,7 @@ import {
 } from "#/constants";
 // import { sessionAtom } from "#/utils/auth-client.ts";
 import { createPersistentStore } from "./utils/createPersistentStore";
-import { z } from "zod";
+import * as z from "zod";
 
 export const storageConsentStore = createPersistentStore({
   defaultValue: null,

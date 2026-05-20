@@ -1,13 +1,15 @@
 import { structuredRollsSchema } from "#/validators/rpgDieRollerResulsSchemas";
 import type { NotationFormula, NotationResult } from "./notationRollValidators";
-import { DiceRoll } from "@dice-roller/rpg-dice-roller";
-import z from "zod";
+import type { DiceRoll } from "@dice-roller/rpg-dice-roller";
+import * as z from "zod";
 
-export const notationRollHandler = ({
+export const notationRollHandler = async ({
   formula,
 }: {
   formula: NotationFormula;
-}): NotationResult => {
+}): Promise<NotationResult> => {
+  const { DiceRoll } = await import("@dice-roller/rpg-dice-roller");
+
   let diceRoll: DiceRoll;
   try {
     diceRoll = new DiceRoll(formula.formula);

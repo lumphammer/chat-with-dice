@@ -1,10 +1,10 @@
+import { resolveOwnerUserDataDOForRead } from "#/utils/resolveOwnerUserDataDO";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 
 export const prerender = false;
 
 const HTTP_NOT_FOUND = 404;
-const HTTP_UNAUTHORIZED = 401;
 const HTTP_INTERNAL_SERVER_ERROR = 500;
 const HTTP_RANGE_NOT_SATISFIABLE = 416;
 const HTTP_PARTIAL_CONTENT = 206;
@@ -81,11 +81,6 @@ function parseRange(rangeHeader: string | null, size: number): ByteRange {
 }
 
 export const GET: APIRoute = async (ctx) => {
-  const user = ctx.locals.user;
-  if (!user || user.isAnonymous) {
-    return json({ error: "Unauthorized" }, HTTP_UNAUTHORIZED);
-  }
-
   const bucket = env.PRIVATE_R2;
   if (!bucket) {
     return json(
@@ -94,22 +89,22 @@ export const GET: APIRoute = async (ctx) => {
     );
   }
 
-  const { nodeId } = ctx.params;
+  const { ownerUserId, nodeId } = ctx.params;
+  if (!ownerUserId) {
+    return json({ error: "Missing owner user id parameter" }, HTTP_NOT_FOUND);
+  }
   if (!nodeId) {
     return json({ error: "Missing node ID parameter" }, HTTP_NOT_FOUND);
   }
-  if (!user.userDataDOId) {
-    return json(
-      { error: "User does not have a durable object id" },
-      HTTP_NOT_FOUND,
-    );
-  }
 
-  // here
-  const userDataDO = env.USER_DATA_DO.get(
-    env.USER_DATA_DO.idFromString(user.userDataDOId),
+  const resolved = await resolveOwnerUserDataDOForRead(
+    ctx,
+    ownerUserId,
+    nodeId,
   );
-  const node = await userDataDO.getFile(nodeId);
+  if (!resolved.ok) return resolved.response;
+
+  const node = await resolved.ownerUserDataDO.getFile(nodeId);
 
   const byteRange = parseRange(
     ctx.request.headers.get("range"),
