@@ -389,4 +389,196 @@ export class UserDataDO extends DurableObject {
       Omit<typeof node, "file"> & { file: Exclude<(typeof node)["file"], null> }
     >;
   }
+
+  /**
+   * Check whether `nodeId` is reachable from any share rooted at `roomId`.
+   * Walks up the tree via `parent_folder_id` and returns true if `nodeId` or
+   * any ancestor folder is in `room_resource_shares` for the given `roomId`.
+   *
+   * This is the read-side authorization for cross-user file/folder access:
+   * sharing a folder grants access to every descendant inside it.
+   */
+  async isNodeAccessibleFromRoom({
+    nodeId,
+    roomId,
+  }: {
+    nodeId: string;
+    roomId: string;
+  }): Promise<boolean> {
+    const q = sql`
+        WITH RECURSIVE ancestors (node_id, parent_folder_id) AS (
+          SELECT id, parent_folder_id
+          FROM nodes
+          WHERE id = ${nodeId}
+            AND deleted_time IS NULL
+          UNION ALL
+          SELECT n.id, n.parent_folder_id
+          FROM ancestors a
+          JOIN nodes n ON n.folder_id = a.parent_folder_id
+          WHERE a.parent_folder_id IS NOT NULL
+            AND n.deleted_time IS NULL
+        )
+        SELECT 1
+        FROM ancestors a
+        JOIN room_resource_shares rrs ON rrs.node_id = a.node_id
+        WHERE rrs.room_id = ${roomId}
+        LIMIT 1
+      `;
+
+    console.log("QUERY", q.getSQL());
+
+    const result = this.db.run(q);
+
+    return result.toArray().length > 0;
+  }
+
+  /**
+   * Share a node with a room. This gets called by the room DO in question
+   */
+  async shareNodeWithRoom({
+    nodeId,
+    roomId,
+    roomDurableObjectId,
+  }: {
+    nodeId: string;
+    roomId: string;
+    roomDurableObjectId: string;
+  }): Promise<NodeShareResult> {
+    // see if there's an existing share
+    const exisitingShare = await this.db.query.roomResourceShares.findFirst({
+      where: {
+        nodeId,
+        roomDurableObjectId,
+      },
+      with: {
+        node: {
+          with: {
+            file: true,
+            folder: true,
+          },
+        },
+      },
+    });
+
+    if (exisitingShare) {
+      const file = exisitingShare.node.file;
+      if (file) {
+        if (file.isReady !== 1) {
+          return {
+            result: "error",
+            reason: "File is not ready to share yet",
+          };
+        }
+        return {
+          result: "existing",
+          kind: "file",
+          name: exisitingShare.node.name,
+          r2Key: file.r2Key,
+          thumbnailR2Key: file.thumbnailR2Key,
+          contentType: file.contentType,
+          sizeBytes: file.sizeBytes,
+        };
+      }
+      return {
+        result: "existing",
+        kind: "folder",
+        name: exisitingShare.node.name,
+      };
+    }
+
+    const node = await this.db.query.nodes.findFirst({
+      where: {
+        id: nodeId,
+        deletedTime: {
+          isNull: true,
+        },
+      },
+      with: {
+        file: true,
+        folder: true,
+      },
+    });
+
+    if (!node) {
+      return {
+        result: "error",
+        reason: `Node not found: ${nodeId}`,
+      };
+    }
+
+    if (node.file && node.file.isReady !== 1) {
+      return {
+        result: "error",
+        reason: "File is not ready to share yet",
+      };
+    }
+
+    await this.db.insert(dbSchema.roomResourceShares).values({
+      id: nanoid(),
+      roomDurableObjectId: roomDurableObjectId,
+      roomId,
+      nodeId,
+    });
+
+    return node.file
+      ? {
+          result: "created",
+          kind: "file",
+          name: node.name,
+          r2Key: node.file.r2Key,
+          thumbnailR2Key: node.file.thumbnailR2Key,
+          contentType: node.file.contentType,
+          sizeBytes: node.file.sizeBytes,
+        }
+      : {
+          result: "created",
+          kind: "folder",
+          name: node.name,
+        };
+
+    // recursive cte to find out if this node id is already covered by a share
+    // this.db.run(sql`
+    //   WITH RECURSIVE ancestors(node_id) AS (
+    //     SELECT ${nodeId}
+    //     UNION ALL
+    //     SELECT parent_folder_id FROM nodes WHERE folder_id = ${nodeId}
+    //     UNION ALL
+    //     SELECT nodes.parent_folder_id
+    //     FROM ancestors
+    //     JOIN nodes ON nodes.folder_id = ancestors.node_id
+    //     WHERE nodes.parent_folder_id IS NOT NULL
+    //   )
+    //   SELECT ancestors.node_id, room_resource_shares.id
+    //   FROM ancestors
+    //   INNER JOIN room_resource_shares
+    //   ON ancestors.node_id = room_resource_shares.node_id
+    // `);
+  }
+
+  async unshareNodeFromRoom({
+    nodeId,
+    roomId,
+    roomDurableObjectId,
+  }: {
+    nodeId: string;
+    roomId: string;
+    roomDurableObjectId: string;
+  }): Promise<NodeUnshareResult> {
+    const result = await this.db
+      .delete(dbSchema.roomResourceShares)
+      .where(
+        and(
+          eq(dbSchema.roomResourceShares.nodeId, nodeId),
+          eq(dbSchema.roomResourceShares.roomId, roomId),
+          eq(
+            dbSchema.roomResourceShares.roomDurableObjectId,
+            roomDurableObjectId,
+          ),
+        ),
+      );
+
+    return result.rowsWritten > 0
+      ? { result: "removed" }
+      : { result: "not-found" };
+  }
 }
