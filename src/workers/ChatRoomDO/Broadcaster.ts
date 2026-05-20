@@ -25,6 +25,27 @@ export class Broadcaster {
     }
   }
 
+  getWebsocketForUserId(userId: string): WebSocket | undefined {
+    return this.ctx.getWebSockets().find((ws) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        const attachment = sessionAttachmentSchema.parse(
+          ws.deserializeAttachment(),
+        );
+        if (attachment.userId === userId) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }
+
+  sendErrorToUserId(userId: string, error: unknown): void {
+    const ws = this.getWebsocketForUserId(userId);
+    if (ws) {
+      this.sendError(ws, error);
+    }
+  }
+
   sendError(ws: WebSocket, error: unknown): void {
     this.send(ws, {
       type: "error",

@@ -8,9 +8,10 @@ import { logError } from "./utils";
 
 export async function loadConfigFromD1OrDie(
   ctx: DurableObjectState,
-): Promise<{ config: RoomConfig; createdByUserId: string }> {
+): Promise<{ config: RoomConfig; createdByUserId: string; roomId: string }> {
   let config: RoomConfig | null = null;
   let createdByUserId: string | null = null;
+  let roomId: string | null = null;
 
   const roomRow = await d1.query.rooms.findFirst({
     where: {
@@ -34,6 +35,7 @@ export async function loadConfigFromD1OrDie(
     config = defaultRoomConfig;
   }
   createdByUserId = roomRow.createdByUserId;
+  roomId = roomRow.id;
 
-  return { config, createdByUserId };
+  return { config, createdByUserId, roomId };
 }
