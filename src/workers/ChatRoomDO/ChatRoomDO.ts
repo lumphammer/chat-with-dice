@@ -384,6 +384,7 @@ export class ChatRoomDO extends DurableObject {
       stateRepository: this.stateRepository,
       config,
       broadcaster: this.broadcaster,
+      nodeShareManager: this.nodeShareManager,
     });
     if (!mountedCap) {
       logError("Failed to mount", name);

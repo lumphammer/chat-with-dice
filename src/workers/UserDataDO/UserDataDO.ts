@@ -1,6 +1,7 @@
 import { db as d1 } from "#/db";
 import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
+import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import { setupDB } from "../utils/setupDB";
 import type { PathResolution } from "./types";
 import { log, logError } from "./utils";
