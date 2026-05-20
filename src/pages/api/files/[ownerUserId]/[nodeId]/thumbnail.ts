@@ -6,28 +6,21 @@ import {
   HTTP_UNAUTHORIZED,
 } from "#/constants";
 import { jsonResponse } from "#/utils/jsonResponse";
+import {
+  SELF_OWNER_SEGMENT,
+  resolveOwnerUserDataDOForRead,
+} from "#/utils/resolveOwnerUserDataDO";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 
 export const prerender = false;
 
 const HTTP_NOT_FOUND = 404;
+const HTTP_FORBIDDEN = 403;
 const MAX_THUMBNAIL_BYTES = 1_048_576; // 1 MB
 const THUMBNAIL_CONTENT_TYPE = "image/webp";
 
-function getUserDataDO(user: NonNullable<App.Locals["user"]>) {
-  if (!user.userDataDOId) {
-    return env.USER_DATA_DO.getByName(user.id);
-  }
-  return env.USER_DATA_DO.get(env.USER_DATA_DO.idFromString(user.userDataDOId));
-}
-
 export const GET: APIRoute = async (ctx) => {
-  const user = ctx.locals.user;
-  if (!user || user.isAnonymous) {
-    return jsonResponse({ error: "Unauthorized" }, HTTP_UNAUTHORIZED);
-  }
-
   const bucket = env.PRIVATE_R2;
   if (!bucket) {
     return jsonResponse(
@@ -36,12 +29,25 @@ export const GET: APIRoute = async (ctx) => {
     );
   }
 
-  const { nodeId } = ctx.params;
+  const { ownerUserId, nodeId } = ctx.params;
+  if (!ownerUserId) {
+    return jsonResponse(
+      { error: "Missing owner user id parameter" },
+      HTTP_NOT_FOUND,
+    );
+  }
   if (!nodeId) {
     return jsonResponse({ error: "Missing node ID parameter" }, HTTP_NOT_FOUND);
   }
 
-  const node = await getUserDataDO(user).getFile(nodeId);
+  const resolved = await resolveOwnerUserDataDOForRead(
+    ctx,
+    ownerUserId,
+    nodeId,
+  );
+  if (!resolved.ok) return resolved.response;
+
+  const node = await resolved.ownerUserDataDO.getFile(nodeId);
   const thumbnailR2Key = node.file.thumbnailR2Key;
   if (!thumbnailR2Key) {
     return jsonResponse({ error: "Thumbnail not found" }, HTTP_NOT_FOUND);
@@ -68,17 +74,32 @@ export const POST: APIRoute = async (ctx) => {
     return jsonResponse({ error: "Unauthorized" }, HTTP_UNAUTHORIZED);
   }
 
+  const { ownerUserId, nodeId } = ctx.params;
+  if (!ownerUserId) {
+    return jsonResponse(
+      { error: "Missing owner user id parameter" },
+      HTTP_NOT_FOUND,
+    );
+  }
+  if (!nodeId) {
+    return jsonResponse({ error: "Missing node ID parameter" }, HTTP_NOT_FOUND);
+  }
+
+  // thumbnail uploads are only ever for the caller's own files
+  const isSelf = ownerUserId === SELF_OWNER_SEGMENT || ownerUserId === user.id;
+  if (!isSelf) {
+    return jsonResponse(
+      { error: "Thumbnails can only be uploaded to your own files" },
+      HTTP_FORBIDDEN,
+    );
+  }
+
   const bucket = env.PRIVATE_R2;
   if (!bucket) {
     return jsonResponse(
       { error: "Storage not configured" },
       HTTP_INTERNAL_SERVER_ERROR,
     );
-  }
-
-  const { nodeId } = ctx.params;
-  if (!nodeId) {
-    return jsonResponse({ error: "Missing node ID parameter" }, HTTP_NOT_FOUND);
   }
 
   const contentType =
@@ -105,7 +126,9 @@ export const POST: APIRoute = async (ctx) => {
     );
   }
 
-  const userDataDO = getUserDataDO(user);
+  const userDataDO = user.userDataDOId
+    ? env.USER_DATA_DO.get(env.USER_DATA_DO.idFromString(user.userDataDOId))
+    : env.USER_DATA_DO.getByName(user.id);
   const node = await userDataDO.getFile(nodeId);
   if (!node.file.contentType.startsWith("image/")) {
     return jsonResponse(
