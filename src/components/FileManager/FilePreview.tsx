@@ -2,15 +2,44 @@ import { ImagePreview } from "./ImagePreview";
 import { PdfPreview } from "./PdfPreview";
 import { TextPreview } from "./TextPreview";
 import { fileTypeIcon } from "./fileTypeIcon";
+import { buildFileUrl } from "./fileUrl";
 import { formatBytes } from "./formatBytes";
 import { isTextPreviewable } from "./textPreviewTypes";
-import type { FileNode } from "./types";
-import { Download, X } from "lucide-react";
+import { useShareWithRoom } from "./useShareWithRoom";
+import { Download, Share2, Unlink2, X } from "lucide-react";
 import { memo, useEffect, useRef } from "react";
 
+export type FilePreviewNode = {
+  id: string;
+  name: string;
+  file: {
+    contentType: string;
+    sizeBytes: number;
+  } | null;
+};
+
 export const FilePreview = memo(
-  ({ node, onClose }: { node: FileNode; onClose: () => void }) => {
+  ({
+    node,
+    onClose,
+    ownerUserId,
+    roomId,
+    readOnly = false,
+  }: {
+    node: FilePreviewNode;
+    onClose: () => void;
+    ownerUserId?: string;
+    roomId?: string;
+    readOnly?: boolean;
+  }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
+    const {
+      canShareWithRoom,
+      shareWithRoom,
+      canUnshareFromRoom,
+      unshareFromRoom,
+      isSharedWithRoom,
+    } = useShareWithRoom(readOnly ? null : node.id);
 
     useEffect(() => {
       const dialog = dialogRef.current;
@@ -27,7 +56,7 @@ export const FilePreview = memo(
     const isVideo = node.file.contentType.startsWith("video/");
     const isPdf = node.file.contentType === "application/pdf";
     const isText = isTextPreviewable(node.name, node.file.contentType);
-    const downloadUrl = `/api/files/${node.id}`;
+    const downloadUrl = buildFileUrl(ownerUserId, node.id, { roomId });
     const Icon = fileTypeIcon(node.file.contentType);
 
     return (
@@ -41,6 +70,28 @@ export const FilePreview = memo(
           <div className="flex shrink-0 flex-row items-center justify-between">
             <h2 className="truncate text-lg font-bold">{node.name}</h2>
             <div className="flex flex-row items-center gap-2">
+              {canShareWithRoom && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm gap-1"
+                  onClick={shareWithRoom}
+                >
+                  <Share2 size={14} />
+                  {isSharedWithRoom
+                    ? "Reshare file..."
+                    : "Share file with room"}
+                </button>
+              )}
+              {canUnshareFromRoom && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm gap-1"
+                  onClick={unshareFromRoom}
+                >
+                  <Unlink2 size={14} />
+                  Unshare
+                </button>
+              )}
               <a
                 href={downloadUrl}
                 download={node.name}

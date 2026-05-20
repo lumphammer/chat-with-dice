@@ -1,7 +1,8 @@
+import { buildFileUrl } from "./fileUrl";
 import { useCallback, useState } from "react";
 
-const THUMBNAIL_MAX_DIMENSION = 512;
-const THUMBNAIL_QUALITY = 0.82;
+const THUMBNAIL_MAX_DIMENSION = 256;
+const THUMBNAIL_QUALITY = 0.3;
 
 export type UploadingFile = {
   localId: string;
@@ -48,13 +49,16 @@ async function generateImageThumbnail(file: File) {
 }
 
 async function uploadThumbnail(fileId: string, thumbnail: Blob) {
-  const response = await fetch(`/api/files/${fileId}/thumbnail`, {
-    method: "POST",
-    headers: {
-      "content-type": "image/webp",
+  const response = await fetch(
+    buildFileUrl(undefined, fileId, { suffix: "thumbnail" }),
+    {
+      method: "POST",
+      headers: {
+        "content-type": "image/webp",
+      },
+      body: thumbnail,
     },
-    body: thumbnail,
-  });
+  );
 
   if (!response.ok) {
     const body = await response.json().catch(() => null);
