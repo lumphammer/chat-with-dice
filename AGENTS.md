@@ -32,6 +32,12 @@ If you find yourself reaching for an `as`, think about whether it's needed at al
 
 When you've finished your changes, run `pnpm run check`. This will check types, linter, formatting, and build the project.
 
+## Database schema migration
+
+Database schema migrations are creating by editing the Drizzle schema definition in `src/schemas/*` and then running `pnpm run db:generate:...` (where ... corresponds to the schema you udated.)
+
+Do not write migrations yourself. They are _only_ generated. If we need a schema change that generates an impossible migration (e.g. adding a not-null column to a table that already has rows) stop and ask the user how to resolve it.
+
 ## Commit message style
 
 - All lowercase — never capitalise the first word (exception: all-caps single-word notes like `TODO` or `MISSION`)
@@ -43,6 +49,10 @@ When you've finished your changes, run `pnpm run check`. This will check types, 
 - Informal, honest language is fine — "first stab at …", "start making …", "work towards …"
 - For multi-step work use phase suffixes: `foo phase 1`, `foo phase 2`
 - Never include issue numbers or PR links
+
+## We are not using TDD
+
+You don't have to write tests for everything. You _can_ write tests where the subject is neatly self-contained and you can write tests without having to do mad levels of mocking and faking.
 
 ## Agent skills
 

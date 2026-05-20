@@ -1,9 +1,8 @@
 name: CI/CD
 
 on:
-  push:
-    branches:
-      - main
+  - push
+  - pull_request
 
 jobs:
   build:
@@ -54,6 +53,7 @@ jobs:
           cat dist/client/.assetsignore
 
       - name: Publish to Cloudflare
+        if: github.ref == 'refs/heads/main'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
