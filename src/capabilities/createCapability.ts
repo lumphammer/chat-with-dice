@@ -1,6 +1,7 @@
-import { useCapabilityInfo } from "#/capabilities/reactContexts/capabilityInfoContext";
-import { useSetCapabilityStateContext } from "#/capabilities/reactContexts/setCapabilityStateContext";
-import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
+import { useCapabilityInfoSafe } from "#/capabilities/reactContexts/capabilityInfoContext";
+import { useSetCapabilityStateContextSafe } from "#/capabilities/reactContexts/setCapabilityStateContext";
+import { useSendMessageContextSafe } from "#/components/DiceRoller/contexts/sendMessageContext";
+import { useRefStash } from "#/components/useRefStash";
 import { toAlphanumeric } from "#/utils/alphanumeric";
 import { authClient } from "#/utils/auth-client";
 import type {
@@ -10,6 +11,7 @@ import type {
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
+import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
 import type {
   Capability,
   CapabilityDefinition,
@@ -22,6 +24,7 @@ import type {
 } from "./types";
 import { createDraft, finishDraft, produceWithPatches } from "immer";
 import { nanoid } from "nanoid";
+import { useMemo } from "react";
 import { z } from "zod/v4";
 
 const ARTIFICIAL_LAG_MS = 0;
@@ -82,6 +85,7 @@ export const createCapability = <
     actionCall,
     userId,
     displayName,
+    nodeShareManager,
   }: {
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
@@ -91,6 +95,7 @@ export const createCapability = <
     actionCall: ActionCall;
     broadcaster: Broadcaster;
     displayName: string;
+    nodeShareManager: NodeShareManager;
   }) => {
     const action = actions[actionCall.actionName];
     if (!action) throw new Error(`Unknown action: ${actionCall.actionName}`);
@@ -106,6 +111,7 @@ export const createCapability = <
         broadcaster,
         userId,
         displayName,
+        nodeShareManager,
         sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
           void messageJiggler.sendChatMessage({
             chat: "",
@@ -146,12 +152,14 @@ export const createCapability = <
     doCtx,
     messageJiggler,
     stateRepository,
+    nodeShareManager,
   }: {
     broadcaster: Broadcaster;
     config: unknown;
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
+    nodeShareManager: NodeShareManager;
   }): Promise<ServerMountedCapability | null> => {
     // get config
     const configParseResult = def.configValidator.safeParse(config);
@@ -207,6 +215,7 @@ export const createCapability = <
           broadcaster,
           userId,
           displayName,
+          nodeShareManager: nodeShareManager,
         });
       },
       getInitPayload: () => ({
@@ -221,9 +230,9 @@ export const createCapability = <
     z.infer<TStateValidator>,
     TActions
   > => {
-    const sendMessage = useSendMessageContext();
-    const setCapabilityState = useSetCapabilityStateContext();
-    const info = useCapabilityInfo(name);
+    const sendMessage = useSendMessageContextSafe();
+    const setCapabilityState = useSetCapabilityStateContextSafe();
+    const info = useCapabilityInfoSafe(name);
     const { data: sessionData } = authClient.useSession();
 
     // when we map over the actions, TS gives up on typing the value side,
@@ -231,52 +240,66 @@ export const createCapability = <
     // tuple we get inside the callback to Object.entries.
     type CreatorsEntiesTuple = [string, AnyActionDefinition];
 
-    // XXX this should be memoised
-    const spicyCreators = Object.fromEntries(
-      Object.entries(actions).map(
-        ([action, actionDefinition]: CreatorsEntiesTuple) => {
-          return [
-            action,
-            (payload: any): void => {
-              const correlation = nanoid();
-              if (sessionData === null) {
-                return;
-              }
-              // construct and send the message
-              sendMessage({
-                type: "action",
-                payload: {
-                  capabilityName: def.name,
-                  actionCall: {
-                    correlation,
-                    actionName: action,
-                    params: payload,
-                  },
-                  displayName: sessionData.user.name,
+    const sessionDataRef = useRefStash(sessionData);
+    const capabilityInfoRef = useRefStash(info);
+
+    const spicyCreators = useMemo(
+      () =>
+        Object.fromEntries(
+          Object.entries(actions).map(
+            ([action, actionDefinition]: CreatorsEntiesTuple) => {
+              return [
+                action,
+                (payload: any): void => {
+                  const correlation = nanoid();
+                  if (sessionDataRef.current === null) {
+                    return;
+                  }
+                  // construct and send the message
+                  sendMessage?.({
+                    type: "action",
+                    payload: {
+                      capabilityName: def.name,
+                      actionCall: {
+                        correlation,
+                        actionName: action,
+                        params: payload,
+                      },
+                      displayName: sessionDataRef.current.user.name,
+                    },
+                  });
+
+                  // run optimistic updates
+                  if (capabilityInfoRef.current.initialised) {
+                    const [newState, patches] = produceWithPatches(
+                      capabilityInfoRef.current.state,
+                      (draft) => {
+                        actionDefinition.pureFn?.({
+                          stateDraft: draft,
+                          payload,
+                        });
+                      },
+                    );
+                    setCapabilityState?.(
+                      def.name,
+                      newState,
+                      correlation,
+                      patches,
+                    );
+                  }
                 },
-              });
-
-              // run optimistic updates
-              if (info.initialised) {
-                const [newState, patches] = produceWithPatches(
-                  info.state,
-                  (draft) => {
-                    actionDefinition.pureFn?.({ stateDraft: draft, payload });
-                  },
-                );
-                setCapabilityState(def.name, newState, correlation, patches);
-              }
+              ];
             },
-          ];
+          ),
+        ) as {
+          [K in keyof TActions]: (
+            payload: z.infer<TActions[K]["payloadValidator"]>,
+          ) => void;
         },
-      ),
-    ) as {
-      [K in keyof TActions]: (
-        payload: z.infer<TActions[K]["payloadValidator"]>,
-      ) => void;
-    };
+      [sessionDataRef, capabilityInfoRef, setCapabilityState, sendMessage],
+    );
 
-    if (!info.initialised) {
+    if (!info || !info.initialised) {
       return { initialised: false };
     }
     const parsedState = def.stateValidator.safeParse(info.state);
