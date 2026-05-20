@@ -13,6 +13,7 @@ import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { Header } from "./Header";
 import { RoomInfoContextProvider } from "./contexts/roomInfoContext";
+import { RoomUiNavigationContextProvider } from "./contexts/roomUiNavigationContext";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
 import { UsersOnlineContextProvider } from "./contexts/usersOnlineContext";
 import styles from "./diceRoller.module.css";
@@ -218,107 +219,112 @@ export const DiceRoller = memo(
                 ],
               )}
             >
-              <UsersOnlineContextProvider value={usersOnline}>
-                <div
-                  ref={outerDivRef}
-                  className={`main-area ${styles.outerDiv}`}
-                  data-theme="unset"
-                  style={
-                    { "--user-hue": hue } satisfies UserHueStyle as UserHueStyle
-                  }
-                >
-                  {!isPending && sessionData === null && (
-                    <AnonymousEntryDialog
-                      onUpdateNameError={handleAnonymousNameUpdateError}
-                    />
-                  )}
-                  {/* grid-area: header — targeted via > header rule in CSS module */}
-                  <Header
-                    connectionStatus={connectionStatus}
-                    roomName={roomName}
-                  />
-                  {/* chat scrolling area — grid-area: chat */}
-                  <div data-part="scroller" className={styles.chatArea}>
-                    <div
-                      ref={scrollContainerRef}
-                      onScroll={handleScroll}
-                      className="absolute inset-0 overflow-auto px-4"
-                    >
-                      <div className={styles.chatMessages}>
-                        {messages.map((message) => (
-                          <ChatBubble
-                            key={message.id}
-                            message={message}
-                          ></ChatBubble>
-                        ))}
-                        {messages.length === 0 && (
-                          <div className="font-italic">No messages yet</div>
-                        )}
-                        <div ref={bottomRef} />
-                      </div>
-                    </div>
-                    {hasNewMessages && (
-                      <button
-                        onClick={scrollToBottom}
-                        className="btn btn-primary btn-sm absolute bottom-4
-                          left-1/2 -translate-x-1/2 shadow-lg"
-                      >
-                        ↓ New messages
-                      </button>
+              <RoomUiNavigationContextProvider>
+                <UsersOnlineContextProvider value={usersOnline}>
+                  <div
+                    ref={outerDivRef}
+                    className={`main-area ${styles.outerDiv}`}
+                    data-theme="unset"
+                    style={
+                      {
+                        "--user-hue": hue,
+                      } satisfies UserHueStyle as UserHueStyle
+                    }
+                  >
+                    {!isPending && sessionData === null && (
+                      <AnonymousEntryDialog
+                        onUpdateNameError={handleAnonymousNameUpdateError}
+                      />
                     )}
-                  </div>
-                  {/* chat entry bar — grid-area: entry */}
-                  <div data-part="entry" className={styles.entryArea}>
-                    <ChatForm onNewMessage={handleNewChatMessage} />
-                  </div>
-                  {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
-                  <div data-part="sidebar" className={styles.sidebarWrapper}>
-                    <Sidebar />
-                  </div>
-                </div>
-                <Portal>
-                  <Toaster toaster={toaster}>
-                    {(toast) => {
-                      const ToastIcon = toast.type
-                        ? iconMap[toast.type as keyof typeof iconMap]
-                        : undefined;
-                      return (
-                        <Toast.Root
-                          key={toast.id}
-                          className={toastStyles.toast}
-                        >
-                          {ToastIcon && (
-                            <div className="mt-0.5 shrink-0">
-                              <ToastIcon className="h-5 w-5" />
-                            </div>
+                    {/* grid-area: header — targeted via > header rule in CSS module */}
+                    <Header
+                      connectionStatus={connectionStatus}
+                      roomName={roomName}
+                    />
+                    {/* chat scrolling area — grid-area: chat */}
+                    <div data-part="scroller" className={styles.chatArea}>
+                      <div
+                        ref={scrollContainerRef}
+                        onScroll={handleScroll}
+                        className="absolute inset-0 overflow-auto px-4"
+                      >
+                        <div className={styles.chatMessages}>
+                          {messages.map((message) => (
+                            <ChatBubble
+                              key={message.id}
+                              message={message}
+                            ></ChatBubble>
+                          ))}
+                          {messages.length === 0 && (
+                            <div className="font-italic">No messages yet</div>
                           )}
-                          <details
-                            className="flex min-w-0 flex-1 flex-col gap-1"
+                          <div ref={bottomRef} />
+                        </div>
+                      </div>
+                      {hasNewMessages && (
+                        <button
+                          onClick={scrollToBottom}
+                          className="btn btn-primary btn-sm absolute bottom-4
+                            left-1/2 -translate-x-1/2 shadow-lg"
+                        >
+                          ↓ New messages
+                        </button>
+                      )}
+                    </div>
+                    {/* chat entry bar — grid-area: entry */}
+                    <div data-part="entry" className={styles.entryArea}>
+                      <ChatForm onNewMessage={handleNewChatMessage} />
+                    </div>
+                    {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
+                    <div data-part="sidebar" className={styles.sidebarWrapper}>
+                      <Sidebar />
+                    </div>
+                  </div>
+                  <Portal>
+                    <Toaster toaster={toaster}>
+                      {(toast) => {
+                        const ToastIcon = toast.type
+                          ? iconMap[toast.type as keyof typeof iconMap]
+                          : undefined;
+                        return (
+                          <Toast.Root
+                            key={toast.id}
+                            className={toastStyles.toast}
                           >
-                            <summary
-                              className="text-sm leading-snug font-semibold"
+                            {ToastIcon && (
+                              <div className="mt-0.5 shrink-0">
+                                <ToastIcon className="h-5 w-5" />
+                              </div>
+                            )}
+                            <details
+                              className="flex min-w-0 flex-1 flex-col gap-1"
                             >
-                              {toast.title}
-                            </summary>
-                            <Toast.Description
-                              className="text-xs leading-snug opacity-80"
-                            >
-                              {toast.description}
-                            </Toast.Description>
-                          </details>
+                              <summary
+                                className="text-sm leading-snug font-semibold"
+                              >
+                                {toast.title}
+                              </summary>
+                              <Toast.Description
+                                className="text-xs leading-snug opacity-80"
+                              >
+                                {toast.description}
+                              </Toast.Description>
+                            </details>
 
-                          <Toast.CloseTrigger
-                            className="hover:bg-base-300 mt-0.5 shrink-0
-                              cursor-pointer rounded-md p-0.5 transition-colors"
-                          >
-                            <XIcon className="h-4 w-4" />
-                          </Toast.CloseTrigger>
-                        </Toast.Root>
-                      );
-                    }}
-                  </Toaster>
-                </Portal>
-              </UsersOnlineContextProvider>
+                            <Toast.CloseTrigger
+                              className="hover:bg-base-300 mt-0.5 shrink-0
+                                cursor-pointer rounded-md p-0.5
+                                transition-colors"
+                            >
+                              <XIcon className="h-4 w-4" />
+                            </Toast.CloseTrigger>
+                          </Toast.Root>
+                        );
+                      }}
+                    </Toaster>
+                  </Portal>
+                </UsersOnlineContextProvider>
+              </RoomUiNavigationContextProvider>
             </RoomInfoContextProvider>
           </SendMessageContextProvider>
         </SetCapabilityStateContextProvider>
