@@ -4,19 +4,21 @@ import {
 } from "#/capabilities/capabilityRegistry";
 import { authClient } from "#/utils/auth-client";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
+import { useRoomUiNavigationContext } from "../DiceRoller/contexts/roomUiNavigationContext";
 import { Config } from "./Config";
 import { Help } from "./Help";
 import { UsersOnline } from "./UsersOnline";
 import styles from "./sidebar.module.css";
 import { Tabs } from "@ark-ui/react/tabs";
 import { CircleHelp, Cog, UsersRound } from "lucide-react";
-import { memo, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 export const Sidebar = memo(() => {
   const ref = useRef<HTMLElement>(null);
 
   const { data: sessionData } = authClient.useSession();
   const { roomConfig, roomOwnerId } = useRoomInfoContext();
+  const { sharedFolderOpenRequest } = useRoomUiNavigationContext();
   const isOwner = sessionData && sessionData.user.id === roomOwnerId;
 
   const capabilities = useMemo(
@@ -38,13 +40,65 @@ export const Sidebar = memo(() => {
     return defaultKey && `${firstCapWithSidebars?.[0]}.${defaultKey}`;
   }, [capabilities]);
 
+  const availableTabValues = useMemo(() => {
+    const capabilityTabs = capabilities.flatMap(
+      ([name, capInfo]) =>
+        capInfo.sidebarInfos?.map(({ key }) => `${name}.${key}`) ?? [],
+    );
+    return [
+      ...capabilityTabs,
+      ...(isOwner ? ["config"] : []),
+      "usersOnline",
+      "help",
+    ];
+  }, [capabilities, isOwner]);
+
+  const [selectedTab, setSelectedTab] = useState<string | null>(
+    defaultValue ?? null,
+  );
+
+  useEffect(() => {
+    setSelectedTab((current) => {
+      if (current && availableTabValues.includes(current)) return current;
+      return defaultValue ?? availableTabValues[0] ?? null;
+    });
+  }, [availableTabValues, defaultValue]);
+
+  useEffect(() => {
+    if (!sharedFolderOpenRequest) return;
+    if (!availableTabValues.includes("files.files")) return;
+
+    setSelectedTab("files.files");
+    if (!ref.current) return;
+
+    delete ref.current.dataset.desktopClosed;
+    ref.current.dataset.mobileOpen = "true";
+  }, [availableTabValues, sharedFolderOpenRequest]);
+
+  const handleTriggerClick = (isSelected: boolean) => {
+    if (!ref.current) {
+      return;
+    }
+    if ("desktopClosed" in ref.current.dataset) {
+      delete ref.current.dataset.desktopClosed;
+    } else if (isSelected) {
+      ref.current.dataset.desktopClosed = "true";
+    }
+    if (!("mobileOpen" in ref.current.dataset)) {
+      ref.current.dataset.mobileOpen = "true";
+    } else if (isSelected) {
+      delete ref.current.dataset.mobileOpen;
+    }
+  };
+
   return (
     <>
       <div className={styles.spaceHolder} />
 
       <Tabs.Root
         className={`${styles.root} sidebar`}
-        defaultValue={defaultValue}
+        value={selectedTab}
+        onValueChange={(details) => setSelectedTab(details.value)}
         orientation="vertical"
         asChild
       >
@@ -66,21 +120,9 @@ export const Sidebar = memo(() => {
                       className={styles.tabButton}
                       value={`${name}.${key}`}
                       onClick={(e) => {
-                        if (!ref.current) {
-                          return;
-                        }
                         const isSelected =
                           e.currentTarget.ariaSelected === "true";
-                        if ("desktopClosed" in ref.current.dataset) {
-                          delete ref.current.dataset.desktopClosed;
-                        } else if (isSelected) {
-                          ref.current.dataset.desktopClosed = "true";
-                        }
-                        if (!("mobileOpen" in ref.current.dataset)) {
-                          ref.current.dataset.mobileOpen = "true";
-                        } else if (isSelected) {
-                          delete ref.current.dataset.mobileOpen;
-                        }
+                        handleTriggerClick(isSelected);
                       }}
                     >
                       <IconComponent />
@@ -94,20 +136,8 @@ export const Sidebar = memo(() => {
                   className={styles.tabButton}
                   value="config"
                   onClick={(e) => {
-                    if (!ref.current) {
-                      return;
-                    }
                     const isSelected = e.currentTarget.ariaSelected === "true";
-                    if ("desktopClosed" in ref.current.dataset) {
-                      delete ref.current.dataset.desktopClosed;
-                    } else if (isSelected) {
-                      ref.current.dataset.desktopClosed = "true";
-                    }
-                    if (!("mobileOpen" in ref.current.dataset)) {
-                      ref.current.dataset.mobileOpen = "true";
-                    } else if (isSelected) {
-                      delete ref.current.dataset.mobileOpen;
-                    }
+                    handleTriggerClick(isSelected);
                   }}
                 >
                   <Cog />
@@ -117,20 +147,8 @@ export const Sidebar = memo(() => {
                 className={styles.tabButton}
                 value="usersOnline"
                 onClick={(e) => {
-                  if (!ref.current) {
-                    return;
-                  }
                   const isSelected = e.currentTarget.ariaSelected === "true";
-                  if ("desktopClosed" in ref.current.dataset) {
-                    delete ref.current.dataset.desktopClosed;
-                  } else if (isSelected) {
-                    ref.current.dataset.desktopClosed = "true";
-                  }
-                  if (!("mobileOpen" in ref.current.dataset)) {
-                    ref.current.dataset.mobileOpen = "true";
-                  } else if (isSelected) {
-                    delete ref.current.dataset.mobileOpen;
-                  }
+                  handleTriggerClick(isSelected);
                 }}
               >
                 <UsersRound />
@@ -139,20 +157,8 @@ export const Sidebar = memo(() => {
                 className={styles.tabButton}
                 value="help"
                 onClick={(e) => {
-                  if (!ref.current) {
-                    return;
-                  }
                   const isSelected = e.currentTarget.ariaSelected === "true";
-                  if ("desktopClosed" in ref.current.dataset) {
-                    delete ref.current.dataset.desktopClosed;
-                  } else if (isSelected) {
-                    ref.current.dataset.desktopClosed = "true";
-                  }
-                  if (!("mobileOpen" in ref.current.dataset)) {
-                    ref.current.dataset.mobileOpen = "true";
-                  } else if (isSelected) {
-                    delete ref.current.dataset.mobileOpen;
-                  }
+                  handleTriggerClick(isSelected);
                 }}
               >
                 <CircleHelp />
@@ -175,32 +181,24 @@ export const Sidebar = memo(() => {
                     <Tabs.Content
                       key={`${name}.${key}`}
                       value={`${name}.${key}`}
-                      className={styles.tabContent}
+                      className={styles.contentDrawer}
                     >
-                      <div className={styles.tabContentInner}>
-                        <SidebarComponent />
-                      </div>
+                      <SidebarComponent />
                     </Tabs.Content>
                   )
                 );
               });
             })}
             {isOwner && (
-              <Tabs.Content value="config" className={styles.tabContent}>
-                <div className={styles.tabContentInner}>
-                  <Config />
-                </div>
+              <Tabs.Content value="config" className={styles.contentDrawer}>
+                <Config />
               </Tabs.Content>
             )}
-            <Tabs.Content value="help" className={styles.tabContent}>
-              <div className={styles.tabContentInner}>
-                <Help />
-              </div>
+            <Tabs.Content value="help" className={styles.contentDrawer}>
+              <Help />
             </Tabs.Content>
-            <Tabs.Content value="usersOnline" className={styles.tabContent}>
-              <div className={styles.tabContentInner}>
-                <UsersOnline />
-              </div>
+            <Tabs.Content value="usersOnline" className={styles.contentDrawer}>
+              <UsersOnline />
             </Tabs.Content>
           </section>
         </aside>
