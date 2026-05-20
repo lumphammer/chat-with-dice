@@ -37,61 +37,64 @@ const coreFieldsV2Validator = z.object({
   dateShared: z.int(),
 });
 
-const filesStateValidatorV2 = z
-  .object({
-    version: z.literal(2),
-    shares: z.array(
-      z.discriminatedUnion("kind", [
-        coreFieldsV2Validator.extend({
-          kind: z.literal("file"),
-          r2Key: z.string(),
-          thumbnailR2Key: z.string().nullable(),
-          contentType: z.string().nullable().nullable(),
-        }),
-        coreFieldsV2Validator.extend({
-          kind: z.literal("folder"),
-        }),
-      ]),
-    ),
-  })
-  .catch((ctx) => {
-    const v1 = filesStateValidatorV1.parse(ctx.value);
-    return {
-      version: 2,
-      ...v1,
-      shares: v1.shares.map((s) => ({ ...s, dateShared: 0 })),
-    };
-  });
+const filesStateValidatorV2 = z.object({
+  version: z.literal(2),
+  shares: z.array(
+    z.discriminatedUnion("kind", [
+      coreFieldsV2Validator.extend({
+        kind: z.literal("file"),
+        r2Key: z.string(),
+        thumbnailR2Key: z.string().nullable(),
+        contentType: z.string().nullable().nullable(),
+      }),
+      coreFieldsV2Validator.extend({
+        kind: z.literal("folder"),
+      }),
+    ]),
+  ),
+});
 
 const coreFieldsV3Validator = coreFieldsV2Validator;
 
-const filesStateValidatorV3 = z
-  .object({
-    version: z.literal(FILES_STATE_VERSION),
-    shares: z.array(
-      z.discriminatedUnion("kind", [
-        coreFieldsV3Validator.extend({
-          kind: z.literal("file"),
-          r2Key: z.string(),
-          thumbnailR2Key: z.string().nullable(),
-          contentType: z.string().nullable(),
-          sizeBytes: z.int(),
-        }),
-        coreFieldsV3Validator.extend({
-          kind: z.literal("folder"),
-        }),
-      ]),
-    ),
-  })
-  .catch((ctx) => {
-    const v2 = filesStateValidatorV2.parse(ctx.value);
-    return {
-      version: FILES_STATE_VERSION,
-      shares: v2.shares.map((share) =>
-        share.kind === "file" ? { ...share, sizeBytes: 0 } : share,
-      ),
-    };
-  });
+const filesStateValidatorV3 = z.object({
+  version: z.literal(FILES_STATE_VERSION),
+  shares: z.array(
+    z.discriminatedUnion("kind", [
+      coreFieldsV3Validator.extend({
+        kind: z.literal("file"),
+        r2Key: z.string(),
+        thumbnailR2Key: z.string().nullable(),
+        contentType: z.string().nullable(),
+        sizeBytes: z.int(),
+      }),
+      coreFieldsV3Validator.extend({
+        kind: z.literal("folder"),
+      }),
+    ]),
+  ),
+});
+
+const migrateV1ToV2 = (
+  v1: z.infer<typeof filesStateValidatorV1>,
+): z.infer<typeof filesStateValidatorV2> => ({
+  version: 2,
+  shares: v1.shares.map((s) => ({ ...s, dateShared: 0 })),
+});
+
+const migrateV2ToV3 = (
+  v2: z.infer<typeof filesStateValidatorV2>,
+): z.infer<typeof filesStateValidatorV3> => ({
+  version: FILES_STATE_VERSION,
+  shares: v2.shares.map((s) =>
+    s.kind === "file" ? { ...s, sizeBytes: 0 } : s,
+  ),
+});
+
+const filesStateValidator = z.union([
+  filesStateValidatorV3,
+  filesStateValidatorV2.transform(migrateV2ToV3),
+  filesStateValidatorV1.transform(migrateV1ToV2).transform(migrateV2ToV3),
+]);
 
 export const sharedItemMessageDataValidator = z.discriminatedUnion("kind", [
   z.object({
@@ -116,7 +119,7 @@ export const sharedItemMessageDataValidator = z.discriminatedUnion("kind", [
 export type SharedItemMessageData = z.infer<
   typeof sharedItemMessageDataValidator
 >;
-export type FilesState = z.infer<typeof filesStateValidatorV3>;
+export type FilesState = z.infer<typeof filesStateValidator>;
 export type SharedItem = FilesState["shares"][number];
 
 export const filesCapability = createCapability({
@@ -124,7 +127,7 @@ export const filesCapability = createCapability({
   displayName: "Files",
   configValidator: z.object({}),
   defaultConfig: {},
-  stateValidator: filesStateValidatorV3,
+  stateValidator: filesStateValidator,
   getInitialState: () => ({
     version: FILES_STATE_VERSION,
     shares: [],
