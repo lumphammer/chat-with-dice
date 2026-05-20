@@ -3,7 +3,7 @@ import {
   HAVOC_FAILURE_DEGREE,
   HAVOC_SUCCESS_DEGREE,
 } from "#/constants";
-import { z } from "zod";
+import * as z from "zod";
 
 export type HavocFormula = z.infer<typeof havocFormulaValidator>;
 export type HavocResult = z.infer<typeof havocResultValidator>;

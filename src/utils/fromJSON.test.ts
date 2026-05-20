@@ -1,6 +1,6 @@
 import { fromJSON } from "./fromJSON";
 import { describe, expect, test } from "vitest";
-import { z } from "zod";
+import * as z from "zod";
 
 const personValidator = z.object({
   name: z.string(),

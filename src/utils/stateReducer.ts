@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { z } from "zod";
+import type * as z from "zod";
 
 /**
  * The return type of `createStateReducer`. Holds the state validator,

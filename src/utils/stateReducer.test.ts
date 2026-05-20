@@ -1,7 +1,7 @@
 // oxlint-disable no-magic-numbers
 import { createStateReducer } from "./stateReducer";
 import { describe, expect, it } from "vitest";
-import { z } from "zod";
+import * as z from "zod";
 
 // ---------------------------------------------------------------------------
 // Shared fixture

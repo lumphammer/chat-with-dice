@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 /**
  * A preprocessor that converts a string input to a JSON object if possible,

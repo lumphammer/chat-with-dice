@@ -1,5 +1,5 @@
 import { atom, type Atom, type WritableAtom } from "nanostores";
-import { z } from "zod";
+import * as z from "zod";
 
 /**
  * Create a store which will persist to localStorage. If there is an existing

@@ -19,7 +19,7 @@ import {
   type SetStateAction,
 } from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import z from "zod";
+import * as z from "zod";
 
 const MAX_HISTORY_BUFFER_LENGTH = 100;
 

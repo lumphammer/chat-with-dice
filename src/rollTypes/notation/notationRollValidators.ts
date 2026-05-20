@@ -1,5 +1,5 @@
 import { structuredRollsSchema } from "#/validators/rpgDieRollerResulsSchemas";
-import { z } from "zod";
+import * as z from "zod";
 
 export const notationFormulaValidator = z.object({ formula: z.string() });
 

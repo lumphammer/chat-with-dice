@@ -6,7 +6,7 @@ import {
 import { logError } from "./utils";
 import { desc, eq } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
-import { z } from "zod";
+import * as z from "zod";
 
 const MESSAGE_CATCHUP_LENGTH = 100;
 
