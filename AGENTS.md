@@ -1,6 +1,6 @@
 # Notes for LLMs
 
-This is a tabletop RPG chat app which allows the users to make dice rolls alongside the chat.
+The mission and values for this project are available in MISSION.md.
 
 ## Tech stack
 

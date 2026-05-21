@@ -55,6 +55,12 @@
 - [x] Grid view (larger thumbnail).
 - [x] Goddammit, user data should be its own DO
 
+## File sharing
+
+- [x] file manager in chat room
+- [x] shared items
+- [x] messages on share
+
 ### Deferred file manager items
 
 - [ ] Paging for large folders.
