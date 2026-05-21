@@ -56,7 +56,7 @@
 }
 
 .spaceHolder {
-  width: var(--sidebarTabRailWidth);
+  width: 3em; /* should equal --sidebarTabRailWidth */
   @container (width >= 80rem) {
     width: 0px;
   }
