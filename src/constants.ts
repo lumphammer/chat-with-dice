@@ -23,3 +23,5 @@ export const HAVOC_SUCCESS_DEGREE = "success";
 export const HAVOC_CRITICAL_DEGREE = "critical";
 export const HAVOC_SUCCESS_MIN = 4;
 export const HAVOC_CRITICAL_MIN = 6;
+
+export const VIEW_MODE_STORAGE_KEY = "file-manager-view-mode";

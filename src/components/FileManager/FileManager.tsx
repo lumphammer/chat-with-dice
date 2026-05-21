@@ -7,6 +7,8 @@ import { Toolbar } from "./Toolbar";
 import { UploadingList } from "./UploadingList";
 import type { BreadcrumbSegment, FileManagerLocation, FileNode } from "./types";
 import { useUpload } from "./useUpload";
+import { viewModeStore, type ViewMode } from "./viewModeStore";
+import { useStore } from "@nanostores/react";
 import { actions } from "astro:actions";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -19,17 +21,8 @@ import {
   useState,
 } from "react";
 
-const VIEW_MODE_STORAGE_KEY = "file-manager-view-mode";
 const HEADER_GAP_PX = 8;
 const MIN_BREADCRUMB_WIDTH_PX = 180;
-type ViewMode = "list" | "grid";
-
-const getStoredViewMode = (): ViewMode => {
-  if (typeof window === "undefined") return "list";
-
-  const storedViewMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-  return storedViewMode === "grid" ? "grid" : "list";
-};
 
 const useElementWidth = <T extends HTMLElement>(
   ref: RefObject<T | null>,
@@ -76,7 +69,9 @@ export const FileManager = memo(
   } & ReadOnlyProps) => {
     const readOnly = ownerUserId !== undefined;
     const [nodes, setNodes] = useState<FileNode[]>(() => initialNodes ?? []);
-    const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
+
+    const viewMode = useStore(viewModeStore);
+
     const [isDragOver, setIsDragOver] = useState(false);
     const [isLoading, setIsLoading] = useState(initialNodes === undefined);
     const [breadcrumbWidths, setBreadcrumbWidths] = useState({
@@ -161,8 +156,7 @@ export const FileManager = memo(
     );
 
     const handleViewModeChange = useCallback((nextViewMode: ViewMode) => {
-      setViewMode(nextViewMode);
-      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextViewMode);
+      viewModeStore.set(nextViewMode);
     }, []);
 
     const folderNodes = useMemo(
