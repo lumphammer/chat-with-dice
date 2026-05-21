@@ -55,6 +55,13 @@ export const DiceRoller = memo(
     roomOwnerId: string;
   }) => {
     const outerDivRef = useRef<HTMLDivElement>(null);
+    const headerRef = useRef<HTMLElement>(null);
+    const chatAreaRef = useRef<HTMLDivElement>(null);
+    const entryAreaRef = useRef<HTMLDivElement>(null);
+    const sidebarBackgroundRefs = useMemo(
+      () => [headerRef, chatAreaRef, entryAreaRef],
+      [],
+    );
     const { isPending, data: sessionData } = authClient.useSession();
     const [roomConfig, setRoomConfig] = useState(initialConfig);
     const [roomName, setRoomName] = useState(initialDisplayName);
@@ -238,11 +245,16 @@ export const DiceRoller = memo(
                     )}
                     {/* grid-area: header — targeted via > header rule in CSS module */}
                     <Header
+                      ref={headerRef}
                       connectionStatus={connectionStatus}
                       roomName={roomName}
                     />
                     {/* chat scrolling area — grid-area: chat */}
-                    <div data-part="scroller" className={styles.chatArea}>
+                    <div
+                      ref={chatAreaRef}
+                      data-part="scroller"
+                      className={styles.chatArea}
+                    >
                       <div
                         ref={scrollContainerRef}
                         onScroll={handleScroll}
@@ -272,12 +284,16 @@ export const DiceRoller = memo(
                       )}
                     </div>
                     {/* chat entry bar — grid-area: entry */}
-                    <div data-part="entry" className={styles.entryArea}>
+                    <div
+                      ref={entryAreaRef}
+                      data-part="entry"
+                      className={styles.entryArea}
+                    >
                       <ChatForm onNewMessage={handleNewChatMessage} />
                     </div>
                     {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
                     <div data-part="sidebar" className={styles.sidebarWrapper}>
-                      <Sidebar />
+                      <Sidebar backgroundElementRefs={sidebarBackgroundRefs} />
                     </div>
                   </div>
                   <Portal>

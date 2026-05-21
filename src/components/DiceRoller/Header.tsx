@@ -2,17 +2,21 @@ import Logo from "#/assets/logo.svg?react";
 import { NavBarAccount } from "../NavBarAccount";
 import type { ConnectionStatus } from "./types";
 import { memo } from "react";
+import type { Ref } from "react";
 
 export const Header = memo(
   ({
     connectionStatus,
+    ref,
     roomName,
   }: {
     roomName: string;
     connectionStatus: ConnectionStatus;
+    ref?: Ref<HTMLElement>;
   }) => {
     return (
       <header
+        ref={ref}
         className="header relative top-0 left-0 z-10 flex h-auto w-full flex-row
           flex-wrap items-center justify-between gap-4 px-4 py-1"
       >

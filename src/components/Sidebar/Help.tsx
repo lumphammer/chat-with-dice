@@ -25,9 +25,10 @@ export const Help = memo(() => {
 
         <h3>The sidebar</h3>
         <p>
-          The icons on the left of the sidebar switch between panels. Click the
-          active icon again to collapse the sidebar and give yourself more room
-          for the chat.
+          The icons on the left of the sidebar switch between panels. On
+          desktop, click the active icon again to collapse the sidebar. On
+          mobile, close it by tapping outside the menu, tapping the close
+          button, or swiping it right.
         </p>
 
         <p>
