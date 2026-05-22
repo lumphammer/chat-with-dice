@@ -27,26 +27,30 @@ type SidebarStyle = CSSProperties & {
   "--sidebarDragDistance": string;
 };
 
-const SidebarTabTrigger = ({
-  children,
-  onTriggerClick,
-  value,
-}: {
-  children: ReactNode;
-  onTriggerClick: (trigger: HTMLButtonElement, isSelected: boolean) => void;
-  value: string;
-}) => (
-  <Tabs.Trigger
-    className={styles.tabButton}
-    value={value}
-    onClick={(event) => {
-      const isSelected = event.currentTarget.ariaSelected === "true";
-      onTriggerClick(event.currentTarget, isSelected);
-    }}
-  >
-    {children}
-  </Tabs.Trigger>
+const SidebarTabTrigger = memo(
+  ({
+    children,
+    onTriggerClick,
+    value,
+  }: {
+    children: ReactNode;
+    onTriggerClick: (trigger: HTMLButtonElement, isSelected: boolean) => void;
+    value: string;
+  }) => (
+    <Tabs.Trigger
+      className={styles.tabButton}
+      value={value}
+      onClick={(event) => {
+        const isSelected = event.currentTarget.ariaSelected === "true";
+        onTriggerClick(event.currentTarget, isSelected);
+      }}
+    >
+      {children}
+    </Tabs.Trigger>
+  ),
 );
+
+SidebarTabTrigger.displayName = "SidebarTabTrigger";
 
 export const Sidebar = memo(
   ({
@@ -322,3 +326,5 @@ export const Sidebar = memo(
     );
   },
 );
+
+Sidebar.displayName = "Sidebar";
