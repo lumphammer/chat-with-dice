@@ -124,12 +124,6 @@ view without causing its children to reflow. */
 
 .dialogWrapper {
   display: contents;
-
-  &[role="dialog"] {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: subgrid;
-  }
 }
 
 .backdrop {
