@@ -1,14 +1,11 @@
-onlyBuiltDependencies:
-  - better-sqlite3
-  - esbuild
-  - prisma
-  - workerd
-
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  prisma: true
+  sharp: true
+  workerd: true
 overrides:
   "@astrojs/cloudflare": $@astrojs/cloudflare
   astro: $astro
   wrangler: $wrangler
   # vite: 8.0.0
-
-patchedDependencies:
-  # quikdown@1.2.9: patches/quikdown@1.2.2.patch

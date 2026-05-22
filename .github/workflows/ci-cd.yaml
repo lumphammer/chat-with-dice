@@ -29,7 +29,7 @@ jobs:
           export
           node --version
           pnpm --version
-          npx tsc --version
+          pnpm exec tsc --version
 
       - name: Typecheck
         run: pnpm run types:check
