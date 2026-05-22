@@ -77,6 +77,17 @@ export function useSwipeToDismiss({
   const [dragDistance, setDragDistance] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
+  // After a swipe ends, the browser usually skips the synthesized click
+  // (significant touch movement). Without this, the suppress flag would stay
+  // set until *some* future click — eating the user's next, unrelated tap.
+  // setTimeout(0) defers past the same-task window in which a synthesized
+  // click would fire and consume the flag legitimately.
+  const clearClickSuppressionSoon = useCallback(() => {
+    setTimeout(() => {
+      suppressNextClickRef.current = false;
+    }, 0);
+  }, []);
+
   const bind = useDrag(
     ({
       cancel,
@@ -93,6 +104,7 @@ export function useSwipeToDismiss({
       if (canceled) {
         setIsDragging(false);
         setDragDistance(0);
+        clearClickSuppressionSoon();
         return;
       }
 
@@ -119,6 +131,7 @@ export function useSwipeToDismiss({
         setIsDragging(false);
         setDragDistance(0);
         if (shouldDismiss) onDismiss();
+        clearClickSuppressionSoon();
         return;
       }
 
