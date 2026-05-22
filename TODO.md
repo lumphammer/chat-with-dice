@@ -1,20 +1,5 @@
 # TODO
 
-## Capabilities
-
-- [x] Framework for defining capabilities, including config, state, and actions
-- [x] Mechanisms for sending that to clients at the right moments
-- [x] Client side is aggregating all state in an untyped way
-- [x] put chat area in a max-width container
-- [x] add a sidebar which opens to the side in desktop, or overlaying on mobile
-- [x] in sidebar, check or load room config and render a default UI per capability type
-- [x] probably add something to CapabilityDef to handle getting state from central store, validating it, making it available
-- [x] each component can then use that to get state and display magic on screen
-- [x] finally, close the circle by being able to dispatch the actions we have on the capability
-- [x] ability to "mount" a capability client-side
-
-## Small Items
-
 - [x] Mobile layout
 - [x] Help tab
 - [x] Nanostores for room name, display name, etc.
@@ -22,61 +7,37 @@
 - [x] Fix websocket leakage & instability
 - [x] Create proper relations for room owner
 - [x] websocket endpoint can stop checking d1 for room existence (WONTFIX - still need to fetch authoritative DO id)
+- [x] Swipable sidebar on mobile
+- [x] Room should check it exists in D1 and not deleted BEFORE running DB migrations
+- [x] grid view storage should be a gated atom
+- [x] Sharing files to rooms (via `roomResourceShares`)
+- [ ] Quotas
+  - [ ] Keep user quota up to date
+  - [ ] Quota usage and control in admin
+    - [ ] Display quota usage
+    - [ ] Set quota
+    - [ ] "Check quota maths" button
+    - [ ] "Check R2 sizes" button
+  - [ ] Quota and usage display in filemanager
+  - [ ] Quota enforcement
+  - [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
+  - [ ] Periodic purge of deleted files
 - [ ] Recent rooms list
-- [ ] Swipable sidebar on mobile
 - [ ] Easier feedback channels (built-in?)
 - [ ] Move capability state storage into drizzle
-- [ ] Room should check it exists in D1 and not deleted BEFORE running DB migrations
 - [ ] websocket endpoint can move under `rooms` in pages tree
-- [ ] grid view storage should be a gated atom
-
-## Big items
-
-- [x] Mission statement
-- [x] Basic room admin (owner only)
-  - [x] Rename
-  - [x] Delete
-  - [x] Manage capabilities
-- [x] Roll Types to capabilities
-- [x] Split chat form / UX work
-- [x] System admin
-  - [x] Admin users
-  - [x] List rooms
-- [x] CI / CD
-- [x] "Currently online" / ~~"All visitors" view~~
-- [x] Roles/permissions
-- [x] Completely overhaul anonymous login system
-
-## File Manager
-
-- [x] File manager with upload, browse, preview, rename delete.
-- [x] Preview for PDFs, audio, text/markdown.
-- [x] Thumbnails.
-- [x] Grid view (larger thumbnail).
-- [x] Goddammit, user data should be its own DO
-
-## File sharing
-
-- [x] file manager in chat room
-- [x] shared items
-- [x] messages on share
 
 ### Deferred file manager items
 
-- [ ] Paging for large folders.
-- [ ] Copy.
-- [ ] Move.
-- [ ] Multi-select for bulk operations.
-- [ ] Recursive folder upload from OS.
-- [ ] Replace/overwrite existing files.
-- [ ] Sharing files to rooms (via `roomResourceShares`).
-- [ ] Trash/recycle bin UI for restoring soft-deleted items.
-- [ ] Periodic purge of deleted files.
-- [ ] Quota and usage display.
-- [ ] Quota enforcement.
-- [ ] Quota usage and control in admin.
-- [ ] Search by filename.
 - [ ] Annotation/alt text
+- [ ] Paging for large folders
+- [ ] Copy
+- [ ] Move
+- [ ] Multi-select for bulk operations
+- [ ] Recursive folder upload from OS
+- [ ] Multi-part uploads for large files
+- [ ] Replace/overwrite existing files
+- [ ] Search by filename
 
 ## Capabilities
 
@@ -95,7 +56,6 @@
   - [ ] Theme
 - [x] Users online as a panel
 - [ ] Themes
-- [ ] File uploads
 - [ ] Cards
 - [ ] Roll tables
 - [ ] Collaborative documents
