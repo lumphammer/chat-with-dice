@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui";
+
+html,
+body {
+  overscroll-behavior: none;
+}
 @plugin "daisyui" {
   themes: cupcake, dracula;
 }
