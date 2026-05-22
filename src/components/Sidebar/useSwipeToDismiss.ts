@@ -6,7 +6,10 @@ type Options = {
   enabled: boolean;
   handleSelector?: string;
   ignoreSelector?: string;
-  onDismiss: () => void;
+  /** Called when the user swipes rightward past threshold. */
+  onDismiss?: () => void;
+  /** Called when the user swipes leftward past threshold. */
+  onReveal?: () => void;
 };
 
 const CLAIM_DISTANCE = 12;
@@ -62,15 +65,22 @@ function shouldIgnoreStart(
 }
 
 /**
- * Right-swipe-to-dismiss for a drawer. Wraps @use-gesture/react's drag with
- * our own start-filtering (handle/ignore selectors), a width-proportional
- * dismiss threshold, and click suppression after a successful gesture.
+ * Horizontal swipe gesture for a drawer. Wraps @use-gesture/react's drag with
+ * start-filtering (handle/ignore selectors), a width-proportional threshold,
+ * and click suppression after a successful gesture.
+ *
+ * Rightward swipes call `onDismiss`; leftward swipes call `onReveal`. The
+ * caller decides which directions are meaningful at any moment by passing
+ * `undefined` for the irrelevant one. `dragDistance` and `dragProgress` only
+ * track rightward motion — leftward gestures do not get follow-the-finger
+ * feedback in this version.
  */
 export function useSwipeToDismiss({
   enabled,
   handleSelector,
   ignoreSelector = DEFAULT_IGNORE_SELECTOR,
   onDismiss,
+  onReveal,
 }: Options) {
   const suppressNextClickRef = useRef(false);
   const dismissThresholdRef = useRef(MIN_DISMISS_DISTANCE);
@@ -117,26 +127,30 @@ export function useSwipeToDismiss({
         suppressNextClickRef.current = true;
       }
 
-      if (movementX < -CLAIM_DISTANCE) {
-        cancel();
-        return;
-      }
-
-      const distance = Math.max(0, movementX);
+      // Only track rightward motion for visual feedback. Leftward gestures
+      // (reveal) just commit on release with no follow-the-finger.
+      const rightwardDistance = Math.max(0, movementX);
 
       if (last) {
-        const shouldDismiss =
-          distance >= dismissThresholdRef.current ||
-          (velocityX >= DISMISS_VELOCITY && distance >= CLAIM_DISTANCE * 2);
+        const absDistance = Math.abs(movementX);
+        const absVelocity = Math.abs(velocityX);
+        const threshold = dismissThresholdRef.current;
+        const passedThreshold =
+          absDistance >= threshold ||
+          (absVelocity >= DISMISS_VELOCITY &&
+            absDistance >= CLAIM_DISTANCE * 2);
         setIsDragging(false);
         setDragDistance(0);
-        if (shouldDismiss) onDismiss();
+        if (passedThreshold) {
+          if (movementX > 0) onDismiss?.();
+          else if (movementX < 0) onReveal?.();
+        }
         clearClickSuppressionSoon();
         return;
       }
 
       setIsDragging(true);
-      setDragDistance(distance);
+      setDragDistance(rightwardDistance);
     },
     {
       axis: "x",

@@ -118,6 +118,9 @@ export const Sidebar = memo(
     const closeMobileSidebar = useCallback(() => {
       setIsMobileOpen(false);
     }, []);
+    const openMobileSidebar = useCallback(() => {
+      setIsMobileOpen(true);
+    }, []);
 
     const {
       dragDistance,
@@ -125,9 +128,10 @@ export const Sidebar = memo(
       isDragging: isSwipeDragging,
       swipeHandlers,
     } = useSwipeToDismiss({
-      enabled: isModalOpen,
+      enabled: !isDesktop,
       handleSelector: SWIPE_HANDLE_SELECTOR,
-      onDismiss: closeMobileSidebar,
+      onDismiss: isModalOpen ? closeMobileSidebar : undefined,
+      onReveal: !isModalOpen ? openMobileSidebar : undefined,
     });
 
     const sidebarStyle: SidebarStyle = {
@@ -236,7 +240,20 @@ export const Sidebar = memo(
                 </button>
               )}
               <Tabs.List className={styles.tabList} asChild>
-                <nav data-sidebar-swipe-handle>
+                {/* Tap on the nav's empty area (not a tab button) opens the
+                    sidebar on mobile. Keyboard users have full access via the
+                    focusable tab buttons inside, so the click handler is a
+                    mouse/touch convenience and does not need a keyboard
+                    equivalent. */}
+                {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events */}
+                <nav
+                  data-sidebar-swipe-handle
+                  onClick={(event) => {
+                    if (event.target !== event.currentTarget) return;
+                    if (isDesktop) return;
+                    setIsMobileOpen(true);
+                  }}
+                >
                   {roomConfig.capabilities.map(({ name }) => {
                     if (!isCapabilityName(name)) {
                       return null;
