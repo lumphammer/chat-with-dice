@@ -33,8 +33,12 @@ export class UserDataRepository {
   async getRootSize() {
     const result = await this.db
       .select({
-        // can't see a way to do + in pure drizzle
-        total: sql`SUM(dbSchema.files.sizeBytes) + SUM(dbSchema.folders.sizeBytes)`,
+        // `+` isn't expressible in Drizzle, hence the `sql` template. COALESCE
+        // is because SUM() over zero rows is NULL, and NULL + x is NULL.
+        total: sql<number>`
+          COALESCE(SUM(CASE WHEN ${dbSchema.files.isReady} = 1 THEN ${dbSchema.files.sizeBytes} END), 0)
+          + COALESCE(SUM(${dbSchema.folders.recursiveSizeBytes}), 0)
+        `,
       })
       .from(dbSchema.nodes)
       .leftJoin(dbSchema.files, eq(dbSchema.nodes.id, dbSchema.files.id))
@@ -43,7 +47,6 @@ export class UserDataRepository {
         and(
           isNull(dbSchema.nodes.parentFolderId),
           isNull(dbSchema.nodes.deletedTime),
-          eq(dbSchema.files.isReady, 1),
         ),
       );
     const total = result.at(0)?.total;

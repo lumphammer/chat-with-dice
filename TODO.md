@@ -13,7 +13,7 @@
 - [x] Sharing files to rooms (via `roomResourceShares`)
 - [ ] Quotas
   - [x] Create a repository object for user data
-  - [x] Fix the missing FK from files/folders -> nodes 
+  - [x] Fix the missing FK from files/folders -> nodes
   - [x] Keep user quota up to date
   - [ ] Quota usage and control in admin
     - [ ] Display quota usage

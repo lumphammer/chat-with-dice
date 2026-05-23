@@ -3,6 +3,7 @@ import { ChangeEmailSection } from "./ChangeEmailSection";
 import { ChangeImageSection } from "./ChangeImageSection";
 import { ChangeNameSection } from "./ChangeNameSection";
 import { ChangePasswordSection } from "./ChangePasswordSection";
+import { StorageQuotaSection } from "./StorageQuotaSection";
 
 type InitialUser = {
   name: string | null;
@@ -23,6 +24,7 @@ export function AccountSettingsForm({ initialUser }: Props) {
 
   return (
     <div className="flex w-full max-w-lg flex-col gap-6">
+      <StorageQuotaSection />
       <ChangeImageSection currentImage={image} name={name} email={email} />
       <ChangeNameSection currentName={name ?? ""} />
       <ChangeEmailSection currentEmail={email} />

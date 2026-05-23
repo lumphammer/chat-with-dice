@@ -147,7 +147,7 @@ export class UserDataDO extends DurableObject {
     if (node.parentFolderId && sizeToSubtract > 0) {
       this.repo.adjustAncestorSizes(node.parentFolderId, -sizeToSubtract);
     }
-    this.syncQuotaWithSizes();
+    await this.syncQuotaWithSizes();
   }
 
   async hardDeleteNode(nodeId: string) {
@@ -187,7 +187,7 @@ export class UserDataDO extends DurableObject {
     if (folderId) {
       this.repo.adjustAncestorSizes(folderId, sizeBytes);
     }
-    this.syncQuotaWithSizes();
+    await this.syncQuotaWithSizes();
   }
 
   async markFileThumbnailReady(
@@ -326,12 +326,12 @@ export class UserDataDO extends DurableObject {
     };
   }
 
-  private syncQuotaWithSizes() {
+  private async syncQuotaWithSizes() {
     // we calculate this from scratch for now so as to reduce the chance of
     // quota usage getting or staying out of sync with reality
-    const total = this.repo.getRootSize();
+    const total = await this.repo.getRootSize();
     if (typeof total === "number") {
-      d1.update(users).set({
+      await d1.update(users).set({
         storage_used_bytes: total,
       });
     }
