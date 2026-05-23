@@ -1,9 +1,9 @@
+import { formatBytes } from "#/utils/formatBytes";
 import { ImagePreview } from "./ImagePreview";
 import { PdfPreview } from "./PdfPreview";
 import { TextPreview } from "./TextPreview";
 import { fileTypeIcon } from "./fileTypeIcon";
 import { buildFileUrl } from "./fileUrl";
-import { formatBytes } from "./formatBytes";
 import { isTextPreviewable } from "./textPreviewTypes";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { Download, Share2, Unlink2, X } from "lucide-react";

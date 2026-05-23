@@ -1,7 +1,7 @@
+import { formatBytes } from "#/utils/formatBytes";
 import { KebabMenu } from "./KebabMenu";
 import { fileTypeIcon } from "./fileTypeIcon";
 import { buildFileUrl } from "./fileUrl";
-import { formatBytes } from "./formatBytes";
 import type { FileNode } from "./types";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";

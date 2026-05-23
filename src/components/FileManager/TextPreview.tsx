@@ -1,4 +1,4 @@
-import { formatBytes } from "./formatBytes";
+import { formatBytes } from "../../utils/formatBytes";
 import {
   TEXT_PREVIEW_SIZE_LIMIT_BYTES,
   isMarkdownPreviewable,
