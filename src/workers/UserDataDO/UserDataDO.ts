@@ -149,9 +149,7 @@ export class UserDataDO extends DurableObject {
   }
 
   async hardDeleteNode(nodeId: string) {
-    await this.repo.deleteNode(nodeId);
-    await this.repo.deleteFile(nodeId);
-    await this.repo.deleteFolder(nodeId);
+    await this.repo.hardDeleteNode(nodeId);
   }
 
   async createFile(

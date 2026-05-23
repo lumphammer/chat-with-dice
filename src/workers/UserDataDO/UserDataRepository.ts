@@ -143,6 +143,15 @@ export class UserDataRepository {
     name: string,
     parentFolderId: string | null | undefined,
   ) {
+    // PRAGMA here to allow us to insert into two tables with mutually dependant
+    // foreign keys. The *correct* way would be to declare the FKs as
+    // "DEFERRABLE INITIALLY DEFERRED" and then run these inserts in a
+    // transaction. However, 1. Drizzle doesn't have a way to express deferred
+    // FKs, and 2. seems like drizzle transactions in durbale objects are
+    // broken at the moment.
+    // https://sqlite.org/pragma.html#pragma_foreign_keys
+    // https://sqlite.org/foreignkeys.html#fk_deferred
+    this.db.run(sql`PRAGMA foreign_keys = OFF`);
     await this.db.insert(dbSchema.folders).values({
       id,
       recursiveSizeBytes: 0,
@@ -153,6 +162,7 @@ export class UserDataRepository {
       folderId: id,
       parentFolderId,
     });
+    this.db.run(sql`PRAGMA foreign_keys = ON`);
   }
 
   /** Create a file row (initially unready, size 0) and its matching node row. */
@@ -163,6 +173,8 @@ export class UserDataRepository {
     contentType: string;
     parentFolderId: string | null | undefined;
   }) {
+    // see comment about PRAGMA in createFolder ☝️
+    this.db.run(sql`PRAGMA foreign_keys = OFF`);
     await this.db.insert(dbSchema.files).values({
       id: values.id,
       r2Key: values.r2Key,
@@ -176,6 +188,7 @@ export class UserDataRepository {
       fileId: values.id,
       parentFolderId: values.parentFolderId,
     });
+    this.db.run(sql`PRAGMA foreign_keys = ON`);
   }
 
   // === Updates ===
@@ -274,16 +287,8 @@ export class UserDataRepository {
 
   // === Deletes ===
 
-  deleteNode(id: string) {
+  hardDeleteNode(id: string) {
     return this.db.delete(dbSchema.nodes).where(eq(dbSchema.nodes.id, id));
-  }
-
-  deleteFile(id: string) {
-    return this.db.delete(dbSchema.files).where(eq(dbSchema.files.id, id));
-  }
-
-  deleteFolder(id: string) {
-    return this.db.delete(dbSchema.folders).where(eq(dbSchema.folders.id, id));
   }
 
   // === Shares ===

@@ -35,6 +35,7 @@ export function setupDB<
     // Drizzle's migration generator does add the PRAGMA calls to the
     // migrations, but PRAGMA foreign_keys is a a no-op inside a SQLite
     // transaction, and the migrations are, of course, run in a transaction.
+    // https://sqlite.org/pragma.html#pragma_foreign_keys
     try {
       log("Attempting migration");
       db.run(sql`PRAGMA foreign_keys = OFF`);

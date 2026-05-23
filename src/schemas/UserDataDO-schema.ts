@@ -6,15 +6,24 @@ import {
   uniqueIndex,
   snakeCase,
   unique,
+  type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 
 export const folders = snakeCase.table("folders", {
-  id: text().primaryKey(),
+  id: text()
+    .primaryKey()
+    .references((): AnySQLiteColumn => nodes.id, {
+      onDelete: "cascade",
+    }),
   recursiveSizeBytes: int().notNull(),
 });
 
 export const files = snakeCase.table("files", {
-  id: text().primaryKey(),
+  id: text()
+    .primaryKey()
+    .references((): AnySQLiteColumn => nodes.id, {
+      onDelete: "cascade",
+    }),
   sizeBytes: int().notNull(),
   isReady: int().notNull().default(0),
   r2Key: text().notNull(),
