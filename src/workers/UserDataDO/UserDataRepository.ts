@@ -115,7 +115,7 @@ export class UserDataRepository {
   // === Node lookups ===
 
   /** Find a non-deleted node by id, with its file/folder relations. */
-  findNodeWithRelations(nodeId: string) {
+  getNode(nodeId: string) {
     return this.db.query.nodes.findFirst({
       where: {
         id: nodeId,
@@ -133,7 +133,7 @@ export class UserDataRepository {
    * files. If the node has a file that isn't ready, the relation comes back
    * null.
    */
-  findNodeWithReadyFile(nodeId: string) {
+  getFileNode(nodeId: string) {
     return this.db.query.nodes.findFirst({
       where: {
         id: nodeId,
@@ -150,7 +150,7 @@ export class UserDataRepository {
   }
 
   /** List live children of a folder (`null` = root). */
-  findChildNodes(folderId: string | null | undefined) {
+  getChildNodes(folderId: string | null | undefined) {
     return this.db.query.nodes.findMany({
       where: {
         deletedTime: { isNull: true },
@@ -221,10 +221,10 @@ export class UserDataRepository {
 
   // === Updates ===
 
-  setNodeDeletedTime(nodeId: string, deletedTime: number) {
+  softDeleteNode(nodeId: string) {
     return this.db
       .update(dbSchema.nodes)
-      .set({ deletedTime })
+      .set({ deletedTime: Date.now() })
       .where(eq(dbSchema.nodes.id, nodeId));
   }
 

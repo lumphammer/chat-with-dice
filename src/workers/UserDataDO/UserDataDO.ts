@@ -5,6 +5,7 @@ import { UserDataRepository } from "./UserDataRepository";
 import type { PathResolution } from "./types";
 import { isUniqueConstraintError, log, logError } from "./utils";
 import { DurableObject } from "cloudflare:workers";
+import { env as cfEnv } from "cloudflare:workers";
 import { nanoid } from "nanoid";
 
 type NodeForShare = {
@@ -114,7 +115,7 @@ export class UserDataDO extends DurableObject {
   }
 
   getNodes(folderId?: string | null) {
-    return this.repo.findChildNodes(folderId);
+    return this.repo.getChildNodes(folderId);
   }
 
   async createFolder(name: string, parentFolderId?: string | null) {
@@ -133,12 +134,12 @@ export class UserDataDO extends DurableObject {
   }
 
   async softDeleteNode(nodeId: string) {
-    const node = await this.repo.findNodeWithRelations(nodeId);
+    const node = await this.repo.getNode(nodeId);
     if (!node) {
       throw new Error("File or folder not found");
     }
 
-    await this.repo.setNodeDeletedTime(nodeId, Date.now());
+    await this.repo.softDeleteNode(nodeId);
 
     const sizeToSubtract = node.file
       ? node.file.sizeBytes
@@ -183,6 +184,29 @@ export class UserDataDO extends DurableObject {
   }
 
   async markFileReady(id: string, sizeBytes: number, folderId?: string | null) {
+    const usage = await d1.query.users.findFirst({
+      where: {
+        user_data_do_id: this.ctx.id.toString(),
+      },
+      columns: {
+        storage_quota_bytes: true,
+        storage_used_bytes: true,
+      },
+    });
+
+    if (!usage) {
+      throw new Error("User not found");
+    }
+
+    if (usage.storage_used_bytes + sizeBytes > usage.storage_quota_bytes) {
+      this.repo.hardDeleteNode(id);
+      const r2Key = (await this.repo.getNode(id))?.file?.r2Key;
+      if (r2Key) {
+        await cfEnv.PRIVATE_R2?.delete(r2Key);
+      }
+      throw new Error("Storage quota exceeded");
+    }
+
     await this.repo.markFileReady(id, sizeBytes);
     if (folderId) {
       this.repo.adjustAncestorSizes(folderId, sizeBytes);
@@ -224,7 +248,7 @@ export class UserDataDO extends DurableObject {
   }
 
   async getFile(nodeId: string) {
-    const node = await this.repo.findNodeWithReadyFile(nodeId);
+    const node = await this.repo.getFileNode(nodeId);
     if (!node || !node.file) {
       throw new Error(`File not found in database: ${nodeId}`);
     }
@@ -260,7 +284,7 @@ export class UserDataDO extends DurableObject {
       return this.toShareResult("existing", existing.node);
     }
 
-    const node = await this.repo.findNodeWithRelations(nodeId);
+    const node = await this.repo.getNode(nodeId);
     if (!node) {
       return { result: "error", reason: `Node not found: ${nodeId}` };
     }
