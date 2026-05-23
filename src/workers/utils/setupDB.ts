@@ -1,5 +1,5 @@
 // import * as dbSchema from "#/schemas/ChatRoomDO-schema";
-import type { TablesRelationalConfig } from "drizzle-orm";
+import { sql, type TablesRelationalConfig } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/durable-sqlite";
 import { migrate } from "drizzle-orm/durable-sqlite/migrator";
 
@@ -30,9 +30,16 @@ export function setupDB<
 
   void ctx.blockConcurrencyWhile(async () => {
     // migrate the db
+    // we wrap this in PRAGMA foreign_keys = OFF/ON so that migrations can
+    // affect foreign keys without causing cascading deletions. Technically,
+    // Drizzle's migration generator does add the PRAGMA calls to the
+    // migrations, but PRAGMA foreign_keys is a a no-op inside a SQLite
+    // transaction, and the migrations are, of course, run in a transaction.
     try {
       log("Attempting migration");
+      db.run(sql`PRAGMA foreign_keys = OFF`);
       migrate(db, migrations);
+      db.run(sql`PRAGMA foreign_keys = ON`);
     } catch (e: unknown) {
       logError("FAILED MIGRATION", e);
     }
