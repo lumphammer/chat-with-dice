@@ -1,4 +1,5 @@
 import { db as d1 } from "#/db";
+import { users } from "#/schemas/coreD1-schema";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import { UserDataRepository } from "./UserDataRepository";
 import type { PathResolution } from "./types";
@@ -146,6 +147,7 @@ export class UserDataDO extends DurableObject {
     if (node.parentFolderId && sizeToSubtract > 0) {
       this.repo.adjustAncestorSizes(node.parentFolderId, -sizeToSubtract);
     }
+    this.syncQuotaWithSizes();
   }
 
   async hardDeleteNode(nodeId: string) {
@@ -185,6 +187,7 @@ export class UserDataDO extends DurableObject {
     if (folderId) {
       this.repo.adjustAncestorSizes(folderId, sizeBytes);
     }
+    this.syncQuotaWithSizes();
   }
 
   async markFileThumbnailReady(
@@ -321,5 +324,16 @@ export class UserDataDO extends DurableObject {
       kind: "folder",
       name: node.name,
     };
+  }
+
+  private syncQuotaWithSizes() {
+    // we calculate this from scratch for now so as to reduce the chance of
+    // quota usage getting or staying out of sync with reality
+    const total = this.repo.getRootSize();
+    if (typeof total === "number") {
+      d1.update(users).set({
+        storage_used_bytes: total,
+      });
+    }
   }
 }

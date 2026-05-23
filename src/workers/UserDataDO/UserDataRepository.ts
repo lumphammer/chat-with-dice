@@ -1,6 +1,7 @@
 import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
+import { logError } from "./utils";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
@@ -27,6 +28,30 @@ export class UserDataRepository {
 
   constructor(ctx: DurableObjectState) {
     this.db = setupDB(ctx, migrations, dbSchema, dbSchema.relations);
+  }
+
+  async getRootSize() {
+    const result = await this.db
+      .select({
+        // can't see a way to do + in pure drizzle
+        total: sql`SUM(dbSchema.files.sizeBytes) + SUM(dbSchema.folders.sizeBytes)`,
+      })
+      .from(dbSchema.nodes)
+      .leftJoin(dbSchema.files, eq(dbSchema.nodes.id, dbSchema.files.id))
+      .leftJoin(dbSchema.folders, eq(dbSchema.nodes.id, dbSchema.folders.id))
+      .where(
+        and(
+          isNull(dbSchema.nodes.parentFolderId),
+          isNull(dbSchema.nodes.deletedTime),
+          eq(dbSchema.files.isReady, 1),
+        ),
+      );
+    const total = result.at(0)?.total;
+    if (typeof total !== "number") {
+      logError("User quota usage failed");
+      return undefined;
+    }
+    return total;
   }
 
   // === Path walking ===
