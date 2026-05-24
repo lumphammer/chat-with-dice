@@ -1,5 +1,6 @@
 import { adminSetRoomDeleted } from "./admin/adminSetRoomDeleted";
 import { adminUpdateRoom } from "./admin/adminUpdateRoom";
+import { adminUpdateUserQuota } from "./admin/adminUpdateUserQuota";
 import { createFolder } from "./files/createFolder";
 import { deleteNode } from "./files/deleteNode";
 import { getNodes } from "./files/getNodes";
@@ -23,5 +24,6 @@ export const server = {
   admin: {
     updateRoom: adminUpdateRoom,
     setRoomDeleted: adminSetRoomDeleted,
+    updateUserQuota: adminUpdateUserQuota,
   },
 };
