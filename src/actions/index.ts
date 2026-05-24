@@ -1,4 +1,5 @@
 import { adminSetRoomDeleted } from "./admin/adminSetRoomDeleted";
+import { adminStorageReport } from "./admin/adminStorageReport";
 import { adminUpdateRoom } from "./admin/adminUpdateRoom";
 import { adminUpdateUserQuota } from "./admin/adminUpdateUserQuota";
 import { createFolder } from "./files/createFolder";
@@ -25,5 +26,6 @@ export const server = {
     updateRoom: adminUpdateRoom,
     setRoomDeleted: adminSetRoomDeleted,
     updateUserQuota: adminUpdateUserQuota,
+    storageReport: adminStorageReport,
   },
 };

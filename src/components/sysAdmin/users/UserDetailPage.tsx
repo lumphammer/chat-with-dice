@@ -2,6 +2,7 @@ import { BanSection } from "./BanSection";
 import { RevokeSessionsSection } from "./RevokeSessionsSection";
 import { SetQuotaSection } from "./SetQuotaSection";
 import { SetRoleSection } from "./SetRoleSection";
+import { StorageReportsSection } from "./StorageReportsSection";
 import { UserInfoPanel } from "./UserInfoPanel";
 import type { UserWithRole } from "better-auth/client/plugins";
 import { memo, useState } from "react";
@@ -24,6 +25,7 @@ export const UserDetailPage = memo(
           usedBytes={quota.storageUsedBytes}
           initialQuotaBytes={quota.storageQuotaBytes}
         />
+        <StorageReportsSection userId={user.id} />
         <BanSection user={user} onUserUpdated={setUser} />
         <RevokeSessionsSection userId={user.id} />
       </div>

@@ -28,7 +28,7 @@
 - [ ] Preview toolbar should be responsive
 - [ ] remove all console.logs
 - [ ] "Preview" should be "View"
-- [ ] Unstack, or refactor, the nest of providers in DiceRoller 
+- [ ] Unstack, or refactor, the nest of providers in DiceRoller
 - [ ] Recent rooms list
 - [ ] Easier feedback channels (built-in?)
 - [ ] Move capability state storage into drizzle

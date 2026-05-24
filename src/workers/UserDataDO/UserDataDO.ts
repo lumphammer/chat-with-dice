@@ -4,8 +4,17 @@ import { users } from "#/schemas/coreD1-schema";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import { UserDataRepository } from "./UserDataRepository";
-import type { PathResolution } from "./types";
-import { isUniqueConstraintError, log, logError } from "./utils";
+import type {
+  FolderSizeReport,
+  PathResolution,
+  R2ReconciliationReport,
+} from "./types";
+import {
+  isUniqueConstraintError,
+  listAllR2Objects,
+  log,
+  logError,
+} from "./utils";
 import { DurableObject } from "cloudflare:workers";
 import { env as cfEnv } from "cloudflare:workers";
 import { nanoid } from "nanoid";
@@ -328,6 +337,142 @@ export class UserDataDO extends DurableObject {
     return result.rowsWritten > 0
       ? { result: "removed" }
       : { result: "not-found" };
+  }
+
+  /**
+   * Read-only integrity report: folders whose stored `recursiveSizeBytes`
+   * disagrees with the sum of their direct children. No repair is attempted.
+   */
+  async checkFolderSizes(): Promise<FolderSizeReport> {
+    const discrepancies = this.repo
+      .findFolderSizeDiscrepancies()
+      .map((row) => ({
+        folderId: row.folder_id,
+        name: row.name,
+        storedBytes: row.stored,
+        expectedBytes: row.expected,
+        deltaBytes: row.stored - row.expected,
+      }));
+
+    return {
+      generatedAt: Date.now(),
+      discrepancies,
+    };
+  }
+
+  /**
+   * Read-only reconciliation between the file table and the user's R2 blobs
+   * (main files + thumbnails). Reports orphan blobs, missing blobs, and size
+   * mismatches. No repair is attempted.
+   */
+  async checkR2Reconciliation(): Promise<R2ReconciliationReport> {
+    const bucket = cfEnv.PRIVATE_R2;
+    if (!bucket) {
+      throw new Error("PRIVATE_R2 bucket is not configured");
+    }
+
+    const filesPrefix = `user-files/${this.userId}/`;
+    const thumbnailsPrefix = `user-file-thumbnails/${this.userId}/`;
+
+    const [fileBlobs, thumbnailBlobs] = await Promise.all([
+      listAllR2Objects(bucket, filesPrefix),
+      listAllR2Objects(bucket, thumbnailsPrefix),
+    ]);
+
+    // key -> size for every blob found in R2
+    const blobSizes = new Map<string, number>();
+    for (const blob of [...fileBlobs, ...thumbnailBlobs]) {
+      blobSizes.set(blob.key, blob.size);
+    }
+
+    const files = await this.repo.getAllFiles();
+
+    // every key referenced by a file row (main + thumbnail), regardless of
+    // soft-delete — a soft-deleted file keeps its row and blob, so its blob is
+    // legitimately referenced and must not be flagged as orphaned.
+    const referencedKeys = new Set<string>();
+    for (const file of files) {
+      referencedKeys.add(file.r2Key);
+      if (file.thumbnailR2Key) {
+        referencedKeys.add(file.thumbnailR2Key);
+      }
+    }
+
+    const missingBlobs: R2ReconciliationReport["missingBlobs"] = [];
+    const sizeMismatches: R2ReconciliationReport["sizeMismatches"] = [];
+    let readyFileRows = 0;
+
+    for (const file of files) {
+      const name = file.node?.name ?? "";
+
+      // main blob is only expected once the file is marked ready
+      if (file.isReady === 1) {
+        readyFileRows++;
+        const r2Size = blobSizes.get(file.r2Key);
+        if (r2Size === undefined) {
+          missingBlobs.push({
+            nodeId: file.id,
+            name,
+            r2Key: file.r2Key,
+            kind: "file",
+          });
+        } else if (r2Size !== file.sizeBytes) {
+          sizeMismatches.push({
+            nodeId: file.id,
+            name,
+            r2Key: file.r2Key,
+            kind: "file",
+            dbBytes: file.sizeBytes,
+            r2Bytes: r2Size,
+          });
+        }
+      }
+
+      // thumbnail blob is expected whenever a thumbnail key is recorded
+      if (file.thumbnailR2Key) {
+        const r2Size = blobSizes.get(file.thumbnailR2Key);
+        if (r2Size === undefined) {
+          missingBlobs.push({
+            nodeId: file.id,
+            name,
+            r2Key: file.thumbnailR2Key,
+            kind: "thumbnail",
+          });
+        } else if (
+          file.thumbnailSizeBytes !== null &&
+          r2Size !== file.thumbnailSizeBytes
+        ) {
+          sizeMismatches.push({
+            nodeId: file.id,
+            name,
+            r2Key: file.thumbnailR2Key,
+            kind: "thumbnail",
+            dbBytes: file.thumbnailSizeBytes,
+            r2Bytes: r2Size,
+          });
+        }
+      }
+    }
+
+    const orphanBlobs: R2ReconciliationReport["orphanBlobs"] = [];
+    for (const [key, size] of blobSizes) {
+      if (!referencedKeys.has(key)) {
+        orphanBlobs.push({ key, sizeBytes: size });
+      }
+    }
+
+    return {
+      generatedAt: Date.now(),
+      prefixes: { files: filesPrefix, thumbnails: thumbnailsPrefix },
+      totals: {
+        blobsInR2: blobSizes.size,
+        fileRowsInDb: files.length,
+        readyFileRows,
+      },
+      orphanBlobs,
+      missingBlobs,
+      sizeMismatches,
+    };
   }
 
   private toShareResult(

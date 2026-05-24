@@ -12,6 +12,13 @@ type DBHandle = DrizzleSqliteDODatabase<
 
 export type PathWalkRow = { folder_id: string; depth: number };
 
+export type FolderSizeDiscrepancyRow = {
+  folder_id: string;
+  name: string;
+  stored: number;
+  expected: number;
+};
+
 /**
  * Owns the per-user durable SQLite database: migrations, the Drizzle adapter,
  * and every individual query the UserDataDO needs.
@@ -55,6 +62,47 @@ export class UserDataRepository {
       return undefined;
     }
     return total;
+  }
+
+  /**
+   * Integrity check: find live folders whose stored `recursive_size_bytes`
+   * doesn't equal the sum of its direct live children's contributions (ready
+   * file → `size_bytes`, subfolder → that subfolder's `recursive_size_bytes`).
+   *
+   * This is the local invariant `adjustAncestorSizes` is supposed to maintain.
+   * If every folder passes, the whole tree is consistent; a failing row points
+   * at the exact folder whose accounting drifted.
+   */
+  findFolderSizeDiscrepancies(): FolderSizeDiscrepancyRow[] {
+    const result = this.db.run(sql`
+      SELECT
+        f.id AS folder_id,
+        fn.name AS name,
+        f.recursive_size_bytes AS stored,
+        COALESCE(SUM(
+          CASE
+            WHEN cf.id IS NOT NULL AND cf.is_ready = 1 THEN cf.size_bytes
+            WHEN cfo.id IS NOT NULL THEN cfo.recursive_size_bytes
+            ELSE 0
+          END
+        ), 0) AS expected
+      FROM folders f
+      JOIN nodes fn ON fn.folder_id = f.id AND fn.deleted_time IS NULL
+      LEFT JOIN nodes child
+        ON child.parent_folder_id = f.id AND child.deleted_time IS NULL
+      LEFT JOIN files cf ON cf.id = child.file_id
+      LEFT JOIN folders cfo ON cfo.id = child.folder_id
+      GROUP BY f.id, fn.name, f.recursive_size_bytes
+      HAVING f.recursive_size_bytes <> COALESCE(SUM(
+        CASE
+          WHEN cf.id IS NOT NULL AND cf.is_ready = 1 THEN cf.size_bytes
+          WHEN cfo.id IS NOT NULL THEN cfo.recursive_size_bytes
+          ELSE 0
+        END
+      ), 0)
+    `);
+
+    return result.toArray() as FolderSizeDiscrepancyRow[];
   }
 
   // === Path walking ===
@@ -160,6 +208,17 @@ export class UserDataRepository {
         file: true,
         folder: true,
       },
+    });
+  }
+
+  /**
+   * Every file row with its node (for `name`/`deletedTime`), regardless of
+   * soft-delete. Used to reconcile the file table against R2 — soft-deleted
+   * files keep their row and blob, so they must still count as "referenced".
+   */
+  getAllFiles() {
+    return this.db.query.files.findMany({
+      with: { node: true },
     });
   }
 
