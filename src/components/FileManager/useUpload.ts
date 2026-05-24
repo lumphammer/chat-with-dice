@@ -1,3 +1,4 @@
+import { useErrorHandling } from "../useErrorHandling";
 import { buildFileUrl } from "./fileUrl";
 import { useCallback, useState } from "react";
 
@@ -73,11 +74,11 @@ export function useUpload(
   currentFolderId: string | null,
   onComplete: () => void,
 ) {
+  const handleError = useErrorHandling();
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
 
   const uploadFiles = useCallback(
     async (fileList: FileList | File[]) => {
-      console.log("uploadFiles");
       const files = Array.from(fileList);
       if (files.length === 0) return;
 
@@ -109,6 +110,7 @@ export function useUpload(
             const message =
               (body as { error?: string } | null)?.error ??
               `Upload failed (${response.status})`;
+            handleError(new Error(message));
             throw new Error(message);
           }
 
@@ -153,7 +155,7 @@ export function useUpload(
 
       onComplete();
     },
-    [currentFolderId, onComplete],
+    [handleError, currentFolderId, onComplete],
   );
 
   const dismissError = useCallback((localId: string) => {

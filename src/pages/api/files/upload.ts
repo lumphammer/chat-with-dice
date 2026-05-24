@@ -6,6 +6,7 @@ import {
   HTTP_UNAUTHORIZED,
 } from "#/constants";
 import { jsonResponse } from "#/utils/jsonResponse";
+import { isError } from "#/utils/maybeError";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 
@@ -56,33 +57,56 @@ export const POST: APIRoute = async (ctx) => {
 
   // phase 1: insert db records with is_ready = 0
   const userDataDO = env.USER_DATA_DO.getByName(user.id);
-  const { id, r2Key } = await userDataDO.createFile(
+  const createFileResult = await userDataDO.createFile(
     filename,
     contentType,
     folderId,
   );
 
+  if (isError(createFileResult)) {
+    return jsonResponse(
+      { error: createFileResult.message },
+      createFileResult.statusCode,
+    );
+  }
+
+  let r2Object: R2Object;
   // phase 2: stream to R2
   try {
-    const r2Object = await bucket.put(r2Key, ctx.request.body, {
+    r2Object = await bucket.put(createFileResult.data.r2Key, ctx.request.body, {
       httpMetadata: { contentType },
     });
-
     // verify actual size after upload (Content-Length may be absent/spoofed)
     if (r2Object.size > MAX_BYTES) {
-      await bucket.delete(r2Key);
-      await userDataDO.hardDeleteNode(id);
+      await bucket.delete(createFileResult.data.r2Key);
+      await userDataDO.hardDeleteNode(createFileResult.data.id);
       return jsonResponse(
         { error: "File must be smaller than 100 MB" },
         HTTP_PAYLOAD_TOO_LARGE,
       );
     }
+  } catch (error) {
+    // clean up on R2 failure
+    await Promise.allSettled([
+      userDataDO.hardDeleteNode(createFileResult.data.id),
+      bucket.delete(createFileResult.data.r2Key),
+    ]);
+    return jsonResponse(
+      { error: error instanceof Error ? error.message : String(error) },
+      HTTP_INTERNAL_SERVER_ERROR,
+    );
+  }
 
-    // phase 3: mark as ready + update ancestor folder sizes
-    await userDataDO.markFileReady(id, r2Object.size, folderId);
+  // phase 3: mark as ready + update ancestor folder sizes
+  try {
+    await userDataDO.markFileReady(
+      createFileResult.data.id,
+      r2Object.size,
+      folderId,
+    );
     return jsonResponse(
       {
-        id,
+        id: createFileResult.data.id,
         name: filename,
         contentType,
         sizeBytes: r2Object.size,
@@ -90,8 +114,13 @@ export const POST: APIRoute = async (ctx) => {
       HTTP_OK,
     );
   } catch (error) {
-    // clean up db records on R2 failure
-    await userDataDO.hardDeleteNode(id);
-    throw error;
+    await Promise.allSettled([
+      userDataDO.hardDeleteNode(createFileResult.data.id),
+      bucket.delete(createFileResult.data.r2Key),
+    ]);
+    return jsonResponse(
+      { error: error instanceof Error ? error.message : String(error) },
+      HTTP_INTERNAL_SERVER_ERROR,
+    );
   }
 };

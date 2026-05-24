@@ -1,5 +1,7 @@
+import { HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR } from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
+import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import { UserDataRepository } from "./UserDataRepository";
 import type { PathResolution } from "./types";
@@ -122,13 +124,13 @@ export class UserDataDO extends DurableObject {
     const id = nanoid();
     try {
       await this.repo.createFolder(id, name, parentFolderId);
-    } catch (error) {
-      if (isUniqueConstraintError(error)) {
+    } catch (e) {
+      if (isUniqueConstraintError(e)) {
         throw new Error("A folder with that name already exists here", {
-          cause: error,
+          cause: e,
         });
       }
-      throw error;
+      throw e;
     }
     return { id, name };
   }
@@ -159,7 +161,7 @@ export class UserDataDO extends DurableObject {
     filename: string,
     contentType: string,
     folderId: string | null | undefined,
-  ) {
+  ): PromiseMaybeError<{ id: string; r2Key: string }> {
     const id = crypto.randomUUID();
     const r2Key = `user-files/${this.userId}/${id}`;
     log(`createFile: ${filename}, ${r2Key}`);
@@ -174,13 +176,18 @@ export class UserDataDO extends DurableObject {
     } catch (cause) {
       logError(cause);
       if (isUniqueConstraintError(cause)) {
-        throw new Error("A file with that name already exists in this folder", {
-          cause,
-        });
+        return error(
+          "A file with that name already exists in this folder",
+          HTTP_BAD_REQUEST,
+        );
       }
-      throw cause;
+      return error(
+        "Failed to create file: ${}",
+        HTTP_INTERNAL_SERVER_ERROR,
+        cause,
+      );
     }
-    return { id, r2Key };
+    return success({ id, r2Key });
   }
 
   async markFileReady(id: string, sizeBytes: number, folderId?: string | null) {
@@ -236,14 +243,14 @@ export class UserDataDO extends DurableObject {
       if (result.rowsWritten === 0) {
         throw new Error("File or folder not found");
       }
-    } catch (error) {
-      if (isUniqueConstraintError(error)) {
+    } catch (e) {
+      if (isUniqueConstraintError(e)) {
         throw new Error(
           "An item with that name already exists in this folder",
-          { cause: error },
+          { cause: e },
         );
       }
-      throw error;
+      throw e;
     }
   }
 
