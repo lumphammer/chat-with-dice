@@ -1,4 +1,5 @@
 ---
+import type { User } from "#/auth";
 import { auth } from "#/auth";
 import SysAdminLayout from "#/layouts/SysAdmin.astro";
 import { UserDetailPage } from "@/components/sysAdmin/users/UserDetailPage";
@@ -9,10 +10,12 @@ const { id } = Astro.params;
 
 let user = null;
 try {
-  user = await auth.api.getUser({
+  // types for user admin don't include additional fields
+  // https://github.com/better-auth/better-auth/issues/6318
+  user = (await auth.api.getUser({
     query: { id: id! },
     headers: Astro.request.headers,
-  });
+  })) as User | undefined;
 } catch {
   //
 }

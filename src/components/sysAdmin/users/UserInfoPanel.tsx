@@ -1,4 +1,4 @@
-import type { UserWithRole } from "better-auth/client/plugins";
+import type { User } from "#/auth";
 import { CheckCircle, XCircle } from "lucide-react";
 import { memo } from "react";
 
@@ -29,7 +29,7 @@ const Field = ({
   </div>
 );
 
-export const UserInfoPanel = memo(({ user }: { user: UserWithRole }) => (
+export const UserInfoPanel = memo(({ user }: { user: User }) => (
   <div className="card bg-base-200">
     <div className="card-body">
       <h2 className="card-title text-base">User Info</h2>

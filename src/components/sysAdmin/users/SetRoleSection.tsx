@@ -1,12 +1,12 @@
+import type { User } from "#/auth";
 import { authClient } from "#/utils/auth-client";
-import type { UserWithRole } from "better-auth/client/plugins";
 import { memo, useState } from "react";
 
 type Role = "user" | "admin";
 
 type Props = {
-  user: UserWithRole;
-  onUserUpdated: (user: UserWithRole) => void;
+  user: User;
+  onUserUpdated: (user: User) => void;
 };
 
 export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
@@ -34,7 +34,9 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
         message: error?.message ?? "Failed to set role.",
       });
     } else {
-      onUserUpdated(data.user);
+      // types for user admin don't include additional fields
+      // https://github.com/better-auth/better-auth/issues/6318
+      onUserUpdated(data.user as User);
       setFeedback({ type: "success", message: "Role updated." });
     }
   };

@@ -1,10 +1,10 @@
+import type { User } from "#/auth";
 import { authClient } from "#/utils/auth-client";
-import type { UserWithRole } from "better-auth/client/plugins";
 import { memo, useState } from "react";
 
 type Props = {
-  user: UserWithRole;
-  onUserUpdated: (user: UserWithRole) => void;
+  user: User;
+  onUserUpdated: (user: User) => void;
 };
 
 const SECONDS_PER_DAY = 86400;
@@ -30,7 +30,9 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
     if (apiError || !data?.user) {
       setError(apiError?.message ?? "Failed to ban user.");
     } else {
-      onUserUpdated(data.user);
+      // types for user admin don't include additional fields
+      // https://github.com/better-auth/better-auth/issues/6318
+      onUserUpdated(data.user as User);
     }
   };
 
@@ -93,7 +95,9 @@ const UnbanPanel = ({ user, onUserUpdated }: Props) => {
     if (apiError || !data?.user) {
       setError(apiError?.message ?? "Failed to unban user.");
     } else {
-      onUserUpdated(data.user);
+      // types for user admin don't include additional fields
+      // https://github.com/better-auth/better-auth/issues/6318
+      onUserUpdated(data.user as User);
     }
   };
 
