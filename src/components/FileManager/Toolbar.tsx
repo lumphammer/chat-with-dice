@@ -1,3 +1,4 @@
+import { authClient } from "#/utils/auth-client";
 import { FileActionsMenu } from "./FileActionsMenu";
 import { NewFolderDialog, type NewFolderDialogHandle } from "./NewFolderDialog";
 import { useShareWithRoom } from "./useShareWithRoom";
@@ -30,6 +31,9 @@ export const Toolbar = memo(
   }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const newFolderDialogRef = useRef<NewFolderDialogHandle>(null);
+    const session = authClient.useSession();
+    const storageQuotaBytes = session.data?.user.storageQuotaBytes ?? 0;
+    const storageUsedBytes = session.data?.user.storageUsedBytes ?? 0;
     const {
       canShareWithRoom,
       shareWithRoom,
@@ -79,6 +83,8 @@ export const Toolbar = memo(
           onUnshareFromRoom={unshareFromRoom}
           onUpload={handleUploadClick}
           onViewModeChange={onViewModeChange}
+          storageQuotaBytes={storageQuotaBytes}
+          storageUsedBytes={storageUsedBytes}
           viewMode={viewMode}
         />
         {!readOnly && (

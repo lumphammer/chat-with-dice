@@ -1,8 +1,11 @@
+import { formatBytes } from "#/utils/formatBytes";
+import { QuotaBar } from "./QuotaBar";
 import type { ViewMode } from "./viewModeStore";
 import {
   FolderPlus,
   FolderSymlink,
   Grid3X3,
+  HardDrive,
   List,
   Menu,
   Unlink2,
@@ -21,6 +24,8 @@ export const FileActionsMenu = memo(
     onUnshareFromRoom,
     onUpload,
     onViewModeChange,
+    storageQuotaBytes,
+    storageUsedBytes,
     viewMode,
   }: {
     canShareWithRoom: boolean;
@@ -32,6 +37,8 @@ export const FileActionsMenu = memo(
     onUnshareFromRoom: () => void;
     onUpload: () => void;
     onViewModeChange: (viewMode: ViewMode) => void;
+    storageQuotaBytes: number;
+    storageUsedBytes: number;
     viewMode: ViewMode;
   }) => {
     const menuId = useId();
@@ -131,6 +138,26 @@ export const FileActionsMenu = memo(
                 </button>
               </li>
             )}
+            <li>
+              <div
+                className="text-base-content/70 pointer-events-none flex
+                  flex-col items-stretch gap-1.5 px-3 py-2"
+                role="presentation"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <HardDrive size={16} className="shrink-0" />
+                  <span className="sr-only">Storage used: </span>
+                  <span className="min-w-0 truncate">
+                    {formatBytes(storageUsedBytes)} /{" "}
+                    {formatBytes(storageQuotaBytes)}
+                  </span>
+                </span>
+                <QuotaBar
+                  usedBytes={storageUsedBytes}
+                  quotaBytes={storageQuotaBytes}
+                />
+              </div>
+            </li>
           </ul>
         </div>
       </>

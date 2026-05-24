@@ -21,18 +21,18 @@
     - [x] "Check quota maths" button
     - [x] "Check R2 sizes" button
   - [x] Quota enforcement
-  - [ ] Quota and usage display in filemanager
+  - [x] Quota and usage display in filemanager
   - [ ] Anon users have quota 0
   - [ ] Full users have quota 1GB
-  - [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
-  - [ ] Periodic purge of deleted files
-  - [ ] Periodic purge of anon users
-  - [ ] Anon users cannot be admin
-  - [ ] Anon users cannot have quota
-  - [ ] Grid view is not sticking
   - [ ] Quota query in admin seems to be using local user
-  - [ ] filemanager header should be sticky
-  - [ ] standalone filemanager has too much whitespace on mobile
+  - [ ] Anon users cannot have quota
+- [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
+- [ ] Periodic purge of deleted files
+- [ ] Periodic purge of anon users
+- [ ] Anon users cannot be admin
+- [ ] Grid view is not sticking
+- [ ] filemanager header should be sticky
+- [ ] standalone filemanager has too much whitespace on mobile
 - [ ] "Reshare file..." should not have dots (and maybe pick a better verb?)
 - [ ] Preview toolbar should be responsive
 - [ ] remove all console.logs

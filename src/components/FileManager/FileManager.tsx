@@ -1,3 +1,5 @@
+import { authClient } from "#/utils/auth-client";
+import { useRefStash } from "../useRefStash";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { DropOverlay } from "./DropOverlay";
 import { EmptyState } from "./EmptyState";
@@ -67,6 +69,9 @@ export const FileManager = memo(
     rootIcon?: LucideIcon;
     rootLabel?: string;
   } & ReadOnlyProps) => {
+    const session = authClient.useSession();
+    const sessionRef = useRefStash(session);
+
     const readOnly = ownerUserId !== undefined;
     const [nodes, setNodes] = useState<FileNode[]>(() => initialNodes ?? []);
 
@@ -129,8 +134,9 @@ export const FileManager = memo(
       async (folderId: string | null) => {
         const requestId = navigationIdRef.current;
         await fetchNodes(folderId, requestId);
+        await sessionRef.current.refetch();
       },
-      [fetchNodes],
+      [fetchNodes, sessionRef],
     );
 
     useEffect(() => {
@@ -232,8 +238,9 @@ export const FileManager = memo(
     }, [location, onLocationChange]);
 
     const handleDeleted = useCallback(
-      (nodeId: string) => {
+      async (nodeId: string) => {
         setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+        await sessionRef.current.refetch();
         if (nodeId === location.previewFileId) {
           onLocationChange({
             folderId: location.folderId,
@@ -243,7 +250,7 @@ export const FileManager = memo(
           });
         }
       },
-      [location, onLocationChange],
+      [location, onLocationChange, sessionRef],
     );
 
     const handleRenamed = useCallback((nodeId: string, newName: string) => {
