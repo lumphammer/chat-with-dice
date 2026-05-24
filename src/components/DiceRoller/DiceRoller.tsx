@@ -8,6 +8,7 @@ import {
 import { SetCapabilityStateContextProvider } from "../../capabilities/reactContexts/setCapabilityStateContext";
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import { Sidebar } from "../Sidebar/Sidebar";
+import { Toaster, useToaster } from "../Toaster";
 import { AnonymousEntryDialog } from "./AnonymousEntryDialog";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
@@ -19,28 +20,11 @@ import { UsersOnlineContextProvider } from "./contexts/usersOnlineContext";
 import styles from "./diceRoller.module.css";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
 import { useSmartScroll } from "./hooks/useSmartScroll";
-import toastStyles from "./toast.module.css";
 import type { UserHueStyle } from "./types";
-import { Portal } from "@ark-ui/react/portal";
-import { Toast, Toaster, createToaster } from "@ark-ui/react/toast";
 import { enablePatches, produce, type Patch } from "immer";
-import {
-  CircleAlertIcon,
-  TriangleAlertIcon,
-  CircleCheckIcon,
-  InfoIcon,
-  XIcon,
-} from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 enablePatches();
-
-const iconMap = {
-  success: CircleCheckIcon,
-  error: CircleAlertIcon,
-  warning: TriangleAlertIcon,
-  info: InfoIcon,
-};
 
 export const DiceRoller = memo(
   ({
@@ -91,17 +75,7 @@ export const DiceRoller = memo(
       [setCapabilityInfos],
     );
 
-    const toaster = useMemo(
-      () =>
-        createToaster({
-          placement: "top",
-          overlap: true,
-          gap: 8,
-          removeDelay: 250,
-          max: 10,
-        }),
-      [],
-    );
+    const toaster = useToaster();
 
     const handleAnonymousNameUpdateError = useCallback(
       (message: string) => {
@@ -197,8 +171,6 @@ export const DiceRoller = memo(
       },
       [sendMessage, sessionData],
     );
-
-    // const handleScrollUpdate = useCallback(())
 
     return (
       <CapabilityInfoContextProvider value={capabilityInfos}>
@@ -296,49 +268,7 @@ export const DiceRoller = memo(
                       <Sidebar backgroundElementRefs={sidebarBackgroundRefs} />
                     </div>
                   </div>
-                  <Portal>
-                    <Toaster toaster={toaster}>
-                      {(toast) => {
-                        const ToastIcon = toast.type
-                          ? iconMap[toast.type as keyof typeof iconMap]
-                          : undefined;
-                        return (
-                          <Toast.Root
-                            key={toast.id}
-                            className={toastStyles.toast}
-                          >
-                            {ToastIcon && (
-                              <div className="mt-0.5 shrink-0">
-                                <ToastIcon className="h-5 w-5" />
-                              </div>
-                            )}
-                            <details
-                              className="flex min-w-0 flex-1 flex-col gap-1"
-                            >
-                              <summary
-                                className="text-sm leading-snug font-semibold"
-                              >
-                                {toast.title}
-                              </summary>
-                              <Toast.Description
-                                className="text-xs leading-snug opacity-80"
-                              >
-                                {toast.description}
-                              </Toast.Description>
-                            </details>
-
-                            <Toast.CloseTrigger
-                              className="hover:bg-base-300 mt-0.5 shrink-0
-                                cursor-pointer rounded-md p-0.5
-                                transition-colors"
-                            >
-                              <XIcon className="h-4 w-4" />
-                            </Toast.CloseTrigger>
-                          </Toast.Root>
-                        );
-                      }}
-                    </Toaster>
-                  </Portal>
+                  <Toaster toaster={toaster} />
                 </UsersOnlineContextProvider>
               </RoomUiNavigationContextProvider>
             </RoomInfoContextProvider>
