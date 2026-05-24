@@ -15,15 +15,24 @@
   - [x] Create a repository object for user data
   - [x] Fix the missing FK from files/folders -> nodes
   - [x] Keep user quota up to date
-  - [ ] Quota usage and control in admin
+  - [x] Quota usage and control in admin
     - [x] Display quota usage
     - [x] Set quota
-    - [ ] "Check quota maths" button
-    - [ ] "Check R2 sizes" button
-  - [ ] Quota and usage display in filemanager
+    - [x] "Check quota maths" button
+    - [x] "Check R2 sizes" button
   - [x] Quota enforcement
+  - [ ] Quota and usage display in filemanager
+  - [ ] Anon users have quota 0
+  - [ ] Full users have quota 1GB
   - [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
   - [ ] Periodic purge of deleted files
+  - [ ] Periodic purge of anon users
+  - [ ] Anon users cannot be admin
+  - [ ] Anon users cannot have quota
+  - [ ] Grid view is not sticking
+  - [ ] Quota query in admin seems to be using local user
+  - [ ] filemanager header should be sticky
+  - [ ] standalone filemanager has too much whitespace on mobile
 - [ ] "Reshare file..." should not have dots (and maybe pick a better verb?)
 - [ ] Preview toolbar should be responsive
 - [ ] remove all console.logs

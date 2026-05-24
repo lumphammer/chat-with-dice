@@ -78,17 +78,17 @@ export const FileManager = memo(
       compact: 0,
       full: 0,
     });
-    const [inlineToolbarWidth, setInlineToolbarWidth] = useState(0);
+    const [expandedToolbarWidth, setExpandedToolbarWidth] = useState(0);
     const headerRef = useRef<HTMLDivElement>(null);
     const toolbarRef = useRef<HTMLDivElement>(null);
     const headerWidth = useElementWidth(headerRef);
     const toolbarWidth = useElementWidth(toolbarRef);
-    const hasHeaderMeasurements = headerWidth > 0 && inlineToolbarWidth > 0;
+    const hasHeaderMeasurements = headerWidth > 0 && expandedToolbarWidth > 0;
     const isToolbarCompact =
       hasHeaderMeasurements &&
-      headerWidth - inlineToolbarWidth - HEADER_GAP_PX <
+      headerWidth - expandedToolbarWidth - HEADER_GAP_PX <
         MIN_BREADCRUMB_WIDTH_PX;
-    const activeToolbarWidth = toolbarWidth || inlineToolbarWidth;
+    const activeToolbarWidth = toolbarWidth || expandedToolbarWidth;
     const breadcrumbAvailableWidth =
       headerWidth > 0
         ? Math.max(0, headerWidth - activeToolbarWidth - HEADER_GAP_PX)
@@ -104,7 +104,7 @@ export const FileManager = memo(
 
     useEffect(() => {
       if (isToolbarCompact || toolbarWidth === 0) return;
-      setInlineToolbarWidth(toolbarWidth);
+      setExpandedToolbarWidth(toolbarWidth);
     }, [isToolbarCompact, toolbarWidth]);
 
     const fetchNodes = useCallback(
