@@ -16,14 +16,19 @@
   - [x] Fix the missing FK from files/folders -> nodes
   - [x] Keep user quota up to date
   - [ ] Quota usage and control in admin
-    - [ ] Display quota usage
-    - [ ] Set quota
+    - [x] Display quota usage
+    - [x] Set quota
     - [ ] "Check quota maths" button
     - [ ] "Check R2 sizes" button
   - [ ] Quota and usage display in filemanager
-  - [ ] Quota enforcement
+  - [x] Quota enforcement
   - [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
   - [ ] Periodic purge of deleted files
+- [ ] "Reshare file..." should not have dots (and maybe pick a better verb?)
+- [ ] Preview toolbar should be responsive
+- [ ] remove all console.logs
+- [ ] "Preview" should be "View"
+- [ ] Unstack, or refactor, the nest of providers in DiceRoller 
 - [ ] Recent rooms list
 - [ ] Easier feedback channels (built-in?)
 - [ ] Move capability state storage into drizzle
