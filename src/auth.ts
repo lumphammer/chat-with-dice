@@ -26,6 +26,8 @@ const MAX_ACCOUNT_AGE_TO_OVERWRITE_MINS = 5;
 const MAX_ACCOUNT_AGE_TO_OVERWRITE_MS =
   MAX_ACCOUNT_AGE_TO_OVERWRITE_MINS * 60 * 1000;
 
+const DEFAULT_FULL_USER_STORAGE_QUOTA_BYTES = 1_073_741_824;
+
 const {
   GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET,
@@ -81,6 +83,25 @@ export const auth = betterAuth({
     }),
   },
 
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          if (user.isAnonymous) {
+            return { data: { ...user, storageQuotaBytes: 0 } };
+          }
+
+          return {
+            data: {
+              ...user,
+              storageQuotaBytes: DEFAULT_FULL_USER_STORAGE_QUOTA_BYTES,
+            },
+          };
+        },
+      },
+    },
+  },
+
   user: {
     changeEmail: {
       enabled: true,
@@ -99,12 +120,14 @@ export const auth = betterAuth({
         type: "number",
         defaultValue: 0,
         required: true,
+        input: false,
       },
       storageUsedBytes: {
         fieldName: "storage_used_bytes",
         type: "number",
         defaultValue: 0,
         required: true,
+        input: false,
       },
     },
   },
@@ -235,7 +258,6 @@ export const auth = betterAuth({
             .update(sessions)
             .set({ userId: anonymousUser.user.id })
             .where(eq(sessions.userId, newUser.user.id)),
-          // db.delete(sessions).where(eq(sessions.userId, newUser.user.id));
 
           // delete the new user record
           db.delete(users).where(eq(users.id, newUser.user.id)),
@@ -249,6 +271,9 @@ export const auth = betterAuth({
               name: newUser.user.name,
               email: newUser.user.email,
               image: newUser.user.image,
+              storage_quota_bytes:
+                newUser.user.storageQuotaBytes ??
+                DEFAULT_FULL_USER_STORAGE_QUOTA_BYTES,
             })
             .where(eq(users.id, anonymousUser.user.id)),
         ]);

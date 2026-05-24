@@ -22,8 +22,8 @@
     - [x] "Check R2 sizes" button
   - [x] Quota enforcement
   - [x] Quota and usage display in filemanager
-  - [ ] Anon users have quota 0
-  - [ ] Full users have quota 1GB
+  - [x] Anon users have quota 0
+  - [x] Full users have quota 1GB
   - [ ] Quota query in admin seems to be using local user
   - [ ] Anon users cannot have quota
 - [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
