@@ -47,8 +47,11 @@ export const GET: APIRoute = async (ctx) => {
   );
   if (!resolved.ok) return resolved.response;
 
-  const node = await resolved.ownerUserDataDO.getFile(nodeId);
-  const thumbnailR2Key = node.file.thumbnailR2Key;
+  const nodeResult = await resolved.ownerUserDataDO.getFile(nodeId);
+  if (nodeResult.result === "not_found" || !nodeResult.data?.file) {
+    return jsonResponse({ error: "File not found" }, HTTP_NOT_FOUND);
+  }
+  const thumbnailR2Key = nodeResult.data.file.thumbnailR2Key;
   if (!thumbnailR2Key) {
     return jsonResponse({ error: "Thumbnail not found" }, HTTP_NOT_FOUND);
   }
@@ -129,8 +132,16 @@ export const POST: APIRoute = async (ctx) => {
   const userDataDO = user.userDataDOId
     ? env.USER_DATA_DO.get(env.USER_DATA_DO.idFromString(user.userDataDOId))
     : env.USER_DATA_DO.getByName(user.id);
-  const node = await userDataDO.getFile(nodeId);
-  if (!node.file.contentType.startsWith("image/")) {
+  const nodeResult = await userDataDO.getFile(nodeId);
+  if (nodeResult.result === "not_found" || !nodeResult.data?.file) {
+    return jsonResponse(
+      { error: "Corresponding image file not found" },
+      HTTP_NOT_FOUND,
+    );
+  }
+  const node = nodeResult.data;
+
+  if (!node.file?.contentType.startsWith("image/")) {
     return jsonResponse(
       { error: "Thumbnails are only supported for image files" },
       HTTP_BAD_REQUEST,

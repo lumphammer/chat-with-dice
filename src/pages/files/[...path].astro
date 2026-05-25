@@ -1,7 +1,5 @@
 ---
-import { db } from "#/db";
 import Layout from "#/layouts/Layout.astro";
-import { users } from "#/schemas/coreD1-schema";
 import { StandaloneFileManager } from "@/components/FileManager/StandaloneFileManager";
 import { env } from "cloudflare:workers";
 
@@ -31,10 +29,7 @@ let doIdString = Astro.locals.user.userDataDOId;
 
 // we can probably drop this in due course - backfill the doId
 if (!doIdString) {
-  doIdString = env.USER_DATA_DO.idFromName(user.id).toString();
-  await db.update(users).set({
-    user_data_do_id: doIdString,
-  });
+  throw new Error("user_data_do_id is not set");
 }
 
 const userDataDO = env.USER_DATA_DO.get(

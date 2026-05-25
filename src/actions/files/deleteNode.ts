@@ -11,7 +11,12 @@ export const deleteNode = defineAction({
     if (!user || user.isAnonymous) {
       throw new Error("Unauthorized");
     }
-    const userDataDO = env.USER_DATA_DO.getByName(user.id);
+    if (!user.userDataDOId) {
+      throw new Error("User data DO id not found");
+    }
+    const userDataDO = env.USER_DATA_DO.get(
+      env.USER_DATA_DO.idFromString(user.userDataDOId),
+    );
     const result = await userDataDO.softDeleteNode(nodeId);
     return result;
   },

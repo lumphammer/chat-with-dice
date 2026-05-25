@@ -10,10 +10,12 @@ export const createFolder = defineAction({
     parentFolderId: z.string().nullable().optional(),
   }),
   handler: async ({ name, parentFolderId }, { locals: { user } }) => {
-    if (!user || user.isAnonymous) {
+    if (!user || user.isAnonymous || !user.userDataDOId) {
       throw new Error("Unauthorized");
     }
-    const userDataDO = env.USER_DATA_DO.getByName(user.id);
+    const userDataDO = env.USER_DATA_DO.get(
+      env.USER_DATA_DO.idFromString(user.userDataDOId),
+    );
     const result = await userDataDO.createFolder(name, parentFolderId);
     return result;
   },

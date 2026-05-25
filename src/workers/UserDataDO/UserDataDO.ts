@@ -263,14 +263,25 @@ export class UserDataDO extends DurableObject {
     }
   }
 
-  async getFile(nodeId: string) {
+  async getFile(nodeId: string): Promise<
+    | {
+        result: "found";
+        data: Awaited<ReturnType<UserDataRepository["getFileNode"]>>;
+      }
+    | { result: "not_found" }
+  > {
     const node = await this.repo.getFileNode(nodeId);
     if (!node || !node.file) {
-      throw new Error(`File not found in database: ${nodeId}`);
+      return { result: "not_found" };
     }
-    return node as RecursiveExpand<
-      Omit<typeof node, "file"> & { file: Exclude<(typeof node)["file"], null> }
-    >;
+    return {
+      result: "found",
+      data: node as RecursiveExpand<
+        Omit<typeof node, "file"> & {
+          file: Exclude<(typeof node)["file"], null>;
+        }
+      >,
+    };
   }
 
   async isNodeAccessibleFromRoom({

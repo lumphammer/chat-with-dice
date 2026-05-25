@@ -10,17 +10,22 @@ export const getNodes = defineAction({
     roomId: z.string().optional(),
   }),
   handler: async ({ folderId, ownerUserId, roomId }, context) => {
-    const user = context.locals.user;
-    if (!user) {
+    const loggedInUser = context.locals.user;
+    if (!loggedInUser) {
       throw new Error("Unauthorized");
     }
 
     const isSelf =
-      (!user.isAnonymous && ownerUserId === undefined) ||
-      ownerUserId === user.id;
+      (!loggedInUser.isAnonymous && ownerUserId === undefined) ||
+      ownerUserId === loggedInUser.id;
 
     if (isSelf) {
-      const userDataDO = env.USER_DATA_DO.getByName(user.id);
+      if (!loggedInUser.userDataDOId) {
+        throw new Error("user_data_do_id is not set");
+      }
+      const userDataDO = env.USER_DATA_DO.get(
+        env.USER_DATA_DO.idFromString(loggedInUser.userDataDOId),
+      );
       return await userDataDO.getNodes(folderId);
     }
 
@@ -36,7 +41,7 @@ export const getNodes = defineAction({
       where: { id: ownerUserId },
     });
     if (!owner?.user_data_do_id) {
-      throw new Error("Owner not found");
+      throw new Error("Owner's user_data_do_id is not set");
     }
 
     const ownerDO = env.USER_DATA_DO.get(

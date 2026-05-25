@@ -104,24 +104,28 @@ export const GET: APIRoute = async (ctx) => {
   );
   if (!resolved.ok) return resolved.response;
 
-  const node = await resolved.ownerUserDataDO.getFile(nodeId);
+  const nodeResult = await resolved.ownerUserDataDO.getFile(nodeId);
+
+  if (nodeResult.result === "not_found" || !nodeResult.data?.file) {
+    return json({ error: "File not found" }, HTTP_NOT_FOUND);
+  }
 
   const byteRange = parseRange(
     ctx.request.headers.get("range"),
-    node.file.sizeBytes,
+    nodeResult.data.file.sizeBytes,
   );
   if (byteRange.kind === "unsatisfiable") {
     return new Response(null, {
       status: HTTP_RANGE_NOT_SATISFIABLE,
       headers: {
         "accept-ranges": "bytes",
-        "content-range": `bytes */${node.file.sizeBytes}`,
+        "content-range": `bytes */${nodeResult.data.file.sizeBytes}`,
       },
     });
   }
 
   const r2Object = await bucket.get(
-    node.file.r2Key,
+    nodeResult.data.file.r2Key,
     byteRange.kind === "partial"
       ? { range: { offset: byteRange.offset, length: byteRange.length } }
       : undefined,
@@ -137,19 +141,21 @@ export const GET: APIRoute = async (ctx) => {
   headers.set("cache-control", "private, max-age=3600, immutable");
 
   const isInlinePreviewable =
-    node.file.contentType.startsWith("image/") ||
-    node.file.contentType.startsWith("audio/") ||
-    node.file.contentType.startsWith("video/") ||
-    node.file.contentType === "application/pdf";
+    nodeResult.data.file.contentType.startsWith("image/") ||
+    nodeResult.data.file.contentType.startsWith("audio/") ||
+    nodeResult.data.file.contentType.startsWith("video/") ||
+    nodeResult.data.file.contentType === "application/pdf";
   headers.set(
     "content-disposition",
-    isInlinePreviewable ? "inline" : `attachment; filename="${node.name}"`,
+    isInlinePreviewable
+      ? "inline"
+      : `attachment; filename="${nodeResult.data.name}"`,
   );
 
   if (byteRange.kind === "partial") {
     headers.set(
       "content-range",
-      `bytes ${byteRange.offset}-${byteRange.end}/${node.file.sizeBytes}`,
+      `bytes ${byteRange.offset}-${byteRange.end}/${nodeResult.data.file.sizeBytes}`,
     );
     headers.set("content-length", String(byteRange.length));
     return new Response(r2Object.body, {
@@ -158,6 +164,6 @@ export const GET: APIRoute = async (ctx) => {
     });
   }
 
-  headers.set("content-length", String(node.file.sizeBytes));
+  headers.set("content-length", String(nodeResult.data.file.sizeBytes));
   return new Response(r2Object.body, { headers });
 };

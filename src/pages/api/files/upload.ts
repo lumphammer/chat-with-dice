@@ -55,8 +55,17 @@ export const POST: APIRoute = async (ctx) => {
     return jsonResponse({ error: "No file body provided" }, HTTP_BAD_REQUEST);
   }
 
+  if (!user.userDataDOId) {
+    return jsonResponse(
+      { error: "user_data_do_id is not set" },
+      HTTP_BAD_REQUEST,
+    );
+  }
+
   // phase 1: insert db records with is_ready = 0
-  const userDataDO = env.USER_DATA_DO.getByName(user.id);
+  const userDataDO = env.USER_DATA_DO.get(
+    env.USER_DATA_DO.idFromString(user.userDataDOId),
+  );
   const createFileResult = await userDataDO.createFile(
     filename,
     contentType,

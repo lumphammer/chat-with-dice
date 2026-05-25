@@ -24,7 +24,8 @@
   - [x] Quota and usage display in filemanager
   - [x] Anon users have quota 0
   - [x] Full users have quota 1GB
-  - [ ] Quota query in admin seems to be using local user
+  - [x] Quota query in admin seems to be using local user
+  - [ ] Show anon/full in admin area
   - [ ] Anon users cannot have quota
 - [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
 - [ ] Periodic purge of deleted files
