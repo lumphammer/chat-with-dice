@@ -25,12 +25,13 @@
   - [x] Anon users have quota 0
   - [x] Full users have quota 1GB
   - [x] Quota query in admin seems to be using local user
-  - [ ] Anon users cannot have quota
+  - [x] Anon users cannot have quota
   - [ ] Admin: reset folder sizes
   - [ ] Admin: purge orphans
   - [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
   - [ ] Periodic purge of deleted files
 - [x] Show anon/full in admin area
+- [ ] Admins cannot ban themselves or each other
 - [ ] Responsive Grids for admin
 - [ ] Periodic purge of anon users
 - [ ] Anon users cannot be admin
