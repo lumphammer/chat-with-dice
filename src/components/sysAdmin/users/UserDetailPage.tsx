@@ -18,6 +18,7 @@ export const UserDetailPage = memo(({ user: initialUser }: { user: User }) => {
         userId={user.id}
         usedBytes={user.storageUsedBytes}
         initialQuotaBytes={user.storageQuotaBytes}
+        isAnonymous={user.isAnonymous ?? true}
       />
       <StorageReportsSection userId={user.id} />
       <BanSection user={user} onUserUpdated={setUser} />

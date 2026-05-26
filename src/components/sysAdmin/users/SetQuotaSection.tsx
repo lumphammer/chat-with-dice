@@ -10,14 +10,18 @@ const QUOTA_OPTIONS = [
   { bytes: 107_374_182_400, label: "100 GB" },
 ];
 
-type Props = {
-  userId: string;
-  usedBytes: number;
-  initialQuotaBytes: number;
-};
-
 export const SetQuotaSection = memo(
-  ({ userId, usedBytes, initialQuotaBytes }: Props) => {
+  ({
+    userId,
+    usedBytes,
+    initialQuotaBytes,
+    isAnonymous,
+  }: {
+    userId: string;
+    usedBytes: number;
+    initialQuotaBytes: number;
+    isAnonymous: boolean;
+  }) => {
     const [quotaBytes, setQuotaBytes] = useState(initialQuotaBytes);
     const [selected, setSelected] = useState(String(initialQuotaBytes));
     const [loading, setLoading] = useState(false);
@@ -71,6 +75,7 @@ export const SetQuotaSection = memo(
               </label>
               <select
                 id="quota-select"
+                disabled={isAnonymous || loading}
                 className="select select-bordered w-full max-w-xs"
                 value={selected}
                 onChange={(e) => setSelected(e.target.value)}
@@ -84,8 +89,8 @@ export const SetQuotaSection = memo(
             </div>
             <button
               type="submit"
+              disabled={isAnonymous || loading}
               className="btn btn-primary"
-              disabled={loading}
             >
               {loading ? (
                 <span className="loading loading-spinner loading-sm" />

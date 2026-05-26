@@ -15,6 +15,16 @@ export const adminUpdateUserQuota = defineAction({
       return new Response("Forbidden", { status: 403 });
     }
 
+    const targetUser = await db.query.users.findFirst({
+      where: { id: input.userId },
+    });
+    if (!targetUser) {
+      return new Response("User not found", { status: 404 });
+    }
+    if (targetUser.isAnonymous) {
+      return new Response("Anon users cannot have quota", { status: 400 });
+    }
+
     await db
       .update(users)
       .set({ storage_quota_bytes: input.storageQuotaBytes })
