@@ -6,6 +6,7 @@ import {
   HTTP_UNAUTHORIZED,
 } from "#/constants";
 import { jsonResponse } from "#/utils/jsonResponse";
+import { userFileThumbnailR2Key } from "#/utils/r2Keys";
 import {
   SELF_OWNER_SEGMENT,
   resolveOwnerUserDataDOForRead,
@@ -148,7 +149,7 @@ export const POST: APIRoute = async (ctx) => {
     );
   }
 
-  const thumbnailR2Key = `user-file-thumbnails/${user.id}/${nodeId}.webp`;
+  const thumbnailR2Key = userFileThumbnailR2Key(user.id, nodeId);
   const thumbnail = await bucket.put(thumbnailR2Key, ctx.request.body, {
     httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE },
   });

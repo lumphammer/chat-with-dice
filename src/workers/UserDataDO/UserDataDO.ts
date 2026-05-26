@@ -2,6 +2,11 @@ import { HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR } from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
+import {
+  userFileR2Key,
+  userFilesPrefix,
+  userFileThumbnailsPrefix,
+} from "#/utils/r2Keys";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import { UserDataRepository } from "./UserDataRepository";
 import type {
@@ -172,7 +177,7 @@ export class UserDataDO extends DurableObject {
     folderId: string | null | undefined,
   ): PromiseMaybeError<{ id: string; r2Key: string }> {
     const id = crypto.randomUUID();
-    const r2Key = `user-files/${this.userId}/${id}`;
+    const r2Key = userFileR2Key(this.userId, id);
     log(`createFile: ${filename}, ${r2Key}`);
     try {
       await this.repo.createFile({
@@ -382,8 +387,8 @@ export class UserDataDO extends DurableObject {
       throw new Error("PRIVATE_R2 bucket is not configured");
     }
 
-    const filesPrefix = `user-files/${this.userId}/`;
-    const thumbnailsPrefix = `user-file-thumbnails/${this.userId}/`;
+    const filesPrefix = userFilesPrefix(this.userId);
+    const thumbnailsPrefix = userFileThumbnailsPrefix(this.userId);
 
     const [fileBlobs, thumbnailBlobs] = await Promise.all([
       listAllR2Objects(bucket, filesPrefix),
