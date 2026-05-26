@@ -1,5 +1,5 @@
 import type { User } from "#/auth";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, HatGlasses, XCircle } from "lucide-react";
 import { memo } from "react";
 
 const BoolField = ({ value }: { value: boolean | null | undefined }) => {
@@ -10,6 +10,31 @@ const BoolField = ({ value }: { value: boolean | null | undefined }) => {
     <XCircle className="text-error h-4 w-4" />
   );
 };
+
+const AccountTypeField = ({
+  isAnonymous,
+}: {
+  isAnonymous: boolean | null | undefined;
+}) =>
+  isAnonymous ? (
+    <span className="flex items-center gap-1.5">
+      <HatGlasses
+        aria-hidden="true"
+        className="text-primary h-4 w-4"
+        role="img"
+      />
+      Anonymous
+    </span>
+  ) : (
+    <span className="flex items-center gap-1.5">
+      <CheckCircle
+        aria-hidden="true"
+        className="text-success h-4 w-4"
+        role="img"
+      />
+      Full
+    </span>
+  );
 
 const Field = ({
   label,
@@ -39,6 +64,9 @@ export const UserInfoPanel = memo(({ user }: { user: User }) => (
         </Field>
         <Field label="Name">{user.name ?? "—"}</Field>
         <Field label="Email">{user.email}</Field>
+        <Field label="Account Type">
+          <AccountTypeField isAnonymous={user.isAnonymous} />
+        </Field>
         <Field label="Email Verified">
           <BoolField value={user.emailVerified} />
         </Field>
