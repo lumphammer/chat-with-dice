@@ -15,10 +15,16 @@ export type FolderSizeReport = {
   discrepancies: {
     folderId: string;
     name: string;
+    isDeleted: boolean;
     storedBytes: number;
     expectedBytes: number;
     deltaBytes: number; // stored - expected
   }[];
+};
+
+export type FolderSizeRepairResult = {
+  generatedAt: number;
+  recalculatedFolders: number;
 };
 
 type R2Issue = {
@@ -37,4 +43,32 @@ export type R2ReconciliationReport = {
   // referenced and expected present, but absent in R2
   missingBlobs: R2Issue[];
   sizeMismatches: (R2Issue & { dbBytes: number; r2Bytes: number })[];
+};
+
+export type R2OrphanCleanupResult = {
+  generatedAt: number;
+  requested: number;
+  deleted: number;
+  skipped: { key: string; reason: string }[];
+  failed: { key: string; reason: string }[];
+};
+
+export type MissingBlobCleanupInput = {
+  nodeId: string;
+  r2Key: string;
+  kind: "file" | "thumbnail";
+};
+
+export type MissingBlobCleanupResult = {
+  generatedAt: number;
+  requested: number;
+  deletedFileRecords: number;
+  clearedThumbnailReferences: number;
+  skipped: (MissingBlobCleanupInput & { reason: string })[];
+  thumbnailR2KeysToDelete: string[];
+};
+
+export type MissingStorageCleanupResult = MissingBlobCleanupResult & {
+  deletedThumbnailObjects: number;
+  thumbnailObjectDeleteFailures: { key: string; reason: string }[];
 };
