@@ -466,14 +466,13 @@ export class UserDataRepository {
 
   // === Deletes ===
 
-  hardDeleteNodes(ids: string[]) {
+  async hardDeleteNodes(ids: string[]) {
     if (ids.length === 0) {
       return;
     }
-
     // This is dead simple and fail-safe. reciprocal FKs with CASCADE mean that
     // the nodes and all their decendants are wiped off the face of the database.
-    return this.db
+    return await this.db
       .delete(dbSchema.nodes)
       .where(inArray(dbSchema.nodes.id, ids));
   }

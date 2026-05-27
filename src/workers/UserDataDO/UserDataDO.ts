@@ -225,7 +225,7 @@ export class UserDataDO extends DurableObject {
 
     if (usage.storage_used_bytes + sizeBytes > usage.storage_quota_bytes) {
       const r2Key = (await this.repo.getNode(id))?.file?.r2Key;
-      this.repo.hardDeleteNodes([id]);
+      await this.repo.hardDeleteNodes([id]);
       if (r2Key) {
         await cfEnv.PRIVATE_R2?.delete(r2Key);
       }
