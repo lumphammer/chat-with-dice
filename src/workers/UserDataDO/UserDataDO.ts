@@ -2,11 +2,16 @@ import { HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR } from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
+import { processInBatches } from "#/utils/processInBatches";
 import {
   userFileR2Key,
   userFilesPrefix,
   userFileThumbnailsPrefix,
 } from "#/utils/r2Keys";
+import {
+  R2_REPAIR_BATCH_SIZE,
+  R2_REPAIR_SUBREQUEST_BUDGET,
+} from "#/utils/r2RepairLimits";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import { UserDataRepository } from "./UserDataRepository";
 import type {
@@ -421,6 +426,8 @@ export class UserDataDO extends DurableObject {
     const thumbnailR2KeysToDelete = new Set<string>();
     let deletedFileRecords = 0;
     let clearedThumbnailReferences = 0;
+    let remainingR2Checks = R2_REPAIR_SUBREQUEST_BUDGET;
+    let deferred = 0;
 
     const fileRecords = await Promise.all(
       fileIssues.map(async (issue) => ({
@@ -448,11 +455,22 @@ export class UserDataDO extends DurableObject {
       });
     }
 
-    const fileHeads = await Promise.all(
-      fileCandidates.map(async ({ issue }) => ({
+    const fileCandidatesToCheck = fileCandidates.slice(0, remainingR2Checks);
+    remainingR2Checks -= fileCandidatesToCheck.length;
+    for (const { issue } of fileCandidates.slice(
+      fileCandidatesToCheck.length,
+    )) {
+      skipped.push({ ...issue, reason: "deferred-subrequest-budget" });
+      deferred++;
+    }
+
+    const fileHeads = await processInBatches(
+      fileCandidatesToCheck,
+      R2_REPAIR_BATCH_SIZE,
+      async ({ issue }) => ({
         issue,
         r2Object: await bucket.head(issue.r2Key),
-      })),
+      }),
     );
     const fileCandidateByNodeId = new Map(
       fileCandidates.map((candidate) => [candidate.issue.nodeId, candidate]),
@@ -503,11 +521,25 @@ export class UserDataDO extends DurableObject {
       thumbnailCandidates.push(issue);
     }
 
-    const thumbnailHeads = await Promise.all(
-      thumbnailCandidates.map(async (issue) => ({
+    const thumbnailCandidatesToCheck = thumbnailCandidates.slice(
+      0,
+      remainingR2Checks,
+    );
+    remainingR2Checks -= thumbnailCandidatesToCheck.length;
+    for (const issue of thumbnailCandidates.slice(
+      thumbnailCandidatesToCheck.length,
+    )) {
+      skipped.push({ ...issue, reason: "deferred-subrequest-budget" });
+      deferred++;
+    }
+
+    const thumbnailHeads = await processInBatches(
+      thumbnailCandidatesToCheck,
+      R2_REPAIR_BATCH_SIZE,
+      async (issue) => ({
         issue,
         r2Object: await bucket.head(issue.r2Key),
-      })),
+      }),
     );
     const thumbnailIdsToClear = new Set<string>();
     for (const { issue, r2Object } of thumbnailHeads) {
@@ -531,6 +563,7 @@ export class UserDataDO extends DurableObject {
       requested: missingBlobs.length,
       deletedFileRecords,
       clearedThumbnailReferences,
+      deferred,
       skipped,
       thumbnailR2KeysToDelete: [...thumbnailR2KeysToDelete],
     };

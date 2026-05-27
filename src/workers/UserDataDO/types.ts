@@ -49,6 +49,7 @@ export type R2OrphanCleanupResult = {
   generatedAt: number;
   requested: number;
   deleted: number;
+  deferred: number;
   skipped: { key: string; reason: string }[];
   failed: { key: string; reason: string }[];
 };
@@ -64,6 +65,7 @@ export type MissingBlobCleanupResult = {
   requested: number;
   deletedFileRecords: number;
   clearedThumbnailReferences: number;
+  deferred: number;
   skipped: (MissingBlobCleanupInput & { reason: string })[];
   thumbnailR2KeysToDelete: string[];
 };

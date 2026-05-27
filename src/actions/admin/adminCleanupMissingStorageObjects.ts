@@ -1,4 +1,9 @@
 import { db as d1 } from "#/db";
+import { processInBatches } from "#/utils/processInBatches";
+import {
+  R2_REPAIR_BATCH_SIZE,
+  R2_REPAIR_SUBREQUEST_BUDGET,
+} from "#/utils/r2RepairLimits";
 import type {
   MissingBlobCleanupInput,
   MissingStorageCleanupResult,
@@ -57,15 +62,23 @@ export const adminCleanupMissingStorageObjects = defineAction({
       throw new Error("PRIVATE_R2 bucket is not configured");
     }
 
-    const deleteResults = await Promise.all(
-      [...thumbnailKeys].map(async (key) => {
+    const thumbnailKeysToDelete = [...thumbnailKeys].slice(
+      0,
+      R2_REPAIR_SUBREQUEST_BUDGET,
+    );
+    result.deferred += thumbnailKeys.size - thumbnailKeysToDelete.length;
+
+    const deleteResults = await processInBatches(
+      thumbnailKeysToDelete,
+      R2_REPAIR_BATCH_SIZE,
+      async (key) => {
         try {
           await bucket.delete(key);
           return { key, error: null };
         } catch (error) {
           return { key, error };
         }
-      }),
+      },
     );
 
     for (const { key, error } of deleteResults) {

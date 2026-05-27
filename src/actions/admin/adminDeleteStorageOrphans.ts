@@ -1,4 +1,9 @@
 import { db as d1 } from "#/db";
+import { processInBatches } from "#/utils/processInBatches";
+import {
+  R2_REPAIR_BATCH_SIZE,
+  R2_REPAIR_SUBREQUEST_BUDGET,
+} from "#/utils/r2RepairLimits";
 import type { R2OrphanCleanupResult } from "#/workers/UserDataDO/types";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
@@ -49,6 +54,7 @@ export const adminDeleteStorageOrphans = defineAction({
       generatedAt: Date.now(),
       requested: orphanBlobs.length,
       deleted: 0,
+      deferred: 0,
       skipped: [],
       failed: [],
     };
@@ -56,6 +62,7 @@ export const adminDeleteStorageOrphans = defineAction({
     const seenKeys = new Set<string>();
     const fileKeysToDelete: string[] = [];
     const thumbnailKeysToCheck: string[] = [];
+    let remainingR2Subrequests = R2_REPAIR_SUBREQUEST_BUDGET;
     for (const { key } of orphanBlobs) {
       if (seenKeys.has(key)) {
         result.skipped.push({ key, reason: "duplicate" });
@@ -74,6 +81,14 @@ export const adminDeleteStorageOrphans = defineAction({
         continue;
       }
 
+      const subrequestCost = isThumbnailKey ? 2 : 1;
+      if (remainingR2Subrequests < subrequestCost) {
+        result.skipped.push({ key, reason: "deferred-subrequest-budget" });
+        result.deferred++;
+        continue;
+      }
+      remainingR2Subrequests -= subrequestCost;
+
       if (isThumbnailKey) {
         thumbnailKeysToCheck.push(key);
       } else {
@@ -81,11 +96,13 @@ export const adminDeleteStorageOrphans = defineAction({
       }
     }
 
-    const thumbnailChecks = await Promise.all(
-      thumbnailKeysToCheck.map(async (key) => ({
+    const thumbnailChecks = await processInBatches(
+      thumbnailKeysToCheck,
+      R2_REPAIR_BATCH_SIZE,
+      async (key) => ({
         key,
         object: await bucket.head(key),
-      })),
+      }),
     );
     const thumbnailKeysToDelete: string[] = [];
     for (const { key, object } of thumbnailChecks) {
@@ -101,15 +118,17 @@ export const adminDeleteStorageOrphans = defineAction({
       thumbnailKeysToDelete.push(key);
     }
 
-    const deleteResults = await Promise.all(
-      [...fileKeysToDelete, ...thumbnailKeysToDelete].map(async (key) => {
+    const deleteResults = await processInBatches(
+      [...fileKeysToDelete, ...thumbnailKeysToDelete],
+      R2_REPAIR_BATCH_SIZE,
+      async (key) => {
         try {
           await bucket.delete(key);
           return { key, error: null };
         } catch (error) {
           return { key, error };
         }
-      }),
+      },
     );
     for (const { key, error } of deleteResults) {
       if (error) {

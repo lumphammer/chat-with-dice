@@ -80,9 +80,11 @@ export const StorageRepairActions = memo(
         return;
       }
 
+      const deferredMessage =
+        data.deferred > 0 ? `, deferred ${data.deferred}` : "";
       setFeedback({
         kind: "success",
-        message: `deleted ${data.deleted} orphaned objects, skipped ${data.skipped.length}, failed ${data.failed.length}`,
+        message: `deleted ${data.deleted} orphaned objects, skipped ${data.skipped.length}, failed ${data.failed.length}${deferredMessage}`,
       });
       await onRepairComplete();
       setPendingOperation(null);
@@ -110,9 +112,11 @@ export const StorageRepairActions = memo(
         return;
       }
 
+      const deferredMessage =
+        data.deferred > 0 ? `, deferred ${data.deferred}` : "";
       setFeedback({
         kind: "success",
-        message: `deleted ${data.deletedFileRecords} file records, cleared ${data.clearedThumbnailReferences} thumbnail references, skipped ${data.skipped.length}, thumbnail delete failures ${data.thumbnailObjectDeleteFailures.length}`,
+        message: `deleted ${data.deletedFileRecords} file records, cleared ${data.clearedThumbnailReferences} thumbnail references, skipped ${data.skipped.length}, thumbnail delete failures ${data.thumbnailObjectDeleteFailures.length}${deferredMessage}`,
       });
       await onRepairComplete();
       setPendingOperation(null);
