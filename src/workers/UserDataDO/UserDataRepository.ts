@@ -268,10 +268,10 @@ export class UserDataRepository {
   }
 
   /** List live children of a folder (`null` = root). */
-  getChildNodes(folderId: string | null | undefined) {
+  getChildNodes(folderId: string | null | undefined, includeDeleted: boolean) {
     return this.db.query.nodes.findMany({
       where: {
-        deletedTime: { isNull: true },
+        ...(includeDeleted ? {} : { deletedTime: { isNull: true } }),
         parentFolderId: folderId ?? { isNull: true },
       },
       with: {

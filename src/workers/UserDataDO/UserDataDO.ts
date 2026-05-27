@@ -139,8 +139,17 @@ export class UserDataDO extends DurableObject {
     return { kind: "not-found" };
   }
 
-  getNodes(folderId?: string | null) {
-    return this.repo.getChildNodes(folderId);
+  async getNodes(folderId: string | null | undefined, includeDeleted: boolean) {
+    if (folderId) {
+      const folderNode = await this.repo.getNode(folderId);
+      if (!folderNode) {
+        throw new Error("Folder not found");
+      }
+      if (folderNode.deletedTime) {
+        throw new Error("Folder is deleted");
+      }
+    }
+    return await this.repo.getChildNodes(folderId, includeDeleted);
   }
 
   async createFolder(name: string, parentFolderId?: string | null) {

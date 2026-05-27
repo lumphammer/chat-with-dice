@@ -1,5 +1,6 @@
 import { authClient } from "#/utils/auth-client";
 import { useRefStash } from "../useRefStash";
+import { useStateWithRef } from "../useStateWithRef";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { DropOverlay } from "./DropOverlay";
 import { EmptyState } from "./EmptyState";
@@ -78,6 +79,8 @@ export const FileManager = memo(
 
     const viewMode = useStore(viewModeStore);
 
+    const [showDeleted, setShowDeleted, showDeletedRef] =
+      useStateWithRef(false);
     const [isDragOver, setIsDragOver] = useState(false);
     const [isLoading, setIsLoading] = useState(initialNodes === undefined);
     const [breadcrumbWidths, setBreadcrumbWidths] = useState({
@@ -113,6 +116,7 @@ export const FileManager = memo(
       setExpandedToolbarWidth(toolbarWidth);
     }, [isToolbarCompact, toolbarWidth]);
 
+    // main fn to fetch folder contents
     const fetchNodes = useCallback(async () => {
       const folderId = locationRef.current.folderId;
       navigationIdRef.current += 1;
@@ -122,6 +126,7 @@ export const FileManager = memo(
         folderId,
         ownerUserId,
         roomId,
+        includeDeleted: showDeletedRef.current,
       });
       if (navigationIdRef.current === requestId) {
         setIsLoading(false);
@@ -131,21 +136,21 @@ export const FileManager = memo(
         return;
       }
       setNodes(result.data);
-    }, [ownerUserId, roomId, locationRef.current.folderId]);
+    }, [ownerUserId, roomId, locationRef.current.folderId, showDeletedRef]);
 
     const handleRefresh = useCallback(async () => {
       await fetchNodes();
       await sessionRef.current.refetch();
     }, [fetchNodes, sessionRef]);
 
-    // when the folder id changes, we update
+    // when the folder id or showDeleted changes, we update
     useEffect(() => {
       if (shouldSkipInitialFetch.current) {
         shouldSkipInitialFetch.current = false;
         return;
       }
       void fetchNodes();
-    }, [fetchNodes, location.folderId]);
+    }, [fetchNodes, location.folderId, showDeleted]);
 
     const { uploading, uploadFiles, dismissError } = useUpload(
       location.folderId,
@@ -336,6 +341,8 @@ export const FileManager = memo(
               onFilesSelected={uploadFiles}
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
+              showDeleted={showDeleted}
+              onShowDeletedChange={setShowDeleted}
               readOnly={readOnly}
               onRefresh={handleRefresh}
             />
