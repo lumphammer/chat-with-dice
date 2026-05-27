@@ -10,6 +10,7 @@ import {
   Menu,
   Unlink2,
   Upload,
+  RefreshCw,
 } from "lucide-react";
 import { memo, useId, useRef } from "react";
 
@@ -27,6 +28,7 @@ export const FileActionsMenu = memo(
     storageQuotaBytes,
     storageUsedBytes,
     viewMode,
+    onRefresh,
   }: {
     canShareWithRoom: boolean;
     canUnshareFromRoom: boolean;
@@ -40,6 +42,7 @@ export const FileActionsMenu = memo(
     storageQuotaBytes: number;
     storageUsedBytes: number;
     viewMode: ViewMode;
+    onRefresh: () => void;
   }) => {
     const menuId = useId();
     const anchorName = `--file-toolbar-${menuId.replaceAll(":", "")}`;
@@ -92,6 +95,17 @@ export const FileActionsMenu = memo(
                 </li>
               </>
             )}
+            <li>
+              <button
+                type="button"
+                className={viewMode === "list" ? "active" : undefined}
+                aria-pressed={viewMode === "list"}
+                onClick={() => handleMenuAction(() => onRefresh())}
+              >
+                <RefreshCw size={16} />
+                Refresh
+              </button>
+            </li>
             <li>
               <button
                 type="button"

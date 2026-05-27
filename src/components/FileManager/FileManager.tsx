@@ -139,6 +139,10 @@ export const FileManager = memo(
       [fetchNodes, sessionRef],
     );
 
+    const handleRefresh = useCallback(async () => {
+      await refetchNodes(location.folderId);
+    }, [refetchNodes, location.folderId]);
+
     useEffect(() => {
       if (shouldSkipInitialFetch.current) {
         shouldSkipInitialFetch.current = false;
@@ -346,6 +350,7 @@ export const FileManager = memo(
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
               readOnly={readOnly}
+              onRefresh={handleRefresh}
             />
           </div>
         </div>

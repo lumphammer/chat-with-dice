@@ -20,6 +20,7 @@ export const Toolbar = memo(
     viewMode,
     onViewModeChange,
     readOnly = false,
+    onRefresh,
   }: {
     currentFolderId: string | null;
     compact: boolean;
@@ -28,6 +29,7 @@ export const Toolbar = memo(
     viewMode: ViewMode;
     onViewModeChange: (viewMode: ViewMode) => void;
     readOnly?: boolean;
+    onRefresh: () => void;
   }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const newFolderDialogRef = useRef<NewFolderDialogHandle>(null);
@@ -83,6 +85,7 @@ export const Toolbar = memo(
           onUnshareFromRoom={unshareFromRoom}
           onUpload={handleUploadClick}
           onViewModeChange={onViewModeChange}
+          onRefresh={onRefresh}
           storageQuotaBytes={storageQuotaBytes}
           storageUsedBytes={storageUsedBytes}
           viewMode={viewMode}
