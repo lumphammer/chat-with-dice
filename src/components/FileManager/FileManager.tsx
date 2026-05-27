@@ -71,6 +71,7 @@ export const FileManager = memo(
   } & ReadOnlyProps) => {
     const session = authClient.useSession();
     const sessionRef = useRefStash(session);
+    const locationRef = useRefStash(location);
 
     const readOnly = ownerUserId !== undefined;
     const [nodes, setNodes] = useState<FileNode[]>(() => initialNodes ?? []);
@@ -112,57 +113,43 @@ export const FileManager = memo(
       setExpandedToolbarWidth(toolbarWidth);
     }, [isToolbarCompact, toolbarWidth]);
 
-    const fetchNodes = useCallback(
-      async (folderId: string | null, requestId: number) => {
-        const result = await actions.files.getNodes({
-          folderId,
-          ownerUserId,
-          roomId,
-        });
-        if (requestId !== navigationIdRef.current) return false;
-        if (result.error) {
-          console.error("Failed to fetch nodes:", result.error);
-          return true;
-        }
-        setNodes(result.data);
-        return true;
-      },
-      [ownerUserId, roomId],
-    );
-
-    const refetchNodes = useCallback(
-      async (folderId: string | null) => {
-        const requestId = navigationIdRef.current;
-        await fetchNodes(folderId, requestId);
-        await sessionRef.current.refetch();
-      },
-      [fetchNodes, sessionRef],
-    );
+    const fetchNodes = useCallback(async () => {
+      const folderId = locationRef.current.folderId;
+      navigationIdRef.current += 1;
+      const requestId = navigationIdRef.current;
+      setIsLoading(true);
+      const result = await actions.files.getNodes({
+        folderId,
+        ownerUserId,
+        roomId,
+      });
+      if (navigationIdRef.current === requestId) {
+        setIsLoading(false);
+      }
+      if (result.error) {
+        console.error("Failed to fetch nodes:", result.error);
+        return;
+      }
+      setNodes(result.data);
+    }, [ownerUserId, roomId, locationRef.current.folderId]);
 
     const handleRefresh = useCallback(async () => {
-      await refetchNodes(location.folderId);
-    }, [refetchNodes, location.folderId]);
+      await fetchNodes();
+      await sessionRef.current.refetch();
+    }, [fetchNodes, sessionRef]);
 
+    // when the folder id changes, we update
     useEffect(() => {
       if (shouldSkipInitialFetch.current) {
         shouldSkipInitialFetch.current = false;
         return;
       }
-
-      const requestId = ++navigationIdRef.current;
-      setIsLoading(true);
-
-      void (async () => {
-        const isCurrent = await fetchNodes(location.folderId, requestId);
-        if (isCurrent) {
-          setIsLoading(false);
-        }
-      })();
+      void fetchNodes();
     }, [fetchNodes, location.folderId]);
 
     const { uploading, uploadFiles, dismissError } = useUpload(
       location.folderId,
-      () => refetchNodes(location.folderId),
+      handleRefresh,
     );
 
     const handleViewModeChange = useCallback((nextViewMode: ViewMode) => {

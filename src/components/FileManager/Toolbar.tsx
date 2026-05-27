@@ -86,6 +86,7 @@ export const Toolbar = memo(
           onUpload={handleUploadClick}
           onViewModeChange={onViewModeChange}
           onRefresh={onRefresh}
+          // readOnly={readOnly}
           storageQuotaBytes={storageQuotaBytes}
           storageUsedBytes={storageUsedBytes}
           viewMode={viewMode}
