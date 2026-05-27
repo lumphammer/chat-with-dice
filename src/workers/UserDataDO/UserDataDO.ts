@@ -2,15 +2,23 @@ import { HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR } from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
+import { processInBatches } from "#/utils/processInBatches";
 import {
   userFileR2Key,
   userFilesPrefix,
   userFileThumbnailsPrefix,
 } from "#/utils/r2Keys";
+import {
+  R2_REPAIR_BATCH_SIZE,
+  R2_REPAIR_SUBREQUEST_BUDGET,
+} from "#/utils/r2RepairLimits";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import { UserDataRepository } from "./UserDataRepository";
 import type {
   FolderSizeReport,
+  FolderSizeRepairResult,
+  MissingBlobCleanupInput,
+  MissingBlobCleanupResult,
   PathResolution,
   R2ReconciliationReport,
 } from "./types";
@@ -22,6 +30,7 @@ import {
 } from "./utils";
 import { DurableObject } from "cloudflare:workers";
 import { env as cfEnv } from "cloudflare:workers";
+import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 type NodeForShare = {
@@ -167,8 +176,8 @@ export class UserDataDO extends DurableObject {
     await this.syncQuotaWithSizes();
   }
 
-  async hardDeleteNode(nodeId: string) {
-    await this.repo.hardDeleteNode(nodeId);
+  async hardDeleteNodes(nodeIds: string[]) {
+    await this.repo.hardDeleteNodes(nodeIds);
   }
 
   async createFile(
@@ -220,8 +229,8 @@ export class UserDataDO extends DurableObject {
     }
 
     if (usage.storage_used_bytes + sizeBytes > usage.storage_quota_bytes) {
-      this.repo.hardDeleteNode(id);
       const r2Key = (await this.repo.getNode(id))?.file?.r2Key;
+      await this.repo.hardDeleteNodes([id]);
       if (r2Key) {
         await cfEnv.PRIVATE_R2?.delete(r2Key);
       }
@@ -365,6 +374,7 @@ export class UserDataDO extends DurableObject {
       .map((row) => ({
         folderId: row.folder_id,
         name: row.name,
+        isDeleted: row.deleted_time !== null,
         storedBytes: row.stored,
         expectedBytes: row.expected,
         deltaBytes: row.stored - row.expected,
@@ -373,6 +383,189 @@ export class UserDataDO extends DurableObject {
     return {
       generatedAt: Date.now(),
       discrepancies,
+    };
+  }
+
+  async recalculateFolderSizes(): Promise<FolderSizeRepairResult> {
+    const recalculatedFolders = this.repo.recalculateAllFolderSizes();
+    await this.syncQuotaWithSizes();
+
+    return {
+      generatedAt: Date.now(),
+      recalculatedFolders,
+    };
+  }
+
+  async cleanupMissingBlobs(
+    missingBlobs: MissingBlobCleanupInput[],
+  ): Promise<MissingBlobCleanupResult> {
+    const bucket = cfEnv.PRIVATE_R2;
+    if (!bucket) {
+      throw new Error("PRIVATE_R2 bucket is not configured");
+    }
+
+    const deduped = new Map<string, MissingBlobCleanupInput>();
+    const skipped: MissingBlobCleanupResult["skipped"] = [];
+    for (const issue of missingBlobs) {
+      const key = `${issue.kind}:${issue.nodeId}:${issue.r2Key}`;
+      if (deduped.has(key)) {
+        skipped.push({ ...issue, reason: "duplicate" });
+        continue;
+      }
+      deduped.set(key, issue);
+    }
+
+    const fileIssues = [...deduped.values()].filter(
+      (issue) => issue.kind === "file",
+    );
+    const thumbnailIssues = [...deduped.values()].filter(
+      (issue) => issue.kind === "thumbnail",
+    );
+
+    const deletedNodeIds = new Set<string>();
+    const thumbnailR2KeysToDelete = new Set<string>();
+    let deletedFileRecords = 0;
+    let clearedThumbnailReferences = 0;
+    let remainingR2Checks = R2_REPAIR_SUBREQUEST_BUDGET;
+    let deferred = 0;
+
+    const fileRecords = await Promise.all(
+      fileIssues.map(async (issue) => ({
+        issue,
+        file: await this.repo.getFileRecord(issue.nodeId),
+      })),
+    );
+    const fileCandidates: {
+      issue: MissingBlobCleanupInput;
+      thumbnailR2Key: string | null;
+    }[] = [];
+    for (const { issue, file } of fileRecords) {
+      if (!file?.node) {
+        skipped.push({ ...issue, reason: "file-row-not-found" });
+        continue;
+      }
+      if (file.r2Key !== issue.r2Key) {
+        skipped.push({ ...issue, reason: "reported-key-changed" });
+        continue;
+      }
+
+      fileCandidates.push({
+        issue,
+        thumbnailR2Key: file.thumbnailR2Key,
+      });
+    }
+
+    const fileCandidatesToCheck = fileCandidates.slice(0, remainingR2Checks);
+    remainingR2Checks -= fileCandidatesToCheck.length;
+    for (const { issue } of fileCandidates.slice(
+      fileCandidatesToCheck.length,
+    )) {
+      skipped.push({ ...issue, reason: "deferred-subrequest-budget" });
+      deferred++;
+    }
+
+    const fileHeads = await processInBatches(
+      fileCandidatesToCheck,
+      R2_REPAIR_BATCH_SIZE,
+      async ({ issue }) => ({
+        issue,
+        r2Object: await bucket.head(issue.r2Key),
+      }),
+    );
+    const fileCandidateByNodeId = new Map(
+      fileCandidates.map((candidate) => [candidate.issue.nodeId, candidate]),
+    );
+    const nodeIdsToDelete = new Set<string>();
+    for (const { issue, r2Object } of fileHeads) {
+      if (r2Object) {
+        skipped.push({ ...issue, reason: "not-still-missing" });
+        continue;
+      }
+
+      const candidate = fileCandidateByNodeId.get(issue.nodeId);
+      if (candidate?.thumbnailR2Key) {
+        thumbnailR2KeysToDelete.add(candidate.thumbnailR2Key);
+      }
+      nodeIdsToDelete.add(issue.nodeId);
+      deletedNodeIds.add(issue.nodeId);
+    }
+    await this.repo.hardDeleteNodes([...nodeIdsToDelete]);
+    deletedFileRecords = nodeIdsToDelete.size;
+
+    const thumbnailIssuesToCheck: MissingBlobCleanupInput[] = [];
+    for (const issue of thumbnailIssues) {
+      if (deletedNodeIds.has(issue.nodeId)) {
+        skipped.push({ ...issue, reason: "resolved-by-file-delete" });
+        continue;
+      }
+      thumbnailIssuesToCheck.push(issue);
+    }
+
+    const thumbnailRecords = await Promise.all(
+      thumbnailIssuesToCheck.map(async (issue) => ({
+        issue,
+        file: await this.repo.getFileRecord(issue.nodeId),
+      })),
+    );
+    const thumbnailCandidates: MissingBlobCleanupInput[] = [];
+    for (const { issue, file } of thumbnailRecords) {
+      if (!file?.node) {
+        skipped.push({ ...issue, reason: "file-row-not-found" });
+        continue;
+      }
+      if (file.thumbnailR2Key !== issue.r2Key) {
+        skipped.push({ ...issue, reason: "reported-key-changed" });
+        continue;
+      }
+
+      thumbnailCandidates.push(issue);
+    }
+
+    const thumbnailCandidatesToCheck = thumbnailCandidates.slice(
+      0,
+      remainingR2Checks,
+    );
+    remainingR2Checks -= thumbnailCandidatesToCheck.length;
+    for (const issue of thumbnailCandidates.slice(
+      thumbnailCandidatesToCheck.length,
+    )) {
+      skipped.push({ ...issue, reason: "deferred-subrequest-budget" });
+      deferred++;
+    }
+
+    const thumbnailHeads = await processInBatches(
+      thumbnailCandidatesToCheck,
+      R2_REPAIR_BATCH_SIZE,
+      async (issue) => ({
+        issue,
+        r2Object: await bucket.head(issue.r2Key),
+      }),
+    );
+    const thumbnailIdsToClear = new Set<string>();
+    for (const { issue, r2Object } of thumbnailHeads) {
+      if (r2Object) {
+        skipped.push({ ...issue, reason: "not-still-missing" });
+        continue;
+      }
+
+      thumbnailIdsToClear.add(issue.nodeId);
+    }
+    await this.repo.clearFileThumbnails([...thumbnailIdsToClear]);
+    clearedThumbnailReferences = thumbnailIdsToClear.size;
+
+    if (deletedFileRecords > 0) {
+      this.repo.recalculateAllFolderSizes();
+      await this.syncQuotaWithSizes();
+    }
+
+    return {
+      generatedAt: Date.now(),
+      requested: missingBlobs.length,
+      deletedFileRecords,
+      clearedThumbnailReferences,
+      deferred,
+      skipped,
+      thumbnailR2KeysToDelete: [...thumbnailR2KeysToDelete],
     };
   }
 
@@ -523,9 +716,12 @@ export class UserDataDO extends DurableObject {
     // quota usage getting or staying out of sync with reality
     const total = await this.repo.getRootSize();
     if (typeof total === "number") {
-      await d1.update(users).set({
-        storage_used_bytes: total,
-      });
+      await d1
+        .update(users)
+        .set({
+          storage_used_bytes: total,
+        })
+        .where(eq(users.id, this.userId));
     }
   }
 }

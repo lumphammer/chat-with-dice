@@ -2,7 +2,7 @@ import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
 import { logError } from "./utils";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 type DBHandle = DrizzleSqliteDODatabase<
@@ -15,6 +15,7 @@ export type PathWalkRow = { folder_id: string; depth: number };
 export type FolderSizeDiscrepancyRow = {
   folder_id: string;
   name: string;
+  deleted_time: number | null;
   stored: number;
   expected: number;
 };
@@ -78,6 +79,7 @@ export class UserDataRepository {
       SELECT
         f.id AS folder_id,
         fn.name AS name,
+        fn.deleted_time AS deleted_time,
         f.recursive_size_bytes AS stored,
         COALESCE(SUM(
           CASE
@@ -87,7 +89,7 @@ export class UserDataRepository {
           END
         ), 0) AS expected
       FROM folders f
-      JOIN nodes fn ON fn.folder_id = f.id AND fn.deleted_time IS NULL
+      JOIN nodes fn ON fn.folder_id = f.id
       LEFT JOIN nodes child
         ON child.parent_folder_id = f.id AND child.deleted_time IS NULL
       LEFT JOIN files cf ON cf.id = child.file_id
@@ -103,6 +105,74 @@ export class UserDataRepository {
     `);
 
     return result.toArray() as FolderSizeDiscrepancyRow[];
+  }
+
+  countFolders(): number {
+    const result = this.db.run(sql`
+      SELECT COUNT(*) AS total
+      FROM folders
+    `);
+    const row = result.toArray().at(0);
+    return typeof row?.total === "number" ? row.total : 0;
+  }
+
+  /**
+   * Rebuild every folder's recursive size from the live descendant file rows.
+   *
+   * Deleted folder rows are still recalculated for their own internal
+   * consistency, but deleted child nodes are never counted toward their parent.
+   */
+  recalculateAllFolderSizes(): number {
+    const folderCount = this.countFolders();
+
+    this.db.run(sql`
+      WITH RECURSIVE folder_descendants(folder_id, descendant_node_id) AS (
+        SELECT
+          f.id,
+          child.id
+        FROM folders f
+        JOIN nodes child
+          ON child.parent_folder_id = f.id
+          AND child.deleted_time IS NULL
+        UNION ALL
+        SELECT
+          fd.folder_id,
+          child.id
+        FROM folder_descendants fd
+        JOIN nodes descendant
+          ON descendant.id = fd.descendant_node_id
+        JOIN nodes child
+          ON child.parent_folder_id = descendant.folder_id
+          AND child.deleted_time IS NULL
+        WHERE descendant.folder_id IS NOT NULL
+      ),
+      computed_sizes AS (
+        SELECT
+          f.id AS folder_id,
+          COALESCE(SUM(
+            CASE
+              WHEN files.id IS NOT NULL AND files.is_ready = 1 THEN files.size_bytes
+              ELSE 0
+            END
+          ), 0) AS recursive_size_bytes
+        FROM folders f
+        LEFT JOIN folder_descendants fd
+          ON fd.folder_id = f.id
+        LEFT JOIN nodes descendant
+          ON descendant.id = fd.descendant_node_id
+        LEFT JOIN files
+          ON files.id = descendant.file_id
+        GROUP BY f.id
+      )
+      UPDATE folders
+      SET recursive_size_bytes = (
+        SELECT computed_sizes.recursive_size_bytes
+        FROM computed_sizes
+        WHERE computed_sizes.folder_id = folders.id
+      )
+    `);
+
+    return folderCount;
   }
 
   // === Path walking ===
@@ -222,6 +292,13 @@ export class UserDataRepository {
     });
   }
 
+  getFileRecord(id: string) {
+    return this.db.query.files.findFirst({
+      where: { id },
+      with: { node: true },
+    });
+  }
+
   // === Creates ===
 
   /** Create a folder row and its matching node row. */
@@ -321,6 +398,21 @@ export class UserDataRepository {
       .where(eq(dbSchema.files.id, id));
   }
 
+  clearFileThumbnails(ids: string[]) {
+    if (ids.length === 0) {
+      return;
+    }
+
+    return this.db
+      .update(dbSchema.files)
+      .set({
+        thumbnailR2Key: null,
+        thumbnailContentType: null,
+        thumbnailSizeBytes: null,
+      })
+      .where(inArray(dbSchema.files.id, ids));
+  }
+
   // === Recursive CTE updates ===
 
   /**
@@ -374,11 +466,15 @@ export class UserDataRepository {
 
   // === Deletes ===
 
-  hardDeleteNode(id: string) {
-    // this is dead simple and fail-safe. reciprocal FKs with CASCADE mean that
-    // the node and all its decendants (if a folder) are wiped off the face of
-    // the database.
-    return this.db.delete(dbSchema.nodes).where(eq(dbSchema.nodes.id, id));
+  async hardDeleteNodes(ids: string[]) {
+    if (ids.length === 0) {
+      return;
+    }
+    // This is dead simple and fail-safe. reciprocal FKs with CASCADE mean that
+    // the nodes and all their decendants are wiped off the face of the database.
+    return await this.db
+      .delete(dbSchema.nodes)
+      .where(inArray(dbSchema.nodes.id, ids));
   }
 
   // === Shares ===

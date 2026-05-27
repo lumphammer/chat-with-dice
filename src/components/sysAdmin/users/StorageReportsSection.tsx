@@ -3,6 +3,7 @@ import type {
   FolderSizeReport,
   R2ReconciliationReport,
 } from "#/workers/UserDataDO/types";
+import { StorageRepairActions } from "./StorageRepairActions";
 import { actions } from "astro:actions";
 import { memo, useState, type ReactNode } from "react";
 
@@ -40,8 +41,8 @@ export const StorageReportsSection = memo(({ userId }: { userId: string }) => {
       <div className="card-body">
         <h2 className="card-title text-base">Storage Integrity Reports</h2>
         <p className="text-base-content/60 text-xs">
-          Read-only checks comparing folder size bookkeeping and R2 blobs
-          against the file table. Nothing is modified.
+          Run read-only checks comparing folder size bookkeeping and R2 blobs
+          against the file table, then repair specific discrepancies.
         </p>
         <div>
           <button
@@ -62,6 +63,12 @@ export const StorageReportsSection = memo(({ userId }: { userId: string }) => {
 
         {report && (
           <div className="mt-2 flex flex-col gap-6">
+            <StorageRepairActions
+              userId={userId}
+              report={report}
+              reportLoading={loading}
+              onRepairComplete={runReports}
+            />
             <FolderSizeResult report={report.folderReport} />
             <R2Result report={report.r2Report} />
             <details>
@@ -125,7 +132,14 @@ const FolderSizeResult = memo(({ report }: { report: FolderSizeReport }) => (
           <tbody>
             {report.discrepancies.map((d) => (
               <tr key={d.folderId}>
-                <td>{d.name}</td>
+                <td>
+                  <span>{d.name}</span>
+                  {d.isDeleted && (
+                    <span className="badge badge-ghost badge-sm ml-2">
+                      deleted
+                    </span>
+                  )}
+                </td>
                 <td className="text-right">{formatBytes(d.storedBytes)}</td>
                 <td className="text-right">{formatBytes(d.expectedBytes)}</td>
                 <td className="text-right">{formatDelta(d.deltaBytes)}</td>

@@ -1,3 +1,6 @@
+import { adminCleanupMissingStorageObjects } from "./admin/adminCleanupMissingStorageObjects";
+import { adminDeleteStorageOrphans } from "./admin/adminDeleteStorageOrphans";
+import { adminRecalculateStorageFolderSizes } from "./admin/adminRecalculateStorageFolderSizes";
 import { adminSetRoomDeleted } from "./admin/adminSetRoomDeleted";
 import { adminStorageReport } from "./admin/adminStorageReport";
 import { adminUpdateRoom } from "./admin/adminUpdateRoom";
@@ -27,5 +30,8 @@ export const server = {
     setRoomDeleted: adminSetRoomDeleted,
     updateUserQuota: adminUpdateUserQuota,
     storageReport: adminStorageReport,
+    recalculateStorageFolderSizes: adminRecalculateStorageFolderSizes,
+    deleteStorageOrphans: adminDeleteStorageOrphans,
+    cleanupMissingStorageObjects: adminCleanupMissingStorageObjects,
   },
 };
