@@ -37,7 +37,7 @@
   --c-base: 0.01;
 
   /* lightness for text based on saturated colours (accent, success, etc) */
-  --l-colored-text: 0.9;
+  --l-colored-text: 0.8;
 
   /* ---------------------------------------------------------------------------
    * Daisy theme variables

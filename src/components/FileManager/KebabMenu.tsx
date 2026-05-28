@@ -1,34 +1,52 @@
+import type { FileNode } from "./types";
+import { useShareWithRoom } from "./useShareWithRoom";
+import { actions } from "astro:actions";
 import {
   EllipsisVertical,
   Pencil,
   Share2,
   Trash2,
   Unlink2,
+  RefreshCcwDot,
+  Shredder,
 } from "lucide-react";
 import { memo, useId, useRef } from "react";
 
 export const KebabMenu = memo(
   ({
+    node,
     onRename,
-    onDelete,
-    onShareWithRoom,
-    onUnshareFromRoom,
-    isSharedWithRoom = false,
+    onDeleted,
+    isDeleted,
+    readOnly,
   }: {
-    onRename?: () => void;
-    onDelete?: () => void;
-    onShareWithRoom?: () => void;
-    onUnshareFromRoom?: () => void;
-    isSharedWithRoom?: boolean;
+    node: FileNode;
+    onRename: () => void;
+    onDeleted: (nodeId: string) => void;
+    isDeleted: boolean;
+    readOnly: boolean;
   }) => {
-    const menuId = useId();
-    const anchorName = `--kebab-${menuId.replaceAll(":", "")}`;
-    const menuRef = useRef<HTMLDivElement>(null);
-    const unshareAction = isSharedWithRoom ? onUnshareFromRoom : undefined;
+    const {
+      canShareWithRoom,
+      canUnshareFromRoom,
+      shareWithRoom,
+      unshareFromRoom,
+      isSharedWithRoom,
+    } = useShareWithRoom(node.id, readOnly);
 
-    if (!onRename && !onDelete && !onShareWithRoom && !unshareAction) {
-      return null;
-    }
+    const handleDelete = async () => {
+      const result = await actions.files.deleteNode({ nodeId: node.id });
+      if (result.error) {
+        console.error("Failed to delete:", result.error);
+        return;
+      }
+      onDeleted(node.id);
+    };
+
+    const menuId = useId();
+    const menuRef = useRef<HTMLDivElement>(null);
+    const anchorName = `--kebab-${menuId.replaceAll(":", "")}`;
+    const isLive = !isDeleted;
 
     const handleAction = (action: () => void) => {
       menuRef.current?.hidePopover();
@@ -51,35 +69,35 @@ export const KebabMenu = memo(
           id={menuId}
           ref={menuRef}
           popover="auto"
-          className="dropdown rounded-box bg-base-100 ring-base-200 w-44
-            shadow-lg ring-1"
+          className="dropdown rounded-box bg-base-100 ring-accent w-44 shadow-lg
+            ring"
           style={{ positionAnchor: anchorName } as React.CSSProperties}
           onClick={(e) => e.stopPropagation()}
         >
           <ul className="menu p-1">
-            {onShareWithRoom && (
+            {isLive && canShareWithRoom && (
               <li>
                 <button
                   type="button"
-                  onClick={() => handleAction(onShareWithRoom)}
+                  onClick={() => handleAction(shareWithRoom)}
                 >
                   <Share2 size={14} />
                   {isSharedWithRoom ? "Reshare..." : "Share with room"}
                 </button>
               </li>
             )}
-            {unshareAction && (
+            {canUnshareFromRoom && (
               <li>
                 <button
                   type="button"
-                  onClick={() => handleAction(unshareAction)}
+                  onClick={() => handleAction(unshareFromRoom)}
                 >
                   <Unlink2 size={14} />
                   Unshare
                 </button>
               </li>
             )}
-            {onRename && (
+            {isLive && (
               <li>
                 <button type="button" onClick={() => handleAction(onRename)}>
                   <Pencil size={14} />
@@ -87,15 +105,41 @@ export const KebabMenu = memo(
                 </button>
               </li>
             )}
-            {onDelete && (
+            {isLive && (
               <li>
                 <button
                   type="button"
-                  className="text-error"
-                  onClick={() => handleAction(onDelete)}
+                  className="text-error-text"
+                  onClick={() => handleAction(handleDelete)}
                 >
                   <Trash2 size={14} />
                   Delete
+                </button>
+              </li>
+            )}
+            {isDeleted && (
+              <li>
+                <button
+                  type="button"
+                  className="text-error-text"
+                  // this needs to be a hard delete action
+                  onClick={() => handleAction(handleDelete)}
+                >
+                  <Shredder size={14} />
+                  Hard Delete
+                </button>
+              </li>
+            )}
+            {isDeleted && (
+              <li>
+                <button
+                  type="button"
+                  className=""
+                  // this needs to be a hard delete action
+                  onClick={() => handleAction(handleDelete)}
+                >
+                  <RefreshCcwDot size={14} />
+                  Restore
                 </button>
               </li>
             )}
