@@ -4,10 +4,15 @@ import {
   FileImage,
   FileText,
   FileVideo,
+  X,
   type LucideIcon,
 } from "lucide-react";
 
-export function fileTypeIcon(contentType: string): LucideIcon {
+export function fileTypeIcon(
+  contentType: string,
+  isDeleted: boolean,
+): LucideIcon {
+  if (isDeleted) return X;
   if (contentType.startsWith("image/")) return FileImage;
   if (contentType.startsWith("video/")) return FileVideo;
   if (contentType.startsWith("audio/")) return FileAudio;

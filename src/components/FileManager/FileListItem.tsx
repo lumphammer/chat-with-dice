@@ -3,10 +3,9 @@ import { KebabMenu } from "./KebabMenu";
 import { fileTypeIcon } from "./fileTypeIcon";
 import { buildFileUrl } from "./fileUrl";
 import type { FileNode } from "./types";
-import { useShareWithRoom } from "./useShareWithRoom";
-import { actions } from "astro:actions";
+import { useRename } from "./useRename";
 import { Folder } from "lucide-react";
-import { memo, useRef, useState } from "react";
+import { memo } from "react";
 
 export const FileListItem = memo(
   ({
@@ -14,7 +13,7 @@ export const FileListItem = memo(
     onClick,
     onDeleted,
     onRenamed,
-    variant = "list",
+    viewMode = "list",
     ownerUserId,
     roomId,
     readOnly = false,
@@ -23,91 +22,36 @@ export const FileListItem = memo(
     onClick: () => void;
     onDeleted: (nodeId: string) => void;
     onRenamed: (nodeId: string, newName: string) => void;
-    variant?: "list" | "grid";
+    viewMode?: "list" | "grid";
     ownerUserId?: string;
     roomId?: string;
     readOnly?: boolean;
   }) => {
-    const [isRenaming, setIsRenaming] = useState(false);
-    const [renameValue, setRenameValue] = useState(node.name);
-    const [renameError, setRenameError] = useState<string | null>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
     const {
-      canShareWithRoom,
-      shareWithRoom,
-      canUnshareFromRoom,
-      unshareFromRoom,
-      isSharedWithRoom,
-    } = useShareWithRoom(readOnly ? null : node.id);
+      handleStartRename,
+      handleCommitRename,
+      handleRenameKeyDown,
+      handleKeyDown,
+      isRenaming,
+      inputRef,
+      renameValue,
+      setRenameValue,
+      renameError,
+    } = useRename({ node, onClick, onRenamed });
 
     const isFolder = !!node.folder;
     const Icon = isFolder
       ? Folder
-      : fileTypeIcon(node.file?.contentType ?? "application/octet-stream");
+      : fileTypeIcon(
+          node.file?.contentType ?? "application/octet-stream",
+          !!node.deletedTime,
+        );
     const thumbnailUrl = node.file?.thumbnailR2Key
       ? buildFileUrl(ownerUserId, node.id, {
           roomId,
           suffix: "thumbnail",
         })
       : null;
-
-    const handleDelete = async () => {
-      const result = await actions.files.deleteNode({ nodeId: node.id });
-      if (result.error) {
-        console.error("Failed to delete:", result.error);
-        return;
-      }
-      onDeleted(node.id);
-    };
-
-    const handleStartRename = () => {
-      setRenameValue(node.name);
-      setRenameError(null);
-      setIsRenaming(true);
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      });
-    };
-
-    const handleCommitRename = async () => {
-      const trimmed = renameValue.trim();
-      if (!trimmed || trimmed === node.name) {
-        setIsRenaming(false);
-        setRenameError(null);
-        return;
-      }
-
-      const result = await actions.files.renameNode({
-        nodeId: node.id,
-        newName: trimmed,
-      });
-
-      if (result.error) {
-        setRenameError(result.error.message);
-        return;
-      }
-
-      onRenamed(node.id, trimmed);
-      setIsRenaming(false);
-      setRenameError(null);
-    };
-
-    const handleRenameKeyDown = (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        void handleCommitRename();
-      } else if (e.key === "Escape") {
-        setIsRenaming(false);
-        setRenameError(null);
-      }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && !isRenaming) {
-        onClick();
-      }
-    };
 
     const metadata = node.file
       ? formatBytes(node.file.sizeBytes)
@@ -117,157 +61,102 @@ export const FileListItem = memo(
           : "Empty"
         : null;
 
-    if (variant === "grid") {
-      return (
-        <li
-          className="group hover:bg-base-200 relative flex min-w-0 flex-col
-            rounded-lg p-2 transition-colors"
-        >
-          <button
-            type="button"
-            className="flex min-w-0 cursor-pointer flex-col gap-2 text-left"
-            onClick={isRenaming ? undefined : onClick}
-            onKeyDown={isRenaming ? undefined : handleKeyDown}
-          >
-            <div
-              className="bg-base-200 flex aspect-square w-full items-center
-                justify-center overflow-hidden rounded"
-            >
-              {thumbnailUrl ? (
-                <img
-                  src={thumbnailUrl}
-                  alt=""
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <Icon
-                  size={48}
-                  className={isFolder ? "text-warning" : "text-base-content/60"}
-                  strokeWidth={1.5}
-                />
-              )}
-            </div>
-            <div className="flex min-w-0 flex-col gap-1 px-1">
-              {isRenaming ? (
-                <div className="flex flex-col gap-1">
-                  <input
-                    ref={inputRef}
-                    className="input input-sm input-bordered w-full"
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.currentTarget.value)}
-                    onKeyDown={handleRenameKeyDown}
-                    onBlur={() => void handleCommitRename()}
-                  />
-                  {renameError && (
-                    <span className="text-error text-xs">{renameError}</span>
-                  )}
-                </div>
-              ) : (
-                <span className="line-clamp-2 min-h-10 text-sm leading-5">
-                  {node.name}
-                </span>
-              )}
-              {metadata && (
-                <span className="text-base-content/50 truncate text-xs">
-                  {metadata}
-                </span>
-              )}
-            </div>
-          </button>
-          <div className="absolute top-2 right-2">
-            <KebabMenu
-              onRename={readOnly ? undefined : handleStartRename}
-              onDelete={readOnly ? undefined : handleDelete}
-              isSharedWithRoom={isSharedWithRoom}
-              onShareWithRoom={
-                readOnly
-                  ? undefined
-                  : canShareWithRoom
-                    ? shareWithRoom
-                    : undefined
-              }
-              onUnshareFromRoom={
-                readOnly
-                  ? undefined
-                  : canUnshareFromRoom
-                    ? unshareFromRoom
-                    : undefined
-              }
-            />
-          </div>
-        </li>
+    const icon =
+      thumbnailUrl && !node.deletedTime ? (
+        <img
+          src={thumbnailUrl}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <Icon
+          size={48}
+          className={
+            node.deletedTime
+              ? "text-error-text"
+              : isFolder
+                ? "text-primary/70"
+                : "text-base-content/70"
+          }
+          strokeWidth={1.5}
+        />
       );
-    }
+
+    const name = isRenaming ? (
+      <div className="flex flex-col gap-1">
+        <input
+          ref={inputRef}
+          className="input input-sm input-bordered w-full"
+          value={renameValue}
+          onChange={(e) => setRenameValue(e.currentTarget.value)}
+          onKeyDown={handleRenameKeyDown}
+          onBlur={() => void handleCommitRename()}
+        />
+        {renameError && (
+          <span className="text-error text-xs">{renameError}</span>
+        )}
+      </div>
+    ) : (
+      <span className="group-data-deleted:text-error-text line-clamp-2 text-sm">
+        {node.name}
+      </span>
+    );
 
     return (
       <li
-        className="hover:bg-base-200 flex min-w-0 items-center gap-3 rounded-lg
-          px-3 py-2 transition-colors"
+        className="hover:bg-base-300 group relative flex rounded-lg p-2
+          data-grid:flex-col data-list:items-center data-list:gap-3"
+        data-deleted={node.deletedTime ? true : undefined}
+        data-grid={viewMode === "grid" ? true : undefined}
+        data-list={viewMode === "list" ? true : undefined}
       >
         <button
           type="button"
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3
-            text-left"
+          className="flex min-w-0 cursor-pointer text-left
+            group-data-grid:flex-col group-data-list:flex-1
+            group-data-list:items-center group-data-list:gap-3"
           onClick={isRenaming ? undefined : onClick}
           onKeyDown={isRenaming ? undefined : handleKeyDown}
         >
-          <span
-            className="bg-base-200 flex size-10 shrink-0 items-center
-              justify-center overflow-hidden rounded"
+          <div
+            className="bg-base-200 flex items-center justify-center
+              overflow-hidden rounded group-data-grid:aspect-square
+              group-data-grid:w-full group-data-list:size-10
+              group-data-list:shrink-0"
           >
-            {thumbnailUrl ? (
-              <img
-                src={thumbnailUrl}
-                alt=""
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Icon
-                size={20}
-                className={isFolder ? "text-warning" : "text-base-content/70"}
-              />
-            )}
-          </span>
-          <div className="flex min-w-0 flex-1 flex-col">
-            {isRenaming ? (
-              <div className="flex flex-col gap-1">
-                <input
-                  ref={inputRef}
-                  className="input input-sm input-bordered w-full"
-                  value={renameValue}
-                  onChange={(e) => setRenameValue(e.currentTarget.value)}
-                  onKeyDown={handleRenameKeyDown}
-                  onBlur={() => void handleCommitRename()}
-                />
-                {renameError && (
-                  <span className="text-error text-xs">{renameError}</span>
-                )}
-              </div>
-            ) : (
-              <span className="block truncate">{node.name}</span>
+            {icon}
+          </div>
+          <div className="flex min-w-0 flex-col group-data-list:flex-1">
+            {name}
+            {metadata && (
+              <span
+                className="text-base-content/50 text-sm group-data-list:hidden"
+              >
+                {metadata}
+              </span>
             )}
           </div>
           {metadata && (
-            <span className="text-base-content/50 text-sm">{metadata}</span>
+            <span
+              className="text-base-content/50 text-sm group-data-grid:hidden"
+            >
+              {metadata}
+            </span>
           )}
         </button>
-        <KebabMenu
-          onRename={readOnly ? undefined : handleStartRename}
-          onDelete={readOnly ? undefined : handleDelete}
-          isSharedWithRoom={isSharedWithRoom}
-          onShareWithRoom={
-            readOnly ? undefined : canShareWithRoom ? shareWithRoom : undefined
-          }
-          onUnshareFromRoom={
-            readOnly
-              ? undefined
-              : canUnshareFromRoom
-                ? unshareFromRoom
-                : undefined
-          }
-        />
+        <div
+          className="group-data-grid:absolute group-data-grid:top-2
+            group-data-grid:right-2"
+        >
+          <KebabMenu
+            node={node}
+            onDeleted={onDeleted}
+            isDeleted={!!node.deletedTime}
+            readOnly={readOnly}
+            onRename={handleStartRename}
+          />
+        </div>
       </li>
     );
   },

@@ -372,7 +372,7 @@ export const FileManager = memo(
               <FileListItem
                 key={node.id}
                 node={node}
-                variant={viewMode}
+                viewMode={viewMode}
                 onClick={() => handleFolderClick(node)}
                 onDeleted={handleDeleted}
                 onRenamed={handleRenamed}
@@ -385,7 +385,7 @@ export const FileManager = memo(
               <FileListItem
                 key={node.id}
                 node={node}
-                variant={viewMode}
+                viewMode={viewMode}
                 onClick={() => handleFileClick(node)}
                 onDeleted={handleDeleted}
                 onRenamed={handleRenamed}

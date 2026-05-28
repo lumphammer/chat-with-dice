@@ -3,15 +3,22 @@ import { hasDirectRoomShare } from "#/capabilities/filesShareHelpers";
 import { authClient } from "#/utils/auth-client";
 import { useCallback } from "react";
 
-export const useShareWithRoom = (nodeId: string | null | undefined) => {
+export const useShareWithRoom = (
+  nodeId: string | null | undefined,
+  readOnly: boolean,
+) => {
   const filesCap = filesCapability.useMount();
   const { data: sessionData } = authClient.useSession();
-  const ownerUserId = sessionData?.user.id ?? null;
+
+  const userId = sessionData?.user.id ?? null;
   const canShareWithRoom =
-    filesCap.initialised && nodeId != null && ownerUserId != null;
+    !readOnly && filesCap.initialised && nodeId != null && userId != null;
   const isSharedWithRoom =
-    filesCap.initialised && nodeId != null && ownerUserId != null
-      ? hasDirectRoomShare(filesCap.state.shares, { nodeId, ownerUserId })
+    filesCap.initialised && nodeId != null && userId != null
+      ? hasDirectRoomShare(filesCap.state.shares, {
+          nodeId,
+          ownerUserId: userId,
+        })
       : false;
   const canUnshareFromRoom = canShareWithRoom && isSharedWithRoom;
 
@@ -27,10 +34,10 @@ export const useShareWithRoom = (nodeId: string | null | undefined) => {
   }, [nodeId, shareFile]);
 
   const unshareFromRoom = useCallback(() => {
-    if (nodeId != null && ownerUserId != null) {
-      unshareFile?.({ nodeId, ownerUserId });
+    if (nodeId != null && userId != null) {
+      unshareFile?.({ nodeId, ownerUserId: userId });
     }
-  }, [nodeId, ownerUserId, unshareFile]);
+  }, [nodeId, userId, unshareFile]);
 
   return {
     canShareWithRoom,
