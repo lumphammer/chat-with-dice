@@ -148,7 +148,17 @@ export const FileManager = memo(
         });
       }
       await sessionRef.current.refetch();
-    }, [ownerUserId, roomId, locationRef.current.folderId, showDeletedRef]);
+    }, [
+      ownerUserId,
+      roomId,
+      locationRef.current.folderId,
+      showDeletedRef,
+      sessionRef.current,
+      location.previewFileId,
+      onLocationChange,
+      location.folderId,
+      location.breadcrumbs,
+    ]);
 
     // when the folder id or showDeleted changes, we update
     useEffect(() => {
