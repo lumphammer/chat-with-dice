@@ -49,9 +49,11 @@ export const FileListItem = memo(
           type="button"
           className="flex min-w-0 cursor-pointer text-left
             group-data-grid:flex-col group-data-list:flex-1
-            group-data-list:items-center group-data-list:gap-3"
+            group-data-list:items-center group-data-list:gap-3
+            disabled:cursor-not-allowed"
           onClick={isRenaming ? undefined : onClick}
           onKeyDown={isRenaming ? undefined : handleKeyDown}
+          disabled={!!node.deletedTime}
         >
           <div
             className="bg-base-200 flex items-center justify-center
