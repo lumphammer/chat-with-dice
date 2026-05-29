@@ -8,6 +8,7 @@ import { adminUpdateUserQuota } from "./admin/adminUpdateUserQuota";
 import { createFolder } from "./files/createFolder";
 import { deleteNode } from "./files/deleteNode";
 import { getNodes } from "./files/getNodes";
+import { hardDeleteNode } from "./files/hardDeleteNode";
 import { renameNode } from "./files/renameNode";
 import { createChatWithDiceRoom } from "./rooms/createChatWithDiceRoom";
 import { deleteRoom } from "./rooms/deleteRoom";
@@ -24,6 +25,7 @@ export const server = {
     deleteNode,
     getNodes,
     renameNode,
+    hardDeleteNode,
   },
   admin: {
     updateRoom: adminUpdateRoom,
