@@ -7,11 +7,10 @@ import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoCon
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FilePreview } from "#/components/FileManager/FilePreview";
 import type { FilePreviewNode } from "#/components/FileManager/FilePreview";
-import { fileTypeIcon } from "#/components/FileManager/fileTypeIcon";
-import { buildFileUrl } from "#/components/FileManager/fileUrl";
+import { NodeIcon } from "#/components/FileManager/NodeIcon";
 import { authClient } from "#/utils/auth-client";
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
-import { Folder, FolderOpen } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 
 const getFilePreviewNode = (
@@ -51,17 +50,6 @@ export const SharedItemMessageDisplay = memo(
 
     const item = parsed.data;
     const isFile = item.kind === "file";
-    const contentType = isFile
-      ? (item.contentType ?? "application/octet-stream")
-      : "application/octet-stream";
-    const Icon = isFile ? fileTypeIcon(contentType) : Folder;
-    const thumbnailUrl =
-      isFile && item.thumbnailR2Key
-        ? buildFileUrl(item.userId, item.nodeId, {
-            roomId,
-            suffix: "thumbnail",
-          })
-        : null;
     const metadata = isAvailable
       ? `${isFile ? "File" : "Folder"} shared with room`
       : "No longer available";
@@ -80,19 +68,15 @@ export const SharedItemMessageDisplay = memo(
             className="bg-base-200 flex size-10 shrink-0 items-center
               justify-center overflow-hidden rounded"
           >
-            {thumbnailUrl ? (
-              <img
-                src={thumbnailUrl}
-                alt=""
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Icon
-                size={20}
-                className={isFile ? "text-base-content/70" : "text-warning"}
-              />
-            )}
+            <NodeIcon
+              nodeId={item.nodeId}
+              hasThumbnail={item.kind === "file" && !!item.thumbnailR2Key}
+              isDeleted={false}
+              isFolder={item.kind === "folder"}
+              ownerUserId={item.userId}
+              roomId={roomId}
+              size={20}
+            />
           </span>
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate font-medium">{item.name}</span>
