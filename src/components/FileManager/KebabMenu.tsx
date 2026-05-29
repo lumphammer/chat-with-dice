@@ -97,7 +97,7 @@ export const KebabMenu = memo(
                 </button>
               </li>
             )}
-            {isLive && (
+            {isLive && !readOnly && (
               <li>
                 <button type="button" onClick={() => handleAction(onRename)}>
                   <Pencil size={14} />
@@ -105,7 +105,7 @@ export const KebabMenu = memo(
                 </button>
               </li>
             )}
-            {isLive && (
+            {isLive && !readOnly && (
               <li>
                 <button
                   type="button"
@@ -117,7 +117,7 @@ export const KebabMenu = memo(
                 </button>
               </li>
             )}
-            {isDeleted && (
+            {isDeleted && !readOnly && (
               <li>
                 <button
                   type="button"
@@ -130,7 +130,7 @@ export const KebabMenu = memo(
                 </button>
               </li>
             )}
-            {isDeleted && (
+            {isDeleted && !readOnly && (
               <li>
                 <button
                   type="button"
