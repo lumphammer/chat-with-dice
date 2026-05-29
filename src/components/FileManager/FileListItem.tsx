@@ -9,7 +9,7 @@ export const FileListItem = memo(
   ({
     node,
     onClick,
-    onDeleted,
+    onRefresh,
     onRenamed,
     viewMode = "list",
     ownerUserId,
@@ -18,7 +18,7 @@ export const FileListItem = memo(
   }: {
     node: FileNode;
     onClick: () => void;
-    onDeleted: (nodeId: string) => void;
+    onRefresh: () => void;
     onRenamed: (nodeId: string, newName: string) => void;
     viewMode?: "list" | "grid";
     ownerUserId?: string;
@@ -105,7 +105,7 @@ export const FileListItem = memo(
         >
           <KebabMenu
             node={node}
-            onDeleted={onDeleted}
+            onRefresh={onRefresh}
             isDeleted={!!node.deletedTime}
             readOnly={readOnly}
             onRename={handleStartRename}

@@ -16,13 +16,13 @@ export const KebabMenu = memo(
   ({
     node,
     onRename,
-    onDeleted,
+    onRefresh,
     isDeleted,
     readOnly,
   }: {
     node: FileNode;
     onRename: () => void;
-    onDeleted: (nodeId: string) => void;
+    onRefresh: () => void;
     isDeleted: boolean;
     readOnly: boolean;
   }) => {
@@ -40,7 +40,7 @@ export const KebabMenu = memo(
         console.error("Failed to delete:", result.error);
         return;
       }
-      onDeleted(node.id);
+      onRefresh();
     };
 
     const handleRestore = async () => {
@@ -50,6 +50,7 @@ export const KebabMenu = memo(
         console.error("Failed to restore:", result.error);
         return;
       }
+      onRefresh();
     };
 
     const menuId = useId();
@@ -131,7 +132,7 @@ export const KebabMenu = memo(
                 <HardDeleteDialog
                   name={node.name}
                   nodeId={node.id}
-                  onAfterDelete={onDeleted}
+                  onAfterDelete={onRefresh}
                 />
               </li>
             )}

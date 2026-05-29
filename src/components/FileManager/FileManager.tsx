@@ -117,7 +117,7 @@ export const FileManager = memo(
     }, [isToolbarCompact, toolbarWidth]);
 
     // main fn to fetch folder contents
-    const fetchNodes = useCallback(async () => {
+    const handleRefresh = useCallback(async () => {
       const folderId = locationRef.current.folderId;
       navigationIdRef.current += 1;
       const requestId = navigationIdRef.current;
@@ -136,12 +136,19 @@ export const FileManager = memo(
         return;
       }
       setNodes(result.data);
-    }, [ownerUserId, roomId, locationRef.current.folderId, showDeletedRef]);
-
-    const handleRefresh = useCallback(async () => {
-      await fetchNodes();
+      if (
+        location.previewFileId &&
+        !result.data.some((n) => n.id === location.previewFileId)
+      ) {
+        onLocationChange({
+          folderId: location.folderId,
+          breadcrumbs: location.breadcrumbs,
+          previewFileId: null,
+          previewFileName: null,
+        });
+      }
       await sessionRef.current.refetch();
-    }, [fetchNodes, sessionRef]);
+    }, [ownerUserId, roomId, locationRef.current.folderId, showDeletedRef]);
 
     // when the folder id or showDeleted changes, we update
     useEffect(() => {
@@ -149,8 +156,8 @@ export const FileManager = memo(
         shouldSkipInitialFetch.current = false;
         return;
       }
-      void fetchNodes();
-    }, [fetchNodes, location.folderId, showDeleted]);
+      void handleRefresh();
+    }, [handleRefresh, location.folderId, showDeleted]);
 
     const { uploading, uploadFiles, dismissError } = useUpload(
       location.folderId,
@@ -233,21 +240,21 @@ export const FileManager = memo(
       });
     }, [location, onLocationChange]);
 
-    const handleDeleted = useCallback(
-      async (nodeId: string) => {
-        setNodes((prev) => prev.filter((n) => n.id !== nodeId));
-        await sessionRef.current.refetch();
-        if (nodeId === location.previewFileId) {
-          onLocationChange({
-            folderId: location.folderId,
-            breadcrumbs: location.breadcrumbs,
-            previewFileId: null,
-            previewFileName: null,
-          });
-        }
-      },
-      [location, onLocationChange, sessionRef],
-    );
+    // const handleDeleted = useCallback(
+    //   async (nodeId: string) => {
+    //     setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+    //     await sessionRef.current.refetch();
+    //     if (nodeId === location.previewFileId) {
+    //       onLocationChange({
+    //         folderId: location.folderId,
+    //         breadcrumbs: location.breadcrumbs,
+    //         previewFileId: null,
+    //         previewFileName: null,
+    //       });
+    //     }
+    //   },
+    //   [location, onLocationChange, sessionRef],
+    // );
 
     const handleRenamed = useCallback((nodeId: string, newName: string) => {
       setNodes((prev) =>
@@ -374,7 +381,7 @@ export const FileManager = memo(
                 node={node}
                 viewMode={viewMode}
                 onClick={() => handleFolderClick(node)}
-                onDeleted={handleDeleted}
+                onRefresh={handleRefresh}
                 onRenamed={handleRenamed}
                 ownerUserId={ownerUserId}
                 roomId={roomId}
@@ -387,7 +394,7 @@ export const FileManager = memo(
                 node={node}
                 viewMode={viewMode}
                 onClick={() => handleFileClick(node)}
-                onDeleted={handleDeleted}
+                onRefresh={handleRefresh}
                 onRenamed={handleRenamed}
                 ownerUserId={ownerUserId}
                 roomId={roomId}

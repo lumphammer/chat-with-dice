@@ -10,7 +10,7 @@ export const HardDeleteDialog = memo(
   }: {
     nodeId: string;
     name: string;
-    onAfterDelete: (nodeId: string) => void;
+    onAfterDelete: () => void;
   }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -20,7 +20,7 @@ export const HardDeleteDialog = memo(
         console.error("Failed to hard delete:", result.error);
         return;
       }
-      onAfterDelete(nodeId);
+      onAfterDelete();
     };
 
     const handleClick = () => {
