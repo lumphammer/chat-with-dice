@@ -28,7 +28,7 @@
   - [x] Anon users cannot have quota
   - [x] Admin: reset folder sizes
   - [x] Admin: purge orphans
-  - [ ] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
+  - [x] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
   - [ ] Periodic purge of deleted files
 - [ ] Preview UI should be measured
 - [x] Show anon/full in admin area
