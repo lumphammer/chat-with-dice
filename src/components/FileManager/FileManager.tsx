@@ -137,12 +137,12 @@ export const FileManager = memo(
       }
       setNodes(result.data);
       if (
-        location.previewFileId &&
-        !result.data.some((n) => n.id === location.previewFileId)
+        locationRef.current.previewFileId &&
+        !result.data.some((n) => n.id === locationRef.current.previewFileId)
       ) {
         onLocationChange({
-          folderId: location.folderId,
-          breadcrumbs: location.breadcrumbs,
+          folderId: locationRef.current.folderId,
+          breadcrumbs: locationRef.current.breadcrumbs,
           previewFileId: null,
           previewFileName: null,
         });
@@ -151,13 +151,10 @@ export const FileManager = memo(
     }, [
       ownerUserId,
       roomId,
-      locationRef.current.folderId,
       showDeletedRef,
-      sessionRef.current,
-      location.previewFileId,
+      sessionRef,
+      locationRef,
       onLocationChange,
-      location.folderId,
-      location.breadcrumbs,
     ]);
 
     // when the folder id or showDeleted changes, we update
