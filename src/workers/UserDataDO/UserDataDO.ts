@@ -1,4 +1,8 @@
-import { HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR } from "#/constants";
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_NOT_FOUND,
+} from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
@@ -183,6 +187,57 @@ export class UserDataDO extends DurableObject {
       this.repo.adjustAncestorSizes(node.parentFolderId, -sizeToSubtract);
     }
     await this.syncQuotaWithSizes();
+  }
+
+  async restoreNode(nodeId: string) {
+    log("restoring", nodeId);
+    const node = await this.repo.getNode(nodeId, { allowDeleted: true });
+    if (!node) {
+      return error("Node not found", HTTP_NOT_FOUND);
+    }
+    const usage = await d1.query.users.findFirst({
+      where: {
+        user_data_do_id: this.ctx.id.toString(),
+      },
+      columns: {
+        storage_quota_bytes: true,
+        storage_used_bytes: true,
+      },
+    });
+    if (!usage) {
+      return error("User not found", HTTP_BAD_REQUEST);
+    }
+
+    const sizeBytes =
+      node.file?.sizeBytes ?? node.folder?.recursiveSizeBytes ?? 0;
+
+    if (usage.storage_used_bytes + sizeBytes > usage.storage_quota_bytes) {
+      return error("Storage quota exceeded", HTTP_BAD_REQUEST);
+    }
+
+    try {
+      await this.repo.restoreNode(nodeId);
+    } catch (cause) {
+      logError(cause);
+      if (isUniqueConstraintError(cause)) {
+        return error(
+          "A file with that name already exists in this folder",
+          HTTP_BAD_REQUEST,
+        );
+      }
+      return error(
+        "Failed to restore file: ${}",
+        HTTP_INTERNAL_SERVER_ERROR,
+        cause,
+      );
+    }
+
+    if (node.parentFolderId) {
+      this.repo.adjustAncestorSizes(node.parentFolderId, sizeBytes);
+    }
+
+    await this.syncQuotaWithSizes();
+    return success(undefined);
   }
 
   async hardDeleteNodes(nodeIds: string[]) {

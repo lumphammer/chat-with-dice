@@ -33,6 +33,7 @@
 - [ ] Preview UI should be measured
 - [x] Show anon/full in admin area
 - [x] Refresh button
+- [ ] fix up MaybeError etc and use exclusively
 - [ ] type FileNode should be renamed (StorageNode?)
 - [ ] Perf analysis on types
 - [ ] Think about sanitizing node data so we're not sending BE data to client

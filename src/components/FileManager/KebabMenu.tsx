@@ -9,7 +9,6 @@ import {
   Trash2,
   Unlink2,
   RefreshCcwDot,
-  Shredder,
 } from "lucide-react";
 import { memo, useId, useRef } from "react";
 
@@ -42,6 +41,15 @@ export const KebabMenu = memo(
         return;
       }
       onDeleted(node.id);
+    };
+
+    const handleRestore = async () => {
+      const result = await actions.files.restoreNode({ nodeId: node.id });
+      console.log("restoring", node.id, result);
+      if (result.error) {
+        console.error("Failed to restore:", result.error);
+        return;
+      }
     };
 
     const menuId = useId();
@@ -133,7 +141,7 @@ export const KebabMenu = memo(
                   type="button"
                   className=""
                   // this needs to be a hard delete action
-                  onClick={() => handleAction(handleDelete)}
+                  onClick={() => handleAction(handleRestore)}
                 >
                   <RefreshCcwDot size={14} />
                   Restore

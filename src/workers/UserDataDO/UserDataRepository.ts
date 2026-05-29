@@ -233,11 +233,14 @@ export class UserDataRepository {
   // === Node lookups ===
 
   /** Find a non-deleted node by id, with its file/folder relations. */
-  getNode(nodeId: string) {
+  getNode(
+    nodeId: string,
+    { allowDeleted = false }: { allowDeleted?: boolean } = {},
+  ) {
     return this.db.query.nodes.findFirst({
       where: {
         id: nodeId,
-        deletedTime: { isNull: true },
+        deletedTime: allowDeleted ? undefined : { isNull: true },
       },
       with: {
         file: true,
@@ -361,6 +364,13 @@ export class UserDataRepository {
     return this.db
       .update(dbSchema.nodes)
       .set({ deletedTime: Date.now() })
+      .where(eq(dbSchema.nodes.id, nodeId));
+  }
+
+  restoreNode(nodeId: string) {
+    return this.db
+      .update(dbSchema.nodes)
+      .set({ deletedTime: null })
       .where(eq(dbSchema.nodes.id, nodeId));
   }
 

@@ -16,7 +16,6 @@ export const HardDeleteDialog = memo(
 
     const handleHardDelete = async () => {
       const result = await actions.files.hardDeleteNode({ nodeId });
-      console.log(result);
       if (result.error) {
         console.error("Failed to hard delete:", result.error);
         return;
@@ -54,7 +53,7 @@ export const HardDeleteDialog = memo(
                   type="button"
                   className="btn btn-primary"
                   onClick={() => {
-                    handleHardDelete();
+                    void handleHardDelete();
                     dialogRef.current?.close();
                   }}
                 >
