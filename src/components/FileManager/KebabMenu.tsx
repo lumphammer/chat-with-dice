@@ -1,3 +1,4 @@
+import { HardDeleteDialog } from "./HardDeleteDialog";
 import type { FileNode } from "./types";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
@@ -48,9 +49,9 @@ export const KebabMenu = memo(
     const anchorName = `--kebab-${menuId.replaceAll(":", "")}`;
     const isLive = !isDeleted;
 
-    const handleAction = (action: () => void) => {
+    const handleAction = (action?: () => void) => {
       menuRef.current?.hidePopover();
-      action();
+      action?.();
     };
 
     return (
@@ -74,7 +75,7 @@ export const KebabMenu = memo(
           style={{ positionAnchor: anchorName } as React.CSSProperties}
           onClick={(e) => e.stopPropagation()}
         >
-          <ul className="menu p-1">
+          <ul className="menu w-full p-1">
             {isLive && canShareWithRoom && (
               <li>
                 <button
@@ -119,15 +120,11 @@ export const KebabMenu = memo(
             )}
             {isDeleted && !readOnly && (
               <li>
-                <button
-                  type="button"
-                  className="text-error-text"
-                  // this needs to be a hard delete action
-                  onClick={() => handleAction(handleDelete)}
-                >
-                  <Shredder size={14} />
-                  Hard Delete
-                </button>
+                <HardDeleteDialog
+                  name={node.name}
+                  nodeId={node.id}
+                  onAfterDelete={onDeleted}
+                />
               </li>
             )}
             {isDeleted && !readOnly && (
