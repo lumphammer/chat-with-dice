@@ -42,7 +42,7 @@ export const Toolbar = memo(
       canUnshareFromRoom,
       unshareFromRoom,
       isSharedWithRoom,
-    } = useShareWithRoom(readOnly ? null : currentFolderId);
+    } = useShareWithRoom(readOnly ? null : currentFolderId, readOnly);
 
     const handleUploadClick = () => {
       fileInputRef.current?.click();

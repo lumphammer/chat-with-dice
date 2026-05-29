@@ -33,6 +33,9 @@
 - [ ] Preview UI should be measured
 - [x] Show anon/full in admin area
 - [x] Refresh button
+- [ ] type FileNode should be renamed (StorageNode?)
+- [ ] Perf analysis on types
+- [ ] Think about sanitizing node data so we're not sending BE data to client
 - [ ] Admins cannot ban themselves or each other
 - [ ] Responsive Grids for admin
 - [ ] Periodic purge of anon users

@@ -1,10 +1,8 @@
-import { formatBytes } from "#/utils/formatBytes";
 import { KebabMenu } from "./KebabMenu";
-import { fileTypeIcon } from "./fileTypeIcon";
-import { buildFileUrl } from "./fileUrl";
+import { NodeIcon } from "./NodeIcon";
+import { NodeMetadata } from "./NodeMetadata";
 import type { FileNode } from "./types";
 import { useRename } from "./useRename";
-import { Folder } from "lucide-react";
 import { memo } from "react";
 
 export const FileListItem = memo(
@@ -39,70 +37,6 @@ export const FileListItem = memo(
       renameError,
     } = useRename({ node, onClick, onRenamed });
 
-    const isFolder = !!node.folder;
-    const Icon = isFolder
-      ? Folder
-      : fileTypeIcon(
-          node.file?.contentType ?? "application/octet-stream",
-          !!node.deletedTime,
-        );
-    const thumbnailUrl = node.file?.thumbnailR2Key
-      ? buildFileUrl(ownerUserId, node.id, {
-          roomId,
-          suffix: "thumbnail",
-        })
-      : null;
-
-    const metadata = node.file
-      ? formatBytes(node.file.sizeBytes)
-      : node.folder
-        ? node.folder.recursiveSizeBytes > 0
-          ? formatBytes(node.folder.recursiveSizeBytes)
-          : "Empty"
-        : null;
-
-    const icon =
-      thumbnailUrl && !node.deletedTime ? (
-        <img
-          src={thumbnailUrl}
-          alt=""
-          loading="lazy"
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <Icon
-          size={48}
-          className={
-            node.deletedTime
-              ? "text-error-text"
-              : isFolder
-                ? "text-primary/70"
-                : "text-base-content/70"
-          }
-          strokeWidth={1.5}
-        />
-      );
-
-    const name = isRenaming ? (
-      <div className="flex flex-col gap-1">
-        <input
-          ref={inputRef}
-          className="input input-sm input-bordered w-full"
-          value={renameValue}
-          onChange={(e) => setRenameValue(e.currentTarget.value)}
-          onKeyDown={handleRenameKeyDown}
-          onBlur={() => void handleCommitRename()}
-        />
-        {renameError && (
-          <span className="text-error text-xs">{renameError}</span>
-        )}
-      </div>
-    ) : (
-      <span className="group-data-deleted:text-error-text line-clamp-2 text-sm">
-        {node.name}
-      </span>
-    );
-
     return (
       <li
         className="hover:bg-base-300 group relative flex rounded-lg p-2
@@ -125,25 +59,45 @@ export const FileListItem = memo(
               group-data-grid:w-full group-data-list:size-10
               group-data-list:shrink-0"
           >
-            {icon}
+            <NodeIcon
+              nodeId={node.id}
+              contentType={node.file?.contentType}
+              hasThumbnail={!!node.file?.thumbnailR2Key}
+              isDeleted={!!node.deletedTime}
+              isFolder={!!node.folder}
+              ownerUserId={ownerUserId}
+              roomId={roomId}
+              size={viewMode === "list" ? "20" : "60"}
+              strokeWidth={viewMode === "list" ? "2" : "1"}
+            />
           </div>
           <div className="flex min-w-0 flex-col group-data-list:flex-1">
-            {name}
-            {metadata && (
+            {isRenaming ? (
+              <div className="flex flex-col gap-1">
+                <input
+                  ref={inputRef}
+                  className="input input-sm input-bordered w-full"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.currentTarget.value)}
+                  onKeyDown={handleRenameKeyDown}
+                  onBlur={() => void handleCommitRename()}
+                />
+                {renameError && (
+                  <span className="text-error text-xs">{renameError}</span>
+                )}
+              </div>
+            ) : (
               <span
-                className="text-base-content/50 text-sm group-data-list:hidden"
+                className="group-data-deleted:text-error-text line-clamp-2
+                  text-sm"
               >
-                {metadata}
+                {node.name}
               </span>
             )}
           </div>
-          {metadata && (
-            <span
-              className="text-base-content/50 text-sm group-data-grid:hidden"
-            >
-              {metadata}
-            </span>
-          )}
+          <span className="text-base-content/50 text-sm">
+            <NodeMetadata node={node} />
+          </span>
         </button>
         <div
           className="group-data-grid:absolute group-data-grid:top-2

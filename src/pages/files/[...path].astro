@@ -44,7 +44,7 @@ if (resolution.kind === "not-found") {
 
 const folderId = resolution.folderId;
 const breadcrumbs = resolution.breadcrumbs;
-const initialNodes = await userDataDO.getNodes(folderId ?? undefined);
+const initialNodes = await userDataDO.getNodes(folderId ?? undefined, false);
 
 // if the path resolved to a file, we need to find the file node in the list
 // so the client can immediately open the preview
