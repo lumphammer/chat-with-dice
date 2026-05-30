@@ -1,16 +1,21 @@
 export namespace MaybeError {
-  export type Success<T> = { result: "success"; data: T };
+  // export type Success<T> = { result: "success"; data: T };
+  export type Success<T = undefined> = T extends undefined
+    ? { result: "success" }
+    : { result: "success"; data: T };
   export type Error = { result: "error"; message: string; statusCode: number };
 }
 
 export type MaybeError<T> = MaybeError.Success<T> | MaybeError.Error;
-
 export type PromiseMaybeError<T> = Promise<MaybeError<T>>;
 
-export const success = <T>(value: T): MaybeError.Success<T> => ({
-  result: "success",
-  data: value,
-});
+export function success(): MaybeError.Success;
+export function success<T>(value: T): MaybeError.Success<T>;
+export function success<T>(value?: T): MaybeError.Success<T> {
+  return value === undefined
+    ? ({ result: "success" } as MaybeError.Success<T>)
+    : ({ result: "success", data: value } as MaybeError.Success<T>);
+}
 
 export const error = (
   message: string,
