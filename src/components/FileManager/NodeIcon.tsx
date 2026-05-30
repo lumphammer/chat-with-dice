@@ -1,6 +1,6 @@
 import { FileTypeIcon } from "./FileTypeIcon";
 import { buildFileUrl } from "./fileUrl";
-import { Folder, FolderX, X, type LucideProps } from "lucide-react";
+import { Folder, FolderX, Trash2, type LucideProps } from "lucide-react";
 import { memo, type SVGProps } from "react";
 
 export const NodeIcon = memo(
@@ -28,7 +28,7 @@ export const NodeIcon = memo(
       if (isFolder) {
         return <FolderX {...rest} />;
       } else {
-        return <X {...rest} />;
+        return <Trash2 {...rest} />;
       }
     }
 
