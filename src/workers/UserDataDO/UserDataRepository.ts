@@ -249,6 +249,27 @@ export class UserDataRepository {
     });
   }
 
+  getNodes(
+    nodeIds: string[],
+    { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
+  ) {
+    return this.db.query.nodes.findMany({
+      where: {
+        id: { in: nodeIds },
+        deletedTime:
+          include === "live"
+            ? { isNull: true }
+            : include === "deleted"
+              ? { isNotNull: true }
+              : undefined,
+      },
+      with: {
+        file: true,
+        folder: true,
+      },
+    });
+  }
+
   /**
    * Find a non-deleted node by id, with its file relation restricted to ready
    * files. If the node has a file that isn't ready, the relation comes back
@@ -521,6 +542,36 @@ export class UserDataRepository {
             roomDurableObjectId,
           ),
         ),
+      );
+  }
+
+  recursivelyGetDescendantR2Keys(nodeIds: string[]): string[] {
+    return this.db
+      .run(
+        sql`
+      WITH RECURSIVE descendants(id) AS (
+        SELECT id FROM folders WHERE id IN (${nodeIds})
+        UNION ALL
+        SELECT nodes.id id
+        FROM descendants
+        INNER JOIN nodes
+        ON nodes.parent_folder_id = descendants.id
+        WHERE nodes.folder_id IS NOT NULL
+      )
+      SELECT files.thumbnail_r_2_key thumbnailR2Key, files.r2_key r2Key
+      FROM descendants
+      INNER JOIN nodes
+      ON descendants.id = nodes.parent_folder_id
+      INNER JOIN files
+      ON nodes.file_id = files.id
+    `,
+      )
+      .toArray()
+      .flatMap(
+        (r) =>
+          (r.thumbnailR2Key
+            ? [r.thumbnailR2Key, r.r2Key]
+            : [r.r2Key]) as string[],
       );
   }
 }

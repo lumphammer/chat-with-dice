@@ -240,8 +240,37 @@ export class UserDataDO extends DurableObject {
     return success(undefined);
   }
 
-  async hardDeleteNodes(nodeIds: string[]) {
+  async hardDeleteNodes(
+    nodeIds: string[],
+    {
+      checkSoftDeletion = false,
+      dryRun = false,
+    }: { checkSoftDeletion?: boolean; dryRun?: boolean } = {},
+  ) {
+    const nodes = await this.repo.getNodes(nodeIds, {
+      include: checkSoftDeletion ? "deleted" : "all",
+    });
+    const requestedNodeIdsSet = new Set(nodeIds);
+    const foundNodeIdsSet = new Set(nodes.map((n) => n.id));
+    const missingNodeIds = requestedNodeIdsSet.difference(foundNodeIdsSet);
+    if (missingNodeIds.size > 0) {
+      return error(
+        `Nodes not found: ${Array.from(missingNodeIds).join(", ")}`,
+        HTTP_NOT_FOUND,
+      );
+    }
+
+    const r2Keys = this.repo.recursivelyGetDescendantR2Keys(nodeIds);
+    log(r2Keys);
+
+    if (dryRun) {
+      return success();
+    }
+    // this isn't batched, but this path is used by user-initiated actions
+    // so there will never be more than a few.
     await this.repo.hardDeleteNodes(nodeIds);
+    await cfEnv.PRIVATE_R2?.delete(r2Keys);
+    return success();
   }
 
   async createFile(
