@@ -564,6 +564,9 @@ export class UserDataRepository {
       ON descendants.id = nodes.parent_folder_id
       INNER JOIN files
       ON nodes.file_id = files.id
+      UNION ALL
+      SELECT files.thumbnail_r_2_key thumbnailR2Key, files.r2_key r2Key
+      FROM files WHERE id IN (${nodeIds})
     `,
       )
       .toArray()
