@@ -14,8 +14,13 @@ export const renameNode = defineAction({
     if (!user || user.isAnonymous) {
       throw new Error("Unauthorized");
     }
+    if (!user.userDataDOId) {
+      throw new Error("User data DO id not found");
+    }
 
-    const userDataDO = env.USER_DATA_DO.getByName(user.id);
+    const userDataDO = env.USER_DATA_DO.get(
+      env.USER_DATA_DO.idFromString(user.userDataDOId),
+    );
     await userDataDO.renameNode(nodeId, newName);
   },
 });
