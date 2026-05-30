@@ -70,6 +70,11 @@ export const SharedItemMessageDisplay = memo(
           >
             <NodeIcon
               nodeId={item.nodeId}
+              contentType={
+                item.kind === "file"
+                  ? (item.contentType ?? undefined)
+                  : undefined
+              }
               hasThumbnail={item.kind === "file" && !!item.thumbnailR2Key}
               isDeleted={false}
               isFolder={item.kind === "folder"}
