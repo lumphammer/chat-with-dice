@@ -30,7 +30,9 @@
   - [x] Admin: purge orphans
   - [x] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
   - [ ] Periodic purge of deleted files
+  - [ ] check deletion cascade
 - [ ] Preview UI should be measured
+- [ ] thumbnails could be a little higher quality
 - [x] Show anon/full in admin area
 - [x] Refresh button
 - [ ] fix up MaybeError etc and use exclusively

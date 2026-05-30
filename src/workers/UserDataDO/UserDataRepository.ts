@@ -280,11 +280,19 @@ export class UserDataRepository {
    * files. If the node has a file that isn't ready, the relation comes back
    * null.
    */
-  getFileNode(nodeId: string) {
+  getFileNode(
+    nodeId: string,
+    { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
+  ) {
     return this.db.query.nodes.findFirst({
       where: {
         id: nodeId,
-        deletedTime: { isNull: true },
+        deletedTime:
+          include === "live"
+            ? { isNull: true }
+            : include === "deleted"
+              ? { isNotNull: true }
+              : undefined,
       },
       with: {
         file: {

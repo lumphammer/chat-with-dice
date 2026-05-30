@@ -379,14 +379,17 @@ export class UserDataDO extends DurableObject {
     }
   }
 
-  async getFile(nodeId: string): Promise<
+  async getFile(
+    nodeId: string,
+    { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
+  ): Promise<
     | {
         result: "found";
         data: Awaited<ReturnType<UserDataRepository["getFileNode"]>>;
       }
     | { result: "not_found" }
   > {
-    const node = await this.repo.getFileNode(nodeId);
+    const node = await this.repo.getFileNode(nodeId, { include });
     if (!node || !node.file) {
       return { result: "not_found" };
     }
