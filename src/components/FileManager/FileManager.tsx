@@ -136,9 +136,12 @@ export const FileManager = memo(
         return;
       }
       setNodes(result.data);
+
       if (
         locationRef.current.previewFileId &&
-        !result.data.some((n) => n.id === locationRef.current.previewFileId)
+        !result.data.some(
+          (n) => n.id === locationRef.current.previewFileId && !n.deletedTime,
+        )
       ) {
         onLocationChange({
           folderId: locationRef.current.folderId,
