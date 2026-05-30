@@ -1,5 +1,5 @@
 import { storageConsentStore } from "#/stores";
-import { useStore } from "@nanostores//react";
+import { useStore } from "@nanostores/react";
 
 export const CookieConsentBanner = () => {
   const hasCookieConsent = useStore(storageConsentStore);
