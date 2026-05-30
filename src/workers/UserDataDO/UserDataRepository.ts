@@ -235,12 +235,17 @@ export class UserDataRepository {
   /** Find a non-deleted node by id, with its file/folder relations. */
   getNode(
     nodeId: string,
-    { allowDeleted = false }: { allowDeleted?: boolean } = {},
+    { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
   ) {
     return this.db.query.nodes.findFirst({
       where: {
         id: nodeId,
-        deletedTime: allowDeleted ? undefined : { isNull: true },
+        deletedTime:
+          include === "all"
+            ? undefined
+            : include === "deleted"
+              ? { isNotNull: true }
+              : { isNull: true },
       },
       with: {
         file: true,
@@ -576,5 +581,31 @@ export class UserDataRepository {
             ? [r.thumbnailR2Key, r.r2Key]
             : [r.r2Key]) as string[],
       );
+  }
+
+  /**
+   * Returns true if the node is shadowed by a deleted folder, i.e. it has a
+   * deleted ancestor.
+   */
+  isNodeShadowedByADeletedFolder(nodeId: string): boolean {
+    const result = this.db
+      .run(
+        sql`
+          WITH RECURSIVE ancestors(node_id, deleted_time) AS (
+            SELECT nodes.parent_folder_id node_id, NULL
+            FROM nodes
+            WHERE nodes.id = ${nodeId}
+            AND nodes.parent_folder_id IS NOT NULL
+            UNION ALL
+            SELECT nodes.parent_folder_id node_id, nodes.deleted_time deleted_time
+            FROM ancestors
+            JOIN nodes ON nodes.folder_id = ancestors.node_id
+            WHERE nodes.parent_folder_id IS NOT NULL
+          )
+          SELECT 1 FROM ancestors WHERE ancestors.deleted_time IS NOT NULL LIMIT 1
+        `,
+      )
+      .toArray();
+    return result.length > 0;
   }
 }

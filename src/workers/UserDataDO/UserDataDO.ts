@@ -191,9 +191,9 @@ export class UserDataDO extends DurableObject {
 
   async restoreNode(nodeId: string) {
     log("restoring", nodeId);
-    const node = await this.repo.getNode(nodeId, { allowDeleted: false });
+    const node = await this.repo.getNode(nodeId, { include: "deleted" });
     if (!node) {
-      return error("Node not found", HTTP_NOT_FOUND);
+      return error("Node not found or not soft deleted", HTTP_NOT_FOUND);
     }
     const usage = await d1.query.users.findFirst({
       where: {
@@ -213,6 +213,12 @@ export class UserDataDO extends DurableObject {
 
     if (usage.storage_used_bytes + sizeBytes > usage.storage_quota_bytes) {
       return error("Storage quota exceeded", HTTP_BAD_REQUEST);
+    }
+
+    // check shadowedness
+    const isShadowed = this.repo.isNodeShadowedByADeletedFolder(nodeId);
+    if (isShadowed) {
+      return error("Node is shadowed by a deleted folder", HTTP_BAD_REQUEST);
     }
 
     try {
