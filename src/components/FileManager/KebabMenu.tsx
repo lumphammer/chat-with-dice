@@ -63,6 +63,11 @@ export const KebabMenu = memo(
       action?.();
     };
 
+    const hasAnyAction =
+      (isLive && (canShareWithRoom || canUnshareFromRoom || !readOnly)) ||
+      (isDeleted && !readOnly);
+    if (!hasAnyAction) return null;
+
     return (
       <>
         <button
