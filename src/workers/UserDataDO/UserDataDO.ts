@@ -240,15 +240,26 @@ export class UserDataDO extends DurableObject {
     return success(undefined);
   }
 
-  async hardDeleteNodes(
-    nodeIds: string[],
-    {
-      checkSoftDeletion = false,
-      dryRun = false,
-    }: { checkSoftDeletion?: boolean; dryRun?: boolean } = {},
-  ) {
+  /**
+   * hard-delete nodes regardless of current soft-deletion status
+   */
+  async dangerouslyHardDeleteNodes(nodeIds: string[]) {
+    const r2Keys = this.repo.recursivelyGetDescendantR2Keys(nodeIds);
+    await this.repo.hardDeleteNodes(nodeIds);
+    // this isn't batched, but this path is only used by user-initiated actions
+    // and upload cleanup, so there will never be more than a few.
+    // we're doing the db operation and the r2 operation sequentially to avoid
+    // the possibility of nuking r2 blobs while the db operation fails and
+    // leaves records in the db.
+    await cfEnv.PRIVATE_R2?.delete(r2Keys);
+  }
+
+  /**
+   * hard delete nodes that have been soft-deleted
+   */
+  async hardDeleteNodes(nodeIds: string[]) {
     const nodes = await this.repo.getNodes(nodeIds, {
-      include: checkSoftDeletion ? "deleted" : "all",
+      include: "deleted",
     });
     const requestedNodeIdsSet = new Set(nodeIds);
     const foundNodeIdsSet = new Set(nodes.map((n) => n.id));
@@ -260,16 +271,8 @@ export class UserDataDO extends DurableObject {
       );
     }
 
-    const r2Keys = this.repo.recursivelyGetDescendantR2Keys(nodeIds);
-    log(r2Keys);
-
-    if (dryRun) {
-      return success();
-    }
-    // this isn't batched, but this path is used by user-initiated actions
-    // so there will never be more than a few.
-    await this.repo.hardDeleteNodes(nodeIds);
-    await cfEnv.PRIVATE_R2?.delete(r2Keys);
+    // pull the trigger
+    await this.dangerouslyHardDeleteNodes(nodeIds);
     return success();
   }
 

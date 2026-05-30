@@ -17,10 +17,7 @@ export const hardDeleteNode = defineAction({
     const userDataDO = env.USER_DATA_DO.get(
       env.USER_DATA_DO.idFromString(user.userDataDOId),
     );
-    const result = await userDataDO.hardDeleteNodes([nodeId], {
-      checkSoftDeletion: true,
-      dryRun: false,
-    });
+    const result = await userDataDO.hardDeleteNodes([nodeId]);
     return result;
   },
 });
