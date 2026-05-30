@@ -233,7 +233,7 @@ export class UserDataDO extends DurableObject {
         );
       }
       return error(
-        "Failed to restore file: ${}",
+        `Failed to restore file: ${cause instanceof Error ? cause.message : JSON.stringify(cause)}`,
         HTTP_INTERNAL_SERVER_ERROR,
         cause,
       );
@@ -308,7 +308,7 @@ export class UserDataDO extends DurableObject {
         );
       }
       return error(
-        "Failed to create file: ${}",
+        `Failed to create file: ${cause instanceof Error ? cause.message : JSON.stringify(cause)}`,
         HTTP_INTERNAL_SERVER_ERROR,
         cause,
       );
