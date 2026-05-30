@@ -191,7 +191,7 @@ export class UserDataDO extends DurableObject {
 
   async restoreNode(nodeId: string) {
     log("restoring", nodeId);
-    const node = await this.repo.getNode(nodeId, { allowDeleted: true });
+    const node = await this.repo.getNode(nodeId, { allowDeleted: false });
     if (!node) {
       return error("Node not found", HTTP_NOT_FOUND);
     }
