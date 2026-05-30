@@ -19,7 +19,7 @@ export const hardDeleteNode = defineAction({
     );
     const result = await userDataDO.hardDeleteNodes([nodeId], {
       checkSoftDeletion: true,
-      dryRun: true,
+      dryRun: false,
     });
     return result;
   },
