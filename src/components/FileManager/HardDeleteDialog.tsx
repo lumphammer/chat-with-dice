@@ -52,8 +52,8 @@ export const HardDeleteDialog = memo(
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => {
-                    void handleHardDelete();
+                  onClick={async () => {
+                    await handleHardDelete();
                     dialogRef.current?.close();
                   }}
                 >
