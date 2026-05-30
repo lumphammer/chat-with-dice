@@ -146,7 +146,6 @@ export const KebabMenu = memo(
                 <button
                   type="button"
                   className=""
-                  // this needs to be a hard delete action
                   onClick={() => handleAction(handleRestore)}
                 >
                   <RefreshCcwDot size={14} />
