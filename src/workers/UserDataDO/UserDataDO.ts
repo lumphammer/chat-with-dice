@@ -143,14 +143,15 @@ export class UserDataDO extends DurableObject {
     return { kind: "not-found" };
   }
 
+  /**
+   * Get the contents of a folder. By design, this only works for live folders;
+   * We do not allow navigation of soft-deleted folders.
+   */
   async getNodes(folderId: string | null | undefined, includeDeleted: boolean) {
     if (folderId) {
       const folderNode = await this.repo.getNode(folderId);
       if (!folderNode) {
         throw new Error("Folder not found");
-      }
-      if (folderNode.deletedTime) {
-        throw new Error("Folder is deleted");
       }
     }
     return await this.repo.getChildNodes(folderId, includeDeleted);
