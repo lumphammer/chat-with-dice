@@ -29,12 +29,12 @@
   - [x] Admin: reset folder sizes
   - [x] Admin: purge orphans
   - [x] Trash/recycle bin UI for restoring/forever-deleting soft-deleted items
+  - [x] check deletion cascade
   - [ ] Periodic purge of deleted files
-  - [ ] check deletion cascade
-- [ ] Preview UI should be measured
-- [ ] thumbnails could be a little higher quality
+- [x] thumbnails could be a little higher quality
 - [x] Show anon/full in admin area
 - [x] Refresh button
+- [ ] Preview UI should be measured
 - [ ] fix up MaybeError etc and use exclusively
 - [ ] type FileNode should be renamed (StorageNode?)
 - [ ] Perf analysis on types
