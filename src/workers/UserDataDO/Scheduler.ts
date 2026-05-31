@@ -2,8 +2,8 @@ import { AbstractScheduler, type Event } from "../utils/AbstractScheduler";
 import type { UserDataRepository } from "./UserDataRepository";
 import { env as cfEnv } from "cloudflare:workers";
 
-// const MS_IN_24H = 24 * 3600 * 1000;
-const PURGE_CYCLE_MS = 10_000;
+const MS_IN_24H = 24 * 3600 * 1000;
+const PURGE_CYCLE_MS = MS_IN_24H;
 
 export class Scheduler extends AbstractScheduler {
   constructor(
@@ -14,14 +14,12 @@ export class Scheduler extends AbstractScheduler {
   }
 
   protected override async processEvent(event: Event) {
-    console.log(`processing event ${event.id}`);
     if (event.id === "purge") {
       await this.purge();
     }
   }
 
   private async purge() {
-    console.log("purging");
     const now = Date.now();
     const cutoffTime = now - PURGE_CYCLE_MS;
     // get all the node Ids to be purged this time
@@ -49,7 +47,6 @@ export class Scheduler extends AbstractScheduler {
   }
 
   async schedulePurge() {
-    console.log("scheduling purge", PURGE_CYCLE_MS);
     await this.scheduleEvent("purge", Date.now() + PURGE_CYCLE_MS);
   }
 }
