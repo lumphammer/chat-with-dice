@@ -34,6 +34,8 @@
 - [x] thumbnails could be a little higher quality
 - [x] Show anon/full in admin area
 - [x] Refresh button
+- [x] Grid view is not sticking (I had rejected cookies)
+- [x] Why is chat spanking my GPU?
 - [ ] Preview UI should be measured
 - [ ] fix up MaybeError etc and use exclusively
 - [ ] type FileNode should be renamed (StorageNode?)
@@ -43,7 +45,6 @@
 - [ ] Responsive Grids for admin
 - [ ] Periodic purge of anon users
 - [ ] Anon users cannot be admin
-- [ ] Grid view is not sticking
 - [ ] filemanager header should be sticky
 - [ ] standalone filemanager has too much whitespace on mobile
 - [ ] "Reshare file..." should not have dots (and maybe pick a better verb?)
