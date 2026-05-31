@@ -560,11 +560,13 @@ export class UserDataRepository {
   }
 
   recursivelyGetDescendantR2Keys(nodeIds: string[]): string[] {
+    if (nodeIds.length === 0) return [];
+
     return this.db
       .run(
         sql`
       WITH RECURSIVE descendants(id) AS (
-        SELECT id FROM folders WHERE id IN (${nodeIds})
+        SELECT id FROM folders WHERE id IN ${nodeIds}
         UNION ALL
         SELECT nodes.id id
         FROM descendants
@@ -580,7 +582,7 @@ export class UserDataRepository {
       ON nodes.file_id = files.id
       UNION ALL
       SELECT files.thumbnail_r_2_key thumbnailR2Key, files.r2_key r2Key
-      FROM files WHERE id IN (${nodeIds})
+      FROM files WHERE id IN ${nodeIds}
     `,
       )
       .toArray()
