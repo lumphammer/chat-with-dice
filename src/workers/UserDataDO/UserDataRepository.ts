@@ -516,6 +516,7 @@ export class UserDataRepository {
     }
     // This is dead simple and fail-safe. reciprocal FKs with CASCADE mean that
     // the nodes and all their decendants are wiped off the face of the database.
+    this.db.run(sql`PRAGMA foreign_keys = ON`);
     return await this.db
       .delete(dbSchema.nodes)
       .where(inArray(dbSchema.nodes.id, ids));
