@@ -19,6 +19,14 @@ export abstract class AbstractScheduler {
     }
   }
 
+  async getEventsForId(id: string): Promise<Event[]> {
+    const events = await this.ctx.storage.list({ prefix: `event:${id}` });
+    return events
+      .values()
+      .map((event) => eventValidator.parse(event))
+      .toArray();
+  }
+
   async alarm() {
     const now = Date.now();
     const events = await this.ctx.storage.list({ prefix: "event:" });
