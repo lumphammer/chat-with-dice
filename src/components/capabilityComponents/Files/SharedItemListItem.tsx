@@ -1,8 +1,6 @@
 import type { SharedItem } from "#/capabilities/filesCapability";
 import { getRelativeTimeString } from "#/components/DiceRoller/TimeDisplay";
-import { fileTypeIcon } from "#/components/FileManager/fileTypeIcon";
-import { buildFileUrl } from "#/components/FileManager/fileUrl";
-import { Folder } from "lucide-react";
+import { NodeIcon } from "#/components/FileManager/NodeIcon";
 import { memo } from "react";
 
 const UNKNOWN_SHARED_TIME_LABEL = "shared earlier";
@@ -24,18 +22,6 @@ export const SharedItemListItem = memo(
     roomId: string;
     onSelect: (item: SharedItem) => void;
   }) => {
-    const isFolder = item.kind === "folder";
-    const Icon = isFolder
-      ? Folder
-      : fileTypeIcon(item.contentType ?? "application/octet-stream");
-    const thumbnailUrl =
-      item.kind === "file" && item.thumbnailR2Key
-        ? buildFileUrl(item.userId, item.nodeId, {
-            roomId,
-            suffix: "thumbnail",
-          })
-        : null;
-
     return (
       <li>
         <button
@@ -48,19 +34,19 @@ export const SharedItemListItem = memo(
             className="bg-base-200 flex size-10 shrink-0 items-center
               justify-center overflow-hidden rounded"
           >
-            {thumbnailUrl ? (
-              <img
-                src={thumbnailUrl}
-                alt=""
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Icon
-                size={20}
-                className={isFolder ? "text-warning" : "text-base-content/70"}
-              />
-            )}
+            <NodeIcon
+              nodeId={item.nodeId}
+              contentType={
+                item.kind === "file"
+                  ? (item.contentType ?? undefined)
+                  : undefined
+              }
+              hasThumbnail={item.kind === "file" && !!item.thumbnailR2Key}
+              isDeleted={false}
+              isFolder={item.kind === "folder"}
+              ownerUserId={item.userId}
+              roomId={roomId}
+            />
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="block truncate">{item.name}</span>

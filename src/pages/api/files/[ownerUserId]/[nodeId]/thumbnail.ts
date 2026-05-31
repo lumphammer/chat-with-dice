@@ -48,7 +48,10 @@ export const GET: APIRoute = async (ctx) => {
   );
   if (!resolved.ok) return resolved.response;
 
-  const nodeResult = await resolved.ownerUserDataDO.getFile(nodeId);
+  const nodeResult = await resolved.ownerUserDataDO.getFile(nodeId, {
+    // we *can* get thumbnails for soft deleted files
+    include: "all",
+  });
   if (nodeResult.result === "not_found" || !nodeResult.data?.file) {
     return jsonResponse({ error: "File not found" }, HTTP_NOT_FOUND);
   }

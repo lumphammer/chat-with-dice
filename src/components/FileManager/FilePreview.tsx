@@ -1,8 +1,8 @@
 import { formatBytes } from "#/utils/formatBytes";
+import { FileTypeIcon } from "./FileTypeIcon";
 import { ImagePreview } from "./ImagePreview";
 import { PdfPreview } from "./PdfPreview";
 import { TextPreview } from "./TextPreview";
-import { fileTypeIcon } from "./fileTypeIcon";
 import { buildFileUrl } from "./fileUrl";
 import { isTextPreviewable } from "./textPreviewTypes";
 import { useShareWithRoom } from "./useShareWithRoom";
@@ -39,7 +39,7 @@ export const FilePreview = memo(
       canUnshareFromRoom,
       unshareFromRoom,
       isSharedWithRoom,
-    } = useShareWithRoom(readOnly ? null : node.id);
+    } = useShareWithRoom(readOnly ? null : node.id, readOnly);
 
     useEffect(() => {
       const dialog = dialogRef.current;
@@ -57,7 +57,6 @@ export const FilePreview = memo(
     const isPdf = node.file.contentType === "application/pdf";
     const isText = isTextPreviewable(node.name, node.file.contentType);
     const downloadUrl = buildFileUrl(ownerUserId, node.id, { roomId });
-    const Icon = fileTypeIcon(node.file.contentType);
 
     return (
       <dialog ref={dialogRef} closedby="any" className="modal">
@@ -125,11 +124,13 @@ export const FilePreview = memo(
               className="bg-base-200 flex min-h-0 flex-1 flex-col items-center
                 justify-center gap-6 rounded p-8"
             >
-              <Icon
+              <FileTypeIcon
+                contentType={node.file.contentType}
                 size={64}
                 strokeWidth={1}
                 className="text-base-content/50"
               />
+
               {/* oxlint-disable-next-line jsx-a11y/media-has-caption */}
               <audio
                 controls
@@ -159,11 +160,13 @@ export const FilePreview = memo(
               className="flex flex-1 flex-col items-center justify-center gap-4
                 p-8"
             >
-              <Icon
+              <FileTypeIcon
+                contentType={node.file.contentType}
                 size={64}
                 strokeWidth={1}
                 className="text-base-content/50"
               />
+
               <div className="text-center">
                 <p className="font-medium">{node.name}</p>
                 <p className="text-base-content/50 text-sm">

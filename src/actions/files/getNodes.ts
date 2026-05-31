@@ -8,8 +8,12 @@ export const getNodes = defineAction({
     folderId: z.string().nullable().optional(),
     ownerUserId: z.string().optional(),
     roomId: z.string().optional(),
+    includeDeleted: z.boolean().optional(),
   }),
-  handler: async ({ folderId, ownerUserId, roomId }, context) => {
+  handler: async (
+    { folderId, ownerUserId, roomId, includeDeleted = false },
+    context,
+  ) => {
     const loggedInUser = context.locals.user;
     if (!loggedInUser) {
       throw new Error("Unauthorized");
@@ -26,7 +30,7 @@ export const getNodes = defineAction({
       const userDataDO = env.USER_DATA_DO.get(
         env.USER_DATA_DO.idFromString(loggedInUser.userDataDOId),
       );
-      return await userDataDO.getNodes(folderId);
+      return await userDataDO.getNodes(folderId, includeDeleted);
     }
 
     // cross-user read — must specify a room and a concrete folder; we never
@@ -56,6 +60,7 @@ export const getNodes = defineAction({
       throw new Error("Forbidden");
     }
 
-    return await ownerDO.getNodes(folderId);
+    // cross-user requests never show deleted nodes
+    return await ownerDO.getNodes(folderId, false);
   },
 });

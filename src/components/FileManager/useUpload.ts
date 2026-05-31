@@ -3,7 +3,7 @@ import { buildFileUrl } from "./fileUrl";
 import { useCallback, useState } from "react";
 
 const THUMBNAIL_MAX_DIMENSION = 256;
-const THUMBNAIL_QUALITY = 0.3;
+const THUMBNAIL_QUALITY = 0.6;
 
 export type UploadingFile = {
   localId: string;

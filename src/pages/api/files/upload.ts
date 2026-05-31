@@ -88,7 +88,7 @@ export const POST: APIRoute = async (ctx) => {
     // verify actual size after upload (Content-Length may be absent/spoofed)
     if (r2Object.size > MAX_BYTES) {
       await bucket.delete(createFileResult.data.r2Key);
-      await userDataDO.hardDeleteNodes([createFileResult.data.id]);
+      await userDataDO.dangerouslyHardDeleteNodes([createFileResult.data.id]);
       return jsonResponse(
         { error: "File must be smaller than 100 MB" },
         HTTP_PAYLOAD_TOO_LARGE,
@@ -97,7 +97,7 @@ export const POST: APIRoute = async (ctx) => {
   } catch (error) {
     // clean up on R2 failure
     await Promise.allSettled([
-      userDataDO.hardDeleteNodes([createFileResult.data.id]),
+      userDataDO.dangerouslyHardDeleteNodes([createFileResult.data.id]),
       bucket.delete(createFileResult.data.r2Key),
     ]);
     return jsonResponse(
@@ -124,7 +124,7 @@ export const POST: APIRoute = async (ctx) => {
     );
   } catch (error) {
     await Promise.allSettled([
-      userDataDO.hardDeleteNodes([createFileResult.data.id]),
+      userDataDO.dangerouslyHardDeleteNodes([createFileResult.data.id]),
       bucket.delete(createFileResult.data.r2Key),
     ]);
     return jsonResponse(

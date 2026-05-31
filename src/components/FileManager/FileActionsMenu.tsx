@@ -11,7 +11,7 @@ import {
   Unlink2,
   Upload,
   RefreshCw,
-  // Trash,
+  Trash,
 } from "lucide-react";
 import { memo, useId, useRef } from "react";
 
@@ -24,14 +24,15 @@ export const FileActionsMenu = memo(
     onNewFolder,
     onRefresh,
     onShareWithRoom,
-    // onShowDeletedItems,
     onUnshareFromRoom,
     onUpload,
     onViewModeChange,
-    // readOnly,
+    readOnly,
     storageQuotaBytes,
     storageUsedBytes,
     viewMode,
+    showDeleted,
+    onShowDeletedChange,
   }: {
     canShareWithRoom: boolean;
     canUnshareFromRoom: boolean;
@@ -40,14 +41,15 @@ export const FileActionsMenu = memo(
     onNewFolder: () => void;
     onRefresh: () => void;
     onShareWithRoom: () => void;
-    // onShowDeletedItems: () => void;
     onUnshareFromRoom: () => void;
     onUpload: () => void;
     onViewModeChange: (viewMode: ViewMode) => void;
-    // readOnly: boolean;
+    readOnly: boolean;
     storageQuotaBytes: number;
     storageUsedBytes: number;
     viewMode: ViewMode;
+    showDeleted: boolean;
+    onShowDeletedChange: (showDeleted: boolean) => void;
   }) => {
     const menuId = useId();
     const anchorName = `--file-toolbar-${menuId.replaceAll(":", "")}`;
@@ -157,17 +159,19 @@ export const FileActionsMenu = memo(
                 </button>
               </li>
             )}
-            {/*{!readOnly && (
+            {!readOnly && (
               <li>
                 <button
                   type="button"
-                  onClick={() => handleMenuAction(onShowDeletedItems)}
+                  onClick={() =>
+                    handleMenuAction(() => onShowDeletedChange(!showDeleted))
+                  }
                 >
                   <Trash size={16} />
-                  Show deleted items
+                  {showDeleted ? "Hide" : "Show"} deleted items
                 </button>
               </li>
-            )}*/}
+            )}
             <li>
               <div
                 className="text-base-content/70 pointer-events-none flex

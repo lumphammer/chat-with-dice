@@ -233,11 +233,40 @@ export class UserDataRepository {
   // === Node lookups ===
 
   /** Find a non-deleted node by id, with its file/folder relations. */
-  getNode(nodeId: string) {
+  getNode(
+    nodeId: string,
+    { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
+  ) {
     return this.db.query.nodes.findFirst({
       where: {
         id: nodeId,
-        deletedTime: { isNull: true },
+        deletedTime:
+          include === "all"
+            ? undefined
+            : include === "deleted"
+              ? { isNotNull: true }
+              : { isNull: true },
+      },
+      with: {
+        file: true,
+        folder: true,
+      },
+    });
+  }
+
+  getNodes(
+    nodeIds: string[],
+    { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
+  ) {
+    return this.db.query.nodes.findMany({
+      where: {
+        id: { in: nodeIds },
+        deletedTime:
+          include === "live"
+            ? { isNull: true }
+            : include === "deleted"
+              ? { isNotNull: true }
+              : undefined,
       },
       with: {
         file: true,
@@ -251,11 +280,19 @@ export class UserDataRepository {
    * files. If the node has a file that isn't ready, the relation comes back
    * null.
    */
-  getFileNode(nodeId: string) {
+  getFileNode(
+    nodeId: string,
+    { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
+  ) {
     return this.db.query.nodes.findFirst({
       where: {
         id: nodeId,
-        deletedTime: { isNull: true },
+        deletedTime:
+          include === "live"
+            ? { isNull: true }
+            : include === "deleted"
+              ? { isNotNull: true }
+              : undefined,
       },
       with: {
         file: {
@@ -268,10 +305,10 @@ export class UserDataRepository {
   }
 
   /** List live children of a folder (`null` = root). */
-  getChildNodes(folderId: string | null | undefined) {
+  getChildNodes(folderId: string | null | undefined, includeDeleted: boolean) {
     return this.db.query.nodes.findMany({
       where: {
-        deletedTime: { isNull: true },
+        ...(includeDeleted ? {} : { deletedTime: { isNull: true } }),
         parentFolderId: folderId ?? { isNull: true },
       },
       with: {
@@ -361,6 +398,13 @@ export class UserDataRepository {
     return this.db
       .update(dbSchema.nodes)
       .set({ deletedTime: Date.now() })
+      .where(eq(dbSchema.nodes.id, nodeId));
+  }
+
+  restoreNode(nodeId: string) {
+    return this.db
+      .update(dbSchema.nodes)
+      .set({ deletedTime: null })
       .where(eq(dbSchema.nodes.id, nodeId));
   }
 
@@ -512,5 +556,64 @@ export class UserDataRepository {
           ),
         ),
       );
+  }
+
+  recursivelyGetDescendantR2Keys(nodeIds: string[]): string[] {
+    return this.db
+      .run(
+        sql`
+      WITH RECURSIVE descendants(id) AS (
+        SELECT id FROM folders WHERE id IN (${nodeIds})
+        UNION ALL
+        SELECT nodes.id id
+        FROM descendants
+        INNER JOIN nodes
+        ON nodes.parent_folder_id = descendants.id
+        WHERE nodes.folder_id IS NOT NULL
+      )
+      SELECT files.thumbnail_r_2_key thumbnailR2Key, files.r2_key r2Key
+      FROM descendants
+      INNER JOIN nodes
+      ON descendants.id = nodes.parent_folder_id
+      INNER JOIN files
+      ON nodes.file_id = files.id
+      UNION ALL
+      SELECT files.thumbnail_r_2_key thumbnailR2Key, files.r2_key r2Key
+      FROM files WHERE id IN (${nodeIds})
+    `,
+      )
+      .toArray()
+      .flatMap(
+        (r) =>
+          (r.thumbnailR2Key
+            ? [r.thumbnailR2Key, r.r2Key]
+            : [r.r2Key]) as string[],
+      );
+  }
+
+  /**
+   * Returns true if the node is shadowed by a deleted folder, i.e. it has a
+   * deleted ancestor.
+   */
+  isNodeShadowedByADeletedFolder(nodeId: string): boolean {
+    const result = this.db
+      .run(
+        sql`
+          WITH RECURSIVE ancestors(node_id, deleted_time) AS (
+            SELECT nodes.parent_folder_id node_id, NULL
+            FROM nodes
+            WHERE nodes.id = ${nodeId}
+            AND nodes.parent_folder_id IS NOT NULL
+            UNION ALL
+            SELECT nodes.parent_folder_id node_id, nodes.deleted_time deleted_time
+            FROM ancestors
+            JOIN nodes ON nodes.folder_id = ancestors.node_id
+            WHERE nodes.parent_folder_id IS NOT NULL
+          )
+          SELECT 1 FROM ancestors WHERE ancestors.deleted_time IS NOT NULL LIMIT 1
+        `,
+      )
+      .toArray();
+    return result.length > 0;
   }
 }

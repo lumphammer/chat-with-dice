@@ -1,4 +1,8 @@
-import { HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR } from "#/constants";
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_NOT_FOUND,
+} from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
@@ -139,8 +143,18 @@ export class UserDataDO extends DurableObject {
     return { kind: "not-found" };
   }
 
-  getNodes(folderId?: string | null) {
-    return this.repo.getChildNodes(folderId);
+  /**
+   * Get the contents of a folder. By design, this only works for live folders;
+   * We do not allow navigation of soft-deleted folders.
+   */
+  async getNodes(folderId: string | null | undefined, includeDeleted: boolean) {
+    if (folderId) {
+      const folderNode = await this.repo.getNode(folderId);
+      if (!folderNode) {
+        throw new Error("Folder not found");
+      }
+    }
+    return await this.repo.getChildNodes(folderId, includeDeleted);
   }
 
   async createFolder(name: string, parentFolderId?: string | null) {
@@ -176,8 +190,97 @@ export class UserDataDO extends DurableObject {
     await this.syncQuotaWithSizes();
   }
 
-  async hardDeleteNodes(nodeIds: string[]) {
+  async restoreNode(nodeId: string) {
+    log("restoring", nodeId);
+    const node = await this.repo.getNode(nodeId, { include: "deleted" });
+    if (!node) {
+      return error("Node not found or not soft deleted", HTTP_NOT_FOUND);
+    }
+    const usage = await d1.query.users.findFirst({
+      where: {
+        user_data_do_id: this.ctx.id.toString(),
+      },
+      columns: {
+        storage_quota_bytes: true,
+        storage_used_bytes: true,
+      },
+    });
+    if (!usage) {
+      return error("User not found", HTTP_BAD_REQUEST);
+    }
+
+    const sizeBytes =
+      node.file?.sizeBytes ?? node.folder?.recursiveSizeBytes ?? 0;
+
+    if (usage.storage_used_bytes + sizeBytes > usage.storage_quota_bytes) {
+      return error("Storage quota exceeded", HTTP_BAD_REQUEST);
+    }
+
+    // check shadowedness
+    const isShadowed = this.repo.isNodeShadowedByADeletedFolder(nodeId);
+    if (isShadowed) {
+      return error("Node is shadowed by a deleted folder", HTTP_BAD_REQUEST);
+    }
+
+    try {
+      await this.repo.restoreNode(nodeId);
+    } catch (cause) {
+      logError(cause);
+      if (isUniqueConstraintError(cause)) {
+        return error(
+          "A file with that name already exists in this folder",
+          HTTP_BAD_REQUEST,
+        );
+      }
+      return error(
+        `Failed to restore file: ${cause instanceof Error ? cause.message : JSON.stringify(cause)}`,
+        HTTP_INTERNAL_SERVER_ERROR,
+        cause,
+      );
+    }
+
+    if (node.parentFolderId) {
+      this.repo.adjustAncestorSizes(node.parentFolderId, sizeBytes);
+    }
+
+    await this.syncQuotaWithSizes();
+    return success(undefined);
+  }
+
+  /**
+   * hard-delete nodes regardless of current soft-deletion status
+   */
+  async dangerouslyHardDeleteNodes(nodeIds: string[]) {
+    const r2Keys = this.repo.recursivelyGetDescendantR2Keys(nodeIds);
     await this.repo.hardDeleteNodes(nodeIds);
+    // this isn't batched, but this path is only used by user-initiated actions
+    // and upload cleanup, so there will never be more than a few.
+    // we're doing the db operation and the r2 operation sequentially to avoid
+    // the possibility of nuking r2 blobs while the db operation fails and
+    // leaves records in the db.
+    await cfEnv.PRIVATE_R2?.delete(r2Keys);
+  }
+
+  /**
+   * hard delete nodes that have been soft-deleted
+   */
+  async hardDeleteNodes(nodeIds: string[]) {
+    const nodes = await this.repo.getNodes(nodeIds, {
+      include: "deleted",
+    });
+    const requestedNodeIdsSet = new Set(nodeIds);
+    const foundNodeIdsSet = new Set(nodes.map((n) => n.id));
+    const missingNodeIds = requestedNodeIdsSet.difference(foundNodeIdsSet);
+    if (missingNodeIds.size > 0) {
+      return error(
+        `Nodes not found: ${Array.from(missingNodeIds).join(", ")}`,
+        HTTP_NOT_FOUND,
+      );
+    }
+
+    // pull the trigger
+    await this.dangerouslyHardDeleteNodes(nodeIds);
+    return success();
   }
 
   async createFile(
@@ -205,7 +308,7 @@ export class UserDataDO extends DurableObject {
         );
       }
       return error(
-        "Failed to create file: ${}",
+        `Failed to create file: ${cause instanceof Error ? cause.message : JSON.stringify(cause)}`,
         HTTP_INTERNAL_SERVER_ERROR,
         cause,
       );
@@ -277,14 +380,17 @@ export class UserDataDO extends DurableObject {
     }
   }
 
-  async getFile(nodeId: string): Promise<
+  async getFile(
+    nodeId: string,
+    { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
+  ): Promise<
     | {
         result: "found";
         data: Awaited<ReturnType<UserDataRepository["getFileNode"]>>;
       }
     | { result: "not_found" }
   > {
-    const node = await this.repo.getFileNode(nodeId);
+    const node = await this.repo.getFileNode(nodeId, { include });
     if (!node || !node.file) {
       return { result: "not_found" };
     }

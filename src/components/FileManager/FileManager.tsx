@@ -1,5 +1,6 @@
 import { authClient } from "#/utils/auth-client";
 import { useRefStash } from "../useRefStash";
+import { useStateWithRef } from "../useStateWithRef";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { DropOverlay } from "./DropOverlay";
 import { EmptyState } from "./EmptyState";
@@ -78,6 +79,8 @@ export const FileManager = memo(
 
     const viewMode = useStore(viewModeStore);
 
+    const [showDeleted, setShowDeleted, showDeletedRef] =
+      useStateWithRef(false);
     const [isDragOver, setIsDragOver] = useState(false);
     const [isLoading, setIsLoading] = useState(initialNodes === undefined);
     const [breadcrumbWidths, setBreadcrumbWidths] = useState({
@@ -113,7 +116,8 @@ export const FileManager = memo(
       setExpandedToolbarWidth(toolbarWidth);
     }, [isToolbarCompact, toolbarWidth]);
 
-    const fetchNodes = useCallback(async () => {
+    // main fn to fetch folder contents
+    const handleRefresh = useCallback(async () => {
       const folderId = locationRef.current.folderId;
       navigationIdRef.current += 1;
       const requestId = navigationIdRef.current;
@@ -122,6 +126,7 @@ export const FileManager = memo(
         folderId,
         ownerUserId,
         roomId,
+        includeDeleted: showDeletedRef.current,
       });
       if (navigationIdRef.current === requestId) {
         setIsLoading(false);
@@ -131,21 +136,38 @@ export const FileManager = memo(
         return;
       }
       setNodes(result.data);
-    }, [ownerUserId, roomId, locationRef.current.folderId]);
 
-    const handleRefresh = useCallback(async () => {
-      await fetchNodes();
+      if (
+        locationRef.current.previewFileId &&
+        !result.data.some(
+          (n) => n.id === locationRef.current.previewFileId && !n.deletedTime,
+        )
+      ) {
+        onLocationChange({
+          folderId: locationRef.current.folderId,
+          breadcrumbs: locationRef.current.breadcrumbs,
+          previewFileId: null,
+          previewFileName: null,
+        });
+      }
       await sessionRef.current.refetch();
-    }, [fetchNodes, sessionRef]);
+    }, [
+      ownerUserId,
+      roomId,
+      showDeletedRef,
+      sessionRef,
+      locationRef,
+      onLocationChange,
+    ]);
 
-    // when the folder id changes, we update
+    // when the folder id or showDeleted changes, we update
     useEffect(() => {
       if (shouldSkipInitialFetch.current) {
         shouldSkipInitialFetch.current = false;
         return;
       }
-      void fetchNodes();
-    }, [fetchNodes, location.folderId]);
+      void handleRefresh();
+    }, [handleRefresh, location.folderId, showDeleted]);
 
     const { uploading, uploadFiles, dismissError } = useUpload(
       location.folderId,
@@ -228,21 +250,21 @@ export const FileManager = memo(
       });
     }, [location, onLocationChange]);
 
-    const handleDeleted = useCallback(
-      async (nodeId: string) => {
-        setNodes((prev) => prev.filter((n) => n.id !== nodeId));
-        await sessionRef.current.refetch();
-        if (nodeId === location.previewFileId) {
-          onLocationChange({
-            folderId: location.folderId,
-            breadcrumbs: location.breadcrumbs,
-            previewFileId: null,
-            previewFileName: null,
-          });
-        }
-      },
-      [location, onLocationChange, sessionRef],
-    );
+    // const handleDeleted = useCallback(
+    //   async (nodeId: string) => {
+    //     setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+    //     await sessionRef.current.refetch();
+    //     if (nodeId === location.previewFileId) {
+    //       onLocationChange({
+    //         folderId: location.folderId,
+    //         breadcrumbs: location.breadcrumbs,
+    //         previewFileId: null,
+    //         previewFileName: null,
+    //       });
+    //     }
+    //   },
+    //   [location, onLocationChange, sessionRef],
+    // );
 
     const handleRenamed = useCallback((nodeId: string, newName: string) => {
       setNodes((prev) =>
@@ -336,6 +358,8 @@ export const FileManager = memo(
               onFilesSelected={uploadFiles}
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
+              showDeleted={showDeleted}
+              onShowDeletedChange={setShowDeleted}
               readOnly={readOnly}
               onRefresh={handleRefresh}
             />
@@ -365,9 +389,9 @@ export const FileManager = memo(
               <FileListItem
                 key={node.id}
                 node={node}
-                variant={viewMode}
+                viewMode={viewMode}
                 onClick={() => handleFolderClick(node)}
-                onDeleted={handleDeleted}
+                onRefresh={handleRefresh}
                 onRenamed={handleRenamed}
                 ownerUserId={ownerUserId}
                 roomId={roomId}
@@ -378,9 +402,9 @@ export const FileManager = memo(
               <FileListItem
                 key={node.id}
                 node={node}
-                variant={viewMode}
+                viewMode={viewMode}
                 onClick={() => handleFileClick(node)}
-                onDeleted={handleDeleted}
+                onRefresh={handleRefresh}
                 onRenamed={handleRenamed}
                 ownerUserId={ownerUserId}
                 roomId={roomId}
