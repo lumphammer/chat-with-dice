@@ -2,7 +2,7 @@ import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
 import { logError } from "./utils";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 type DBHandle = DrizzleSqliteDODatabase<
@@ -615,5 +615,30 @@ export class UserDataRepository {
       )
       .toArray();
     return result.length > 0;
+  }
+
+  async findDeletedNodeIdsOlderThan(cutoffTime: number) {
+    const nodesToDelete = (
+      await this.db.query.nodes.findMany({
+        where: {
+          deletedTime: {
+            lte: cutoffTime,
+          },
+        },
+        columns: {
+          id: true,
+        },
+      })
+    ).map((node) => node.id);
+    return nodesToDelete;
+  }
+
+  async getDeletedNodeCount(): Promise<number> {
+    const result = await this.db
+      .select({
+        total: count(dbSchema.nodes.deletedTime),
+      })
+      .from(dbSchema.nodes);
+    return result.at(0)?.total ?? 0;
   }
 }
