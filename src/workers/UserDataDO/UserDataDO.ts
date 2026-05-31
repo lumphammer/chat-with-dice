@@ -69,6 +69,10 @@ export class UserDataDO extends DurableObject {
     });
   }
 
+  async alarm() {
+    await this.scheduler.alarm();
+  }
+
   /**
    * Get the cached userId (it should never change), or if it's not in KV, look
    * up our DO id in D1 to find the user and cache it.
