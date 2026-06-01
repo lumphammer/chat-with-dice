@@ -2,7 +2,7 @@ import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
 import { logError } from "./utils";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 type DBHandle = DrizzleSqliteDODatabase<
@@ -516,6 +516,7 @@ export class UserDataRepository {
     }
     // This is dead simple and fail-safe. reciprocal FKs with CASCADE mean that
     // the nodes and all their decendants are wiped off the face of the database.
+    this.db.run(sql`PRAGMA foreign_keys = ON`);
     return await this.db
       .delete(dbSchema.nodes)
       .where(inArray(dbSchema.nodes.id, ids));
@@ -559,11 +560,13 @@ export class UserDataRepository {
   }
 
   recursivelyGetDescendantR2Keys(nodeIds: string[]): string[] {
+    if (nodeIds.length === 0) return [];
+
     return this.db
       .run(
         sql`
       WITH RECURSIVE descendants(id) AS (
-        SELECT id FROM folders WHERE id IN (${nodeIds})
+        SELECT id FROM folders WHERE id IN ${nodeIds}
         UNION ALL
         SELECT nodes.id id
         FROM descendants
@@ -579,7 +582,7 @@ export class UserDataRepository {
       ON nodes.file_id = files.id
       UNION ALL
       SELECT files.thumbnail_r_2_key thumbnailR2Key, files.r2_key r2Key
-      FROM files WHERE id IN (${nodeIds})
+      FROM files WHERE id IN ${nodeIds}
     `,
       )
       .toArray()
@@ -615,5 +618,30 @@ export class UserDataRepository {
       )
       .toArray();
     return result.length > 0;
+  }
+
+  async findDeletedNodeIdsOlderThan(cutoffTime: number) {
+    const nodesToDelete = (
+      await this.db.query.nodes.findMany({
+        where: {
+          deletedTime: {
+            lte: cutoffTime,
+          },
+        },
+        columns: {
+          id: true,
+        },
+      })
+    ).map((node) => node.id);
+    return nodesToDelete;
+  }
+
+  async getDeletedNodeCount(): Promise<number> {
+    const result = await this.db
+      .select({
+        total: count(dbSchema.nodes.deletedTime),
+      })
+      .from(dbSchema.nodes);
+    return result.at(0)?.total ?? 0;
   }
 }

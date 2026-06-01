@@ -17,6 +17,7 @@ import {
   R2_REPAIR_SUBREQUEST_BUDGET,
 } from "#/utils/r2RepairLimits";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
+import { Scheduler } from "./Scheduler";
 import { UserDataRepository } from "./UserDataRepository";
 import type {
   FolderSizeReport,
@@ -51,6 +52,7 @@ type NodeForShare = {
 export class UserDataDO extends DurableObject {
   private repo!: UserDataRepository;
   private userId!: string;
+  private scheduler!: Scheduler;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -63,7 +65,12 @@ export class UserDataDO extends DurableObject {
     void this.ctx.blockConcurrencyWhile(async () => {
       this.userId = await this.resolveUserId();
       this.repo = new UserDataRepository(ctx);
+      this.scheduler = new Scheduler(this.ctx, this.repo);
     });
+  }
+
+  async alarm() {
+    await this.scheduler.alarm();
   }
 
   /**
@@ -188,6 +195,7 @@ export class UserDataDO extends DurableObject {
       this.repo.adjustAncestorSizes(node.parentFolderId, -sizeToSubtract);
     }
     await this.syncQuotaWithSizes();
+    await this.scheduler.schedulePurge();
   }
 
   async restoreNode(nodeId: string) {

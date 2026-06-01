@@ -44,11 +44,11 @@ export function setupDB<
     } catch (e: unknown) {
       logError("FAILED MIGRATION", e);
     }
+    const after = printSchema(ctx, schema);
+    if (before !== after) {
+      log("Schema changed after migration", before, after);
+    }
   });
-  const after = printSchema(ctx, schema);
-  if (before !== after) {
-    log("Schema changed after migration", before, after);
-  }
 
   return db;
 }

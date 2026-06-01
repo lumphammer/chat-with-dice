@@ -39,7 +39,7 @@ export default defineConfig({
     // yes, but some numbers are well-known
     "eslint/no-magic-numbers": [
       "error",
-      { ignore: [-1, 0, 1, 2, 24, 60, 100, 1000] },
+      { ignore: [-1, 0, 1, 2, 24, 60, 100, 1000, 3600] },
     ],
     // bobbins: new values as props to built-ins are fine
     // "react-perf/jsx-no-jsx-as-prop": "off",
