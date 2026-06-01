@@ -55,7 +55,11 @@ export const FolderActionsMenu = memo(
     const handleMenuAction = genericMenu.handleMenuAction;
 
     return (
-      <GenericMenu genericMenu={genericMenu}>
+      <GenericMenu
+        genericMenu={genericMenu}
+        label="Folder actions"
+        icon="hamburger"
+      >
         {includePrimaryActions && (
           <>
             <li>

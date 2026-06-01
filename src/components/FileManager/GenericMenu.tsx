@@ -1,9 +1,10 @@
-import { Menu } from "lucide-react";
+import { Ellipsis, Menu, EllipsisVertical } from "lucide-react";
 import {
   memo,
   useCallback,
   useId,
   useRef,
+  type ButtonHTMLAttributes,
   type PropsWithChildren,
 } from "react";
 
@@ -29,17 +30,37 @@ export const GenericMenu = memo(
   ({
     children,
     genericMenu: { anchorName, menuId, menuRef },
-  }: PropsWithChildren<{ genericMenu: ReturnType<typeof useGenericMenu> }>) => {
+    label,
+    icon,
+    ...rest
+  }: PropsWithChildren<
+    ButtonHTMLAttributes<HTMLButtonElement> & {
+      genericMenu: ReturnType<typeof useGenericMenu>;
+      label: string;
+      icon: "hamburger" | "vertical_kebab" | "horizontal_kebab";
+    }
+  >) => {
     return (
       <>
         <button
+          // knitting together the props we control vs generic button props
+          // you could override type if you were sick
           type="button"
+          // className is very overridable
           className="btn btn-ghost btn-sm btn-circle"
-          aria-label="File actions"
+          // now all the standard button attributes
+          {...rest}
+          // we knit style together to incude the anchorName
+          style={{ ...(rest.style || {}), anchorName }}
+          // allow to override aria-label but use the main prop per default
+          aria-label={rest["aria-label"] ?? label}
+          // we control popoverTarget absolutely otherwise the menu makes no
+          // sense
           popoverTarget={menuId}
-          style={{ anchorName }}
         >
-          <Menu size={16} />
+          {icon === "hamburger" && <Menu size={16} />}
+          {icon === "vertical_kebab" && <EllipsisVertical size={16} />}
+          {icon === "horizontal_kebab" && <Ellipsis size={16} />}
         </button>
         <div
           id={menuId}
