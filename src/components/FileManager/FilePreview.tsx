@@ -1,5 +1,6 @@
 import { formatBytes } from "#/utils/formatBytes";
 import { FileTypeIcon } from "./FileTypeIcon";
+import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { ImagePreview } from "./ImagePreview";
 import { PdfPreview } from "./PdfPreview";
 import { TextPreview } from "./TextPreview";
@@ -58,6 +59,8 @@ export const FilePreview = memo(
     const isText = isTextPreviewable(node.name, node.file.contentType);
     const downloadUrl = buildFileUrl(ownerUserId, node.id, { roomId });
 
+    const { genericMenu, wrapMenuAction, closeMenu } = useGenericMenu();
+
     return (
       <dialog ref={dialogRef} closedby="any" className="modal">
         <div
@@ -68,44 +71,46 @@ export const FilePreview = memo(
           {/* Dialog Header*/}
           <div className="flex shrink-0 flex-row items-center justify-between">
             <h2 className="truncate text-lg font-bold">{node.name}</h2>
-            <div className="flex flex-row items-center gap-2">
+            <div className="flex-1" />
+            <GenericMenu
+              genericMenu={genericMenu}
+              icon="vertical_kebab"
+              label="Actions"
+            >
               {canShareWithRoom && (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm gap-1"
-                  onClick={shareWithRoom}
-                >
-                  <Share2 size={14} />
-                  {isSharedWithRoom
-                    ? "Reshare file..."
-                    : "Share file with room"}
-                </button>
+                <li>
+                  <button type="button" onClick={wrapMenuAction(shareWithRoom)}>
+                    <Share2 size={14} />
+                    {isSharedWithRoom
+                      ? "Reshare file..."
+                      : "Share file with room"}
+                  </button>
+                </li>
               )}
               {canUnshareFromRoom && (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm gap-1"
-                  onClick={unshareFromRoom}
-                >
-                  <Unlink2 size={14} />
-                  Unshare
-                </button>
+                <li>
+                  <button
+                    type="button"
+                    onClick={wrapMenuAction(unshareFromRoom)}
+                  >
+                    <Unlink2 size={14} />
+                    Unshare
+                  </button>
+                </li>
               )}
-              <a
-                href={downloadUrl}
-                download={node.name}
-                className="btn btn-ghost btn-sm gap-1"
-              >
-                <Download size={14} />
-                Download
-              </a>
-              <button
-                className="btn btn-ghost btn-sm btn-circle"
-                onClick={() => dialogRef.current?.close()}
-              >
-                <X size={18} />
-              </button>
-            </div>
+              <li>
+                <a href={downloadUrl} download={node.name} onClick={closeMenu}>
+                  <Download size={14} />
+                  Download
+                </a>
+              </li>
+            </GenericMenu>
+            <button
+              className="btn btn-ghost btn-sm btn-circle"
+              onClick={() => dialogRef.current?.close()}
+            >
+              <X size={18} />
+            </button>
           </div>
 
           {isImage ? (
