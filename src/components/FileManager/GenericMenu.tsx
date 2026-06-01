@@ -70,7 +70,7 @@ export const GenericMenu = memo(
             w-fit shadow-lg ring-1"
           style={{ positionAnchor: anchorName }}
         >
-          <ul className="menu p-1">{children}</ul>
+          <ul className="menu">{children}</ul>
         </div>
       </>
     );
