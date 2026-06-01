@@ -215,9 +215,7 @@ export const filesCapability = createCapability({
         pureFn: ({ stateDraft, payload }) => {
           const share = stateDraft.shares.find(
             (s) =>
-              s.kind === "file" &&
-              s.userId === payload.ownerUserId &&
-              s.nodeId === payload.nodeId,
+              s.userId === payload.ownerUserId && s.nodeId === payload.nodeId,
           );
           if (share) share.name = payload.newName;
         },
