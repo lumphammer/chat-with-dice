@@ -49,7 +49,10 @@ export class Scheduler extends AbstractScheduler {
   async schedulePurge() {
     const existingEvents = await this.getEventsForId("purge");
     if (existingEvents.length === 0) {
-      await this.scheduleEvent("purge", Date.now() + PURGE_CYCLE_MS);
+      await this.scheduleEvent({
+        id: "purge",
+        runAt: Date.now() + PURGE_CYCLE_MS,
+      });
     }
   }
 }
