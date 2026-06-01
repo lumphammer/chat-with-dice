@@ -4,9 +4,9 @@ import { useStateWithRef } from "../useStateWithRef";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { DropOverlay } from "./DropOverlay";
 import { EmptyState } from "./EmptyState";
-import { FileListItem } from "./FileListItem";
 import { FilePreview } from "./FilePreview";
-import { Toolbar } from "./Toolbar";
+import { FolderToolbar } from "./FolderToolbar";
+import { NodeListItem } from "./NodeListItem";
 import { UploadingList } from "./UploadingList";
 import type { BreadcrumbSegment, FileManagerLocation, FileNode } from "./types";
 import { useUpload } from "./useUpload";
@@ -351,7 +351,7 @@ export const FileManager = memo(
             rootLabel={rootLabel}
           />
           <div ref={toolbarRef} className="shrink-0">
-            <Toolbar
+            <FolderToolbar
               compact={isToolbarCompact}
               currentFolderId={location.folderId}
               onFolderCreated={handleFolderCreated}
@@ -386,7 +386,7 @@ export const FileManager = memo(
             }
           >
             {folderNodes.map((node) => (
-              <FileListItem
+              <NodeListItem
                 key={node.id}
                 node={node}
                 viewMode={viewMode}
@@ -399,7 +399,7 @@ export const FileManager = memo(
               />
             ))}
             {fileNodes.map((node) => (
-              <FileListItem
+              <NodeListItem
                 key={node.id}
                 node={node}
                 viewMode={viewMode}

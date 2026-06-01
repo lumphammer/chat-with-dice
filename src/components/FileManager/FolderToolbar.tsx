@@ -1,5 +1,5 @@
 import { authClient } from "#/utils/auth-client";
-import { FileActionsMenu } from "./FileActionsMenu";
+import { FolderActionsMenu } from "./FolderActionsMenu";
 import { NewFolderDialog, type NewFolderDialogHandle } from "./NewFolderDialog";
 import { useShareWithRoom } from "./useShareWithRoom";
 import type { ViewMode } from "./viewModeStore";
@@ -11,7 +11,7 @@ type CreatedFolder = {
   name: string;
 };
 
-export const Toolbar = memo(
+export const FolderToolbar = memo(
   ({
     currentFolderId,
     compact,
@@ -79,7 +79,7 @@ export const Toolbar = memo(
             </button>
           </>
         )}
-        <FileActionsMenu
+        <FolderActionsMenu
           canShareWithRoom={canShareWithRoom}
           canUnshareFromRoom={canUnshareFromRoom}
           includePrimaryActions={compact && !readOnly}
@@ -126,4 +126,4 @@ export const Toolbar = memo(
   },
 );
 
-Toolbar.displayName = "Toolbar";
+FolderToolbar.displayName = "Toolbar";

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { memo, useId, useRef } from "react";
 
-export const KebabMenu = memo(
+export const NodeItemMenu = memo(
   ({
     node,
     onRename,
@@ -160,4 +160,4 @@ export const KebabMenu = memo(
   },
 );
 
-KebabMenu.displayName = "KebabMenu";
+NodeItemMenu.displayName = "KebabMenu";

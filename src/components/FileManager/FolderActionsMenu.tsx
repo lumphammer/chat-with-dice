@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { memo, useId, useRef } from "react";
 
-export const FileActionsMenu = memo(
+export const FolderActionsMenu = memo(
   ({
     canShareWithRoom,
     canUnshareFromRoom,
@@ -199,4 +199,4 @@ export const FileActionsMenu = memo(
   },
 );
 
-FileActionsMenu.displayName = "FileActionsMenu";
+FolderActionsMenu.displayName = "FileActionsMenu";

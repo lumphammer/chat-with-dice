@@ -1,11 +1,11 @@
-import { KebabMenu } from "./KebabMenu";
 import { NodeIcon } from "./NodeIcon";
+import { NodeItemMenu } from "./NodeItemMenu";
 import { NodeMetadata } from "./NodeMetadata";
 import type { FileNode } from "./types";
 import { useRename } from "./useRename";
 import { memo } from "react";
 
-export const FileListItem = memo(
+export const NodeListItem = memo(
   ({
     node,
     onClick,
@@ -105,7 +105,7 @@ export const FileListItem = memo(
           className="group-data-grid:absolute group-data-grid:top-2
             group-data-grid:right-2"
         >
-          <KebabMenu
+          <NodeItemMenu
             node={node}
             onRefresh={onRefresh}
             isDeleted={!!node.deletedTime}
@@ -118,4 +118,4 @@ export const FileListItem = memo(
   },
 );
 
-FileListItem.displayName = "FileListItem";
+NodeListItem.displayName = "FileListItem";
