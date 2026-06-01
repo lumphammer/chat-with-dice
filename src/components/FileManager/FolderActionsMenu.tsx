@@ -1,4 +1,5 @@
 import { formatBytes } from "#/utils/formatBytes";
+import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { QuotaBar } from "./QuotaBar";
 import type { ViewMode } from "./viewModeStore";
 import {
@@ -7,13 +8,12 @@ import {
   Grid3X3,
   HardDrive,
   List,
-  Menu,
   Unlink2,
   Upload,
   RefreshCw,
   Trash,
 } from "lucide-react";
-import { memo, useId, useRef } from "react";
+import { memo } from "react";
 
 export const FolderActionsMenu = memo(
   ({
@@ -51,150 +51,121 @@ export const FolderActionsMenu = memo(
     showDeleted: boolean;
     onShowDeletedChange: (showDeleted: boolean) => void;
   }) => {
-    const menuId = useId();
-    const anchorName = `--file-toolbar-${menuId.replaceAll(":", "")}`;
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    const handleMenuAction = (action: () => void) => {
-      menuRef.current?.hidePopover();
-      action();
-    };
+    const genericMenu = useGenericMenu();
+    const handleMenuAction = genericMenu.handleMenuAction;
 
     return (
-      <>
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm btn-circle"
-          aria-label="File actions"
-          popoverTarget={menuId}
-          style={{ anchorName }}
-        >
-          <Menu size={16} />
-        </button>
-        <div
-          id={menuId}
-          ref={menuRef}
-          popover="auto"
-          className="dropdown dropdown-end rounded-box bg-base-100 ring-base-200
-            w-48 shadow-lg ring-1"
-          style={{ positionAnchor: anchorName }}
-        >
-          <ul className="menu p-1">
-            {includePrimaryActions && (
-              <>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => handleMenuAction(onNewFolder)}
-                  >
-                    <FolderPlus size={16} />
-                    New folder
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => handleMenuAction(onUpload)}
-                  >
-                    <Upload size={16} />
-                    Upload
-                  </button>
-                </li>
-              </>
-            )}
+      <GenericMenu genericMenu={genericMenu}>
+        {includePrimaryActions && (
+          <>
             <li>
               <button
                 type="button"
-                className={viewMode === "list" ? "active" : undefined}
-                aria-pressed={viewMode === "list"}
-                onClick={() => handleMenuAction(() => onRefresh())}
+                onClick={() => handleMenuAction(onNewFolder)}
               >
-                <RefreshCw size={16} />
-                Refresh
+                <FolderPlus size={16} />
+                New folder
               </button>
             </li>
             <li>
-              <button
-                type="button"
-                className={viewMode === "list" ? "active" : undefined}
-                aria-pressed={viewMode === "list"}
-                onClick={() => handleMenuAction(() => onViewModeChange("list"))}
-              >
-                <List size={16} />
-                List view
+              <button type="button" onClick={() => handleMenuAction(onUpload)}>
+                <Upload size={16} />
+                Upload
               </button>
             </li>
-            <li>
-              <button
-                type="button"
-                className={viewMode === "grid" ? "active" : undefined}
-                aria-pressed={viewMode === "grid"}
-                onClick={() => handleMenuAction(() => onViewModeChange("grid"))}
-              >
-                <Grid3X3 size={16} />
-                Grid view
-              </button>
-            </li>
-            {canShareWithRoom && (
-              <li>
-                <button
-                  type="button"
-                  onClick={() => handleMenuAction(onShareWithRoom)}
-                >
-                  <FolderSymlink size={16} />
-                  {isSharedWithRoom
-                    ? "Reshare folder..."
-                    : "Share folder with room"}
-                </button>
-              </li>
-            )}
-            {canUnshareFromRoom && (
-              <li>
-                <button
-                  type="button"
-                  onClick={() => handleMenuAction(onUnshareFromRoom)}
-                >
-                  <Unlink2 size={16} />
-                  Unshare folder
-                </button>
-              </li>
-            )}
-            {!readOnly && (
-              <li>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleMenuAction(() => onShowDeletedChange(!showDeleted))
-                  }
-                >
-                  <Trash size={16} />
-                  {showDeleted ? "Hide" : "Show"} deleted items
-                </button>
-              </li>
-            )}
-            <li>
-              <div
-                className="text-base-content/70 pointer-events-none flex
-                  flex-col items-stretch gap-1.5 px-3 py-2"
-                role="presentation"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <HardDrive size={16} className="shrink-0" />
-                  <span className="sr-only">Storage used: </span>
-                  <span className="min-w-0 truncate">
-                    {formatBytes(storageUsedBytes)} /{" "}
-                    {formatBytes(storageQuotaBytes)}
-                  </span>
-                </span>
-                <QuotaBar
-                  usedBytes={storageUsedBytes}
-                  quotaBytes={storageQuotaBytes}
-                />
-              </div>
-            </li>
-          </ul>
-        </div>
-      </>
+          </>
+        )}
+        <li>
+          <button
+            type="button"
+            className={viewMode === "list" ? "active" : undefined}
+            aria-pressed={viewMode === "list"}
+            onClick={() => handleMenuAction(() => onRefresh())}
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            className={viewMode === "list" ? "active" : undefined}
+            aria-pressed={viewMode === "list"}
+            onClick={() => handleMenuAction(() => onViewModeChange("list"))}
+          >
+            <List size={16} />
+            List view
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            className={viewMode === "grid" ? "active" : undefined}
+            aria-pressed={viewMode === "grid"}
+            onClick={() => handleMenuAction(() => onViewModeChange("grid"))}
+          >
+            <Grid3X3 size={16} />
+            Grid view
+          </button>
+        </li>
+        {canShareWithRoom && (
+          <li>
+            <button
+              type="button"
+              onClick={() => handleMenuAction(onShareWithRoom)}
+            >
+              <FolderSymlink size={16} />
+              {isSharedWithRoom
+                ? "Reshare folder..."
+                : "Share folder with room"}
+            </button>
+          </li>
+        )}
+        {canUnshareFromRoom && (
+          <li>
+            <button
+              type="button"
+              onClick={() => handleMenuAction(onUnshareFromRoom)}
+            >
+              <Unlink2 size={16} />
+              Unshare folder
+            </button>
+          </li>
+        )}
+        {!readOnly && (
+          <li>
+            <button
+              type="button"
+              onClick={() =>
+                handleMenuAction(() => onShowDeletedChange(!showDeleted))
+              }
+            >
+              <Trash size={16} />
+              {showDeleted ? "Hide" : "Show"} deleted items
+            </button>
+          </li>
+        )}
+        <li>
+          <div
+            className="text-base-content/70 pointer-events-none flex flex-col
+              items-stretch gap-1.5 px-3 py-2"
+            role="presentation"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <HardDrive size={16} className="shrink-0" />
+              <span className="sr-only">Storage used: </span>
+              <span className="min-w-0 truncate">
+                {formatBytes(storageUsedBytes)} /{" "}
+                {formatBytes(storageQuotaBytes)}
+              </span>
+            </span>
+            <QuotaBar
+              usedBytes={storageUsedBytes}
+              quotaBytes={storageQuotaBytes}
+            />
+          </div>
+        </li>
+      </GenericMenu>
     );
   },
 );
