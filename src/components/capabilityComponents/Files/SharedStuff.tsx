@@ -117,7 +117,7 @@ export const SharedStuff = memo(() => {
     const sharedFile = filesCap.state.shares.find(
       (share) => previewFromList.node.id === share.nodeId,
     );
-    if (sharedFile) {
+    if (sharedFile && sharedFile.name !== previewFromList.node.name) {
       setPreviewFromList({
         ...previewFromList,
         node: {
