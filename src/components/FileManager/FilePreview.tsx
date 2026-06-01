@@ -6,8 +6,10 @@ import { PdfPreview } from "./PdfPreview";
 import { TextPreview } from "./TextPreview";
 import { buildFileUrl } from "./fileUrl";
 import { isTextPreviewable } from "./textPreviewTypes";
+import { useRename } from "./useRename";
 import { useShareWithRoom } from "./useShareWithRoom";
-import { Download, Share2, Unlink2, X } from "lucide-react";
+import { actions } from "astro:actions";
+import { Download, Pencil, Share2, Trash2, Unlink2, X } from "lucide-react";
 import { memo, useEffect, useRef } from "react";
 
 export type FilePreviewNode = {
@@ -23,12 +25,16 @@ export const FilePreview = memo(
   ({
     node,
     onClose,
+    onRefresh,
+    onRenamed,
     ownerUserId,
     roomId,
     readOnly = false,
   }: {
     node: FilePreviewNode;
     onClose: () => void;
+    onRefresh?: () => void;
+    onRenamed?: (nodeId: string, newName: string) => void;
     ownerUserId?: string;
     roomId?: string;
     readOnly?: boolean;
@@ -41,6 +47,31 @@ export const FilePreview = memo(
       unshareFromRoom,
       isSharedWithRoom,
     } = useShareWithRoom(readOnly ? null : node.id, readOnly);
+
+    const {
+      handleStartRename,
+      handleCommitRename,
+      handleRenameKeyDown,
+      isRenaming,
+      inputRef,
+      renameValue,
+      setRenameValue,
+      renameError,
+    } = useRename({
+      node,
+      onClick: () => {},
+      onRenamed: onRenamed ?? (() => {}),
+    });
+
+    const handleDelete = async () => {
+      const result = await actions.files.deleteNode({ nodeId: node.id });
+      if (result.error) {
+        console.error("Failed to delete:", result.error);
+        return;
+      }
+      onRefresh?.();
+      dialogRef.current?.close();
+    };
 
     useEffect(() => {
       const dialog = dialogRef.current;
@@ -70,8 +101,26 @@ export const FilePreview = memo(
         >
           {/* Dialog Header*/}
           <div className="flex shrink-0 flex-row items-center justify-between">
-            <h2 className="truncate text-lg font-bold">{node.name}</h2>
-            <div className="flex-1" />
+            {isRenaming ? (
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <input
+                  ref={inputRef}
+                  className="input input-sm input-bordered w-full"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.currentTarget.value)}
+                  onKeyDown={handleRenameKeyDown}
+                  onBlur={() => void handleCommitRename()}
+                />
+                {renameError && (
+                  <span className="text-error text-xs">{renameError}</span>
+                )}
+              </div>
+            ) : (
+              <>
+                <h2 className="truncate text-lg font-bold">{node.name}</h2>
+                <div className="flex-1" />
+              </>
+            )}
             <GenericMenu
               genericMenu={genericMenu}
               icon="vertical_kebab"
@@ -95,6 +144,29 @@ export const FilePreview = memo(
                   >
                     <Unlink2 size={14} />
                     Unshare
+                  </button>
+                </li>
+              )}
+              {!readOnly && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={wrapMenuAction(handleStartRename)}
+                  >
+                    <Pencil size={14} />
+                    Rename
+                  </button>
+                </li>
+              )}
+              {!readOnly && (
+                <li>
+                  <button
+                    type="button"
+                    className="text-error-text"
+                    onClick={wrapMenuAction(handleDelete)}
+                  >
+                    <Trash2 size={14} />
+                    Delete
                   </button>
                 </li>
               )}

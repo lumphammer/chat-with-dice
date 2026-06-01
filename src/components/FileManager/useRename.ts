@@ -7,7 +7,7 @@ export const useRename = ({
   onRenamed,
   onClick,
 }: {
-  node: FileNode;
+  node: Pick<FileNode, "id" | "name">;
   onRenamed: (nodeId: string, newName: string) => void;
   onClick: () => void;
 }) => {

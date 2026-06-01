@@ -422,6 +422,8 @@ export const FileManager = memo(
           <FilePreview
             node={previewNode}
             onClose={handleClosePreview}
+            onRefresh={handleRefresh}
+            onRenamed={handleRenamed}
             ownerUserId={ownerUserId}
             roomId={roomId}
             readOnly={readOnly}
