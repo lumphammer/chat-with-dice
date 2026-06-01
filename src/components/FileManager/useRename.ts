@@ -1,3 +1,5 @@
+import { filesCapability } from "#/capabilities/filesCapability";
+import { authClient } from "#/utils/auth-client";
 import type { FileNode } from "./types";
 import { actions } from "astro:actions";
 import { useRef, useState } from "react";
@@ -12,6 +14,8 @@ export const useRename = ({
   onClick: () => void;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const filesCap = filesCapability.useMount();
+  const { data: sessionData } = authClient.useSession();
 
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(node.name);
@@ -43,6 +47,15 @@ export const useRename = ({
     if (result.error) {
       setRenameError(result.error.message);
       return;
+    }
+
+    const ownerUserId = sessionData?.user.id;
+    if (filesCap.initialised && ownerUserId) {
+      filesCap.actions.renameShare({
+        nodeId: node.id,
+        ownerUserId,
+        newName: trimmed,
+      });
     }
 
     onRenamed(node.id, trimmed);
