@@ -48,7 +48,7 @@ export const NodeItemMenu = memo(
     };
     const isLive = !isDeleted;
 
-    const { genericMenu, handleMenuAction } = useGenericMenu();
+    const { genericMenu, wrapMenuAction } = useGenericMenu();
 
     const hasAnyAction =
       (isLive && (canShareWithRoom || canUnshareFromRoom || !readOnly)) ||
@@ -63,10 +63,7 @@ export const NodeItemMenu = memo(
       >
         {isLive && canShareWithRoom && (
           <li>
-            <button
-              type="button"
-              onClick={() => handleMenuAction(shareWithRoom)}
-            >
+            <button type="button" onClick={wrapMenuAction(shareWithRoom)}>
               <Share2 size={14} />
               {isSharedWithRoom ? "Reshare..." : "Share with room"}
             </button>
@@ -74,10 +71,7 @@ export const NodeItemMenu = memo(
         )}
         {canUnshareFromRoom && (
           <li>
-            <button
-              type="button"
-              onClick={() => handleMenuAction(unshareFromRoom)}
-            >
+            <button type="button" onClick={wrapMenuAction(unshareFromRoom)}>
               <Unlink2 size={14} />
               Unshare
             </button>
@@ -85,7 +79,7 @@ export const NodeItemMenu = memo(
         )}
         {isLive && !readOnly && (
           <li>
-            <button type="button" onClick={() => handleMenuAction(onRename)}>
+            <button type="button" onClick={wrapMenuAction(onRename)}>
               <Pencil size={14} />
               Rename
             </button>
@@ -96,7 +90,7 @@ export const NodeItemMenu = memo(
             <button
               type="button"
               className="text-error-text"
-              onClick={() => handleMenuAction(handleDelete)}
+              onClick={wrapMenuAction(handleDelete)}
             >
               <Trash2 size={14} />
               Delete
@@ -117,7 +111,7 @@ export const NodeItemMenu = memo(
             <button
               type="button"
               className=""
-              onClick={() => handleMenuAction(handleRestore)}
+              onClick={wrapMenuAction(handleRestore)}
             >
               <RefreshCcwDot size={14} />
               Restore
@@ -129,4 +123,4 @@ export const NodeItemMenu = memo(
   },
 );
 
-NodeItemMenu.displayName = "KebabMenu";
+NodeItemMenu.displayName = "NodeItemMenu";

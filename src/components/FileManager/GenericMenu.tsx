@@ -13,10 +13,19 @@ export const useGenericMenu = () => {
   const anchorName = `--file-toolbar-${menuId.replaceAll(":", "")}`;
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleMenuAction = useCallback((action: () => void) => {
+  const closeMenu = useCallback(() => {
     menuRef.current?.hidePopover();
-    action();
   }, []);
+
+  const wrapMenuAction = useCallback(
+    (action: () => void) => {
+      return () => {
+        action();
+        closeMenu();
+      };
+    },
+    [closeMenu],
+  );
 
   return {
     genericMenu: {
@@ -24,7 +33,8 @@ export const useGenericMenu = () => {
       anchorName,
       menuRef,
     },
-    handleMenuAction,
+    closeMenu,
+    wrapMenuAction,
   };
 };
 

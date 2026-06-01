@@ -51,7 +51,7 @@ export const FolderActionsMenu = memo(
     showDeleted: boolean;
     onShowDeletedChange: (showDeleted: boolean) => void;
   }) => {
-    const { genericMenu, handleMenuAction } = useGenericMenu();
+    const { genericMenu, wrapMenuAction } = useGenericMenu();
 
     return (
       <GenericMenu
@@ -62,16 +62,13 @@ export const FolderActionsMenu = memo(
         {includePrimaryActions && (
           <>
             <li>
-              <button
-                type="button"
-                onClick={() => handleMenuAction(onNewFolder)}
-              >
+              <button type="button" onClick={wrapMenuAction(onNewFolder)}>
                 <FolderPlus size={16} />
                 New folder
               </button>
             </li>
             <li>
-              <button type="button" onClick={() => handleMenuAction(onUpload)}>
+              <button type="button" onClick={wrapMenuAction(onUpload)}>
                 <Upload size={16} />
                 Upload
               </button>
@@ -83,7 +80,7 @@ export const FolderActionsMenu = memo(
             type="button"
             className={viewMode === "list" ? "active" : undefined}
             aria-pressed={viewMode === "list"}
-            onClick={() => handleMenuAction(() => onRefresh())}
+            onClick={wrapMenuAction(onRefresh)}
           >
             <RefreshCw size={16} />
             Refresh
@@ -94,7 +91,7 @@ export const FolderActionsMenu = memo(
             type="button"
             className={viewMode === "list" ? "active" : undefined}
             aria-pressed={viewMode === "list"}
-            onClick={() => handleMenuAction(() => onViewModeChange("list"))}
+            onClick={wrapMenuAction(() => onViewModeChange("list"))}
           >
             <List size={16} />
             List view
@@ -105,7 +102,7 @@ export const FolderActionsMenu = memo(
             type="button"
             className={viewMode === "grid" ? "active" : undefined}
             aria-pressed={viewMode === "grid"}
-            onClick={() => handleMenuAction(() => onViewModeChange("grid"))}
+            onClick={wrapMenuAction(() => onViewModeChange("grid"))}
           >
             <Grid3X3 size={16} />
             Grid view
@@ -113,10 +110,7 @@ export const FolderActionsMenu = memo(
         </li>
         {canShareWithRoom && (
           <li>
-            <button
-              type="button"
-              onClick={() => handleMenuAction(onShareWithRoom)}
-            >
+            <button type="button" onClick={wrapMenuAction(onShareWithRoom)}>
               <FolderSymlink size={16} />
               {isSharedWithRoom
                 ? "Reshare folder..."
@@ -126,10 +120,7 @@ export const FolderActionsMenu = memo(
         )}
         {canUnshareFromRoom && (
           <li>
-            <button
-              type="button"
-              onClick={() => handleMenuAction(onUnshareFromRoom)}
-            >
+            <button type="button" onClick={wrapMenuAction(onUnshareFromRoom)}>
               <Unlink2 size={16} />
               Unshare folder
             </button>
@@ -139,9 +130,7 @@ export const FolderActionsMenu = memo(
           <li>
             <button
               type="button"
-              onClick={() =>
-                handleMenuAction(() => onShowDeletedChange(!showDeleted))
-              }
+              onClick={wrapMenuAction(() => onShowDeletedChange(!showDeleted))}
             >
               <Trash size={16} />
               {showDeleted ? "Hide" : "Show"} deleted items
@@ -173,4 +162,4 @@ export const FolderActionsMenu = memo(
   },
 );
 
-FolderActionsMenu.displayName = "FileActionsMenu";
+FolderActionsMenu.displayName = "FolderActionsMenu";
