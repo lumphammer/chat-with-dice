@@ -11,7 +11,7 @@
 - [x] Room should check it exists in D1 and not deleted BEFORE running DB migrations
 - [x] grid view storage should be a gated atom
 - [x] Sharing files to rooms (via `roomResourceShares`)
-- [ ] Quotas
+- [x] Quotas
   - [x] Create a repository object for user data
   - [x] Fix the missing FK from files/folders -> nodes
   - [x] Keep user quota up to date
@@ -37,6 +37,7 @@
 - [x] Grid view is not sticking (I had rejected cookies)
 - [x] Why is chat spanking my GPU?
 - [ ] Preview UI should be measured
+- [ ] Show view mode as a toggle not both items
 - [ ] fix up MaybeError etc and use exclusively
 - [ ] type FileNode should be renamed (StorageNode?)
 - [ ] Perf analysis on types
