@@ -51,8 +51,7 @@ export const FolderActionsMenu = memo(
     showDeleted: boolean;
     onShowDeletedChange: (showDeleted: boolean) => void;
   }) => {
-    const genericMenu = useGenericMenu();
-    const handleMenuAction = genericMenu.handleMenuAction;
+    const { genericMenu, handleMenuAction } = useGenericMenu();
 
     return (
       <GenericMenu

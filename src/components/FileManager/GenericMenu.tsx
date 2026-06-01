@@ -19,9 +19,11 @@ export const useGenericMenu = () => {
   }, []);
 
   return {
-    menuId,
-    anchorName,
-    menuRef,
+    genericMenu: {
+      menuId,
+      anchorName,
+      menuRef,
+    },
     handleMenuAction,
   };
 };
@@ -35,7 +37,7 @@ export const GenericMenu = memo(
     ...rest
   }: PropsWithChildren<
     ButtonHTMLAttributes<HTMLButtonElement> & {
-      genericMenu: ReturnType<typeof useGenericMenu>;
+      genericMenu: ReturnType<typeof useGenericMenu>["genericMenu"];
       label: string;
       icon: "hamburger" | "vertical_kebab" | "horizontal_kebab";
     }
