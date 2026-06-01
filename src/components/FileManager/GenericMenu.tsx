@@ -69,7 +69,7 @@ export const GenericMenu = memo(
           ref={menuRef}
           popover="auto"
           className="dropdown dropdown-end rounded-box bg-base-100 ring-base-200
-            w-48 shadow-lg ring-1"
+            w-fit shadow-lg ring-1"
           style={{ positionAnchor: anchorName }}
         >
           <ul className="menu p-1">{children}</ul>
