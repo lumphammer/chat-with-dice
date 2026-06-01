@@ -81,6 +81,8 @@ export const FilePreview = memo(
       return () => dialog.removeEventListener("close", onClose);
     }, [onClose]);
 
+    const { genericMenu, wrapMenuAction, closeMenu } = useGenericMenu();
+
     if (!node.file) return null;
 
     const isImage = node.file.contentType.startsWith("image/");
@@ -89,8 +91,6 @@ export const FilePreview = memo(
     const isPdf = node.file.contentType === "application/pdf";
     const isText = isTextPreviewable(node.name, node.file.contentType);
     const downloadUrl = buildFileUrl(ownerUserId, node.id, { roomId });
-
-    const { genericMenu, wrapMenuAction, closeMenu } = useGenericMenu();
 
     return (
       <dialog ref={dialogRef} closedby="any" className="modal">
