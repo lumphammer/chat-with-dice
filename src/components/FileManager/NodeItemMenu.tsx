@@ -1,16 +1,10 @@
+import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { HardDeleteDialog } from "./HardDeleteDialog";
 import type { FileNode } from "./types";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
-import {
-  EllipsisVertical,
-  Pencil,
-  Share2,
-  Trash2,
-  Unlink2,
-  RefreshCcwDot,
-} from "lucide-react";
-import { memo, useId, useRef } from "react";
+import { Pencil, Share2, Trash2, Unlink2, RefreshCcwDot } from "lucide-react";
+import { memo } from "react";
 
 export const NodeItemMenu = memo(
   ({
@@ -52,16 +46,9 @@ export const NodeItemMenu = memo(
       }
       onRefresh();
     };
-
-    const menuId = useId();
-    const menuRef = useRef<HTMLDivElement>(null);
-    const anchorName = `--kebab-${menuId.replaceAll(":", "")}`;
     const isLive = !isDeleted;
 
-    const handleAction = (action?: () => void) => {
-      menuRef.current?.hidePopover();
-      action?.();
-    };
+    const { genericMenu, handleMenuAction } = useGenericMenu();
 
     const hasAnyAction =
       (isLive && (canShareWithRoom || canUnshareFromRoom || !readOnly)) ||
@@ -69,93 +56,75 @@ export const NodeItemMenu = memo(
     if (!hasAnyAction) return null;
 
     return (
-      <>
-        <button
-          type="button"
-          className="btn btn-ghost btn-xs btn-circle"
-          popoverTarget={menuId}
-          style={{ anchorName } as React.CSSProperties}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <EllipsisVertical size={14} />
-        </button>
-        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- popover menu, keyboard handled by menu items */}
-        <div
-          id={menuId}
-          ref={menuRef}
-          popover="auto"
-          className="dropdown rounded-box bg-base-100 ring-accent w-44 shadow-lg
-            ring"
-          style={{ positionAnchor: anchorName } as React.CSSProperties}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ul className="menu w-full p-1">
-            {isLive && canShareWithRoom && (
-              <li>
-                <button
-                  type="button"
-                  onClick={() => handleAction(shareWithRoom)}
-                >
-                  <Share2 size={14} />
-                  {isSharedWithRoom ? "Reshare..." : "Share with room"}
-                </button>
-              </li>
-            )}
-            {canUnshareFromRoom && (
-              <li>
-                <button
-                  type="button"
-                  onClick={() => handleAction(unshareFromRoom)}
-                >
-                  <Unlink2 size={14} />
-                  Unshare
-                </button>
-              </li>
-            )}
-            {isLive && !readOnly && (
-              <li>
-                <button type="button" onClick={() => handleAction(onRename)}>
-                  <Pencil size={14} />
-                  Rename
-                </button>
-              </li>
-            )}
-            {isLive && !readOnly && (
-              <li>
-                <button
-                  type="button"
-                  className="text-error-text"
-                  onClick={() => handleAction(handleDelete)}
-                >
-                  <Trash2 size={14} />
-                  Delete
-                </button>
-              </li>
-            )}
-            {isDeleted && !readOnly && (
-              <li>
-                <HardDeleteDialog
-                  name={node.name}
-                  nodeId={node.id}
-                  onAfterDelete={onRefresh}
-                />
-              </li>
-            )}
-            {isDeleted && !readOnly && (
-              <li>
-                <button
-                  type="button"
-                  className=""
-                  onClick={() => handleAction(handleRestore)}
-                >
-                  <RefreshCcwDot size={14} />
-                  Restore
-                </button>
-              </li>
-            )}
-          </ul>
-        </div>
-      </>
+      <GenericMenu
+        icon="vertical_kebab"
+        label="Actions"
+        genericMenu={genericMenu}
+      >
+        {isLive && canShareWithRoom && (
+          <li>
+            <button
+              type="button"
+              onClick={() => handleMenuAction(shareWithRoom)}
+            >
+              <Share2 size={14} />
+              {isSharedWithRoom ? "Reshare..." : "Share with room"}
+            </button>
+          </li>
+        )}
+        {canUnshareFromRoom && (
+          <li>
+            <button
+              type="button"
+              onClick={() => handleMenuAction(unshareFromRoom)}
+            >
+              <Unlink2 size={14} />
+              Unshare
+            </button>
+          </li>
+        )}
+        {isLive && !readOnly && (
+          <li>
+            <button type="button" onClick={() => handleMenuAction(onRename)}>
+              <Pencil size={14} />
+              Rename
+            </button>
+          </li>
+        )}
+        {isLive && !readOnly && (
+          <li>
+            <button
+              type="button"
+              className="text-error-text"
+              onClick={() => handleMenuAction(handleDelete)}
+            >
+              <Trash2 size={14} />
+              Delete
+            </button>
+          </li>
+        )}
+        {isDeleted && !readOnly && (
+          <li>
+            <HardDeleteDialog
+              name={node.name}
+              nodeId={node.id}
+              onAfterDelete={onRefresh}
+            />
+          </li>
+        )}
+        {isDeleted && !readOnly && (
+          <li>
+            <button
+              type="button"
+              className=""
+              onClick={() => handleMenuAction(handleRestore)}
+            >
+              <RefreshCcwDot size={14} />
+              Restore
+            </button>
+          </li>
+        )}
+      </GenericMenu>
     );
   },
 );
