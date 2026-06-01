@@ -36,7 +36,7 @@ export const GenericMenu = memo(
     icon,
     ...rest
   }: PropsWithChildren<
-    ButtonHTMLAttributes<HTMLButtonElement> & {
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type" | "popoverTarget"> & {
       genericMenu: ReturnType<typeof useGenericMenu>["genericMenu"];
       label: string;
       icon: "hamburger" | "vertical_kebab" | "horizontal_kebab";
@@ -46,18 +46,16 @@ export const GenericMenu = memo(
       <>
         <button
           // knitting together the props we control vs generic button props
-          // you could override type if you were sick
-          type="button"
-          // className is very overridable
+          // className is overridable
           className="btn btn-ghost btn-sm btn-circle"
           // now all the standard button attributes
           {...rest}
+          // now all the attributes we control
+          type="button"
           // we knit style together to incude the anchorName
           style={{ ...(rest.style || {}), anchorName }}
           // allow to override aria-label but use the main prop per default
           aria-label={rest["aria-label"] ?? label}
-          // we control popoverTarget absolutely otherwise the menu makes no
-          // sense
           popoverTarget={menuId}
         >
           {icon === "hamburger" && <Menu size={16} />}
