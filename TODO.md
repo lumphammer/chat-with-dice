@@ -36,7 +36,7 @@
 - [x] Refresh button
 - [x] Grid view is not sticking (I had rejected cookies)
 - [x] Why is chat spanking my GPU?
-- [ ] Preview UI should be measured
+- [x] Preview toolbar should be responsive
 - [ ] Show view mode as a toggle not both items
 - [ ] fix up MaybeError etc and use exclusively
 - [ ] type FileNode should be renamed (StorageNode?)
@@ -49,7 +49,6 @@
 - [ ] filemanager header should be sticky
 - [ ] standalone filemanager has too much whitespace on mobile
 - [ ] "Reshare file..." should not have dots (and maybe pick a better verb?)
-- [ ] Preview toolbar should be responsive
 - [ ] remove all console.logs
 - [ ] "Preview" should be "View"
 - [ ] Unstack, or refactor, the nest of providers in DiceRoller
