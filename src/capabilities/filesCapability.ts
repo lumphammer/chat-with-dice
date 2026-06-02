@@ -206,6 +206,26 @@ export const filesCapability = createCapability({
           console.log(shareResult);
         },
       }),
+      renameShare: createAction({
+        payloadValidator: z.object({
+          nodeId: z.string(),
+          ownerUserId: z.string(),
+          newName: z.string(),
+        }),
+        pureFn: ({ stateDraft, payload }) => {
+          const share = stateDraft.shares.find(
+            (s) =>
+              s.userId === payload.ownerUserId && s.nodeId === payload.nodeId,
+          );
+          if (share) share.name = payload.newName;
+        },
+        effectfulFn: async ({ stateDraft, payload, userId, pureFn }) => {
+          pureFn({
+            stateDraft,
+            payload: { ...payload, ownerUserId: userId },
+          });
+        },
+      }),
       unshareFile: createAction({
         payloadValidator: z.object({
           nodeId: z.string(),

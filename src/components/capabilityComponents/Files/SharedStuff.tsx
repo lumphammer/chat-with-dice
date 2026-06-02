@@ -112,6 +112,22 @@ export const SharedStuff = memo(() => {
     );
   }, [filesCap]);
 
+  useEffect(() => {
+    if (!filesCap.initialised || !previewFromList) return;
+    const sharedFile = filesCap.state.shares.find(
+      (share) => previewFromList.node.id === share.nodeId,
+    );
+    if (sharedFile && sharedFile.name !== previewFromList.node.name) {
+      setPreviewFromList({
+        ...previewFromList,
+        node: {
+          ...previewFromList.node,
+          name: sharedFile.name,
+        },
+      });
+    }
+  }, [filesCap, previewFromList]);
+
   if (!filesCap.initialised) {
     return (
       <div className="animate-fadein-slow flex flex-col gap-2 p-4">

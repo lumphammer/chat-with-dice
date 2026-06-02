@@ -186,6 +186,40 @@
     .select {
       border-radius: 0;
     }
+    .dropdown {
+      border: 3px solid;
+      border-image-slice: 1;
+      border-width: 3px;
+      border-image-source: linear-gradient(
+        to bottom right,
+        var(--color-accent),
+        oklch(from var(--color-accent) l c h / 20%) 50%,
+        var(--color-accent) 100%
+      );
+      --chip: 20px;
+      clip-path: polygon(
+        0 0,
+        calc(100% - var(--chip)) 0,
+        100% var(--chip),
+        100% 100%,
+        var(--chip) 100%,
+        0 calc(100% - var(--chip))
+      );
+    }
+    .menu {
+      padding: 0;
+      & > li > :is(button, a) {
+        border-radius: 0;
+        &:hover {
+          background: radial-gradient(
+            ellipse,
+            oklch(from var(--color-accent) l c h/10%) 0%,
+            oklch(from var(--color-accent) l c h/10%) 50%,
+            oklch(from var(--color-accent) l c h/30%) 100%
+          );
+        }
+      }
+    }
   }
 
   @layer components {
