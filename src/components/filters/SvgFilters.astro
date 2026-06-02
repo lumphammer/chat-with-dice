@@ -1,0 +1,89 @@
+---
+import CyberRetroGlitch from "./cyber-retro-glitch.astro";
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="0"
+  height="0"
+  viewBox="0 0 600 200"
+  style={{ position: "absolute", top: 0, left: 0 }}
+  aria-hidden={true}
+>
+  <filter id="noiseFilter">
+    <feTurbulence
+      type="fractalNoise"
+      baseFrequency="0.65"
+      numOctaves="2"
+      stitchTiles="stitch"></feTurbulence>
+  </filter>
+  <filter id="blotchFilter">
+    <feTurbulence
+      type="fractalNoise"
+      baseFrequency="0.15"
+      numOctaves="2"
+      stitchTiles="stitch"></feTurbulence>
+  </filter>
+
+  <filter id="gentle-noise">
+    <!-- Generate fractal noise -->
+    <feTurbulence
+      type="fractalNoise"
+      baseFrequency="0.3"
+      numOctaves="4"
+      stitchTiles="noStitch"
+      result="noise"></feTurbulence>
+    <!-- Make it subtle by lowering opacity -->
+    <feColorMatrix
+      in="noise"
+      type="matrix"
+      values="
+        0 0 0 0 0
+        0 0 0 0 0
+        0 0 0 0 0
+        0 0 0 0.45 0"
+      result="fadedNoise"></feColorMatrix>
+    <!-- Blend noise over the source graphic -->
+    <feBlend in="noise" in2="SourceGraphic" mode="multiply"></feBlend>
+  </filter>
+
+  <!-- from https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feTurbulence -->
+  <filter x="-25%" y="-25%" width="150%" height="150%" id="displacementFilter">
+    <feTurbulence
+      type="fractalNoise"
+      baseFrequency="0.05"
+      numOctaves="2"
+      seed="69"
+      result="turbulence"></feTurbulence>
+    <feDisplacementMap
+      in2="turbulence"
+      in="SourceGraphic"
+      scale="25"
+      xChannelSelector="R"
+      yChannelSelector="G"
+      result="wibbles"
+    >
+    </feDisplacementMap>
+    <!-- <feColorMatrix
+      in="wibbles"
+      type="matrix"
+      values="
+          1 0 0 0    0
+          0 1 0 0    0
+          0 0 1 0    0
+          0 0 0 0.25 0"
+      result="fadedWibbles"></feColorMatrix>
+    <feColorMatrix
+      in="fadedWibbles"
+      type="matrix"
+      values="
+          0 0 0 0    0
+          0 0 0 0    0
+          0 0 1 0    0
+          0 0 0 1    0"
+      result="fadedWibbles2"></feColorMatrix>
+    <feBlend in="fadedWibbles" in2="SourceGraphic" mode="normal"></feBlend> -->
+  </filter>
+
+  <CyberRetroGlitch />
+</svg>

@@ -1,6 +1,7 @@
 ---
 import "#/styles/global.css";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import SvgFilters from "#/components/filters/SvgFilters.astro";
 
 type Props = {
   title: string | null;
@@ -38,6 +39,7 @@ const { title, bodyClass = "", theme } = Astro.props;
     </script>
   </head>
   <body class={"flex h-full w-full flex-col overflow-auto " + bodyClass}>
+    <SvgFilters />
     <slot />
     <CookieConsentBanner client:only />
   </body>

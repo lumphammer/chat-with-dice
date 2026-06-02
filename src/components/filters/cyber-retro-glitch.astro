@@ -1,0 +1,79 @@
+<!-- GPT -->
+<filter
+  id="cyber-retro-glitch"
+  x="-8%"
+  y="-8%"
+  width="116%"
+  height="116%"
+  color-interpolation-filters="sRGB"
+>
+  <!-- Very slight red/cyan channel offset -->
+  <feOffset in="SourceGraphic" dx="0.6" dy="0" result="redShift"></feOffset>
+  <feColorMatrix
+    in="redShift"
+    type="matrix"
+    values="
+        1 0 0 0 0
+        0 0 0 0 0
+        0 0 0 0 0
+        0 0 0 0.35 0"
+    result="redGhost"></feColorMatrix>
+
+  <feOffset in="SourceGraphic" dx="-0.45" dy="0" result="cyanShift"></feOffset>
+  <feColorMatrix
+    in="cyanShift"
+    type="matrix"
+    values="
+        0 0 0 0 0
+        0 0.85 0 0 0
+        0 0 1 0 0
+        0 0 0 0.28 0"
+    result="cyanGhost"></feColorMatrix>
+
+  <!-- Faint digital grain -->
+  <feTurbulence
+    type="fractalNoise"
+    baseFrequency="0.9 0.035"
+    numOctaves="1"
+    seed="7"
+    result="noise"></feTurbulence>
+  <feColorMatrix
+    in="noise"
+    type="matrix"
+    values="
+        0 0 0 0 0.5
+        0 0 0 0 0.8
+        0 0 0 0 1
+        0 0 0 0.045 0"
+    result="blueNoise"></feColorMatrix>
+
+  <!-- Tiny glow, mostly for bright edges -->
+  <feGaussianBlur in="SourceGraphic" stdDeviation="0.45" result="softGlow"
+  ></feGaussianBlur>
+  <feColorMatrix
+    in="softGlow"
+    type="matrix"
+    values="
+        0.55 0 0 0 0
+        0 0.85 0 0 0
+        0 0 1.25 0 0
+        0 0 0 0.28 0"
+    result="cyanGlow"></feColorMatrix>
+
+  <!-- Merge artifacts under original so legibility survives -->
+  <feMerge result="merged">
+    <feMergeNode in="cyanGlow"></feMergeNode>
+    <feMergeNode in="redGhost"></feMergeNode>
+    <feMergeNode in="cyanGhost"></feMergeNode>
+    <feMergeNode in="blueNoise"></feMergeNode>
+    <feMergeNode in="SourceGraphic"></feMergeNode>
+  </feMerge>
+
+  <!-- Gentle retro contrast/saturation push -->
+  <feComponentTransfer in="merged">
+    <feFuncR type="linear" slope="1.04" intercept="0.005"></feFuncR>
+    <feFuncG type="linear" slope="1.035" intercept="0.004"></feFuncG>
+    <feFuncB type="linear" slope="1.08" intercept="0.006"></feFuncB>
+    <feFuncA type="identity"></feFuncA>
+  </feComponentTransfer>
+</filter>
