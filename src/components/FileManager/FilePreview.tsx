@@ -6,18 +6,10 @@ import { PdfPreview } from "./PdfPreview";
 import { TextPreview } from "./TextPreview";
 import { buildFileUrl } from "./fileUrl";
 import { isTextPreviewable } from "./textPreviewTypes";
+import type { FilePreviewNode } from "./types";
 import { useRename } from "./useRename";
 import { X } from "lucide-react";
 import { memo, useCallback, useEffect, useRef } from "react";
-
-export type FilePreviewNode = {
-  id: string;
-  name: string;
-  file: {
-    contentType: string;
-    sizeBytes: number;
-  } | null;
-};
 
 export const FilePreview = memo(
   ({

@@ -1,5 +1,5 @@
-import type { FilePreviewNode } from "./FilePreview";
 import { GenericMenu, useGenericMenu } from "./GenericMenu";
+import type { FilePreviewNode } from "./types";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
 import { Download, Pencil, Share2, Trash2, Unlink2 } from "lucide-react";

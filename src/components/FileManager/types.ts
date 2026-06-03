@@ -15,3 +15,12 @@ export type FileManagerLocation = {
   previewFileId: string | null;
   previewFileName: string | null;
 };
+
+export type FilePreviewNode = {
+  id: string;
+  name: string;
+  file: {
+    contentType: string;
+    sizeBytes: number;
+  } | null;
+};

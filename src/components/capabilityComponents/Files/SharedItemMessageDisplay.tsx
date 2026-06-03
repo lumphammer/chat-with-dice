@@ -6,8 +6,8 @@ import {
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FilePreview } from "#/components/FileManager/FilePreview";
-import type { FilePreviewNode } from "#/components/FileManager/FilePreview";
 import { NodeIcon } from "#/components/FileManager/NodeIcon";
+import type { FilePreviewNode } from "#/components/FileManager/types.ts";
 import { authClient } from "#/utils/auth-client";
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { FolderOpen } from "lucide-react";

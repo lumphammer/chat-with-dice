@@ -5,11 +5,11 @@ import {
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FileManager } from "#/components/FileManager/FileManager";
-import {
-  FilePreview,
-  type FilePreviewNode,
-} from "#/components/FileManager/FilePreview";
-import type { FileManagerLocation } from "#/components/FileManager/types";
+import { FilePreview } from "#/components/FileManager/FilePreview";
+import type {
+  FileManagerLocation,
+  FilePreviewNode,
+} from "#/components/FileManager/types";
 import { authClient } from "#/utils/auth-client";
 import { SharedItemListItem } from "./SharedItemListItem";
 import { Share2 } from "lucide-react";
