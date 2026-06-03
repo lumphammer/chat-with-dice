@@ -37,37 +37,41 @@
 - [x] Grid view is not sticking (I had rejected cookies)
 - [x] Why is chat spanking my GPU?
 - [x] Preview toolbar should be responsive
+- [ ] Download from node list menu
 - [ ] Show view mode as a toggle not both items
-- [ ] fix up MaybeError etc and use exclusively
 - [ ] type FileNode should be renamed (StorageNode?)
-- [ ] Perf analysis on types
-- [ ] Think about sanitizing node data so we're not sending BE data to client
 - [ ] Admins cannot ban themselves or each other
-- [ ] Responsive Grids for admin
-- [ ] Periodic purge of anon users
 - [ ] Anon users cannot be admin
 - [ ] filemanager header should be sticky
 - [ ] standalone filemanager has too much whitespace on mobile
 - [ ] "Reshare file..." should not have dots (and maybe pick a better verb?)
 - [ ] remove all console.logs
-- [ ] "Preview" should be "View"
+- [ ] "Preview" should be "View" (or whole thing is the link)
+- [ ] websocket endpoint can move under `rooms` in pages tree
+
+- [ ] Fix flows for new user/login/etc.
+- [ ] Swipe to move between files in preview
+- [ ] fix up MaybeError etc and use exclusively
+- [ ] Perf analysis on types
+- [ ] Think about sanitizing node data so we're not sending BE data to client
+- [ ] Responsive Grids for admin
+- [ ] Periodic purge of anon users
 - [ ] Unstack, or refactor, the nest of providers in DiceRoller
 - [ ] Recent rooms list
 - [ ] Easier feedback channels (built-in?)
 - [ ] Move capability state storage into drizzle
-- [ ] websocket endpoint can move under `rooms` in pages tree
 
 ### Deferred file manager items
 
 - [ ] Annotation/alt text
-- [ ] Paging for large folders
-- [ ] Copy
 - [ ] Move
 - [ ] Multi-select for bulk operations
-- [ ] Recursive folder upload from OS
 - [ ] Multi-part uploads for large files
 - [ ] Replace/overwrite existing files
 - [ ] Search by filename
+- [ ] Paging for large folders
+- [ ] Copy
+- [ ] Recursive folder upload from OS
 
 ## Capabilities
 
@@ -78,6 +82,10 @@
 - [ ] FitD
   - [ ] Clocks
   - [ ] Rolls
+- [ ] Cards
+- [ ] Roll tables
+- [ ] Collaborative documents
+- [ ] Whiteboards
 
 ## New features
 
@@ -86,9 +94,5 @@
   - [ ] Theme
 - [x] Users online as a panel
 - [ ] Themes
-- [ ] Cards
-- [ ] Roll tables
-- [ ] Collaborative documents
-- [ ] Whiteboards
 - [ ] Room-level roles (e.g. appoint extra admins)
 - [ ] Private rooms
