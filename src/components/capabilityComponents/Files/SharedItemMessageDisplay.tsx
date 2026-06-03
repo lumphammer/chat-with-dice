@@ -1,7 +1,7 @@
 import {
   filesCapability,
   sharedItemMessageDataValidator,
-  type SharedItemMessageData,
+  type SharedItem,
 } from "#/capabilities/filesCapability";
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
@@ -14,7 +14,7 @@ import { FolderOpen } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 
 const getFilePreviewNode = (
-  item: Extract<SharedItemMessageData, { kind: "file" }>,
+  item: Extract<SharedItem, { kind: "file" }>,
 ): FilePreviewNode => ({
   id: item.nodeId,
   name: item.name,

@@ -1,6 +1,6 @@
 import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { HardDeleteDialog } from "./HardDeleteDialog";
-import type { FileNode } from "./types";
+import type { FilePreviewNode } from "./types";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
 import { Pencil, Share2, Trash2, Unlink2, RefreshCcwDot } from "lucide-react";
@@ -15,7 +15,7 @@ export const NodeItemMenu = memo(
     readOnly,
   }: {
     isDeleted: boolean;
-    node: FileNode;
+    node: FilePreviewNode;
     onRefresh: () => void;
     onStartRename: () => void;
     readOnly: boolean;

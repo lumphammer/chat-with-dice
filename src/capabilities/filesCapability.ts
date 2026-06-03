@@ -74,14 +74,14 @@ const filesStateValidatorV3 = z.object({
   ),
 });
 
-const migrateV1ToV2 = (
+const migrateStateV1ToV2 = (
   v1: z.infer<typeof filesStateValidatorV1>,
 ): z.infer<typeof filesStateValidatorV2> => ({
   version: 2,
   shares: v1.shares.map((s) => ({ ...s, dateShared: 0 })),
 });
 
-const migrateV2ToV3 = (
+const migrateStateV2ToV3 = (
   v2: z.infer<typeof filesStateValidatorV2>,
 ): z.infer<typeof filesStateValidatorV3> => ({
   version: FILES_STATE_VERSION,
@@ -92,11 +92,13 @@ const migrateV2ToV3 = (
 
 const filesStateValidator = z.union([
   filesStateValidatorV3,
-  filesStateValidatorV2.transform(migrateV2ToV3),
-  filesStateValidatorV1.transform(migrateV1ToV2).transform(migrateV2ToV3),
+  filesStateValidatorV2.transform(migrateStateV2ToV3),
+  filesStateValidatorV1
+    .transform(migrateStateV1ToV2)
+    .transform(migrateStateV2ToV3),
 ]);
 
-export const sharedItemMessageDataValidator = z.discriminatedUnion("kind", [
+const sharedItemMessageDataValidatorV1 = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("file"),
     nodeId: z.string(),
@@ -116,11 +118,39 @@ export const sharedItemMessageDataValidator = z.discriminatedUnion("kind", [
   }),
 ]);
 
+const sharedItemMessageDataValidatorV2 =
+  filesStateValidatorV3.shape.shares.element;
+
+const migrateMessageV1ToV2 = (
+  data: z.infer<typeof sharedItemMessageDataValidatorV1>,
+): z.infer<typeof sharedItemMessageDataValidatorV2> => {
+  if (data.kind === "file") {
+    return {
+      ...data,
+      dateShared: 0,
+      r2Key: "/some/fake/r2Key",
+    };
+  } else {
+    return {
+      ...data,
+      dateShared: 0,
+    };
+  }
+};
+
+export const sharedItemMessageDataValidator = z.union([
+  sharedItemMessageDataValidatorV2,
+  sharedItemMessageDataValidatorV1.transform(migrateMessageV1ToV2),
+]);
+
 export type SharedItemMessageData = z.infer<
   typeof sharedItemMessageDataValidator
 >;
 export type FilesState = z.infer<typeof filesStateValidator>;
 export type SharedItem = FilesState["shares"][number];
+
+export const foo: SharedItemMessageData = null as unknown as SharedItem;
+export const bar: SharedItem = null as unknown as SharedItemMessageData;
 
 export const filesCapability = createCapability({
   name: "files",
@@ -194,6 +224,8 @@ export const filesCapability = createCapability({
                   thumbnailR2Key: shareResult.thumbnailR2Key,
                   sizeBytes: shareResult.sizeBytes,
                   userDisplayName: displayName,
+                  dateShared: Date.now(),
+                  r2Key: shareResult.r2Key,
                 }
               : {
                   name: shareResult.name,
@@ -201,6 +233,7 @@ export const filesCapability = createCapability({
                   nodeId: nodeId,
                   userId: userId,
                   userDisplayName: displayName,
+                  dateShared: Date.now(),
                 },
           );
           console.log(shareResult);
