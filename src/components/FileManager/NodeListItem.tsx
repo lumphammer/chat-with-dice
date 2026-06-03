@@ -110,7 +110,7 @@ export const NodeListItem = memo(
             onRefresh={onRefresh}
             isDeleted={!!node.deletedTime}
             readOnly={readOnly}
-            onRename={handleStartRename}
+            onStartRename={handleStartRename}
           />
         </div>
       </li>

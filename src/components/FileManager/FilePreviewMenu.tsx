@@ -7,19 +7,19 @@ import { memo } from "react";
 
 export const FilePreviewMenu = memo(
   ({
-    onRefresh,
-    readOnly,
-    onStartRename,
+    downloadUrl,
     node,
     onAfterDelete,
-    downloadUrl,
+    onRefresh,
+    onStartRename,
+    readOnly,
   }: {
+    downloadUrl?: string;
+    node: FilePreviewNode;
+    onAfterDelete: () => void;
     onRefresh?: () => void;
     onStartRename: () => void;
-    onAfterDelete: () => void;
     readOnly: boolean;
-    node: FilePreviewNode;
-    downloadUrl?: string;
   }) => {
     const {
       canShareWithRoom,
