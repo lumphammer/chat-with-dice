@@ -9,8 +9,7 @@ export const useRename = ({
   onRenamed,
   onClick,
 }: {
-  // XXX can this become just StorageNode???
-  node: Pick<StorageNode, "id" | "name">;
+  node: StorageNode;
   onRenamed: (nodeId: string, newName: string) => void;
   onClick: () => void;
 }) => {
