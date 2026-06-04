@@ -437,15 +437,6 @@ export class UserDataDO extends DurableObject {
       roomDurableObjectId,
     );
 
-    // const userDisplayName =
-    //   (
-    //     await d1.query.users.findFirst({
-    //       where: {
-    //         id: this.userId,
-    //       },
-    //     })
-    //   )?.name ?? "";
-
     if (existing) {
       return {
         result: "existing",
