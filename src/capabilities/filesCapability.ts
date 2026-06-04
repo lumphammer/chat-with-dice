@@ -239,17 +239,9 @@ export const sharedItemMessageDataValidator = z.union([
     .transform(migrateMessageV2ToV3),
 ]);
 
-export type SharedItemMessageData = z.infer<
-  typeof sharedItemMessageDataValidator
->;
 export type FilesState = z.infer<typeof filesStateValidator>;
-export type SharedItem = FilesState["shares"][number];
-// export type
 
-// these two are just here to prove that the message type is assignable to the
-// shares in the main state and vice versa.
-export const foo: SharedItemMessageData = null as unknown as SharedItem;
-export const bar: SharedItem = null as unknown as SharedItemMessageData;
+export type SharedItem = FilesState["shares"][number];
 
 export const filesCapability = createCapability({
   name: "files",
