@@ -449,13 +449,13 @@ export class UserDataDO extends DurableObject {
       };
     }
 
-    const node = await this.repo.getNode(nodeId);
-    if (!node) {
+    const dbNode = await this.repo.getNode(nodeId);
+    if (!dbNode) {
       return { result: "error", reason: `Node not found: ${nodeId}` };
     }
 
     // pre-flight: don't insert a share row for a file that isn't uploaded yet
-    if (node.file && node.file.isReady !== 1) {
+    if (dbNode.file && dbNode.file.isReady !== 1) {
       return { result: "error", reason: "File is not ready to share yet" };
     }
 
@@ -470,7 +470,7 @@ export class UserDataDO extends DurableObject {
       result: "created",
       sharedItem: {
         dateShared: Date.now(),
-        node: dbNodeToStorageNode(node),
+        node: dbNodeToStorageNode(dbNode),
         userDisplayName,
         userId: this.userId,
       },
