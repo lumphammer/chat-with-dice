@@ -51,9 +51,11 @@ export class NodeShareManager {
   async shareUserNodeId({
     userId,
     nodeId,
+    displayName,
   }: {
     userId: string;
     nodeId: string;
+    displayName: string;
   }): Promise<NodeShareResult> {
     console.log(`Sharing user nodeId: ${nodeId} for userId: ${userId}`);
     const userDataDOResult = await this.getUserDataDO(userId);
@@ -65,6 +67,7 @@ export class NodeShareManager {
       nodeId,
       roomId: this.roomId,
       roomDurableObjectId: this.ctx.id.toString(),
+      userDisplayName: displayName,
     });
 
     console.log(shareResult);

@@ -1,6 +1,5 @@
 import { storageNodeValidator } from "#/validators/storageNodeValidator.ts";
 import { createCapability } from "./createCapability";
-import { removeDirectRoomShare } from "./filesShareHelpers";
 import * as z from "zod/v4";
 
 // oxlint-disable-next-line no-magic-numbers
@@ -282,18 +281,14 @@ export const filesCapability = createCapability({
           const shareResult = await nodeShareManager.shareUserNodeId({
             userId,
             nodeId,
+            displayName,
           });
 
           if (shareResult.result === "error") {
             broadcaster.sendErrorToUserId(userId, shareResult.reason);
             return;
           }
-          const sharedItem: SharedItem = {
-            dateShared: Date.now(),
-            userDisplayName: displayName,
-            userId: userId,
-            node: shareResult.node,
-          };
+          const sharedItem: SharedItem = shareResult.sharedItem;
           if (shareResult.result === "created") {
             stateDraft.shares.push(sharedItem);
           }
@@ -326,7 +321,14 @@ export const filesCapability = createCapability({
           ownerUserId: z.string(),
         }),
         pureFn: ({ stateDraft, payload }) => {
-          removeDirectRoomShare(stateDraft.shares, payload);
+          const index = stateDraft.shares.findIndex(
+            (share) =>
+              share.userId === payload.ownerUserId &&
+              share.node.id === payload.nodeId,
+          );
+          if (index !== -1) {
+            stateDraft.shares.splice(index, 1);
+          }
         },
         effectfulFn: async ({
           stateDraft,

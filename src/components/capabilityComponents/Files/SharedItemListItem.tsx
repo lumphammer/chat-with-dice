@@ -34,10 +34,14 @@ export const SharedItemListItem = memo(
             className="bg-base-200 flex size-10 shrink-0 items-center
               justify-center overflow-hidden rounded"
           >
-            <NodeIcon node={item} ownerUserId={item.userId} roomId={roomId} />
+            <NodeIcon
+              node={item.node}
+              ownerUserId={item.userId}
+              roomId={roomId}
+            />
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="block truncate">{item.name}</span>
+            <span className="block truncate">{item.node.name}</span>
             <span className="text-base-content/50 block truncate text-sm">
               <time
                 dateTime={

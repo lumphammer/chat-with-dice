@@ -1,5 +1,4 @@
 import { filesCapability } from "#/capabilities/filesCapability";
-import { hasDirectRoomShare } from "#/capabilities/filesShareHelpers";
 import { authClient } from "#/utils/auth-client";
 import { useCallback } from "react";
 
@@ -12,14 +11,14 @@ export const useShareWithRoom = (
 
   const userId = sessionData?.user.id ?? null;
   const canShareWithRoom =
-    !readOnly && filesCap.initialised && nodeId != null && userId != null;
+    !readOnly && filesCap.initialised && nodeId !== null && userId !== null;
   const isSharedWithRoom =
-    filesCap.initialised && nodeId != null && userId != null
-      ? hasDirectRoomShare(filesCap.state.shares, {
-          nodeId,
-          ownerUserId: userId,
-        })
-      : false;
+    filesCap.initialised &&
+    nodeId !== null &&
+    userId !== null &&
+    filesCap.state.shares.some(
+      (share) => share.userId === userId && share.node.id === nodeId,
+    );
   const canUnshareFromRoom = canShareWithRoom && isSharedWithRoom;
 
   const shareFile = filesCap.initialised ? filesCap.actions.shareFile : null;

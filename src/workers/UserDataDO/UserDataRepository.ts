@@ -1,6 +1,7 @@
 import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
+import type { DbNode } from "./DbNodeType";
 import { logError } from "./utils";
 import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
@@ -233,11 +234,11 @@ export class UserDataRepository {
   // === Node lookups ===
 
   /** Find a non-deleted node by id, with its file/folder relations. */
-  getNode(
+  async getNode(
     nodeId: string,
     { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
-  ) {
-    return this.db.query.nodes.findFirst({
+  ): Promise<DbNode | undefined> {
+    return await this.db.query.nodes.findFirst({
       where: {
         id: nodeId,
         deletedTime:

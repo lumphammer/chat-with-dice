@@ -1,6 +1,4 @@
-import * as dbSchema from "#/schemas/ChatRoomDO-schema";
-import type { StorageNode } from "#/validators/storageNodeValidator.ts";
-import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
+import type { SharedItem } from "#/capabilities/filesCapability.ts";
 import { z } from "zod/v4";
 
 export const sessionAttachmentSchema = z.object({
@@ -13,8 +11,6 @@ export const sessionAttachmentSchema = z.object({
 
 export type SessionAttachment = z.infer<typeof sessionAttachmentSchema>;
 
-export type DBHandle = DrizzleSqliteDODatabase<typeof dbSchema>;
-
 export type NodeShareResult =
   | {
       result: "error";
@@ -22,7 +18,7 @@ export type NodeShareResult =
     }
   | {
       result: "existing" | "created";
-      node: StorageNode;
+      sharedItem: SharedItem;
     };
 
 export type NodeUnshareResult =

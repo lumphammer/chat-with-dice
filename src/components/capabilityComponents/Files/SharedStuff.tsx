@@ -6,10 +6,7 @@ import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoCon
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FileManager } from "#/components/FileManager/FileManager";
 import { FilePreview } from "#/components/FileManager/FilePreview";
-import type {
-  FileManagerLocation,
-  FilePreviewNode,
-} from "#/components/FileManager/types";
+import type { FileManagerLocation } from "#/components/FileManager/types";
 import { authClient } from "#/utils/auth-client";
 import { SharedItemListItem } from "./SharedItemListItem";
 import { Share2 } from "lucide-react";
