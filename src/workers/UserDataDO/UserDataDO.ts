@@ -16,6 +16,7 @@ import {
   R2_REPAIR_BATCH_SIZE,
   R2_REPAIR_SUBREQUEST_BUDGET,
 } from "#/utils/r2RepairLimits";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import { Scheduler } from "./Scheduler";
 import { UserDataRepository } from "./UserDataRepository";
@@ -154,14 +155,50 @@ export class UserDataDO extends DurableObject {
    * Get the contents of a folder. By design, this only works for live folders;
    * We do not allow navigation of soft-deleted folders.
    */
-  async getNodes(folderId: string | null | undefined, includeDeleted: boolean) {
+  async getNodes(
+    folderId: string | null | undefined,
+    includeDeleted: boolean,
+  ): Promise<StorageNode[]> {
     if (folderId) {
       const folderNode = await this.repo.getNode(folderId);
       if (!folderNode) {
         throw new Error("Folder not found");
       }
     }
-    return await this.repo.getChildNodes(folderId, includeDeleted);
+    const dbNodes = await this.repo.getChildNodes(folderId, includeDeleted);
+    const storageNodes = dbNodes.map<StorageNode>((dbNode) => {
+      if (dbNode.folder) {
+        return {
+          version: 1,
+          kind: "folder",
+          createdTime: dbNode.createdTime,
+          deletedTime: dbNode.deletedTime,
+          id: dbNode.id,
+          name: dbNode.name,
+          parentFolderId: dbNode.parentFolderId,
+          sizeBytes: dbNode.folder.recursiveSizeBytes,
+        };
+      }
+      if (dbNode.file) {
+        return {
+          version: 1,
+          kind: "file",
+          createdTime: dbNode.createdTime,
+          deletedTime: dbNode.deletedTime,
+          id: dbNode.id,
+          name: dbNode.name,
+          parentFolderId: dbNode.parentFolderId,
+          sizeBytes: dbNode.file.sizeBytes,
+          contentType: dbNode.file.contentType,
+          thumbnailContentType: dbNode.file.thumbnailContentType,
+          thumbnailSizeBytes: dbNode.file.thumbnailSizeBytes,
+        };
+      }
+      throw new Error(
+        `This node is neither a file nor a folder\n${JSON.stringify(dbNode)}`,
+      );
+    });
+    return storageNodes;
   }
 
   async createFolder(name: string, parentFolderId?: string | null) {

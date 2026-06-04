@@ -29,3 +29,9 @@ export const storageNodeValidator = z.discriminatedUnion("kind", [
  * moment. It should also be used for shared file info going forwards.
  */
 export type StorageNode = z.infer<typeof storageNodeValidator>;
+
+export type FileStorageNode = Extract<StorageNode, { kind: "file" }>;
+
+export function isFileStorageNode(node: StorageNode): node is FileStorageNode {
+  return node.kind === "file";
+}

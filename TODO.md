@@ -37,9 +37,11 @@
 - [x] Grid view is not sticking (I had rejected cookies)
 - [x] Why is chat spanking my GPU?
 - [x] Preview toolbar should be responsive
-- [ ] Download from node list menu
-- [ ] Show view mode as a toggle not both items
 - [ ] type FileNode should be renamed (StorageNode?)
+- [ ] Download from node list menu
+- [ ] Think about sanitizing node data so we're not sending BE data to client
+
+- [ ] Show view mode as a toggle not both items
 - [ ] Admins cannot ban themselves or each other
 - [ ] Anon users cannot be admin
 - [ ] filemanager header should be sticky
@@ -53,7 +55,6 @@
 - [ ] Swipe to move between files in preview
 - [ ] fix up MaybeError etc and use exclusively
 - [ ] Perf analysis on types
-- [ ] Think about sanitizing node data so we're not sending BE data to client
 - [ ] Responsive Grids for admin
 - [ ] Periodic purge of anon users
 - [ ] Unstack, or refactor, the nest of providers in DiceRoller

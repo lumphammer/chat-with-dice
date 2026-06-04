@@ -1,4 +1,5 @@
 import { formatBytes } from "#/utils/formatBytes";
+import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import { FilePreviewMenu } from "./FilePreviewMenu";
 import { FileTypeIcon } from "./FileTypeIcon";
 import { ImagePreview } from "./ImagePreview";
@@ -6,7 +7,6 @@ import { PdfPreview } from "./PdfPreview";
 import { TextPreview } from "./TextPreview";
 import { buildFileUrl } from "./fileUrl";
 import { isTextPreviewable } from "./textPreviewTypes";
-import type { FilePreviewNode } from "./types";
 import { useRename } from "./useRename";
 import { X } from "lucide-react";
 import { memo, useCallback, useEffect, useRef } from "react";
@@ -21,7 +21,7 @@ export const FilePreview = memo(
     roomId,
     readOnly = false,
   }: {
-    node: FilePreviewNode;
+    node: FileStorageNode;
     onClose: () => void;
     onRefresh?: () => void;
     onRenamed?: (nodeId: string, newName: string) => void;
@@ -58,13 +58,11 @@ export const FilePreview = memo(
       dialogRef.current?.close();
     }, []);
 
-    if (!node.file) return null;
-
-    const isImage = node.file.contentType.startsWith("image/");
-    const isAudio = node.file.contentType.startsWith("audio/");
-    const isVideo = node.file.contentType.startsWith("video/");
-    const isPdf = node.file.contentType === "application/pdf";
-    const isText = isTextPreviewable(node.name, node.file.contentType);
+    const isImage = node.contentType.startsWith("image/");
+    const isAudio = node.contentType.startsWith("audio/");
+    const isVideo = node.contentType.startsWith("video/");
+    const isPdf = node.contentType === "application/pdf";
+    const isText = isTextPreviewable(node.name, node.contentType);
 
     const downloadUrl = buildFileUrl(ownerUserId, node.id, { roomId });
 
@@ -119,9 +117,9 @@ export const FilePreview = memo(
             <PdfPreview src={downloadUrl} title={node.name} />
           ) : isText ? (
             <TextPreview
-              contentType={node.file.contentType}
+              contentType={node.contentType}
               filename={node.name}
-              sizeBytes={node.file.sizeBytes}
+              sizeBytes={node.sizeBytes}
               src={downloadUrl}
             />
           ) : isAudio ? (
@@ -130,7 +128,7 @@ export const FilePreview = memo(
                 justify-center gap-6 rounded p-8"
             >
               <FileTypeIcon
-                contentType={node.file.contentType}
+                contentType={node.contentType}
                 size={64}
                 strokeWidth={1}
                 className="text-base-content/50"
@@ -166,7 +164,7 @@ export const FilePreview = memo(
                 p-8"
             >
               <FileTypeIcon
-                contentType={node.file.contentType}
+                contentType={node.contentType}
                 size={64}
                 strokeWidth={1}
                 className="text-base-content/50"
@@ -175,8 +173,7 @@ export const FilePreview = memo(
               <div className="text-center">
                 <p className="font-medium">{node.name}</p>
                 <p className="text-base-content/50 text-sm">
-                  {node.file.contentType} &middot;{" "}
-                  {formatBytes(node.file.sizeBytes)}
+                  {node.contentType} &middot; {formatBytes(node.sizeBytes)}
                 </p>
               </div>
             </div>

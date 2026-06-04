@@ -1,9 +1,10 @@
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { FileManager } from "./FileManager";
-import type { BreadcrumbSegment, FileManagerLocation, FileNode } from "./types";
+import type { BreadcrumbSegment, FileManagerLocation } from "./types";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 type StandaloneFileManagerProps = {
-  initialNodes?: FileNode[];
+  initialNodes?: StorageNode[];
   initialLocation: FileManagerLocation;
 };
 

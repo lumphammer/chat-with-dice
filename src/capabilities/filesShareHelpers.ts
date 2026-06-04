@@ -1,14 +1,14 @@
-export type DirectRoomShare = {
+type DirectRoomShare = {
   nodeId: string;
   userId: string;
 };
 
-export type RoomShareIdentity = {
+type RoomShareIdentity = {
   nodeId: string;
   ownerUserId: string;
 };
 
-export const isDirectRoomShare = (
+const isDirectRoomShare = (
   share: DirectRoomShare,
   { nodeId, ownerUserId }: RoomShareIdentity,
 ) => share.nodeId === nodeId && share.userId === ownerUserId;

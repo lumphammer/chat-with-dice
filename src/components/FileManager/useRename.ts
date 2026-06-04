@@ -1,6 +1,6 @@
 import { filesCapability } from "#/capabilities/filesCapability";
 import { authClient } from "#/utils/auth-client";
-import type { FileNode } from "./types";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { actions } from "astro:actions";
 import { useRef, useState } from "react";
 
@@ -9,7 +9,8 @@ export const useRename = ({
   onRenamed,
   onClick,
 }: {
-  node: Pick<FileNode, "id" | "name">;
+  // XXX can this become just StorageNode???
+  node: Pick<StorageNode, "id" | "name">;
   onRenamed: (nodeId: string, newName: string) => void;
   onClick: () => void;
 }) => {

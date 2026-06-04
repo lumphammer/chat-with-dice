@@ -1,8 +1,8 @@
-import type { UserDataDO } from "#/workers/UserDataDO/UserDataDO";
+// import type { UserDataDO } from "#/workers/UserDataDO/UserDataDO";
 
-export type FileNode = Awaited<
-  ReturnType<InstanceType<typeof UserDataDO>["getNodes"]>
->[number];
+// export type FileNode = Awaited<
+//   ReturnType<InstanceType<typeof UserDataDO>["getNodes"]>
+// >[number];
 
 export type BreadcrumbSegment = {
   id: string;
@@ -16,11 +16,11 @@ export type FileManagerLocation = {
   previewFileName: string | null;
 };
 
-export type FilePreviewNode = {
-  id: string;
-  name: string;
-  file: {
-    contentType: string;
-    sizeBytes: number;
-  } | null;
-};
+// export type FilePreviewNode = {
+//   id: string;
+//   name: string;
+//   file: {
+//     contentType: string;
+//     sizeBytes: number;
+//   } | null;
+// };

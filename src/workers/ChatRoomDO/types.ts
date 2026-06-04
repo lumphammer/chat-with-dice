@@ -1,4 +1,5 @@
 import * as dbSchema from "#/schemas/ChatRoomDO-schema";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 import { z } from "zod/v4";
 
@@ -19,21 +20,10 @@ export type NodeShareResult =
       result: "error";
       reason: string;
     }
-  | ({
+  | {
       result: "existing" | "created";
-      name: string;
-    } & (
-      | {
-          kind: "file";
-          r2Key: string;
-          thumbnailR2Key: string | null;
-          contentType: string | null;
-          sizeBytes: number;
-        }
-      | {
-          kind: "folder";
-        }
-    ));
+      node: StorageNode;
+    };
 
 export type NodeUnshareResult =
   | {

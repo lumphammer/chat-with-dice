@@ -1,15 +1,9 @@
 import { formatBytes } from "#/utils/formatBytes";
-import type { FileNode } from "./types";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { memo } from "react";
 
-export const NodeMetadata = memo(({ node }: { node: FileNode }) =>
-  node.file
-    ? formatBytes(node.file.sizeBytes)
-    : node.folder
-      ? node.folder.recursiveSizeBytes > 0
-        ? formatBytes(node.folder.recursiveSizeBytes)
-        : "Empty"
-      : null,
+export const NodeMetadata = memo(({ node }: { node: StorageNode }) =>
+  node.sizeBytes > 0 ? formatBytes(node.sizeBytes) : "Empty",
 );
 
 NodeMetadata.displayName = "NodeMetadata";

@@ -1,5 +1,5 @@
+import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import { GenericMenu, useGenericMenu } from "./GenericMenu";
-import type { FilePreviewNode } from "./types";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
 import { Download, Pencil, Share2, Trash2, Unlink2 } from "lucide-react";
@@ -15,7 +15,7 @@ export const FilePreviewMenu = memo(
     readOnly,
   }: {
     downloadUrl?: string;
-    node: FilePreviewNode;
+    node: FileStorageNode;
     onAfterDelete: () => void;
     onRefresh?: () => void;
     onStartRename: () => void;

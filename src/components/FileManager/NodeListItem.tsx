@@ -1,7 +1,7 @@
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { NodeIcon } from "./NodeIcon";
 import { NodeItemMenu } from "./NodeItemMenu";
 import { NodeMetadata } from "./NodeMetadata";
-import type { FileNode } from "./types";
 import { useRename } from "./useRename";
 import { memo } from "react";
 
@@ -16,7 +16,7 @@ export const NodeListItem = memo(
     roomId,
     readOnly = false,
   }: {
-    node: FileNode;
+    node: StorageNode;
     onClick: () => void;
     onRefresh: () => void;
     onRenamed: (nodeId: string, newName: string) => void;
@@ -62,11 +62,7 @@ export const NodeListItem = memo(
               group-data-list:shrink-0"
           >
             <NodeIcon
-              nodeId={node.id}
-              contentType={node.file?.contentType}
-              hasThumbnail={!!node.file?.thumbnailR2Key}
-              isDeleted={!!node.deletedTime}
-              isFolder={!!node.folder}
+              node={node}
               ownerUserId={ownerUserId}
               roomId={roomId}
               size={viewMode === "list" ? "20" : "60"}
