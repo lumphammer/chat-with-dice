@@ -1,8 +1,8 @@
 import { formatBytes } from "#/utils/formatBytes";
 import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
-import { FilePreviewMenu } from "./FilePreviewMenu";
 import { FileTypeIcon } from "./FileTypeIcon";
 import { ImagePreview } from "./ImagePreview";
+import { NodeActionsMenu } from "./NodeActionsMenu";
 import { PdfPreview } from "./PdfPreview";
 import { TextPreview } from "./TextPreview";
 import { buildFileUrl } from "./fileUrl";
@@ -54,7 +54,7 @@ export const FilePreview = memo(
       return () => dialog.removeEventListener("close", onClose);
     }, [onClose]);
 
-    const handleAfterDete = useCallback(() => {
+    const handleAfterDelete = useCallback(() => {
       dialogRef.current?.close();
     }, []);
 
@@ -95,13 +95,14 @@ export const FilePreview = memo(
                 <div className="flex-1" />
               </>
             )}
-            <FilePreviewMenu
+            <NodeActionsMenu
               node={node}
-              onAfterDelete={handleAfterDete}
+              onAfterDelete={handleAfterDelete}
               onStartRename={handleStartRename}
               readOnly={readOnly}
               onRefresh={onRefresh}
-              downloadUrl={downloadUrl}
+              ownerUserId={ownerUserId}
+              roomId={roomId}
             />
             <button
               className="btn btn-ghost btn-sm btn-circle"
