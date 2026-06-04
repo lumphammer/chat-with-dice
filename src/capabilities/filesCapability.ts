@@ -245,6 +245,7 @@ export type SharedItemMessageData = z.infer<
 >;
 export type FilesState = z.infer<typeof filesStateValidator>;
 export type SharedItem = FilesState["shares"][number];
+// export type
 
 // these two are just here to prove that the message type is assignable to the
 // shares in the main state and vice versa.
