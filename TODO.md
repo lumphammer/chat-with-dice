@@ -37,9 +37,10 @@
 - [x] Grid view is not sticking (I had rejected cookies)
 - [x] Why is chat spanking my GPU?
 - [x] Preview toolbar should be responsive
-- [ ] type FileNode should be renamed (StorageNode?)
+- [x] type FileNode should be renamed (StorageNode?)
+- [x] Think about sanitizing node data so we're not sending BE data to client
+- [x] Clear up a proliferation of small types
 - [ ] Download from node list menu
-- [ ] Think about sanitizing node data so we're not sending BE data to client
 
 - [ ] Show view mode as a toggle not both items
 - [ ] Admins cannot ban themselves or each other
