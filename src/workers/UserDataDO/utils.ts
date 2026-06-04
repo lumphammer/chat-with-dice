@@ -1,3 +1,4 @@
+import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import type { DbNode } from "./DbNodeType";
 
@@ -36,7 +37,7 @@ export const dbNodeToStorageNode = (dbNode: DbNode): StorageNode => {
     return {
       version: 1,
       kind: "folder",
-      createdTime: dbNode.createdTime,
+      createdTime: fixStringTimestampThatShouldBeEpochMs(dbNode.createdTime),
       deletedTime: dbNode.deletedTime,
       id: dbNode.id,
       name: dbNode.name,
@@ -48,7 +49,7 @@ export const dbNodeToStorageNode = (dbNode: DbNode): StorageNode => {
     return {
       version: 1,
       kind: "file",
-      createdTime: dbNode.createdTime,
+      createdTime: fixStringTimestampThatShouldBeEpochMs(dbNode.createdTime),
       deletedTime: dbNode.deletedTime,
       id: dbNode.id,
       name: dbNode.name,

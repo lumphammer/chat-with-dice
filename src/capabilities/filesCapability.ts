@@ -126,7 +126,7 @@ const migrateStateV3ToV4 = (
               parentFolderId: "",
               createdTime: 1,
               deletedTime: null,
-              sizeBytes: 1,
+              sizeBytes: 0,
             }
           : {
               ...v3Share,
@@ -136,10 +136,12 @@ const migrateStateV3ToV4 = (
               parentFolderId: "",
               createdTime: 1,
               deletedTime: null,
-              contentType: "octet-stream",
-              thumbnailContentType: "octet-stream",
-              thumbnailSizeBytes: 1,
-              sizeBytes: 1,
+              contentType: v3Share.contentType ?? "application/octet-stream",
+              thumbnailContentType: v3Share.thumbnailR2Key
+                ? "image/webp"
+                : null,
+              thumbnailSizeBytes: v3Share.thumbnailR2Key ? 1 : null,
+              sizeBytes: v3Share.sizeBytes,
             },
     };
   }),
@@ -225,8 +227,8 @@ const migrateMessageV2ToV3 = (
             name: data.name,
             parentFolderId: "",
             contentType: data.contentType ?? "application/octet-stream",
-            thumbnailContentType: "image/webp",
-            thumbnailSizeBytes: 1,
+            thumbnailContentType: data.thumbnailR2Key ? "image/webp" : null,
+            thumbnailSizeBytes: data.thumbnailR2Key ? 1 : null,
             createdTime: 1,
             deletedTime: null,
             id: data.nodeId,
