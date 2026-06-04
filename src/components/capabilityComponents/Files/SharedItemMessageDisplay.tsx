@@ -12,17 +12,6 @@ import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { FolderOpen } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 
-// const getFilePreviewNode = (
-//   item: Extract<SharedItem, { kind: "file" }>,
-// ): FileStorageNode => ({
-//   id: item.node.id,
-//   name: item.name,
-//   file: {
-//     contentType: item.contentType ?? "application/octet-stream",
-//     sizeBytes: item.sizeBytes,
-//   },
-// });
-
 export const SharedItemMessageDisplay = memo(
   ({ results }: { results?: JsonData; messageId: string }) => {
     const parsed = useMemo(

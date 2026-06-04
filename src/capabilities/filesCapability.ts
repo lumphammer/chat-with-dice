@@ -200,7 +200,6 @@ const migrateMessageV2ToV3 = (
   data: z.infer<typeof sharedItemMessageDataValidatorV2>,
 ): z.infer<typeof sharedItemMessageDataValidatorV3> => {
   return {
-    // ...data,
     dateShared: data.dateShared,
     userDisplayName: data.userDisplayName,
     userId: data.userId,
