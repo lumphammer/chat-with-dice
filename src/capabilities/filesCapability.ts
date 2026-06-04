@@ -1,3 +1,4 @@
+import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
 import { storageNodeValidator } from "#/validators/storageNodeValidator.ts";
 import { createCapability } from "./createCapability";
 import * as z from "zod/v4";
@@ -81,7 +82,10 @@ const filesStateValidatorV4 = z.object({
     z.object({
       userId: z.string(),
       userDisplayName: z.string(),
-      dateShared: z.int(),
+      dateShared: z.preprocess(
+        fixStringTimestampThatShouldBeEpochMs,
+        z.number(),
+      ),
       node: storageNodeValidator,
     }),
   ),

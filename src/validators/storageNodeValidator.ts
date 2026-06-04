@@ -1,3 +1,4 @@
+import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
 import * as z from "zod";
 
 const coreFields = z.object({
@@ -5,7 +6,7 @@ const coreFields = z.object({
   id: z.string(),
   name: z.string(),
   parentFolderId: z.string().nullable(),
-  createdTime: z.number(),
+  createdTime: z.preprocess(fixStringTimestampThatShouldBeEpochMs, z.number()),
   deletedTime: z.number().nullable(),
   sizeBytes: z.number(),
 });

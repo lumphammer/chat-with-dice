@@ -38,7 +38,10 @@ export const SharedItemMessageDisplay = memo(
       );
     }, [filesCap, parsed]);
 
-    if (!parsed.success) return null;
+    if (!parsed.success) {
+      console.error("Unable to parse message data", results, parsed.error);
+      return null;
+    }
 
     const item = parsed.data;
     const node = item.node;
