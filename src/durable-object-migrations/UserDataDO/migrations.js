@@ -3,6 +3,7 @@ import m0001 from './20260512182708_tiresome_johnny_storm/migration.sql';
 import m0002 from './20260514100326_small_the_enforcers/migration.sql';
 import m0003 from './20260515151638_calm_captain_universe/migration.sql';
 import m0004 from './20260523084153_worthless_sprite/migration.sql';
+import m0005 from './20260604133830_previous_ozymandias/migration.sql';
 
   export default {
     migrations: {
@@ -10,7 +11,8 @@ import m0004 from './20260523084153_worthless_sprite/migration.sql';
 "20260512182708_tiresome_johnny_storm": m0001,
 "20260514100326_small_the_enforcers": m0002,
 "20260515151638_calm_captain_universe": m0003,
-"20260523084153_worthless_sprite": m0004
+"20260523084153_worthless_sprite": m0004,
+"20260604133830_previous_ozymandias": m0005
 }
   }
   

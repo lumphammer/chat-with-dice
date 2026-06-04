@@ -43,7 +43,7 @@ export const nodes = snakeCase.table(
     }),
     createdTime: int()
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(unixepoch(CURRENT_TIMESTAMP) * 1000)`),
     deletedTime: int(),
     folderId: text().references(() => folders.id, { onDelete: "cascade" }),
     fileId: text().references(() => files.id, { onDelete: "cascade" }),
