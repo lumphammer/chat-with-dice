@@ -51,10 +51,6 @@ const useElementWidth = <T extends HTMLElement>(
   return width;
 };
 
-type ReadOnlyProps =
-  | { ownerUserId?: undefined; roomId?: undefined }
-  | { ownerUserId: string; roomId: string };
-
 export const FileManager = memo(
   ({
     initialNodes,
@@ -70,7 +66,10 @@ export const FileManager = memo(
     onLocationChange: (location: FileManagerLocation) => void;
     rootIcon?: LucideIcon;
     rootLabel?: string;
-  } & ReadOnlyProps) => {
+  } & (
+    | { ownerUserId?: undefined; roomId?: undefined }
+    | { ownerUserId: string; roomId: string }
+  )) => {
     const session = authClient.useSession();
     const sessionRef = useRefStash(session);
     const locationRef = useRefStash(location);
