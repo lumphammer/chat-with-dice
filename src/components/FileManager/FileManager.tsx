@@ -1,4 +1,5 @@
 import { authClient } from "#/utils/auth-client";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { useRefStash } from "../useRefStash";
 import { useStateWithRef } from "../useStateWithRef";
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -8,7 +9,7 @@ import { FilePreview } from "./FilePreview";
 import { FolderToolbar } from "./FolderToolbar";
 import { NodeListItem } from "./NodeListItem";
 import { UploadingList } from "./UploadingList";
-import type { BreadcrumbSegment, FileManagerLocation, FileNode } from "./types";
+import type { BreadcrumbSegment, FileManagerLocation } from "./types";
 import { useUpload } from "./useUpload";
 import { viewModeStore, type ViewMode } from "./viewModeStore";
 import { useStore } from "@nanostores/react";
@@ -50,10 +51,6 @@ const useElementWidth = <T extends HTMLElement>(
   return width;
 };
 
-type ReadOnlyProps =
-  | { ownerUserId?: undefined; roomId?: undefined }
-  | { ownerUserId: string; roomId: string };
-
 export const FileManager = memo(
   ({
     initialNodes,
@@ -64,18 +61,21 @@ export const FileManager = memo(
     rootIcon,
     rootLabel,
   }: {
-    initialNodes?: FileNode[];
+    initialNodes?: StorageNode[];
     location: FileManagerLocation;
     onLocationChange: (location: FileManagerLocation) => void;
     rootIcon?: LucideIcon;
     rootLabel?: string;
-  } & ReadOnlyProps) => {
+  } & (
+    | { ownerUserId?: undefined; roomId?: undefined }
+    | { ownerUserId: string; roomId: string }
+  )) => {
     const session = authClient.useSession();
     const sessionRef = useRefStash(session);
     const locationRef = useRefStash(location);
 
     const readOnly = ownerUserId !== undefined;
-    const [nodes, setNodes] = useState<FileNode[]>(() => initialNodes ?? []);
+    const [nodes, setNodes] = useState<StorageNode[]>(() => initialNodes ?? []);
 
     const viewMode = useStore(viewModeStore);
 
@@ -181,7 +181,7 @@ export const FileManager = memo(
     const folderNodes = useMemo(
       () =>
         nodes
-          .filter((n) => n.folder)
+          .filter((n) => n.kind === "folder")
           .sort((a, b) => a.name.localeCompare(b.name)),
       [nodes],
     );
@@ -189,21 +189,22 @@ export const FileManager = memo(
     const fileNodes = useMemo(
       () =>
         nodes
-          .filter((n) => n.file)
+          .filter((n) => n.kind === "file")
           .sort((a, b) => a.name.localeCompare(b.name)),
       [nodes],
     );
 
-    const previewNode = useMemo(
-      () =>
-        location.previewFileId
-          ? (nodes.find((node) => node.id === location.previewFileId) ?? null)
-          : null,
-      [location.previewFileId, nodes],
-    );
+    const previewNode = useMemo(() => {
+      if (!location.previewFileId) {
+        return null;
+      }
+
+      const node = fileNodes.find((n) => n.id === location.previewFileId);
+      return node ?? null;
+    }, [location.previewFileId, fileNodes]);
 
     const handleFolderClick = useCallback(
-      (node: FileNode) => {
+      (node: StorageNode) => {
         onLocationChange({
           folderId: node.id,
           breadcrumbs: [
@@ -230,7 +231,7 @@ export const FileManager = memo(
     );
 
     const handleFileClick = useCallback(
-      (node: FileNode) => {
+      (node: StorageNode) => {
         onLocationChange({
           folderId: location.folderId,
           breadcrumbs: location.breadcrumbs,

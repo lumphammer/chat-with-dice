@@ -43,7 +43,7 @@ export const nodes = snakeCase.table(
     }),
     createdTime: int()
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(unixepoch(CURRENT_TIMESTAMP) * 1000)`),
     deletedTime: int(),
     folderId: text().references(() => folders.id, { onDelete: "cascade" }),
     fileId: text().references(() => files.id, { onDelete: "cascade" }),
@@ -93,7 +93,7 @@ export const roomResourceShares = snakeCase.table(
       .references(() => nodes.id, { onDelete: "cascade" }),
     sharedTime: int()
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(unixepoch(CURRENT_TIMESTAMP) * 1000)`),
   },
   (table) => [
     unique("room_resource_shares__room_id__node_id_idx").on(

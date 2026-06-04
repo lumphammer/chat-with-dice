@@ -1,3 +1,7 @@
+import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
+import type { DbNode } from "./DbNodeType";
+
 export const log = console.log.bind(console, "[UserDataDO]");
 export const logError = console.error.bind(console, "[UserDataDO]");
 
@@ -27,3 +31,36 @@ export async function listAllR2Objects(
   }
   return out;
 }
+
+export const dbNodeToStorageNode = (dbNode: DbNode): StorageNode => {
+  if (dbNode.folder) {
+    return {
+      version: 1,
+      kind: "folder",
+      createdTime: fixStringTimestampThatShouldBeEpochMs(dbNode.createdTime),
+      deletedTime: dbNode.deletedTime,
+      id: dbNode.id,
+      name: dbNode.name,
+      parentFolderId: dbNode.parentFolderId,
+      sizeBytes: dbNode.folder.recursiveSizeBytes,
+    };
+  }
+  if (dbNode.file) {
+    return {
+      version: 1,
+      kind: "file",
+      createdTime: fixStringTimestampThatShouldBeEpochMs(dbNode.createdTime),
+      deletedTime: dbNode.deletedTime,
+      id: dbNode.id,
+      name: dbNode.name,
+      parentFolderId: dbNode.parentFolderId,
+      sizeBytes: dbNode.file.sizeBytes,
+      contentType: dbNode.file.contentType,
+      thumbnailContentType: dbNode.file.thumbnailContentType,
+      thumbnailSizeBytes: dbNode.file.thumbnailSizeBytes,
+    };
+  }
+  throw new Error(
+    `This node is neither a file nor a folder\n${JSON.stringify(dbNode)}`,
+  );
+};

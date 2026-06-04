@@ -5,38 +5,13 @@ import {
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FileManager } from "#/components/FileManager/FileManager";
-import {
-  FilePreview,
-  type FilePreviewNode,
-} from "#/components/FileManager/FilePreview";
+import { FilePreview } from "#/components/FileManager/FilePreview";
 import type { FileManagerLocation } from "#/components/FileManager/types";
 import { authClient } from "#/utils/auth-client";
+import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import { SharedItemListItem } from "./SharedItemListItem";
 import { Share2 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-
-type SharedFolderView = {
-  ownerUserId: string;
-  rootFolderId: string;
-  rootFolderName: string;
-  location: FileManagerLocation;
-};
-
-type PreviewState = {
-  ownerUserId: string;
-  node: FilePreviewNode;
-};
-
-const buildSharedFileNode = (
-  item: Extract<SharedItem, { kind: "file" }>,
-): FilePreviewNode => ({
-  id: item.nodeId,
-  name: item.name,
-  file: {
-    sizeBytes: item.sizeBytes,
-    contentType: item.contentType ?? "application/octet-stream",
-  },
-});
 
 export const SharedStuff = memo(() => {
   const filesCap = filesCapability.useMount();
@@ -44,10 +19,16 @@ export const SharedStuff = memo(() => {
   const { sharedFolderOpenRequest } = useRoomUiNavigationContext();
   const { data: sessionData } = authClient.useSession();
   const currentUserId = sessionData?.user.id;
-  const [folderView, setFolderView] = useState<SharedFolderView | null>(null);
-  const [previewFromList, setPreviewFromList] = useState<PreviewState | null>(
-    null,
-  );
+  const [folderView, setFolderView] = useState<{
+    ownerUserId: string;
+    rootFolderId: string;
+    rootFolderName: string;
+    location: FileManagerLocation;
+  } | null>(null);
+  const [previewFromList, setPreviewFromList] = useState<{
+    ownerUserId: string;
+    node: FileStorageNode;
+  } | null>(null);
 
   useEffect(() => {
     if (!sharedFolderOpenRequest) return;
@@ -72,14 +53,14 @@ export const SharedStuff = memo(() => {
   }, [sharedFolderOpenRequest]);
 
   const handleSelect = useCallback((item: SharedItem) => {
-    if (item.kind === "folder") {
+    if (item.node.kind === "folder") {
       setFolderView({
         ownerUserId: item.userId,
-        rootFolderId: item.nodeId,
-        rootFolderName: item.name,
+        rootFolderId: item.node.id,
+        rootFolderName: item.node.name,
         location: {
-          folderId: item.nodeId,
-          breadcrumbs: [{ id: item.nodeId, name: item.name }],
+          folderId: item.node.id,
+          breadcrumbs: [{ id: item.node.id, name: item.node.name }],
           previewFileId: null,
           previewFileName: null,
         },
@@ -87,7 +68,7 @@ export const SharedStuff = memo(() => {
     } else {
       setPreviewFromList({
         ownerUserId: item.userId,
-        node: buildSharedFileNode(item),
+        node: item.node,
       });
     }
   }, []);
@@ -115,14 +96,14 @@ export const SharedStuff = memo(() => {
   useEffect(() => {
     if (!filesCap.initialised || !previewFromList) return;
     const sharedFile = filesCap.state.shares.find(
-      (share) => previewFromList.node.id === share.nodeId,
+      (share) => previewFromList.node.id === share.node.id,
     );
-    if (sharedFile && sharedFile.name !== previewFromList.node.name) {
+    if (sharedFile && sharedFile.node.name !== previewFromList.node.name) {
       setPreviewFromList({
         ...previewFromList,
         node: {
           ...previewFromList.node,
-          name: sharedFile.name,
+          name: sharedFile.node.name,
         },
       });
     }
@@ -170,7 +151,7 @@ export const SharedStuff = memo(() => {
       <ul className="animate-fadein flex min-w-0 flex-col gap-1">
         {sortedShares.map((item) => (
           <SharedItemListItem
-            key={item.nodeId}
+            key={item.node.id}
             item={item}
             roomId={roomId}
             onSelect={handleSelect}

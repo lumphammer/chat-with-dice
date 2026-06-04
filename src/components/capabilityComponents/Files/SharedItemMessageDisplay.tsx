@@ -1,38 +1,30 @@
 import {
   filesCapability,
   sharedItemMessageDataValidator,
-  type SharedItemMessageData,
 } from "#/capabilities/filesCapability";
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FilePreview } from "#/components/FileManager/FilePreview";
-import type { FilePreviewNode } from "#/components/FileManager/FilePreview";
 import { NodeIcon } from "#/components/FileManager/NodeIcon";
 import { authClient } from "#/utils/auth-client";
+import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { FolderOpen } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 
-const getFilePreviewNode = (
-  item: Extract<SharedItemMessageData, { kind: "file" }>,
-): FilePreviewNode => ({
-  id: item.nodeId,
-  name: item.name,
-  file: {
-    contentType: item.contentType ?? "application/octet-stream",
-    sizeBytes: item.sizeBytes,
-  },
-});
-
 export const SharedItemMessageDisplay = memo(
   ({ results }: { results?: JsonData; messageId: string }) => {
-    const parsed = sharedItemMessageDataValidator.safeParse(results);
+    const parsed = useMemo(
+      () => sharedItemMessageDataValidator.safeParse(results),
+      [results],
+    );
     const filesCap = filesCapability.useMount();
     const { roomId } = useRoomInfoContext();
     const { openSharedFolder } = useRoomUiNavigationContext();
     const { data: sessionData } = authClient.useSession();
     const currentUserId = sessionData?.user.id;
-    const [previewNode, setPreviewNode] = useState<FilePreviewNode | null>(
+
+    const [previewNode, setPreviewNode] = useState<FileStorageNode | null>(
       null,
     );
 
@@ -40,16 +32,20 @@ export const SharedItemMessageDisplay = memo(
       if (!parsed.success || !filesCap.initialised) return false;
       return filesCap.state.shares.some(
         (share) =>
-          share.kind === parsed.data.kind &&
-          share.nodeId === parsed.data.nodeId &&
+          share.node.kind === parsed.data.node.kind &&
+          share.node.id === parsed.data.node.id &&
           share.userId === parsed.data.userId,
       );
     }, [filesCap, parsed]);
 
-    if (!parsed.success) return null;
+    if (!parsed.success) {
+      console.error("Unable to parse message data", results, parsed.error);
+      return null;
+    }
 
     const item = parsed.data;
-    const isFile = item.kind === "file";
+    const node = item.node;
+    const isFile = item.node.kind === "file";
     const metadata = isAvailable
       ? `${isFile ? "File" : "Folder"} shared with room`
       : "No longer available";
@@ -69,32 +65,24 @@ export const SharedItemMessageDisplay = memo(
               justify-center overflow-hidden rounded"
           >
             <NodeIcon
-              nodeId={item.nodeId}
-              contentType={
-                item.kind === "file"
-                  ? (item.contentType ?? undefined)
-                  : undefined
-              }
-              hasThumbnail={item.kind === "file" && !!item.thumbnailR2Key}
-              isDeleted={false}
-              isFolder={item.kind === "folder"}
+              node={node}
               ownerUserId={item.userId}
               roomId={roomId}
               size={20}
             />
           </span>
           <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate font-medium">{item.name}</span>
+            <span className="truncate font-medium">{node.name}</span>
             <span className="text-base-content/50 truncate text-sm">
               {metadata}
             </span>
           </span>
-          {isFile ? (
+          {node.kind === "file" ? (
             <button
               type="button"
               className="btn btn-primary btn-xs shrink-0"
               disabled={!isAvailable}
-              onClick={() => setPreviewNode(getFilePreviewNode(item))}
+              onClick={() => setPreviewNode(node)}
             >
               Preview
             </button>
@@ -106,8 +94,8 @@ export const SharedItemMessageDisplay = memo(
               onClick={() =>
                 openSharedFolder({
                   ownerUserId: item.userId,
-                  folderId: item.nodeId,
-                  folderName: item.name,
+                  folderId: item.node.id,
+                  folderName: item.node.name,
                 })
               }
             >

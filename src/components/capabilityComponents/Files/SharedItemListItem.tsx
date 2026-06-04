@@ -35,21 +35,13 @@ export const SharedItemListItem = memo(
               justify-center overflow-hidden rounded"
           >
             <NodeIcon
-              nodeId={item.nodeId}
-              contentType={
-                item.kind === "file"
-                  ? (item.contentType ?? undefined)
-                  : undefined
-              }
-              hasThumbnail={item.kind === "file" && !!item.thumbnailR2Key}
-              isDeleted={false}
-              isFolder={item.kind === "folder"}
+              node={item.node}
               ownerUserId={item.userId}
               roomId={roomId}
             />
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="block truncate">{item.name}</span>
+            <span className="block truncate">{item.node.name}</span>
             <span className="text-base-content/50 block truncate text-sm">
               <time
                 dateTime={

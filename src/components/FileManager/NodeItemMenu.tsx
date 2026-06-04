@@ -1,6 +1,6 @@
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { HardDeleteDialog } from "./HardDeleteDialog";
-import type { FileNode } from "./types";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
 import { Pencil, Share2, Trash2, Unlink2, RefreshCcwDot } from "lucide-react";
@@ -8,16 +8,16 @@ import { memo } from "react";
 
 export const NodeItemMenu = memo(
   ({
-    node,
-    onRename,
-    onRefresh,
     isDeleted,
+    node,
+    onRefresh,
+    onStartRename,
     readOnly,
   }: {
-    node: FileNode;
-    onRename: () => void;
-    onRefresh: () => void;
     isDeleted: boolean;
+    node: StorageNode;
+    onRefresh: () => void;
+    onStartRename: () => void;
     readOnly: boolean;
   }) => {
     const {
@@ -79,7 +79,7 @@ export const NodeItemMenu = memo(
         )}
         {isLive && !readOnly && (
           <li>
-            <button type="button" onClick={wrapMenuAction(onRename)}>
+            <button type="button" onClick={wrapMenuAction(onStartRename)}>
               <Pencil size={14} />
               Rename
             </button>

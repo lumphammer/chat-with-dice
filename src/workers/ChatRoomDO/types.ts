@@ -1,5 +1,4 @@
-import * as dbSchema from "#/schemas/ChatRoomDO-schema";
-import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
+import type { SharedItem } from "#/capabilities/filesCapability.ts";
 import { z } from "zod/v4";
 
 export const sessionAttachmentSchema = z.object({
@@ -12,28 +11,15 @@ export const sessionAttachmentSchema = z.object({
 
 export type SessionAttachment = z.infer<typeof sessionAttachmentSchema>;
 
-export type DBHandle = DrizzleSqliteDODatabase<typeof dbSchema>;
-
 export type NodeShareResult =
   | {
       result: "error";
       reason: string;
     }
-  | ({
+  | {
       result: "existing" | "created";
-      name: string;
-    } & (
-      | {
-          kind: "file";
-          r2Key: string;
-          thumbnailR2Key: string | null;
-          contentType: string | null;
-          sizeBytes: number;
-        }
-      | {
-          kind: "folder";
-        }
-    ));
+      sharedItem: SharedItem;
+    };
 
 export type NodeUnshareResult =
   | {

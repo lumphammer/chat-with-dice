@@ -5,6 +5,7 @@ import {
 } from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
+import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
 import { processInBatches } from "#/utils/processInBatches";
 import {
@@ -16,7 +17,9 @@ import {
   R2_REPAIR_BATCH_SIZE,
   R2_REPAIR_SUBREQUEST_BUDGET,
 } from "#/utils/r2RepairLimits";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
+import type { DbShare } from "./DbNodeType";
 import { Scheduler } from "./Scheduler";
 import { UserDataRepository } from "./UserDataRepository";
 import type {
@@ -28,6 +31,7 @@ import type {
   R2ReconciliationReport,
 } from "./types";
 import {
+  dbNodeToStorageNode,
   isUniqueConstraintError,
   listAllR2Objects,
   log,
@@ -37,17 +41,6 @@ import { DurableObject } from "cloudflare:workers";
 import { env as cfEnv } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
-
-type NodeForShare = {
-  name: string;
-  file: {
-    isReady: number;
-    r2Key: string;
-    thumbnailR2Key: string | null;
-    contentType: string;
-    sizeBytes: number;
-  } | null;
-};
 
 export class UserDataDO extends DurableObject {
   private repo!: UserDataRepository;
@@ -154,14 +147,21 @@ export class UserDataDO extends DurableObject {
    * Get the contents of a folder. By design, this only works for live folders;
    * We do not allow navigation of soft-deleted folders.
    */
-  async getNodes(folderId: string | null | undefined, includeDeleted: boolean) {
+  async getNodes(
+    folderId: string | null | undefined,
+    includeDeleted: boolean,
+  ): Promise<StorageNode[]> {
     if (folderId) {
       const folderNode = await this.repo.getNode(folderId);
       if (!folderNode) {
         throw new Error("Folder not found");
       }
     }
-    return await this.repo.getChildNodes(folderId, includeDeleted);
+    const dbNodes = await this.repo.getChildNodes(folderId, includeDeleted);
+    const storageNodes = dbNodes.map<StorageNode>((dbNode) => {
+      return dbNodeToStorageNode(dbNode);
+    });
+    return storageNodes;
   }
 
   async createFolder(name: string, parentFolderId?: string | null) {
@@ -426,26 +426,39 @@ export class UserDataDO extends DurableObject {
     nodeId,
     roomId,
     roomDurableObjectId,
+    userDisplayName,
   }: {
     nodeId: string;
     roomId: string;
     roomDurableObjectId: string;
+    userDisplayName: string;
   }): Promise<NodeShareResult> {
-    const existing = await this.repo.findShareWithNode(
+    const existing: DbShare | undefined = await this.repo.findShareWithNode(
       nodeId,
       roomDurableObjectId,
     );
+
     if (existing) {
-      return this.toShareResult("existing", existing.node);
+      return {
+        result: "existing",
+        sharedItem: {
+          dateShared: fixStringTimestampThatShouldBeEpochMs(
+            existing.sharedTime,
+          ),
+          node: dbNodeToStorageNode(existing.node),
+          userDisplayName,
+          userId: this.userId,
+        },
+      };
     }
 
-    const node = await this.repo.getNode(nodeId);
-    if (!node) {
+    const dbNode = await this.repo.getNode(nodeId);
+    if (!dbNode) {
       return { result: "error", reason: `Node not found: ${nodeId}` };
     }
 
     // pre-flight: don't insert a share row for a file that isn't uploaded yet
-    if (node.file && node.file.isReady !== 1) {
+    if (dbNode.file && dbNode.file.isReady !== 1) {
       return { result: "error", reason: "File is not ready to share yet" };
     }
 
@@ -456,7 +469,15 @@ export class UserDataDO extends DurableObject {
       roomDurableObjectId,
     });
 
-    return this.toShareResult("created", node);
+    return {
+      result: "created",
+      sharedItem: {
+        dateShared: Date.now(),
+        node: dbNodeToStorageNode(dbNode),
+        userDisplayName,
+        userId: this.userId,
+      },
+    };
   }
 
   async unshareNodeFromRoom({
@@ -795,33 +816,6 @@ export class UserDataDO extends DurableObject {
       orphanBlobs,
       missingBlobs,
       sizeMismatches,
-    };
-  }
-
-  private toShareResult(
-    status: "existing" | "created",
-    node: NodeForShare,
-  ): NodeShareResult {
-    const { file } = node;
-    if (file) {
-      // re-check here for the existing-share path; harmless for created
-      if (file.isReady !== 1) {
-        return { result: "error", reason: "File is not ready to share yet" };
-      }
-      return {
-        result: status,
-        kind: "file",
-        name: node.name,
-        r2Key: file.r2Key,
-        thumbnailR2Key: file.thumbnailR2Key,
-        contentType: file.contentType,
-        sizeBytes: file.sizeBytes,
-      };
-    }
-    return {
-      result: status,
-      kind: "folder",
-      name: node.name,
     };
   }
 

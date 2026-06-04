@@ -1,3 +1,4 @@
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { FileTypeIcon } from "./FileTypeIcon";
 import { buildFileUrl } from "./fileUrl";
 import { Folder, FolderX, Trash2, type LucideProps } from "lucide-react";
@@ -31,35 +32,27 @@ const Thumbnail = ({
 
 export const NodeIcon = memo(
   ({
-    contentType,
-    hasThumbnail,
-    isDeleted,
-    isFolder,
-    nodeId,
+    node,
     ownerUserId,
     roomId,
     ...rest
   }: {
-    contentType?: string;
-    hasThumbnail: boolean;
-    isDeleted: boolean;
-    isFolder: boolean;
-    nodeId: string;
+    node: StorageNode;
     ownerUserId: string | undefined;
     roomId: string | undefined;
   } & SVGProps<SVGSVGElement> &
     LucideProps) => {
     // deleted items
-    if (isDeleted) {
-      if (isFolder) {
+    if (node.deletedTime) {
+      if (node.kind === "folder") {
         return <FolderX {...rest} />;
-      } else if (hasThumbnail) {
+      } else if (node.thumbnailContentType) {
         return (
           <div className="relative aspect-square">
             <Thumbnail
               className="opacity-70"
               ownerUserId={ownerUserId}
-              nodeId={nodeId}
+              nodeId={node.id}
               roomId={roomId}
             />
             <div
@@ -77,20 +70,20 @@ export const NodeIcon = memo(
     }
 
     // items with thumbnails
-    if (hasThumbnail) {
+    if (node.kind === "file" && node.thumbnailContentType) {
       return (
-        <Thumbnail ownerUserId={ownerUserId} nodeId={nodeId} roomId={roomId} />
+        <Thumbnail ownerUserId={ownerUserId} nodeId={node.id} roomId={roomId} />
       );
     }
     // folders
-    if (isFolder) {
+    if (node.kind === "folder") {
       return <Folder {...rest} />;
     }
 
     // icons
     return (
       <FileTypeIcon
-        contentType={contentType ?? "application/octet-stream"}
+        contentType={node.contentType ?? "application/octet-stream"}
         {...rest}
       />
     );

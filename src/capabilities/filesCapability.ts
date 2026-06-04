@@ -1,9 +1,10 @@
+import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
+import { storageNodeValidator } from "#/validators/storageNodeValidator.ts";
 import { createCapability } from "./createCapability";
-import { removeDirectRoomShare } from "./filesShareHelpers";
 import * as z from "zod/v4";
 
 // oxlint-disable-next-line no-magic-numbers
-const FILES_STATE_VERSION = 3 as const;
+const FILES_STATE_VERSION = 4 as const;
 
 const filesStateValidatorV1 = z.object({
   shares: z.array(
@@ -57,7 +58,8 @@ const filesStateValidatorV2 = z.object({
 const coreFieldsV3Validator = coreFieldsV2Validator;
 
 const filesStateValidatorV3 = z.object({
-  version: z.literal(FILES_STATE_VERSION),
+  // oxlint-disable-next-line no-magic-numbers
+  version: z.literal(3),
   shares: z.array(
     z.discriminatedUnion("kind", [
       coreFieldsV3Validator.extend({
@@ -74,29 +76,90 @@ const filesStateValidatorV3 = z.object({
   ),
 });
 
-const migrateV1ToV2 = (
+const filesStateValidatorV4 = z.object({
+  version: z.literal(FILES_STATE_VERSION),
+  shares: z.array(
+    z.object({
+      userId: z.string(),
+      userDisplayName: z.string(),
+      dateShared: z.preprocess(
+        fixStringTimestampThatShouldBeEpochMs,
+        z.number(),
+      ),
+      node: storageNodeValidator,
+    }),
+  ),
+});
+
+const migrateStateV1ToV2 = (
   v1: z.infer<typeof filesStateValidatorV1>,
 ): z.infer<typeof filesStateValidatorV2> => ({
   version: 2,
   shares: v1.shares.map((s) => ({ ...s, dateShared: 0 })),
 });
 
-const migrateV2ToV3 = (
+const migrateStateV2ToV3 = (
   v2: z.infer<typeof filesStateValidatorV2>,
 ): z.infer<typeof filesStateValidatorV3> => ({
-  version: FILES_STATE_VERSION,
+  version: 3,
   shares: v2.shares.map((s) =>
     s.kind === "file" ? { ...s, sizeBytes: 0 } : s,
   ),
 });
 
+const migrateStateV3ToV4 = (
+  v3: z.infer<typeof filesStateValidatorV3>,
+): z.infer<typeof filesStateValidatorV4> => ({
+  version: FILES_STATE_VERSION,
+  shares: v3.shares.map((v3Share) => {
+    return {
+      dateShared: v3Share.dateShared,
+      userDisplayName: v3Share.userDisplayName,
+      userId: v3Share.userId,
+      node:
+        v3Share.kind === "folder"
+          ? {
+              ...v3Share,
+              kind: "folder",
+              version: 1,
+              id: v3Share.nodeId,
+              parentFolderId: "",
+              createdTime: 1,
+              deletedTime: null,
+              sizeBytes: 0,
+            }
+          : {
+              ...v3Share,
+              kind: "file",
+              version: 1,
+              id: v3Share.nodeId,
+              parentFolderId: "",
+              createdTime: 1,
+              deletedTime: null,
+              contentType: v3Share.contentType ?? "application/octet-stream",
+              thumbnailContentType: v3Share.thumbnailR2Key
+                ? "image/webp"
+                : null,
+              thumbnailSizeBytes: v3Share.thumbnailR2Key ? 1 : null,
+              sizeBytes: v3Share.sizeBytes,
+            },
+    };
+  }),
+});
+
 const filesStateValidator = z.union([
-  filesStateValidatorV3,
-  filesStateValidatorV2.transform(migrateV2ToV3),
-  filesStateValidatorV1.transform(migrateV1ToV2).transform(migrateV2ToV3),
+  filesStateValidatorV4,
+  filesStateValidatorV3.transform(migrateStateV3ToV4),
+  filesStateValidatorV2
+    .transform(migrateStateV2ToV3)
+    .transform(migrateStateV3ToV4),
+  filesStateValidatorV1
+    .transform(migrateStateV1ToV2)
+    .transform(migrateStateV2ToV3)
+    .transform(migrateStateV3ToV4),
 ]);
 
-export const sharedItemMessageDataValidator = z.discriminatedUnion("kind", [
+const sharedItemMessageDataValidatorV1 = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("file"),
     nodeId: z.string(),
@@ -116,10 +179,74 @@ export const sharedItemMessageDataValidator = z.discriminatedUnion("kind", [
   }),
 ]);
 
-export type SharedItemMessageData = z.infer<
-  typeof sharedItemMessageDataValidator
->;
+const sharedItemMessageDataValidatorV2 =
+  filesStateValidatorV3.shape.shares.element;
+
+const sharedItemMessageDataValidatorV3 =
+  filesStateValidatorV4.shape.shares.element;
+
+const migrateMessageV1ToV2 = (
+  data: z.infer<typeof sharedItemMessageDataValidatorV1>,
+): z.infer<typeof sharedItemMessageDataValidatorV2> => {
+  if (data.kind === "file") {
+    return {
+      ...data,
+      dateShared: 0,
+      r2Key: "/some/fake/r2Key",
+    };
+  } else {
+    return {
+      ...data,
+      dateShared: 0,
+    };
+  }
+};
+
+const migrateMessageV2ToV3 = (
+  data: z.infer<typeof sharedItemMessageDataValidatorV2>,
+): z.infer<typeof sharedItemMessageDataValidatorV3> => {
+  return {
+    dateShared: data.dateShared,
+    userDisplayName: data.userDisplayName,
+    userId: data.userId,
+    node:
+      data.kind === "folder"
+        ? {
+            version: 1,
+            kind: "folder",
+            id: data.nodeId,
+            name: data.name,
+            parentFolderId: "",
+            createdTime: 1,
+            deletedTime: null,
+            sizeBytes: 1,
+          }
+        : {
+            version: 1,
+            kind: "file",
+            name: data.name,
+            parentFolderId: "",
+            contentType: data.contentType ?? "application/octet-stream",
+            thumbnailContentType: data.thumbnailR2Key ? "image/webp" : null,
+            thumbnailSizeBytes: data.thumbnailR2Key ? 1 : null,
+            createdTime: 1,
+            deletedTime: null,
+            id: data.nodeId,
+            sizeBytes: 1,
+          },
+  };
+};
+
+export const sharedItemMessageDataValidator = z.union([
+  sharedItemMessageDataValidatorV3,
+  sharedItemMessageDataValidatorV2.transform(migrateMessageV2ToV3),
+  sharedItemMessageDataValidatorV1
+    .transform(migrateMessageV1ToV2)
+    .transform(migrateMessageV2ToV3),
+]);
+
 export type FilesState = z.infer<typeof filesStateValidator>;
+
 export type SharedItem = FilesState["shares"][number];
 
 export const filesCapability = createCapability({
@@ -152,58 +279,18 @@ export const filesCapability = createCapability({
           const shareResult = await nodeShareManager.shareUserNodeId({
             userId,
             nodeId,
+            displayName,
           });
 
           if (shareResult.result === "error") {
             broadcaster.sendErrorToUserId(userId, shareResult.reason);
             return;
           }
+          const sharedItem: SharedItem = shareResult.sharedItem;
           if (shareResult.result === "created") {
-            stateDraft.shares.push(
-              shareResult.kind === "file"
-                ? {
-                    contentType: shareResult.contentType,
-                    name: shareResult.name,
-                    kind: shareResult.kind,
-                    nodeId: nodeId,
-                    userId: userId,
-                    r2Key: shareResult.r2Key,
-                    thumbnailR2Key: shareResult.thumbnailR2Key,
-                    sizeBytes: shareResult.sizeBytes,
-                    userDisplayName: displayName,
-                    dateShared: Date.now(),
-                  }
-                : {
-                    name: shareResult.name,
-                    kind: shareResult.kind,
-                    nodeId: nodeId,
-                    userId: userId,
-                    userDisplayName: displayName,
-                    dateShared: Date.now(),
-                  },
-            );
+            stateDraft.shares.push(sharedItem);
           }
-          sendChatMessage(
-            shareResult.kind === "file"
-              ? {
-                  contentType: shareResult.contentType,
-                  name: shareResult.name,
-                  kind: shareResult.kind,
-                  nodeId: nodeId,
-                  userId: userId,
-                  thumbnailR2Key: shareResult.thumbnailR2Key,
-                  sizeBytes: shareResult.sizeBytes,
-                  userDisplayName: displayName,
-                }
-              : {
-                  name: shareResult.name,
-                  kind: shareResult.kind,
-                  nodeId: nodeId,
-                  userId: userId,
-                  userDisplayName: displayName,
-                },
-          );
-          console.log(shareResult);
+          sendChatMessage(sharedItem);
         },
       }),
       renameShare: createAction({
@@ -215,9 +302,9 @@ export const filesCapability = createCapability({
         pureFn: ({ stateDraft, payload }) => {
           const share = stateDraft.shares.find(
             (s) =>
-              s.userId === payload.ownerUserId && s.nodeId === payload.nodeId,
+              s.userId === payload.ownerUserId && s.node.id === payload.nodeId,
           );
-          if (share) share.name = payload.newName;
+          if (share) share.node.name = payload.newName;
         },
         effectfulFn: async ({ stateDraft, payload, userId, pureFn }) => {
           pureFn({
@@ -232,7 +319,14 @@ export const filesCapability = createCapability({
           ownerUserId: z.string(),
         }),
         pureFn: ({ stateDraft, payload }) => {
-          removeDirectRoomShare(stateDraft.shares, payload);
+          const index = stateDraft.shares.findIndex(
+            (share) =>
+              share.userId === payload.ownerUserId &&
+              share.node.id === payload.nodeId,
+          );
+          if (index !== -1) {
+            stateDraft.shares.splice(index, 1);
+          }
         },
         effectfulFn: async ({
           stateDraft,
