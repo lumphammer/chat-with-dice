@@ -5,6 +5,7 @@ import {
 } from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
+import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
 import { processInBatches } from "#/utils/processInBatches";
 import {
@@ -441,7 +442,9 @@ export class UserDataDO extends DurableObject {
       return {
         result: "existing",
         sharedItem: {
-          dateShared: existing.sharedTime,
+          dateShared: fixStringTimestampThatShouldBeEpochMs(
+            existing.sharedTime,
+          ),
           node: dbNodeToStorageNode(existing.node),
           userDisplayName,
           userId: this.userId,
