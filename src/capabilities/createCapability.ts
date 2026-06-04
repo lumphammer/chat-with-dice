@@ -199,7 +199,7 @@ export const createCapability = <
     return {
       name,
       onMessage: async ({ actionCall, userId, displayName }) => {
-        // XXX just for testing
+        // just for testing
         if (ARTIFICIAL_LAG_MS > 0) {
           await new Promise((resolve) =>
             setTimeout(resolve, ARTIFICIAL_LAG_MS),
