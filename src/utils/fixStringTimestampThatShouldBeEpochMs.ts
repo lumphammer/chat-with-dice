@@ -5,7 +5,8 @@
  *
  * The point of this tomfoolery is to be used with `z.preprocess(...)` to fix
  * cases where a faulty db schema has been producing string timestamps instead
- * of numbers.
+ * of numbers, and in any other situation where we're taking maybe-questionable
+ * data that may be a surprise string and the type system can't help us.
  */
 export const fixStringTimestampThatShouldBeEpochMs = (x: unknown): number => {
   if (typeof x === "number") {
