@@ -1,6 +1,6 @@
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
+import { NodeActionsMenu } from "./NodeActionsMenu";
 import { NodeIcon } from "./NodeIcon";
-import { NodeItemMenu } from "./NodeItemMenu";
 import { NodeMetadata } from "./NodeMetadata";
 import { useRename } from "./useRename";
 import { memo } from "react";
@@ -101,12 +101,13 @@ export const NodeListItem = memo(
           className="group-data-grid:absolute group-data-grid:top-2
             group-data-grid:right-2"
         >
-          <NodeItemMenu
+          <NodeActionsMenu
             node={node}
             onRefresh={onRefresh}
-            isDeleted={!!node.deletedTime}
             readOnly={readOnly}
             onStartRename={handleStartRename}
+            ownerUserId={ownerUserId}
+            roomId={roomId}
           />
         </div>
       </li>

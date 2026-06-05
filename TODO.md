@@ -40,7 +40,7 @@
 - [x] type FileNode should be renamed (StorageNode?)
 - [x] Think about sanitizing node data so we're not sending BE data to client
 - [x] Clear up a proliferation of small types
-- [ ] Download from node list menu
+- [x] Download from node list menu
 
 - [ ] Show view mode as a toggle not both items
 - [ ] Admins cannot ban themselves or each other

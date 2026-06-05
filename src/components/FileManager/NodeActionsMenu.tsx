@@ -1,24 +1,36 @@
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { HardDeleteDialog } from "./HardDeleteDialog";
+import { buildFileUrl } from "./fileUrl";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
-import { Pencil, Share2, Trash2, Unlink2, RefreshCcwDot } from "lucide-react";
+import {
+  Download,
+  Pencil,
+  Share2,
+  Trash2,
+  Unlink2,
+  RefreshCcwDot,
+} from "lucide-react";
 import { memo } from "react";
 
-export const NodeItemMenu = memo(
+export const NodeActionsMenu = memo(
   ({
-    isDeleted,
     node,
+    onAfterDelete,
     onRefresh,
     onStartRename,
+    ownerUserId,
     readOnly,
+    roomId,
   }: {
-    isDeleted: boolean;
     node: StorageNode;
-    onRefresh: () => void;
+    onAfterDelete?: () => void;
+    onRefresh?: () => void;
     onStartRename: () => void;
+    ownerUserId?: string;
     readOnly: boolean;
+    roomId?: string;
   }) => {
     const {
       canShareWithRoom,
@@ -34,24 +46,30 @@ export const NodeItemMenu = memo(
         console.error("Failed to delete:", result.error);
         return;
       }
-      onRefresh();
+      onRefresh?.();
+      onAfterDelete?.();
     };
 
     const handleRestore = async () => {
       const result = await actions.files.restoreNode({ nodeId: node.id });
-      console.log("restoring", node.id, result);
       if (result.error) {
         console.error("Failed to restore:", result.error);
         return;
       }
-      onRefresh();
+      onRefresh?.();
     };
+    const isDeleted = node.deletedTime !== null;
     const isLive = !isDeleted;
+    const downloadUrl =
+      isLive && node.kind === "file"
+        ? buildFileUrl(ownerUserId, node.id, { roomId })
+        : null;
 
-    const { genericMenu, wrapMenuAction } = useGenericMenu();
+    const { genericMenu, wrapMenuAction, closeMenu } = useGenericMenu();
 
     const hasAnyAction =
-      (isLive && (canShareWithRoom || canUnshareFromRoom || !readOnly)) ||
+      (isLive &&
+        (canShareWithRoom || canUnshareFromRoom || !readOnly || downloadUrl)) ||
       (isDeleted && !readOnly);
     if (!hasAnyAction) return null;
 
@@ -97,22 +115,29 @@ export const NodeItemMenu = memo(
             </button>
           </li>
         )}
+        {downloadUrl && (
+          <li>
+            <a href={downloadUrl} download={node.name} onClick={closeMenu}>
+              <Download size={14} />
+              Download
+            </a>
+          </li>
+        )}
         {isDeleted && !readOnly && (
           <li>
             <HardDeleteDialog
               name={node.name}
               nodeId={node.id}
-              onAfterDelete={onRefresh}
+              onAfterDelete={() => {
+                onRefresh?.();
+                onAfterDelete?.();
+              }}
             />
           </li>
         )}
         {isDeleted && !readOnly && (
           <li>
-            <button
-              type="button"
-              className=""
-              onClick={wrapMenuAction(handleRestore)}
-            >
+            <button type="button" onClick={wrapMenuAction(handleRestore)}>
               <RefreshCcwDot size={14} />
               Restore
             </button>
@@ -123,4 +148,4 @@ export const NodeItemMenu = memo(
   },
 );
 
-NodeItemMenu.displayName = "NodeItemMenu";
+NodeActionsMenu.displayName = "NodeActionsMenu";
