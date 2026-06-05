@@ -63,10 +63,11 @@ const checkAdminCredentials = (get404: () => Promise<Response>) =>
     const session = await auth.api.getSession({
       headers: request.headers,
     });
-    if (session && session.user.role === "admin") {
+    if (session && ["admin", "superadmin"].includes(session.user.role ?? "")) {
       return next();
     }
-    return get404();
+    console.log("session", session, "role", session?.user?.role);
+    return await get404();
   });
 
 /**
@@ -80,16 +81,15 @@ const get404 = async (env: Env) => {
       statusText: "Not Found",
     });
   }
-  // otherwise we use the assets binding to fetch the 404 page,
-  // and set the status to 404.
-  const response = await env.ASSETS.fetch("https://somehostname/404");
-  const response2 = new Response(response.body, {
-    cf: response.cf,
-    headers: response.headers,
-    status: 404,
-    statusText: "Not Found",
-  });
-  return response2;
+
+  // otherwise we use the assets binding to fetch a response for a nonexistent
+  // path, which will have 404 handling applied to it because not-found
+  // handling is configured in wrangler.jsonc (and somehostname is permitted in
+  // astro.config.mjs -> vite -> server -> allowedHosts.)
+  //
+  // NOTE this will not work properly in local dev (there are no static pages,
+  // so we get a generic empty 404.)
+  return env.ASSETS.fetch("https://somehostname/doesnotexist");
 };
 
 export default {
