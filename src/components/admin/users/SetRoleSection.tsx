@@ -10,6 +10,7 @@ type Props = {
 };
 
 export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
+  const session = authClient.useSession();
   const [role, setRole] = useState<Role>(
     (user.role as Role | undefined) ?? "user",
   );
@@ -18,6 +19,9 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  const isSuperAdmin =
+    !session.isPending && session.data?.user.role === "superadmin";
 
   const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault();
@@ -52,15 +56,24 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
             </label>
             <select
               id="role-select"
+              disabled={!isSuperAdmin}
               className="select select-bordered w-full max-w-xs"
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
             >
-              <option value="user">user</option>
-              <option value="admin">admin</option>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="superadmin">Superadmin</option>
             </select>
+            {!isSuperAdmin && (
+              <p className="alert alert-info">Only superadmins can set roles</p>
+            )}
           </div>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button
+            disabled={!isSuperAdmin || loading}
+            type="submit"
+            className="btn btn-primary"
+          >
             {loading ? (
               <span className="loading loading-spinner loading-sm" />
             ) : (
