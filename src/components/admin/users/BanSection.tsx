@@ -10,6 +10,7 @@ type Props = {
 const SECONDS_PER_DAY = 86400;
 
 const BanForm = ({ user, onUserUpdated }: Props) => {
+  const session = authClient.useSession();
   const [reason, setReason] = useState("");
   const [expiresInDays, setExpiresInDays] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,6 +37,9 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
     }
   };
 
+  const canBan =
+    session.data?.user.role === "superadmin" || user.role === "user";
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div className="flex gap-3">
@@ -44,6 +48,7 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
             Reason (optional)
           </label>
           <input
+            disabled={!canBan}
             id="ban-reason"
             type="text"
             className="input input-bordered"
@@ -57,6 +62,7 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
             Expires in (days)
           </label>
           <input
+            disabled={!canBan}
             id="ban-expires"
             type="number"
             min="1"
@@ -69,7 +75,11 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
       </div>
       {error && <div className="alert alert-error">{error}</div>}
       <div>
-        <button type="submit" className="btn btn-error" disabled={loading}>
+        <button
+          disabled={loading || !canBan}
+          type="submit"
+          className="btn btn-error"
+        >
           {loading ? (
             <span className="loading loading-spinner loading-sm" />
           ) : (
@@ -77,6 +87,11 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
           )}
         </button>
       </div>
+      {!canBan && (
+        <p className="alert alert-info">
+          You do not have permission to ban or unban this user.
+        </p>
+      )}
     </form>
   );
 };
@@ -84,6 +99,10 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
 const UnbanPanel = ({ user, onUserUpdated }: Props) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const session = authClient.useSession();
+
+  const canBan =
+    session.data?.user.role === "superadmin" || user.role === "user";
 
   const handleUnban = async () => {
     setLoading(true);
@@ -118,10 +137,10 @@ const UnbanPanel = ({ user, onUserUpdated }: Props) => {
       {error && <div className="alert alert-error">{error}</div>}
       <div>
         <button
+          disabled={loading || !canBan}
           type="button"
-          className="btn btn-outline"
+          className="btn btn-error"
           onClick={handleUnban}
-          disabled={loading}
         >
           {loading ? (
             <span className="loading loading-spinner loading-sm" />

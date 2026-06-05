@@ -7,7 +7,7 @@ import { generateRandomName } from "../utils/generateRandomName";
 import { adminConfig } from "./adminConfig";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
-import { createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { anonymous } from "better-auth/plugins";
@@ -45,6 +45,35 @@ const {
   "RESEND_FROM_EMAIL",
 ]);
 
+/**
+ * get the user performing an action based on headers
+ */
+const getLoggedInUser = async (headers: Headers | null | undefined) => {
+  if (!headers) {
+    return;
+  }
+  const session = await auth.api.getSession({
+    headers,
+  });
+  if (!session || !session.user) {
+    return;
+  }
+  const actor = session.user;
+  return actor;
+};
+
+// possibly overkill - we're using single roles but in theory they can be a
+// comma-separated list, so this is here to use in more places if we want
+const parseRoles = (rolesString?: string | null) =>
+  new Set(
+    (rolesString ?? "")
+      .split(",")
+      .map((r) => r.trim())
+      .filter(Boolean),
+  );
+
+const unbannableRoles = new Set(["admin", "superadmin"]);
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "pg" or "mysql"
@@ -53,6 +82,25 @@ export const auth = betterAuth({
   }),
 
   hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      // this enforces the rule that regular admins can only ban or un-ban
+      // plain users
+      if (ctx.path === "/admin/ban-user" || ctx.path === "/admin/unban-user") {
+        const loggedInUser = await getLoggedInUser(ctx.request?.headers);
+        const loggedInUserRoles = parseRoles(loggedInUser?.role);
+        if (loggedInUserRoles.has("superadmin")) return; // superadmins ban anyone
+
+        const target = await db.query.users.findFirst({
+          where: { id: ctx.body?.userId },
+        });
+
+        if (!parseRoles(target?.role).isDisjointFrom(unbannableRoles)) {
+          throw new APIError("FORBIDDEN", {
+            message: "Admins cannot ban or unban other admins or superadmins",
+          });
+        }
+      }
+    }),
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path === "/sign-in") {
         // on login, update the user with their durable object id if missing
