@@ -128,7 +128,8 @@ export function NavBarAccount({
               Account Settings
             </a>
           </li>
-          {sessionData?.user.role === "admin" && (
+          {(sessionData?.user.role === "admin" ||
+            sessionData?.user.role === "superadmin") && (
             <li>
               <a href="/sysadmin" onClick={closeMenu}>
                 <Shield size={16} />

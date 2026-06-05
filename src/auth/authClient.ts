@@ -1,3 +1,4 @@
+import { adminConfig } from "#/auth/adminConfig.ts";
 import type { auth } from "#/auth/auth.ts";
 import { emailOTPClient } from "better-auth/client/plugins";
 import { inferAdditionalFields } from "better-auth/client/plugins";
@@ -9,7 +10,7 @@ export const authClient = createAuthClient({
   plugins: [
     emailOTPClient(),
     inferAdditionalFields<typeof auth>(),
-    adminClient(),
+    adminClient(adminConfig),
     anonymousClient(),
   ],
 });
