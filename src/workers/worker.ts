@@ -49,15 +49,15 @@ export const addPTerryHeader = () =>
   });
 
 /**
- * Middleware to only allow admins into the sysadmin area
- * See also `assets.run_worker_first` in wrangler.jsonc, where /sysadmin should
+ * Middleware to only allow admins into the admin area
+ * See also `assets.run_worker_first` in wrangler.jsonc, where /admin should
  * also be listed, to ensure the worker gets a chance to kick in even for
  * static requests.
  */
-const checkSysAdminCredentials = (get404: () => Promise<Response>) =>
+const checkAdminCredentials = (get404: () => Promise<Response>) =>
   defineMiddleware(async (request, next) => {
     const url = URL.parse(request.url);
-    if (!url || !url.pathname.startsWith("/sysadmin")) {
+    if (!url || !url.pathname.startsWith("/admin")) {
       return next();
     }
     const session = await auth.api.getSession({
@@ -111,7 +111,7 @@ export default {
     // In other words, the last item in the list is the first middleware to be
     // called and the last one to return.
     const middlewares = [
-      checkSysAdminCredentials(() => get404(env)),
+      checkAdminCredentials(() => get404(env)),
       addPTerryHeader(),
     ];
     const final = middlewares.reduce<Responder>(

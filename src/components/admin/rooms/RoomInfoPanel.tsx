@@ -56,7 +56,7 @@ export const RoomInfoPanel = memo(
             <Field label="Created by">
               {creator ? (
                 <a
-                  href={`/sysadmin/users/${creator.id}/`}
+                  href={`/admin/users/${creator.id}/`}
                   className="link link-hover"
                 >
                   {creator.name ?? creator.email}

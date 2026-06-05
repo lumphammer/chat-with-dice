@@ -1,10 +1,10 @@
+import { authClient } from "#/auth/authClient.ts";
 import {
   capabilityRegistry,
   isCapabilityName,
 } from "#/capabilities/capabilityRegistry";
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
-import { authClient } from "#/auth/authClient.ts";
 import type {
   ChatMessage,
   LinkPreview,

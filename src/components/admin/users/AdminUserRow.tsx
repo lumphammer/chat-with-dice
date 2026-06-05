@@ -39,7 +39,7 @@ export const AdminUserRow = memo(({ user }: Props) => {
       <td>{user.createdAt.toLocaleDateString()}</td>
       <td>
         <a
-          href={`/sysadmin/users/${user.id}/`}
+          href={`/admin/users/${user.id}/`}
           className="btn btn-sm btn-outline"
           aria-label={`Show details for ${user.name ?? user.email}`}
         >

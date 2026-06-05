@@ -1,3 +1,4 @@
+import { authClient } from "#/auth/authClient.ts";
 import {
   filesCapability,
   type SharedItem,
@@ -7,7 +8,6 @@ import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roo
 import { FileManager } from "#/components/FileManager/FileManager";
 import { FilePreview } from "#/components/FileManager/FilePreview";
 import type { FileManagerLocation } from "#/components/FileManager/types";
-import { authClient } from "#/auth/authClient.ts";
 import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import { SharedItemListItem } from "./SharedItemListItem";
 import { Share2 } from "lucide-react";

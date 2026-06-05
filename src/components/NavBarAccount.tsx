@@ -131,9 +131,9 @@ export function NavBarAccount({
           {(sessionData?.user.role === "admin" ||
             sessionData?.user.role === "superadmin") && (
             <li>
-              <a href="/sysadmin" onClick={closeMenu}>
+              <a href="/admin" onClick={closeMenu}>
                 <Shield size={16} />
-                Sysadmin
+                Admin
               </a>
             </li>
           )}

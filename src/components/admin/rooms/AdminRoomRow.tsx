@@ -26,7 +26,7 @@ export const AdminRoomRow = memo(({ room }: Props) => {
             <span className="badge badge-error badge-sm">Deleted</span>
           )}
           <a
-            href={`/sysadmin/rooms/${room.id}/`}
+            href={`/admin/rooms/${room.id}/`}
             className="link link-hover font-medium"
           >
             {room.name}
@@ -44,7 +44,7 @@ export const AdminRoomRow = memo(({ room }: Props) => {
       </td>
       <td>
         <a
-          href={`/sysadmin/users/${room.createdByUserId}/`}
+          href={`/admin/users/${room.createdByUserId}/`}
           className="link link-hover text-sm"
         >
           {creatorLabel}
@@ -55,7 +55,7 @@ export const AdminRoomRow = memo(({ room }: Props) => {
       </td>
       <td>
         <a
-          href={`/sysadmin/rooms/${room.id}/`}
+          href={`/admin/rooms/${room.id}/`}
           className="btn btn-sm btn-outline"
           aria-label={`Manage ${room.name}`}
         >
