@@ -1,9 +1,9 @@
 import { db } from "#/db";
 import * as schema from "#/schemas/coreD1-schema";
 import { users, accounts, sessions } from "#/schemas/coreD1-schema";
+import { envOrDie } from "#/utils/envOrDie";
 import { sendEmail } from "#/utils/sendEmail";
-import { envOrDie } from "./utils/envOrDie";
-import { generateRandomName } from "./utils/generateRandomName";
+import { generateRandomName } from "../utils/generateRandomName";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";

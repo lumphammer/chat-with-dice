@@ -1,5 +1,5 @@
+import { authClient } from "#/auth/authClient.ts";
 import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
-import { authClient } from "#/utils/auth-client";
 import type { HonkD6Formula, HonkD6Result } from "../honkD6Validators";
 import { DiceRow } from "./DiceRow";
 import { HonkD6PassDisplay } from "./HonkD6PassDisplay";

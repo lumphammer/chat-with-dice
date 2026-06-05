@@ -1,4 +1,4 @@
-import type { auth } from "#/auth";
+import type { auth } from "#/auth/auth.ts";
 import { emailOTPClient } from "better-auth/client/plugins";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";

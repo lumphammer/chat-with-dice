@@ -1,5 +1,5 @@
-import type { User } from "#/auth";
-import { authClient } from "#/utils/auth-client";
+import type { User } from "#/auth/auth.ts";
+import { authClient } from "#/auth/authClient.ts";
 import { memo, useState } from "react";
 
 type Props = {

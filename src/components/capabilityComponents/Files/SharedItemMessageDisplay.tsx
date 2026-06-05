@@ -1,3 +1,4 @@
+import { authClient } from "#/auth/authClient.ts";
 import {
   filesCapability,
   sharedItemMessageDataValidator,
@@ -6,7 +7,6 @@ import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoCon
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FilePreview } from "#/components/FileManager/FilePreview";
 import { NodeIcon } from "#/components/FileManager/NodeIcon";
-import { authClient } from "#/utils/auth-client";
 import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { FolderOpen } from "lucide-react";

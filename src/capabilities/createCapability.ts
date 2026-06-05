@@ -1,9 +1,9 @@
+import { authClient } from "#/auth/authClient.ts";
 import { useCapabilityInfoSafe } from "#/capabilities/reactContexts/capabilityInfoContext";
 import { useSetCapabilityStateContextSafe } from "#/capabilities/reactContexts/setCapabilityStateContext";
 import { useSendMessageContextSafe } from "#/components/DiceRoller/contexts/sendMessageContext";
 import { useRefStash } from "#/components/useRefStash";
 import { toAlphanumeric } from "#/utils/alphanumeric";
-import { authClient } from "#/utils/auth-client";
 import type {
   ActionCall,
   JsonValidator,

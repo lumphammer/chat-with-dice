@@ -1,4 +1,4 @@
-import type { User } from "#/auth";
+import type { User } from "#/auth/auth.ts";
 import { BanSection } from "./BanSection";
 import { RevokeSessionsSection } from "./RevokeSessionsSection";
 import { SetQuotaSection } from "./SetQuotaSection";

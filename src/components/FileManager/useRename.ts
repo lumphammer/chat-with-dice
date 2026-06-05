@@ -1,5 +1,5 @@
+import { authClient } from "#/auth/authClient.ts";
 import { filesCapability } from "#/capabilities/filesCapability";
-import { authClient } from "#/utils/auth-client";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { actions } from "astro:actions";
 import { useRef, useState } from "react";

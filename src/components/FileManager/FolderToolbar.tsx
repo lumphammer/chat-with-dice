@@ -1,4 +1,4 @@
-import { authClient } from "#/utils/auth-client";
+import { authClient } from "#/auth/authClient.ts";
 import { FolderActionsMenu } from "./FolderActionsMenu";
 import { NewFolderDialog, type NewFolderDialogHandle } from "./NewFolderDialog";
 import { useShareWithRoom } from "./useShareWithRoom";

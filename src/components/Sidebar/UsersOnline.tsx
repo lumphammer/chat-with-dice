@@ -1,5 +1,5 @@
+import { authClient } from "#/auth/authClient.ts";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
-import { authClient } from "#/utils/auth-client";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { useUsersOnlineContext } from "../DiceRoller/contexts/usersOnlineContext";
 import { OnlineUserBadge } from "./OnlineUserBadge";

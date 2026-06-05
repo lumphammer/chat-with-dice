@@ -1,4 +1,4 @@
-import { auth } from "#/auth";
+import { auth } from "#/auth/auth.ts";
 import handler from "@astrojs/cloudflare/entrypoints/server";
 
 export { ChatRoomDO } from "./ChatRoomDO/ChatRoomDO";

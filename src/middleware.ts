@@ -1,4 +1,4 @@
-import { auth } from "#/auth";
+import { auth } from "#/auth/auth.ts";
 import { magicAnswers } from "./utils/magicAnswers";
 import { defineMiddleware, sequence } from "astro:middleware";
 
