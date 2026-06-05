@@ -64,7 +64,7 @@ export const FolderActionsMenu = memo(
             <li>
               <button type="button" onClick={wrapMenuAction(onNewFolder)}>
                 <FolderPlus size={16} />
-                New folder
+                Add folder
               </button>
             </li>
             <li>
@@ -78,7 +78,6 @@ export const FolderActionsMenu = memo(
         <li>
           <button
             type="button"
-            className={viewMode === "list" ? "active" : undefined}
             aria-pressed={viewMode === "list"}
             onClick={wrapMenuAction(onRefresh)}
           >
@@ -86,28 +85,28 @@ export const FolderActionsMenu = memo(
             Refresh
           </button>
         </li>
-        <li>
-          <button
-            type="button"
-            className={viewMode === "list" ? "active" : undefined}
-            aria-pressed={viewMode === "list"}
-            onClick={wrapMenuAction(() => onViewModeChange("list"))}
-          >
-            <List size={16} />
-            List view
-          </button>
-        </li>
-        <li>
-          <button
-            type="button"
-            className={viewMode === "grid" ? "active" : undefined}
-            aria-pressed={viewMode === "grid"}
-            onClick={wrapMenuAction(() => onViewModeChange("grid"))}
-          >
-            <Grid3X3 size={16} />
-            Grid view
-          </button>
-        </li>
+        {viewMode === "list" && (
+          <li>
+            <button
+              type="button"
+              onClick={wrapMenuAction(() => onViewModeChange("grid"))}
+            >
+              <Grid3X3 size={16} />
+              Use grid view
+            </button>
+          </li>
+        )}
+        {viewMode === "grid" && (
+          <li>
+            <button
+              type="button"
+              onClick={wrapMenuAction(() => onViewModeChange("list"))}
+            >
+              <List size={16} />
+              Use list view
+            </button>
+          </li>
+        )}
         {canShareWithRoom && (
           <li>
             <button type="button" onClick={wrapMenuAction(onShareWithRoom)}>

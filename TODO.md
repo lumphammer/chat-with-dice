@@ -41,8 +41,8 @@
 - [x] Think about sanitizing node data so we're not sending BE data to client
 - [x] Clear up a proliferation of small types
 - [x] Download from node list menu
+- [x] Show view mode as a toggle not both items
 
-- [ ] Show view mode as a toggle not both items
 - [ ] Admins cannot ban themselves or each other
 - [ ] Anon users cannot be admin
 - [ ] filemanager header should be sticky
