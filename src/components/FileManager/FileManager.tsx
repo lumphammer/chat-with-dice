@@ -251,22 +251,6 @@ export const FileManager = memo(
       });
     }, [location, onLocationChange]);
 
-    // const handleDeleted = useCallback(
-    //   async (nodeId: string) => {
-    //     setNodes((prev) => prev.filter((n) => n.id !== nodeId));
-    //     await sessionRef.current.refetch();
-    //     if (nodeId === location.previewFileId) {
-    //       onLocationChange({
-    //         folderId: location.folderId,
-    //         breadcrumbs: location.breadcrumbs,
-    //         previewFileId: null,
-    //         previewFileName: null,
-    //       });
-    //     }
-    //   },
-    //   [location, onLocationChange, sessionRef],
-    // );
-
     const handleRenamed = useCallback((nodeId: string, newName: string) => {
       setNodes((prev) =>
         prev.map((n) => (n.id === nodeId ? { ...n, name: newName } : n)),
