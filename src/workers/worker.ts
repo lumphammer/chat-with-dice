@@ -66,7 +66,6 @@ const checkAdminCredentials = (get404: () => Promise<Response>) =>
     if (session && ["admin", "superadmin"].includes(session.user.role ?? "")) {
       return next();
     }
-    console.log("session", session, "role", session?.user?.role);
     return await get404();
   });
 
