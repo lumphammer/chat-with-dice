@@ -1,5 +1,6 @@
 import type { User } from "#/auth/auth.ts";
 import { authClient } from "#/auth/authClient.ts";
+import { ADMIN_ROLE, SUPERADMIN_ROLE, USER_ROLE } from "#/constants.ts";
 import { memo, useState } from "react";
 
 type Role = "user" | "admin";
@@ -21,7 +22,7 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
   } | null>(null);
 
   const isSuperAdmin =
-    !session.isPending && session.data?.user.role === "superadmin";
+    !session.isPending && session.data?.user.role === SUPERADMIN_ROLE;
 
   const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault();
@@ -61,9 +62,9 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
             >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-              <option value="superadmin">Superadmin</option>
+              <option value={USER_ROLE}>User</option>
+              <option value={ADMIN_ROLE}>Admin</option>
+              <option value={SUPERADMIN_ROLE}>Superadmin</option>
             </select>
             {!isSuperAdmin && (
               <p className="alert alert-info">Only superadmins can set roles</p>

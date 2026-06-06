@@ -1,5 +1,6 @@
 import type { User } from "#/auth/auth.ts";
 import { authClient } from "#/auth/authClient.ts";
+import { isAdminOrBetter } from "#/utils/isAdminOrBetter.ts";
 import { memo, useState } from "react";
 
 type Props = {
@@ -37,8 +38,7 @@ const BanForm = ({ user, onUserUpdated }: Props) => {
     }
   };
 
-  const canBan =
-    session.data?.user.role === "superadmin" || user.role === "user";
+  const canBan = isAdminOrBetter(session.data?.user.role);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -101,8 +101,7 @@ const UnbanPanel = ({ user, onUserUpdated }: Props) => {
   const [error, setError] = useState<string | null>(null);
   const session = authClient.useSession();
 
-  const canBan =
-    session.data?.user.role === "superadmin" || user.role === "user";
+  const canBan = isAdminOrBetter(session.data?.user.role);
 
   const handleUnban = async () => {
     setLoading(true);

@@ -1,3 +1,4 @@
+import { ADMIN_ROLE, SUPERADMIN_ROLE, USER_ROLE } from "#/constants.ts";
 import { createAccessControl } from "better-auth/plugins/access";
 import {
   defaultStatements,
@@ -36,10 +37,10 @@ export const adminConfig = {
   ac,
   roles: {
     // our new role
-    superadmin: superadminAc,
+    [SUPERADMIN_ROLE]: superadminAc,
     // our customized version of a default role
-    admin: adminAc,
+    [ADMIN_ROLE]: adminAc,
     // yeah, we recycle the default user role because we're not changing it
-    user: userAc,
+    [USER_ROLE]: userAc,
   },
 };

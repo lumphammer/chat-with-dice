@@ -1,3 +1,4 @@
+import { ADMIN_ROLE, SUPERADMIN_ROLE } from "#/constants.ts";
 import { db } from "#/db";
 import * as schema from "#/schemas/coreD1-schema";
 import { users, accounts, sessions } from "#/schemas/coreD1-schema";
@@ -62,17 +63,7 @@ const getLoggedInUser = async (headers: Headers | null | undefined) => {
   return actor;
 };
 
-// possibly overkill - we're using single roles but in theory they can be a
-// comma-separated list, so this is here to use in more places if we want
-const parseRoles = (rolesString?: string | null) =>
-  new Set(
-    (rolesString ?? "")
-      .split(",")
-      .map((r) => r.trim())
-      .filter(Boolean),
-  );
-
-const unbannableRoles = new Set(["admin", "superadmin"]);
+const unbannableRoles = new Set([ADMIN_ROLE, SUPERADMIN_ROLE]);
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -87,14 +78,13 @@ export const auth = betterAuth({
       // plain users
       if (ctx.path === "/admin/ban-user" || ctx.path === "/admin/unban-user") {
         const loggedInUser = await getLoggedInUser(ctx.request?.headers);
-        const loggedInUserRoles = parseRoles(loggedInUser?.role);
-        if (loggedInUserRoles.has("superadmin")) return; // superadmins ban anyone
+        if (loggedInUser?.role === SUPERADMIN_ROLE) return; // superadmins ban anyone
 
         const target = await db.query.users.findFirst({
           where: { id: ctx.body?.userId },
         });
 
-        if (!parseRoles(target?.role).isDisjointFrom(unbannableRoles)) {
+        if (!target?.role || unbannableRoles.has(target.role)) {
           throw new APIError("FORBIDDEN", {
             message: "Admins cannot ban or unban other admins or superadmins",
           });
