@@ -7,6 +7,7 @@ import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoCon
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FilePreview } from "#/components/FileManager/FilePreview";
 import { NodeIcon } from "#/components/FileManager/NodeIcon";
+import { logger } from "#/utils/logger.ts";
 import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { FolderOpen } from "lucide-react";
@@ -39,7 +40,7 @@ export const SharedItemMessageDisplay = memo(
     }, [filesCap, parsed]);
 
     if (!parsed.success) {
-      console.error("Unable to parse message data", results, parsed.error);
+      logger.error("Unable to parse message data", results, parsed.error);
       return null;
     }
 

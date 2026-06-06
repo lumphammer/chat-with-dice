@@ -1,3 +1,4 @@
+import { logger } from "#/utils/logger.ts";
 import { structuredRollsSchema } from "#/validators/rpgDieRollerResulsSchemas";
 import type { NotationFormula, NotationResult } from "./notationRollValidators";
 import type { DiceRoll } from "@dice-roller/rpg-dice-roller";
@@ -28,7 +29,7 @@ export const notationRollHandler = async ({
   );
 
   if (error) {
-    console.error("Error:", JSON.stringify(z.treeifyError(error), null, 2));
+    logger.error("Error:", JSON.stringify(z.treeifyError(error), null, 2));
     throw error;
   }
 

@@ -4,6 +4,7 @@ import { useSetCapabilityStateContextSafe } from "#/capabilities/reactContexts/s
 import { useSendMessageContextSafe } from "#/components/DiceRoller/contexts/sendMessageContext";
 import { useRefStash } from "#/components/useRefStash";
 import { toAlphanumeric } from "#/utils/alphanumeric";
+import { logger } from "#/utils/logger.ts";
 import type {
   ActionCall,
   JsonValidator,
@@ -165,7 +166,7 @@ export const createCapability = <
     const configParseResult = def.configValidator.safeParse(config);
     if (configParseResult.error) {
       if (process.env.NODE_ENV !== "test") {
-        console.error("Capability config failed validation", configParseResult);
+        logger.error("Capability config failed validation", configParseResult);
       }
       return null;
     }
@@ -310,10 +311,10 @@ export const createCapability = <
       : def.getInitialState({ config });
 
     if (!parsedConfig.success) {
-      console.error("Received a corrupt config for capability " + name);
+      logger.error("Received a corrupt config for capability " + name);
     }
     if (!parsedState.success) {
-      console.error("Received a corrupt state for capability " + name);
+      logger.error("Received a corrupt state for capability " + name);
     }
 
     return {

@@ -2,6 +2,7 @@ import { db } from "#/db";
 import * as schema from "#/schemas/coreD1-schema";
 import { users, accounts, sessions } from "#/schemas/coreD1-schema";
 import { envOrDie } from "#/utils/envOrDie";
+import { logger } from "#/utils/logger.ts";
 import { isAdminOrBetter, isSuperAdmin } from "#/utils/roleHelpers.ts";
 import { sendEmail } from "#/utils/sendEmail";
 import { generateRandomName } from "../utils/generateRandomName";
@@ -280,8 +281,8 @@ export const auth = betterAuth({
         //
         // The burbling clanker in that thread seems to indicate that you can
         // swap user ids in the accounts table
-        console.log("anonymousUser", anonymousUser);
-        console.log("newUser", newUser);
+        logger.log("anonymousUser", anonymousUser);
+        logger.log("newUser", newUser);
         // if a user with an existing account logs in using OAuth while they
         // are logged in with a temp/anon account, we end up here. There's no
         // solid way to tell if newUser is really new, or just someone returning

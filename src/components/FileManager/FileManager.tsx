@@ -1,4 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
+import { logger } from "#/utils/logger.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { useRefStash } from "../useRefStash";
 import { useStateWithRef } from "../useStateWithRef";
@@ -132,7 +133,7 @@ export const FileManager = memo(
         setIsLoading(false);
       }
       if (result.error) {
-        console.error("Failed to fetch nodes:", result.error);
+        logger.error("Failed to fetch nodes:", result.error);
         return;
       }
       setNodes(result.data);

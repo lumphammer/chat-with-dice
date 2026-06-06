@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 import { atom, type Atom, type WritableAtom } from "nanostores";
 import * as z from "zod";
 
@@ -42,7 +43,7 @@ export const createPersistentStore = <TValue, TDefault extends TValue | null>({
       try {
         valueStore.set(validator.decode(stored));
       } catch (e) {
-        console.error(`Unable to parse localStorage value for ${key}`, e);
+        logger.error(`Unable to parse localStorage value for ${key}`, e);
       }
     }
   }
@@ -85,7 +86,7 @@ export const createPersistentStore = <TValue, TDefault extends TValue | null>({
       try {
         valueStore.set(validator.decode(event.newValue));
       } catch (e) {
-        console.error(`Unable to parse localStorage value for ${key}`, e);
+        logger.error(`Unable to parse localStorage value for ${key}`, e);
       }
     }
   });

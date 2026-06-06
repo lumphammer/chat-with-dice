@@ -155,7 +155,7 @@ export class ChatRoomDO extends DurableObject {
           : JSON.parse(new TextDecoder().decode(message)),
       );
       if (!parsed.success) {
-        console.error("Invalid message format:", parsed.error);
+        logError("Invalid message format:", parsed.error);
         throw new Error("Server received an unrecognized message", {
           cause: parsed.error,
         });
@@ -164,11 +164,7 @@ export class ChatRoomDO extends DurableObject {
         ws.deserializeAttachment(),
       );
       if (error) {
-        console.error(
-          "Error parsing attachment",
-          error,
-          ws.deserializeAttachment(),
-        );
+        logError("Error parsing attachment", error, ws.deserializeAttachment());
         return;
       }
 
@@ -181,7 +177,7 @@ export class ChatRoomDO extends DurableObject {
             ws,
             `You are not the room owner and cannot ${description}`,
           );
-          console.error(`Unauthorised attempt to ${description}:`, {
+          logError(`Unauthorised attempt to ${description}:`, {
             userId: attachment.userId,
             data,
           });
@@ -262,7 +258,7 @@ export class ChatRoomDO extends DurableObject {
       }
     } catch (error) {
       this.broadcaster.sendError(ws, error);
-      console.error("Error handling message:", error);
+      logError("Error handling message:", error);
     }
   }
 
@@ -284,10 +280,7 @@ export class ChatRoomDO extends DurableObject {
       ws.close(code, "Durable Object is closing WebSocket");
       line += " Closed successfully.";
     } catch (error) {
-      console.error(
-        "ChatRoomDO # webSocketClose: Error closing WebSocket:",
-        error,
-      );
+      logError("ChatRoomDO # webSocketClose: Error closing WebSocket:", error);
       line += ` Error while closing: ${error instanceof Error ? error.message : String(error)}`;
     }
     log(line);
@@ -364,7 +357,7 @@ export class ChatRoomDO extends DurableObject {
    * Handle WebSocket errors (Hibernation API)
    */
   override async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
-    console.error("WebSocket error:", error);
+    logError("WebSocket error:", error);
     // Treat errors as disconnections
     await this.webSocketClose(ws, WEBSOCKET_INTERNAL_ERROR); //, "WebSocket error", false);
   }

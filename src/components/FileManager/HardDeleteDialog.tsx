@@ -1,3 +1,4 @@
+import { logger } from "#/utils/logger.ts";
 import { actions } from "astro:actions";
 import { Shredder } from "lucide-react";
 import { memo, useRef } from "react";
@@ -17,14 +18,13 @@ export const HardDeleteDialog = memo(
     const handleHardDelete = async () => {
       const result = await actions.files.hardDeleteNode({ nodeId });
       if (result.error) {
-        console.error("Failed to hard delete:", result.error);
+        logger.error("Failed to hard delete:", result.error);
         return;
       }
       onAfterDelete();
     };
 
     const handleClick = () => {
-      console.log("handleClick", nodeId);
       dialogRef.current?.showModal();
     };
 

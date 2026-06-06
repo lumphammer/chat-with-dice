@@ -1,3 +1,4 @@
+import { logger } from "#/utils/logger.ts";
 import { Component, type PropsWithChildren, type ReactNode } from "react";
 
 interface State {
@@ -11,7 +12,7 @@ export class RollResultErrorBoundary extends Component<
   state: State = { error: null };
 
   static getDerivedStateFromError(error: Error): State {
-    console.error("Couldn't parse roll result", error);
+    logger.error("Couldn't parse roll result", error);
     return { error };
   }
 

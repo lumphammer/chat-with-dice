@@ -1,6 +1,7 @@
 import { AppWrapper } from "#/components/AppWrapper";
 import { useStateWithRef } from "#/components/useStateWithRef";
 import { GENERIC_ROOM_TYPE_NAME, type RoomTypeName } from "#/roomTypes";
+import { logger } from "#/utils/logger.ts";
 import { RoomTypePicker } from "./RoomTypePicker";
 import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
@@ -40,7 +41,7 @@ export const NewRoomForm = () => {
           setError(
             result.error.message ?? "Something went wrong. Please try again.",
           );
-          console.error(result.error);
+          logger.error(result.error);
         } else if (!(result.data instanceof Response)) {
           void navigate(`/roller/rooms/${result.data.roomId}`);
         }

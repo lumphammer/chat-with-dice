@@ -111,7 +111,9 @@ export const FolderActionsMenu = memo(
           <li>
             <button type="button" onClick={wrapMenuAction(onShareWithRoom)}>
               <FolderSymlink size={16} />
-              {isSharedWithRoom ? "Reshare folder" : "Share folder with room"}
+              {isSharedWithRoom
+                ? "Reshare folder in chat"
+                : "Share folder with room"}
             </button>
           </li>
         )}

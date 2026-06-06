@@ -8,11 +8,6 @@ export { UserDataDO } from "./UserDataDO/UserDataDO";
 const HTTP_SWITCHING_PROTOCOLS = 101;
 
 /**
- * branded log helper
- */
-// const log = console.log.bind(console, "[worker]");
-
-/**
  * A function which takes no arguments and returns a Response; this is the type
  * of the core handler, and also the return from the middleware stack.
  */

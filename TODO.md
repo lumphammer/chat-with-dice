@@ -48,8 +48,8 @@
 - [x] in sidebar, file drop target is not full height
 - [x] standalone filemanager has too much whitespace on mobile
 - [x] "Reshare file..." should not have dots (and maybe pick a better verb?)
+- [x] remove all console.logs
 
-- [ ] remove all console.logs
 - [ ] "Preview" should be "View" (or whole thing is the link)
 - [ ] websocket endpoint can move under `rooms` in pages tree
 

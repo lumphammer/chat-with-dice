@@ -1,6 +1,7 @@
 ---
 import { db } from "#/db";
 import HTML from "#/layouts/HTML.astro";
+import { logger } from "#/utils/logger";
 import { roomConfigValidator } from "#/validators/roomConfigValidator";
 import { defaultRoomConfig } from "#/workers/ChatRoomDO/defaultRoomConfig";
 import { DiceRoller } from "@/components/DiceRoller/DiceRoller";
@@ -22,7 +23,7 @@ const config = configParseResult.success
   ? configParseResult.data
   : defaultRoomConfig;
 if (configParseResult.success === false) {
-  console.error("Room failed config validation");
+  logger.error("Room failed config validation");
 }
 ---
 

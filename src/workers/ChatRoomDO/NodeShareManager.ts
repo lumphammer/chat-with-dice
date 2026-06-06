@@ -1,4 +1,5 @@
 import { db as d1 } from "#/db";
+import { logger } from "#/utils/logger.ts";
 import type { NodeShareResult, NodeUnshareResult } from "./types";
 import { logError } from "./utils";
 import { env } from "cloudflare:workers";
@@ -57,7 +58,7 @@ export class NodeShareManager {
     nodeId: string;
     displayName: string;
   }): Promise<NodeShareResult> {
-    console.log(`Sharing user nodeId: ${nodeId} for userId: ${userId}`);
+    logger.log(`Sharing user nodeId: ${nodeId} for userId: ${userId}`);
     const userDataDOResult = await this.getUserDataDO(userId);
     if (userDataDOResult.result === "error") {
       return userDataDOResult;
@@ -69,8 +70,6 @@ export class NodeShareManager {
       roomDurableObjectId: this.ctx.id.toString(),
       userDisplayName: displayName,
     });
-
-    console.log(shareResult);
 
     return shareResult;
   }

@@ -1,5 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
 import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
+import { logger } from "#/utils/logger.ts";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import {
   webSocketServerMessageSchema,
@@ -82,7 +83,7 @@ export const useChatWebSocket = ({
       try {
         blob = JSON.parse(event.data);
       } catch (e: any) {
-        console.error("Error parsing WebSocket message:", e);
+        logger.error("Error parsing WebSocket message:", e);
         return;
       }
       const incomingWebsocketMessage =

@@ -1,3 +1,4 @@
+import { logger } from "#/utils/logger.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { HardDeleteDialog } from "./HardDeleteDialog";
@@ -43,7 +44,7 @@ export const NodeActionsMenu = memo(
     const handleDelete = async () => {
       const result = await actions.files.deleteNode({ nodeId: node.id });
       if (result.error) {
-        console.error("Failed to delete:", result.error);
+        logger.error("Failed to delete:", result.error);
         return;
       }
       onRefresh?.();
@@ -53,7 +54,7 @@ export const NodeActionsMenu = memo(
     const handleRestore = async () => {
       const result = await actions.files.restoreNode({ nodeId: node.id });
       if (result.error) {
-        console.error("Failed to restore:", result.error);
+        logger.error("Failed to restore:", result.error);
         return;
       }
       onRefresh?.();
@@ -83,7 +84,9 @@ export const NodeActionsMenu = memo(
           <li>
             <button type="button" onClick={wrapMenuAction(shareWithRoom)}>
               <Share2 size={14} />
-              {isSharedWithRoom ? "Reshare" : "Share with room"}
+              {isSharedWithRoom
+                ? `Reshare ${node.kind === "file" ? "file" : "folder"} in chat`
+                : "Share with room"}
             </button>
           </li>
         )}

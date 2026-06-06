@@ -3,8 +3,6 @@ import { magicAnswers } from "./utils/magicAnswers";
 import { defineMiddleware, sequence } from "astro:middleware";
 
 const HTTP_SWITCHING_PROTOCOLS = 101;
-//
-// const log = console.log.bind(console, "[middleware]");
 
 const addPotatoHeader = defineMiddleware(async (_context, next) => {
   const response = await next();
