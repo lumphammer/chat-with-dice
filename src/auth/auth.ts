@@ -100,6 +100,18 @@ export const auth = betterAuth({
           });
         }
       }
+      // enforce that anonymous users cannot be set to a role other than 'user'
+      if (ctx.path === "/admin/set-role") {
+        const target = await db.query.users.findFirst({
+          where: { id: ctx.body?.userId },
+        });
+        if (target?.isAnonymous && ctx.body?.role !== "user") {
+          throw new APIError("FORBIDDEN", {
+            message:
+              "Anonymous users cannot be set to a role other than 'user'",
+          });
+        }
+      }
     }),
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path === "/sign-in") {
