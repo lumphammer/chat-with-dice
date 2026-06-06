@@ -61,7 +61,7 @@ const previewFileName =
     : (initialNodes.find((node) => node.id === previewFileId)?.name ?? null);
 ---
 
-<Layout title="Files" class="flex justify-center p-8">
+<Layout title="Files" class="flex justify-center">
   <StandaloneFileManager
     client:only="react"
     initialNodes={initialNodes}

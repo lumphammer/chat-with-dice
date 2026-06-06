@@ -318,7 +318,8 @@ export const FileManager = memo(
 
     return (
       <div
-        className="@container relative w-full max-w-2xl min-w-0"
+        className="@container relative flex h-full w-full max-w-2xl min-w-0
+          flex-col"
         onDragEnter={readOnly ? undefined : handleDragEnter}
         onDragOver={readOnly ? undefined : handleDragOver}
         onDragLeave={readOnly ? undefined : handleDragLeave}
@@ -326,7 +327,7 @@ export const FileManager = memo(
       >
         {isDragOver && !readOnly && <DropOverlay />}
 
-        <div ref={headerRef} className="mb-4 flex min-w-0 items-center gap-2">
+        <div ref={headerRef} className="flex min-w-0 items-center gap-2 p-2">
           <Breadcrumbs
             collapsed={shouldCollapseBreadcrumbs}
             onMeasuredWidths={setBreadcrumbWidths}
@@ -351,57 +352,59 @@ export const FileManager = memo(
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="animate-fadein-slow flex flex-col gap-2 py-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="skeleton h-10 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : folderNodes.length === 0 &&
-          fileNodes.length === 0 &&
-          uploading.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <ul
-            className={
-              viewMode === "grid"
-                ? `animate-fadein grid min-w-0 grid-cols-2 gap-3 @sm:grid-cols-3
-                  @md:grid-cols-4`
-                : "animate-fadein flex min-w-0 flex-col gap-1"
-            }
-          >
-            {folderNodes.map((node) => (
-              <NodeListItem
-                key={node.id}
-                node={node}
-                viewMode={viewMode}
-                onClick={() => handleFolderClick(node)}
-                onRefresh={handleRefresh}
-                onRenamed={handleRenamed}
-                ownerUserId={ownerUserId}
-                roomId={roomId}
-                readOnly={readOnly}
-              />
-            ))}
-            {fileNodes.map((node) => (
-              <NodeListItem
-                key={node.id}
-                node={node}
-                viewMode={viewMode}
-                onClick={() => handleFileClick(node)}
-                onRefresh={handleRefresh}
-                onRenamed={handleRenamed}
-                ownerUserId={ownerUserId}
-                roomId={roomId}
-                readOnly={readOnly}
-              />
-            ))}
-          </ul>
-        )}
+        <div className="flex-1 overflow-auto">
+          {isLoading ? (
+            <div className="animate-fadein-slow flex flex-col gap-2 py-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="skeleton h-10 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : folderNodes.length === 0 &&
+            fileNodes.length === 0 &&
+            uploading.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <ul
+              className={
+                viewMode === "grid"
+                  ? `animate-fadein grid min-w-0 grid-cols-2 gap-3
+                    @sm:grid-cols-3 @md:grid-cols-4`
+                  : "animate-fadein flex min-w-0 flex-col gap-1"
+              }
+            >
+              {folderNodes.map((node) => (
+                <NodeListItem
+                  key={node.id}
+                  node={node}
+                  viewMode={viewMode}
+                  onClick={() => handleFolderClick(node)}
+                  onRefresh={handleRefresh}
+                  onRenamed={handleRenamed}
+                  ownerUserId={ownerUserId}
+                  roomId={roomId}
+                  readOnly={readOnly}
+                />
+              ))}
+              {fileNodes.map((node) => (
+                <NodeListItem
+                  key={node.id}
+                  node={node}
+                  viewMode={viewMode}
+                  onClick={() => handleFileClick(node)}
+                  onRefresh={handleRefresh}
+                  onRenamed={handleRenamed}
+                  ownerUserId={ownerUserId}
+                  roomId={roomId}
+                  readOnly={readOnly}
+                />
+              ))}
+            </ul>
+          )}
 
-        {!readOnly && (
-          <UploadingList files={uploading} onDismiss={dismissError} />
-        )}
+          {!readOnly && (
+            <UploadingList files={uploading} onDismiss={dismissError} />
+          )}
+        </div>
 
         {previewNode && (
           <FilePreview
