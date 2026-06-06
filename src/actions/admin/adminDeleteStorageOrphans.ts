@@ -7,7 +7,7 @@ import {
 import { isAdminOrBetterOrThrow } from "#/utils/roleHelpers.ts";
 import type { R2OrphanCleanupResult } from "#/workers/UserDataDO/types";
 import { z } from "astro/zod";
-import { defineAction } from "astro:actions";
+import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 
 const THUMBNAIL_ORPHAN_MIN_AGE_MS = 60 * 60 * 1000;
@@ -30,14 +30,20 @@ export const adminDeleteStorageOrphans = defineAction({
 
     const bucket = env.PRIVATE_R2;
     if (!bucket) {
-      throw new Error("PRIVATE_R2 bucket is not configured");
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "PRIVATE_R2 bucket is not configured",
+      });
     }
 
     const owner = await d1.query.users.findFirst({
       where: { id: userId },
     });
     if (!owner?.user_data_do_id) {
-      throw new Error("User has no storage");
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "User has no storage",
+      });
     }
 
     const userDataDO = env.USER_DATA_DO.get(

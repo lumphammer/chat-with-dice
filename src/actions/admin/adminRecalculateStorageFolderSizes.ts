@@ -1,7 +1,7 @@
 import { db as d1 } from "#/db";
 import { isAdminOrBetterOrThrow } from "#/utils/roleHelpers.ts";
 import { z } from "astro/zod";
-import { defineAction } from "astro:actions";
+import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 
 export const adminRecalculateStorageFolderSizes = defineAction({
@@ -15,7 +15,10 @@ export const adminRecalculateStorageFolderSizes = defineAction({
       where: { id: userId },
     });
     if (!owner?.user_data_do_id) {
-      throw new Error("User has no storage");
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "User has no storage",
+      });
     }
 
     const userDataDO = env.USER_DATA_DO.get(

@@ -10,7 +10,7 @@ import type {
   MissingStorageCleanupResult,
 } from "#/workers/UserDataDO/types";
 import { z } from "astro/zod";
-import { defineAction } from "astro:actions";
+import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 
 const missingBlobInput = z.object({
@@ -34,7 +34,10 @@ export const adminCleanupMissingStorageObjects = defineAction({
       where: { id: userId },
     });
     if (!owner?.user_data_do_id) {
-      throw new Error("User has no storage");
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "User has no storage",
+      });
     }
 
     const userDataDO = env.USER_DATA_DO.get(
@@ -57,7 +60,10 @@ export const adminCleanupMissingStorageObjects = defineAction({
 
     const bucket = env.PRIVATE_R2;
     if (!bucket) {
-      throw new Error("PRIVATE_R2 bucket is not configured");
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "PRIVATE_R2 bucket is not configured",
+      });
     }
 
     const thumbnailKeysToDelete = [...thumbnailKeys].slice(
