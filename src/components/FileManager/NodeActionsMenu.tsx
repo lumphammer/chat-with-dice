@@ -83,7 +83,7 @@ export const NodeActionsMenu = memo(
           <li>
             <button type="button" onClick={wrapMenuAction(shareWithRoom)}>
               <Share2 size={14} />
-              {isSharedWithRoom ? "Reshare..." : "Share with room"}
+              {isSharedWithRoom ? "Reshare" : "Share with room"}
             </button>
           </li>
         )}
