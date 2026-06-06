@@ -1,4 +1,5 @@
 import { ADMIN_ROLE, SUPERADMIN_ROLE } from "#/constants.ts";
+import { ActionError } from "astro:actions";
 
 const parseRoles = (rolesString?: string | null) =>
   new Set(
@@ -20,6 +21,9 @@ export const isAdminOrBetter = (role: string | null | undefined) => {
 
 export const isAdminOrBetterOrThrow = (role: string | null | undefined) => {
   if (!isAdminOrBetter(role)) {
-    throw new Error("Forbidden");
+    throw new ActionError({
+      code: "UNAUTHORIZED",
+      message: "Forbidden",
+    });
   }
 };
