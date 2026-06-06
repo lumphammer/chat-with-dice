@@ -42,9 +42,9 @@
 - [x] Clear up a proliferation of small types
 - [x] Download from node list menu
 - [x] Show view mode as a toggle not both items
+- [x] Admins cannot ban themselves or each other
+- [x] Anon users cannot be admin
 
-- [ ] Admins cannot ban themselves or each other
-- [ ] Anon users cannot be admin
 - [ ] filemanager header should be sticky
 - [ ] standalone filemanager has too much whitespace on mobile
 - [ ] "Reshare file..." should not have dots (and maybe pick a better verb?)
