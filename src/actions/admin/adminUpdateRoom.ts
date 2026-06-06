@@ -1,6 +1,6 @@
 import { db } from "#/db";
 import { rooms } from "#/schemas/coreD1-schema";
-import { isAdminOrBetterOrThrow } from "#/utils/isAdminOrBetter.ts";
+import { isAdminOrBetterOrThrow } from "#/utils/roleHelpers.ts";
 import { roomConfigValidator } from "#/validators/roomConfigValidator";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";

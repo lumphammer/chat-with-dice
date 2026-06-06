@@ -1,5 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
-import { isAdminOrBetter } from "#/utils/isAdminOrBetter.ts";
+import { isAdminOrBetter } from "#/utils/roleHelpers.ts";
 import {
   Dices,
   LogOut,

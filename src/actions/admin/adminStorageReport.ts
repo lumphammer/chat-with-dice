@@ -1,5 +1,5 @@
 import { db as d1 } from "#/db";
-import { isAdminOrBetterOrThrow } from "#/utils/isAdminOrBetter.ts";
+import { isAdminOrBetterOrThrow } from "#/utils/roleHelpers.ts";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";

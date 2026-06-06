@@ -1,6 +1,7 @@
 import type { User } from "#/auth/auth.ts";
 import { authClient } from "#/auth/authClient.ts";
 import { ADMIN_ROLE, SUPERADMIN_ROLE, USER_ROLE } from "#/constants.ts";
+import { isSuperAdmin } from "#/utils/roleHelpers.ts";
 import { memo, useState } from "react";
 
 type Role = "user" | "admin";
@@ -21,8 +22,8 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
     message: string;
   } | null>(null);
 
-  const isSuperAdmin =
-    !session.isPending && session.data?.user.role === SUPERADMIN_ROLE;
+  const canSetRoles =
+    !session.isPending && isSuperAdmin(session.data?.user.role);
 
   const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault();
@@ -57,7 +58,7 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
             </label>
             <select
               id="role-select"
-              disabled={!isSuperAdmin}
+              disabled={!canSetRoles}
               className="select select-bordered w-full max-w-xs"
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
@@ -66,12 +67,12 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
               <option value={ADMIN_ROLE}>Admin</option>
               <option value={SUPERADMIN_ROLE}>Superadmin</option>
             </select>
-            {!isSuperAdmin && (
+            {!canSetRoles && (
               <p className="alert alert-info">Only superadmins can set roles</p>
             )}
           </div>
           <button
-            disabled={!isSuperAdmin || loading}
+            disabled={!canSetRoles || loading}
             type="submit"
             className="btn btn-primary"
           >

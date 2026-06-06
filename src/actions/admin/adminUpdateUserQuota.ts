@@ -1,6 +1,6 @@
 import { db } from "#/db";
 import { users } from "#/schemas/auth-schema";
-import { isAdminOrBetterOrThrow } from "#/utils/isAdminOrBetter.ts";
+import { isAdminOrBetterOrThrow } from "#/utils/roleHelpers.ts";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { eq } from "drizzle-orm";

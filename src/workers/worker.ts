@@ -1,5 +1,5 @@
 import { auth } from "#/auth/auth.ts";
-import { isAdminOrBetter } from "#/utils/isAdminOrBetter.ts";
+import { isAdminOrBetter } from "#/utils/roleHelpers.ts";
 import handler from "@astrojs/cloudflare/entrypoints/server";
 
 export { ChatRoomDO } from "./ChatRoomDO/ChatRoomDO";

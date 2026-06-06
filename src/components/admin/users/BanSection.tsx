@@ -1,6 +1,6 @@
 import type { User } from "#/auth/auth.ts";
 import { authClient } from "#/auth/authClient.ts";
-import { isAdminOrBetter } from "#/utils/isAdminOrBetter.ts";
+import { isAdminOrBetter } from "#/utils/roleHelpers.ts";
 import { memo, useState } from "react";
 
 type Props = {

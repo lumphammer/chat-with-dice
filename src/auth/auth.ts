@@ -1,8 +1,8 @@
-import { ADMIN_ROLE, SUPERADMIN_ROLE } from "#/constants.ts";
 import { db } from "#/db";
 import * as schema from "#/schemas/coreD1-schema";
 import { users, accounts, sessions } from "#/schemas/coreD1-schema";
 import { envOrDie } from "#/utils/envOrDie";
+import { isAdminOrBetter, isSuperAdmin } from "#/utils/roleHelpers.ts";
 import { sendEmail } from "#/utils/sendEmail";
 import { generateRandomName } from "../utils/generateRandomName";
 import { adminConfig } from "./adminConfig";
@@ -63,8 +63,6 @@ const getLoggedInUser = async (headers: Headers | null | undefined) => {
   return actor;
 };
 
-const unbannableRoles = new Set([ADMIN_ROLE, SUPERADMIN_ROLE]);
-
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "pg" or "mysql"
@@ -78,13 +76,13 @@ export const auth = betterAuth({
       // plain users
       if (ctx.path === "/admin/ban-user" || ctx.path === "/admin/unban-user") {
         const loggedInUser = await getLoggedInUser(ctx.request?.headers);
-        if (loggedInUser?.role === SUPERADMIN_ROLE) return; // superadmins ban anyone
+        if (isSuperAdmin(loggedInUser?.role)) return; // superadmins ban anyone
 
         const target = await db.query.users.findFirst({
           where: { id: ctx.body?.userId },
         });
 
-        if (!target?.role || unbannableRoles.has(target.role)) {
+        if (isAdminOrBetter(target?.role)) {
           throw new APIError("FORBIDDEN", {
             message: "Admins cannot ban or unban other admins or superadmins",
           });
