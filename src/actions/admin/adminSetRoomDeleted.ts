@@ -1,5 +1,6 @@
 import { db } from "#/db";
 import { rooms } from "#/schemas/coreD1-schema";
+import { isAdminOrBetterOrThrow } from "#/utils/isAdminOrBetter.ts";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { eq } from "drizzle-orm";
@@ -10,10 +11,7 @@ export const adminSetRoomDeleted = defineAction({
     deleted: z.boolean(),
   }),
   handler: async (input, context) => {
-    const user = context.locals.user;
-    if (!user || user.role !== "admin") {
-      return new Response("Forbidden", { status: 403 });
-    }
+    isAdminOrBetterOrThrow(context.locals.user?.role);
 
     await db
       .update(rooms)

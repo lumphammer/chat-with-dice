@@ -1,5 +1,6 @@
 import { db } from "#/db";
 import { rooms } from "#/schemas/coreD1-schema";
+import { isAdminOrBetterOrThrow } from "#/utils/isAdminOrBetter.ts";
 import { roomConfigValidator } from "#/validators/roomConfigValidator";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
@@ -20,10 +21,7 @@ export const adminUpdateRoom = defineAction({
     config: z.string().optional(), // JSON string, validated in handler
   }),
   handler: async (input, context) => {
-    const user = context.locals.user;
-    if (!user || user.role !== "admin") {
-      return new Response("Forbidden", { status: 403 });
-    }
+    isAdminOrBetterOrThrow(context.locals.user?.role);
 
     const updates: Partial<typeof rooms.$inferInsert> = {};
 

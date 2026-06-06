@@ -1,4 +1,5 @@
 import { db as d1 } from "#/db";
+import { isAdminOrBetterOrThrow } from "#/utils/isAdminOrBetter.ts";
 import { processInBatches } from "#/utils/processInBatches";
 import {
   R2_REPAIR_BATCH_SIZE,
@@ -27,10 +28,7 @@ export const adminCleanupMissingStorageObjects = defineAction({
     missingBlobs: z.array(missingBlobInput),
   }),
   handler: async ({ userId, missingBlobs }, context) => {
-    const user = context.locals.user;
-    if (!user || user.role !== "admin") {
-      throw new Error("Forbidden");
-    }
+    isAdminOrBetterOrThrow(context.locals.user?.role);
 
     const owner = await d1.query.users.findFirst({
       where: { id: userId },

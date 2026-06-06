@@ -1,4 +1,5 @@
 import { db as d1 } from "#/db";
+import { isAdminOrBetterOrThrow } from "#/utils/isAdminOrBetter.ts";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
@@ -8,10 +9,7 @@ export const adminRecalculateStorageFolderSizes = defineAction({
     userId: z.string(),
   }),
   handler: async ({ userId }, context) => {
-    const user = context.locals.user;
-    if (!user || user.role !== "admin") {
-      throw new Error("Forbidden");
-    }
+    isAdminOrBetterOrThrow(context.locals.user?.role);
 
     const owner = await d1.query.users.findFirst({
       where: { id: userId },

@@ -1,4 +1,5 @@
 import { auth } from "#/auth/auth.ts";
+import { isAdminOrBetter } from "#/utils/isAdminOrBetter.ts";
 import handler from "@astrojs/cloudflare/entrypoints/server";
 
 export { ChatRoomDO } from "./ChatRoomDO/ChatRoomDO";
@@ -63,7 +64,7 @@ const checkAdminCredentials = (get404: () => Promise<Response>) =>
     const session = await auth.api.getSession({
       headers: request.headers,
     });
-    if (session && ["admin", "superadmin"].includes(session.user.role ?? "")) {
+    if (isAdminOrBetter(session?.user.role)) {
       return next();
     }
     return await get404();
