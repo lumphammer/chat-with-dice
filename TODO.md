@@ -44,9 +44,10 @@
 - [x] Show view mode as a toggle not both items
 - [x] Admins cannot ban themselves or each other
 - [x] Anon users cannot be admin
+- [x] filemanager header should be sticky
+- [x] in sidebar, file drop target is not full height
+- [x] standalone filemanager has too much whitespace on mobile
 
-- [ ] filemanager header should be sticky
-- [ ] standalone filemanager has too much whitespace on mobile
 - [ ] "Reshare file..." should not have dots (and maybe pick a better verb?)
 - [ ] remove all console.logs
 - [ ] "Preview" should be "View" (or whole thing is the link)
