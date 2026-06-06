@@ -7,10 +7,12 @@
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",
-    "not_found_handling": "404-page",
     // this is how to run worker for selected paths for e.g. auth, logging etc.
     // https://developers.cloudflare.com/workers/static-assets/routing/worker-script/#run-worker-before-each-request
     "run_worker_first": ["/syntax-test/", "/admin/"],
+    // putting "not_found_handling": "404-page" here will break the app - it
+    // intercepts requests for any dynamic (worker) path and returns a 404
+    // instead. https://developers.cloudflare.com/workers/static-assets/#routing-behavior
   },
   "observability": {
     "enabled": true,

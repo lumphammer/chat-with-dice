@@ -82,14 +82,20 @@ const get404 = async (env: Env) => {
     });
   }
 
-  // otherwise we use the assets binding to fetch a response for a nonexistent
-  // path, which will have 404 handling applied to it because not-found
-  // handling is configured in wrangler.jsonc (and somehostname is permitted in
+  // otherwise we use the assets binding to fetch the precompiled 404 page from
+  // assets and wrap it in a 404 status code (somehostname is permitted in
   // astro.config.mjs -> vite -> server -> allowedHosts.)
   //
   // NOTE this will not work properly in local dev (there are no static pages,
   // so we get a generic empty 404.)
-  return env.ASSETS.fetch("https://somehostname/doesnotexist");
+  const response = await env.ASSETS.fetch("https://somehostname/404");
+  const response2 = new Response(response.body, {
+    cf: response.cf,
+    headers: response.headers,
+    status: 404,
+    statusText: "Not Found",
+  });
+  return response2;
 };
 
 export default {
