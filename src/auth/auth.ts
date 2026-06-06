@@ -64,6 +64,12 @@ const getLoggedInUser = async (headers: Headers | null | undefined) => {
 };
 
 export const auth = betterAuth({
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: ["x-client-ip", "x-forwarded-for"],
+      disableIpTracking: false,
+    },
+  },
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "pg" or "mysql"
     schema,
