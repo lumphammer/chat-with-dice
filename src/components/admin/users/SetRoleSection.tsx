@@ -1,5 +1,7 @@
-import type { User } from "#/auth";
-import { authClient } from "#/utils/auth-client";
+import type { User } from "#/auth/auth.ts";
+import { authClient } from "#/auth/authClient.ts";
+import { ADMIN_ROLE, SUPERADMIN_ROLE, USER_ROLE } from "#/constants.ts";
+import { isSuperAdmin } from "#/utils/roleHelpers.ts";
 import { memo, useState } from "react";
 
 type Role = "user" | "admin";
@@ -10,6 +12,7 @@ type Props = {
 };
 
 export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
+  const session = authClient.useSession();
   const [role, setRole] = useState<Role>(
     (user.role as Role | undefined) ?? "user",
   );
@@ -18,6 +21,9 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  const canSetRoles =
+    !session.isPending && isSuperAdmin(session.data?.user.role);
 
   const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault();
@@ -52,15 +58,24 @@ export const SetRoleSection = memo(({ user, onUserUpdated }: Props) => {
             </label>
             <select
               id="role-select"
+              disabled={!canSetRoles}
               className="select select-bordered w-full max-w-xs"
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
             >
-              <option value="user">user</option>
-              <option value="admin">admin</option>
+              <option value={USER_ROLE}>User</option>
+              <option value={ADMIN_ROLE}>Admin</option>
+              <option value={SUPERADMIN_ROLE}>Superadmin</option>
             </select>
+            {!canSetRoles && (
+              <p className="alert alert-info">Only superadmins can set roles</p>
+            )}
           </div>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button
+            disabled={!canSetRoles || loading}
+            type="submit"
+            className="btn btn-primary"
+          >
             {loading ? (
               <span className="loading loading-spinner loading-sm" />
             ) : (

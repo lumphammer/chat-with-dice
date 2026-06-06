@@ -1,5 +1,5 @@
+import { authClient } from "#/auth/authClient.ts";
 import { QuotaBar } from "#/components/FileManager/QuotaBar";
-import { authClient } from "#/utils/auth-client";
 import { formatBytes } from "#/utils/formatBytes";
 import { memo } from "react";
 

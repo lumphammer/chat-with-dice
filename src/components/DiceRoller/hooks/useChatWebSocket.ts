@@ -1,5 +1,5 @@
+import { authClient } from "#/auth/authClient.ts";
 import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
-import { authClient } from "#/utils/auth-client";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import {
   webSocketServerMessageSchema,

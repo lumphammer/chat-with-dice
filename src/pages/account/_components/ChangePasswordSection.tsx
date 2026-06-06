@@ -1,4 +1,4 @@
-import { authClient } from "#/utils/auth-client";
+import { authClient } from "#/auth/authClient.ts";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { useState } from "react";
 

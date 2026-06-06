@@ -1,7 +1,7 @@
 ---
-import { auth } from "#/auth";
-import SysAdminLayout from "#/layouts/SysAdmin.astro";
-import { AdminUserList } from "@/components/sysAdmin/users/AdminUserList";
+import { auth } from "#/auth/auth";
+import AdminLayout from "#/layouts/Admin.astro";
+import { AdminUserList } from "@/components/admin/users/AdminUserList";
 import type { UserWithRole } from "better-auth/plugins";
 
 export const prerender = false;
@@ -21,7 +21,7 @@ try {
 }
 ---
 
-<SysAdminLayout title={"Users 🕵️‍♀️"} class="flex flex-col">
+<AdminLayout title={"Users 🕵️‍♀️"} class="flex flex-col">
   {
     (
       <div class="flex-1">
@@ -29,4 +29,4 @@ try {
       </div>
     )
   }
-</SysAdminLayout>
+</AdminLayout>

@@ -1,6 +1,6 @@
+import { authClient } from "#/auth/authClient.ts";
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
-import { authClient } from "#/utils/auth-client";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 

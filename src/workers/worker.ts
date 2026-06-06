@@ -1,4 +1,5 @@
-import { auth } from "#/auth";
+import { auth } from "#/auth/auth.ts";
+import { isAdminOrBetter } from "#/utils/roleHelpers.ts";
 import handler from "@astrojs/cloudflare/entrypoints/server";
 
 export { ChatRoomDO } from "./ChatRoomDO/ChatRoomDO";
@@ -49,24 +50,24 @@ export const addPTerryHeader = () =>
   });
 
 /**
- * Middleware to only allow admins into the sysadmin area
- * See also `assets.run_worker_first` in wrangler.jsonc, where /sysadmin should
+ * Middleware to only allow admins into the admin area
+ * See also `assets.run_worker_first` in wrangler.jsonc, where /admin should
  * also be listed, to ensure the worker gets a chance to kick in even for
  * static requests.
  */
-const checkSysAdminCredentials = (get404: () => Promise<Response>) =>
+const checkAdminCredentials = (get404: () => Promise<Response>) =>
   defineMiddleware(async (request, next) => {
     const url = URL.parse(request.url);
-    if (!url || !url.pathname.startsWith("/sysadmin")) {
+    if (!url || !url.pathname.startsWith("/admin")) {
       return next();
     }
     const session = await auth.api.getSession({
       headers: request.headers,
     });
-    if (session && session.user.role === "admin") {
+    if (isAdminOrBetter(session?.user.role)) {
       return next();
     }
-    return get404();
+    return await get404();
   });
 
 /**
@@ -80,16 +81,15 @@ const get404 = async (env: Env) => {
       statusText: "Not Found",
     });
   }
-  // otherwise we use the assets binding to fetch the 404 page,
-  // and set the status to 404.
-  const response = await env.ASSETS.fetch("https://somehostname/404");
-  const response2 = new Response(response.body, {
-    cf: response.cf,
-    headers: response.headers,
-    status: 404,
-    statusText: "Not Found",
-  });
-  return response2;
+
+  // otherwise we use the assets binding to fetch a response for a nonexistent
+  // path, which will have 404 handling applied to it because not-found
+  // handling is configured in wrangler.jsonc (and somehostname is permitted in
+  // astro.config.mjs -> vite -> server -> allowedHosts.)
+  //
+  // NOTE this will not work properly in local dev (there are no static pages,
+  // so we get a generic empty 404.)
+  return env.ASSETS.fetch("https://somehostname/doesnotexist");
 };
 
 export default {
@@ -111,7 +111,7 @@ export default {
     // In other words, the last item in the list is the first middleware to be
     // called and the last one to return.
     const middlewares = [
-      checkSysAdminCredentials(() => get404(env)),
+      checkAdminCredentials(() => get404(env)),
       addPTerryHeader(),
     ];
     const final = middlewares.reduce<Responder>(

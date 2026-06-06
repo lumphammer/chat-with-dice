@@ -1,9 +1,9 @@
 ---
-import { auth } from "#/auth";
+import { auth } from "#/auth/auth";
 import { db } from "#/db";
-import SysAdminLayout from "#/layouts/SysAdmin.astro";
+import AdminLayout from "#/layouts/Admin.astro";
 import { rooms } from "#/schemas/coreD1-schema";
-import { RoomDetailPage } from "@/components/sysAdmin/rooms/RoomDetailPage";
+import { RoomDetailPage } from "@/components/admin/rooms/RoomDetailPage";
 import type { User } from "better-auth/types";
 import { eq } from "drizzle-orm";
 
@@ -13,7 +13,7 @@ const { id } = Astro.params;
 
 const [room] = await db.select().from(rooms).where(eq(rooms.id, id!)).limit(1);
 
-if (!room) return Astro.redirect("/sysadmin/rooms/");
+if (!room) return Astro.redirect("/admin/rooms/");
 
 let creator: User | null = null;
 try {
@@ -26,8 +26,8 @@ try {
 }
 ---
 
-<SysAdminLayout title={room.name}>
+<AdminLayout title={room.name}>
   <div class="p-4">
     <RoomDetailPage room={room} creator={creator} client:load />
   </div>
-</SysAdminLayout>
+</AdminLayout>

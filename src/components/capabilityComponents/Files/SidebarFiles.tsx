@@ -1,9 +1,9 @@
+import { authClient } from "#/auth/authClient.ts";
 import { filesCapability } from "#/capabilities/filesCapability";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FileManager } from "#/components/FileManager/FileManager";
 import type { FileManagerLocation } from "#/components/FileManager/types";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
-import { authClient } from "#/utils/auth-client";
 import { SharedStuff } from "./SharedStuff";
 import { Tabs } from "@ark-ui/react/tabs";
 import { memo, useEffect, useState } from "react";

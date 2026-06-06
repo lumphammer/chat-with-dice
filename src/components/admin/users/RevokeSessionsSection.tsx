@@ -1,4 +1,4 @@
-import { authClient } from "#/utils/auth-client";
+import { authClient } from "#/auth/authClient.ts";
 import { memo, useState } from "react";
 
 export const RevokeSessionsSection = memo(({ userId }: { userId: string }) => {

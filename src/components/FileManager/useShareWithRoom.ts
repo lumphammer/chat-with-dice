@@ -1,5 +1,5 @@
+import { authClient } from "#/auth/authClient.ts";
 import { filesCapability } from "#/capabilities/filesCapability";
-import { authClient } from "#/utils/auth-client";
 import { useCallback } from "react";
 
 export const useShareWithRoom = (

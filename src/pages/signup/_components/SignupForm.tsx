@@ -1,7 +1,7 @@
+import { authClient } from "#/auth/authClient.ts";
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
 import { useStateWithRef } from "#/components/useStateWithRef";
-import { authClient } from "#/utils/auth-client";
 import { generateRandomName } from "#/utils/generateRandomName";
 import { Dice6, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { useEffect, useState } from "react";

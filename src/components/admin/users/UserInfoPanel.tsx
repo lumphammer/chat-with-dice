@@ -1,4 +1,4 @@
-import type { User } from "#/auth";
+import type { User } from "#/auth/auth.ts";
 import { CheckCircle, HatGlasses, XCircle } from "lucide-react";
 import { memo } from "react";
 

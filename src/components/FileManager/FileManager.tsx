@@ -1,4 +1,4 @@
-import { authClient } from "#/utils/auth-client";
+import { authClient } from "#/auth/authClient.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { useRefStash } from "../useRefStash";
 import { useStateWithRef } from "../useStateWithRef";

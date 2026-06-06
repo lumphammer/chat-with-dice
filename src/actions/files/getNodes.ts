@@ -1,6 +1,6 @@
 import { db as d1 } from "#/db";
 import { z } from "astro/zod";
-import { defineAction } from "astro:actions";
+import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 
 export const getNodes = defineAction({
@@ -16,7 +16,7 @@ export const getNodes = defineAction({
   ) => {
     const loggedInUser = context.locals.user;
     if (!loggedInUser) {
-      throw new Error("Unauthorized");
+      throw new ActionError({ code: "UNAUTHORIZED", message: "Unauthorized" });
     }
 
     const isSelf =
@@ -25,7 +25,10 @@ export const getNodes = defineAction({
 
     if (isSelf) {
       if (!loggedInUser.userDataDOId) {
-        throw new Error("user_data_do_id is not set");
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "user_data_do_id is not set",
+        });
       }
       const userDataDO = env.USER_DATA_DO.get(
         env.USER_DATA_DO.idFromString(loggedInUser.userDataDOId),
@@ -36,16 +39,25 @@ export const getNodes = defineAction({
     // cross-user read — must specify a room and a concrete folder; we never
     // expose "root" of someone else's drive
     if (!roomId) {
-      throw new Error("roomId is required for cross-user reads");
+      throw new ActionError({
+        code: "BAD_REQUEST",
+        message: "roomId is required for cross-user reads",
+      });
     }
     if (!folderId) {
-      throw new Error("folderId is required for cross-user reads");
+      throw new ActionError({
+        code: "BAD_REQUEST",
+        message: "folderId is required for cross-user reads",
+      });
     }
     const owner = await d1.query.users.findFirst({
       where: { id: ownerUserId },
     });
     if (!owner?.user_data_do_id) {
-      throw new Error("Owner's user_data_do_id is not set");
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Owner's user_data_do_id is not set",
+      });
     }
 
     const ownerDO = env.USER_DATA_DO.get(
@@ -57,7 +69,7 @@ export const getNodes = defineAction({
       roomId,
     });
     if (!accessible) {
-      throw new Error("Forbidden");
+      throw new ActionError({ code: "FORBIDDEN", message: "Forbidden" });
     }
 
     // cross-user requests never show deleted nodes

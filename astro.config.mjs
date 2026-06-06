@@ -44,7 +44,12 @@ export default defineConfig({
       }),
     ],
     server: {
-      allowedHosts: [".ngrok-free.app"],
+      allowedHosts: [
+        // ngrok
+        ".ngrok-free.app",
+        // used in worker direct middleware when generating a 404
+        "somehostname",
+      ],
     },
   },
 });

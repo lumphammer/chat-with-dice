@@ -1,4 +1,4 @@
-import { authClient } from "#/utils/auth-client";
+import { authClient } from "#/auth/authClient.ts";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
 import {

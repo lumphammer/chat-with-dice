@@ -1,4 +1,5 @@
-import { authClient } from "#/utils/auth-client";
+import { authClient } from "#/auth/authClient.ts";
+import { isAdminOrBetter } from "#/utils/roleHelpers.ts";
 import {
   Dices,
   LogOut,
@@ -128,11 +129,11 @@ export function NavBarAccount({
               Account Settings
             </a>
           </li>
-          {sessionData?.user.role === "admin" && (
+          {isAdminOrBetter(sessionData?.user.role) && (
             <li>
-              <a href="/sysadmin" onClick={closeMenu}>
+              <a href="/admin" onClick={closeMenu}>
                 <Shield size={16} />
-                Sysadmin
+                Admin
               </a>
             </li>
           )}

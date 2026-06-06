@@ -4,12 +4,13 @@ import {
   R2_REPAIR_BATCH_SIZE,
   R2_REPAIR_SUBREQUEST_BUDGET,
 } from "#/utils/r2RepairLimits";
+import { isAdminOrBetterOrThrow } from "#/utils/roleHelpers.ts";
 import type {
   MissingBlobCleanupInput,
   MissingStorageCleanupResult,
 } from "#/workers/UserDataDO/types";
 import { z } from "astro/zod";
-import { defineAction } from "astro:actions";
+import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 
 const missingBlobInput = z.object({
@@ -27,16 +28,16 @@ export const adminCleanupMissingStorageObjects = defineAction({
     missingBlobs: z.array(missingBlobInput),
   }),
   handler: async ({ userId, missingBlobs }, context) => {
-    const user = context.locals.user;
-    if (!user || user.role !== "admin") {
-      throw new Error("Forbidden");
-    }
+    isAdminOrBetterOrThrow(context.locals.user?.role);
 
     const owner = await d1.query.users.findFirst({
       where: { id: userId },
     });
     if (!owner?.user_data_do_id) {
-      throw new Error("User has no storage");
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "User has no storage",
+      });
     }
 
     const userDataDO = env.USER_DATA_DO.get(
@@ -59,7 +60,10 @@ export const adminCleanupMissingStorageObjects = defineAction({
 
     const bucket = env.PRIVATE_R2;
     if (!bucket) {
-      throw new Error("PRIVATE_R2 bucket is not configured");
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "PRIVATE_R2 bucket is not configured",
+      });
     }
 
     const thumbnailKeysToDelete = [...thumbnailKeys].slice(

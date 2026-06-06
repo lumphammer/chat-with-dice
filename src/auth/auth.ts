@@ -1,12 +1,14 @@
 import { db } from "#/db";
 import * as schema from "#/schemas/coreD1-schema";
 import { users, accounts, sessions } from "#/schemas/coreD1-schema";
+import { envOrDie } from "#/utils/envOrDie";
+import { isAdminOrBetter, isSuperAdmin } from "#/utils/roleHelpers.ts";
 import { sendEmail } from "#/utils/sendEmail";
-import { envOrDie } from "./utils/envOrDie";
-import { generateRandomName } from "./utils/generateRandomName";
+import { generateRandomName } from "../utils/generateRandomName";
+import { adminConfig } from "./adminConfig";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
-import { createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { anonymous } from "better-auth/plugins";
@@ -44,6 +46,23 @@ const {
   "RESEND_FROM_EMAIL",
 ]);
 
+/**
+ * get the user performing an action based on headers
+ */
+const getLoggedInUser = async (headers: Headers | null | undefined) => {
+  if (!headers) {
+    return;
+  }
+  const session = await auth.api.getSession({
+    headers,
+  });
+  if (!session || !session.user) {
+    return;
+  }
+  const actor = session.user;
+  return actor;
+};
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite", // or "pg" or "mysql"
@@ -52,6 +71,36 @@ export const auth = betterAuth({
   }),
 
   hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      // this enforces the rule that regular admins can only ban or un-ban
+      // plain users
+      if (ctx.path === "/admin/ban-user" || ctx.path === "/admin/unban-user") {
+        const loggedInUser = await getLoggedInUser(ctx.request?.headers);
+        if (isSuperAdmin(loggedInUser?.role)) return; // superadmins ban anyone
+
+        const target = await db.query.users.findFirst({
+          where: { id: ctx.body?.userId },
+        });
+
+        if (isAdminOrBetter(target?.role)) {
+          throw new APIError("FORBIDDEN", {
+            message: "Admins cannot ban or unban other admins or superadmins",
+          });
+        }
+      }
+      // enforce that anonymous users cannot be set to a role other than 'user'
+      if (ctx.path === "/admin/set-role") {
+        const target = await db.query.users.findFirst({
+          where: { id: ctx.body?.userId },
+        });
+        if (target?.isAnonymous && ctx.body?.role !== "user") {
+          throw new APIError("FORBIDDEN", {
+            message:
+              "Anonymous users cannot be set to a role other than 'user'",
+          });
+        }
+      }
+    }),
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path === "/sign-in") {
         // on login, update the user with their durable object id if missing
@@ -205,7 +254,7 @@ export const auth = betterAuth({
         }
       },
     }),
-    admin(),
+    admin(adminConfig),
     anonymous({
       disableDeleteAnonymousUser: true,
       generateName(_ctx) {

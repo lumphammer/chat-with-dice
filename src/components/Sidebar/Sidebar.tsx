@@ -1,8 +1,8 @@
+import { authClient } from "#/auth/authClient.ts";
 import {
   capabilityRegistry,
   isCapabilityName,
 } from "#/capabilities/capabilityRegistry";
-import { authClient } from "#/utils/auth-client";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "../DiceRoller/contexts/roomUiNavigationContext";
 import { useRefStash } from "../useRefStash";

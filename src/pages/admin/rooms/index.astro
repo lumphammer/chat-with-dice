@@ -1,9 +1,9 @@
 ---
-import { auth } from "#/auth";
+import { auth } from "#/auth/auth";
 import { db } from "#/db";
-import SysAdminLayout from "#/layouts/SysAdmin.astro";
+import AdminLayout from "#/layouts/Admin.astro";
 import { rooms } from "#/schemas/coreD1-schema";
-import { AdminRoomList } from "@/components/sysAdmin/rooms/AdminRoomList";
+import { AdminRoomList } from "@/components/admin/rooms/AdminRoomList";
 import { desc } from "drizzle-orm";
 
 export const prerender = false;
@@ -38,8 +38,8 @@ const adminRooms = allRooms.map((room) => ({
 }));
 ---
 
-<SysAdminLayout title={"Rooms 🎲"} class="flex flex-col">
+<AdminLayout title={"Rooms 🎲"} class="flex flex-col">
   <div class="flex-1">
     <AdminRoomList rooms={adminRooms} client:load />
   </div>
-</SysAdminLayout>
+</AdminLayout>

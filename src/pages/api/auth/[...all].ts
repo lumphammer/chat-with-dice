@@ -1,4 +1,4 @@
-import { auth } from "#/auth";
+import { auth } from "#/auth/auth.ts";
 import type { APIRoute } from "astro";
 
 export const prerender = false;

@@ -1,8 +1,7 @@
 ---
-import type { User } from "#/auth";
-import { auth } from "#/auth";
-import SysAdminLayout from "#/layouts/SysAdmin.astro";
-import { UserDetailPage } from "@/components/sysAdmin/users/UserDetailPage";
+import { type User, auth } from "#/auth/auth";
+import AdminLayout from "#/layouts/Admin.astro";
+import { UserDetailPage } from "@/components/admin/users/UserDetailPage";
 
 export const prerender = false;
 
@@ -20,11 +19,11 @@ try {
   //
 }
 
-if (!user) return Astro.redirect("/sysadmin/users/");
+if (!user) return Astro.redirect("/admin/users/");
 ---
 
-<SysAdminLayout title={user.name ?? user.email}>
+<AdminLayout title={user.name ?? user.email}>
   <div class="p-4">
     <UserDetailPage user={user} client:load />
   </div>
-</SysAdminLayout>
+</AdminLayout>

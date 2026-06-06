@@ -1,5 +1,5 @@
 import { z } from "astro/zod";
-import { defineAction } from "astro:actions";
+import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 
 const MAX_NAME_LENGTH = 128;
@@ -11,7 +11,7 @@ export const createFolder = defineAction({
   }),
   handler: async ({ name, parentFolderId }, { locals: { user } }) => {
     if (!user || user.isAnonymous || !user.userDataDOId) {
-      throw new Error("Unauthorized");
+      throw new ActionError({ code: "UNAUTHORIZED", message: "Unauthorized" });
     }
     const userDataDO = env.USER_DATA_DO.get(
       env.USER_DATA_DO.idFromString(user.userDataDOId),
