@@ -85,5 +85,29 @@ import CyberRetroGlitch from "./cyber-retro-glitch.astro";
     <feBlend in="fadedWibbles" in2="SourceGraphic" mode="normal"></feBlend> -->
   </filter>
 
+  <filter id="hard-outer-glow" x="-50%" y="-50%" width="200%" height="200%">
+    <feComponentTransfer
+      in="SourceGraphic"
+      result="feComponentTransfer-a52b6165"
+    >
+      <feFuncB type="linear" slope="6" intercept="0"></feFuncB>
+      <feFuncG type="linear" slope="6" intercept="0"></feFuncG>
+      <feFuncR type="linear" slope="6" intercept="0"></feFuncR>
+    </feComponentTransfer>
+    <feMorphology
+      in="feComponentTransfer-a52b6165"
+      operator="dilate"
+      radius="3"
+      result="feMorphology-83838a75"></feMorphology>
+    <feGaussianBlur
+      in="feMorphology-83838a75"
+      stdDeviation="8"
+      result="feGaussianBlur-db76bfdd"></feGaussianBlur>
+    <feComposite
+      in="SourceGraphic"
+      in2="feGaussianBlur-db76bfdd"
+      operator="over"></feComposite>
+  </filter>
+
   <CyberRetroGlitch />
 </svg>

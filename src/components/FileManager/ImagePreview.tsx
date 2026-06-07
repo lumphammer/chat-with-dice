@@ -356,6 +356,9 @@ export const ImagePreview = memo(
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onWheel={handleWheel}
+        style={{
+          filter: "url(#hard-outer-glow)",
+        }}
       >
         <img
           ref={imgRef}
