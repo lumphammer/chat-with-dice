@@ -66,36 +66,35 @@ export const SharedItemMessageDisplay = memo(
     };
 
     return (
-      <div className="flex min-w-0 flex-col gap-2 py-1">
+      <>
         <button
           type="button"
           onClick={handleOpen}
-          className="border-base-content/15 bg-base-100 hover:bg-base-200
-            flex min-w-0 cursor-pointer items-center gap-3 rounded-md border
-            p-2 text-left"
+          className="btn btn-primary m-2 flex flex-row"
         >
-          <span
-            className="bg-base-200 flex size-10 shrink-0 items-center
-              justify-center overflow-hidden rounded"
+          <div
+            className="bg-base-200 m-2 flex size-10 shrink-0 items-center
+              justify-center overflow-hidden rounded p-2"
           >
             <NodeIcon
               node={node}
               ownerUserId={item.userId}
               roomId={roomId}
               size={20}
+              className="p-2"
             />
-          </span>
+          </div>
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate font-medium">{node.name}</span>
             <span className="text-base-content/50 truncate text-sm">
               {metadata}
             </span>
           </span>
-          {isFile ? (
+          {/*{isFile ? (
             <Eye size={16} className="text-base-content/50 shrink-0" />
           ) : (
             <FolderOpen size={16} className="text-base-content/50 shrink-0" />
-          )}
+          )}*/}
         </button>
         {previewNode && (
           <FilePreview
@@ -106,7 +105,7 @@ export const SharedItemMessageDisplay = memo(
             readOnly={item.userId !== currentUserId}
           />
         )}
-      </div>
+      </>
     );
   },
 );
