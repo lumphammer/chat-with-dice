@@ -26,7 +26,7 @@ Create a `.env` file in the root of the project:
 D1_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 CLOUDFLARE_ACCOUNT_ID="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-BETTER_AUTH_URL="http://localhost:4321"
+BETTER_AUTH_HOSTS="localhost:*,*.ngrok-free.app"
 GITHUB_CLIENT_ID="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 GITHUB_CLIENT_SECRET="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 GOOGLE_CLIENT_ID="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"
@@ -34,6 +34,8 @@ GOOGLE_CLIENT_SECRET="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 RESEND_API_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 RESEND_FROM_EMAIL="Your Name <yourname@example.net>"
 ```
+
+(See src/auth/auth.ts for a comment about BETTER_AUTH_HOSTS vs BETTER_AUTH_URL.)
 
 Set up your database.
 

@@ -4,8 +4,6 @@ import { GoogleIcon } from "#/components/GoogleIcon";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 
-const HTTP_FORBIDDEN = 403;
-
 type LoadingState = "idle" | "email" | "github" | "google";
 
 function getSafeReturnUrl(): string {
