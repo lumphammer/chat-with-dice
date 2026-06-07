@@ -15,7 +15,7 @@ const room = await db.query.rooms.findFirst({
 });
 
 if (!room) {
-  return Astro.redirect("/roller");
+  return Astro.redirect("/rooms");
 }
 
 const configParseResult = roomConfigValidator.safeParse(room.config);

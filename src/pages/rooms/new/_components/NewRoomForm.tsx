@@ -43,7 +43,7 @@ export const NewRoomForm = () => {
           );
           logger.error(result.error);
         } else if (!(result.data instanceof Response)) {
-          void navigate(`/roller/rooms/${result.data.roomId}`);
+          void navigate(`/rooms/${result.data.roomId}`);
         }
       } finally {
         setLoading(false);

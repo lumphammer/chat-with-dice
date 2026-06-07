@@ -65,8 +65,7 @@ export const useChatWebSocket = ({
       return;
     }
 
-    const url = new URL("../ws/", document.location.href);
-    url.searchParams.set("roomId", roomId);
+    const url = new URL(`/rooms/${roomId}/ws`, document.location.href);
 
     // Create WebSocket connection
     const ws = new ReconnectingWebSocket(url.toString());
