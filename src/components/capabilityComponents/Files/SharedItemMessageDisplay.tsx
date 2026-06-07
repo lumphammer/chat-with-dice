@@ -10,7 +10,6 @@ import { NodeIcon } from "#/components/FileManager/NodeIcon";
 import { logger } from "#/utils/logger.ts";
 import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
-import { Eye, FolderOpen } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 
 export const SharedItemMessageDisplay = memo(
@@ -70,18 +69,19 @@ export const SharedItemMessageDisplay = memo(
         <button
           type="button"
           onClick={handleOpen}
-          className="btn btn-primary m-2 flex flex-row"
+          className="btn btn-primary m-1 box-content flex flex-row gap-4 py-1
+            pr-2 pl-1"
         >
           <div
-            className="bg-base-200 m-2 flex size-10 shrink-0 items-center
-              justify-center overflow-hidden rounded p-2"
+            className="flex size-10 shrink-0 items-center justify-center
+              overflow-hidden"
           >
             <NodeIcon
               node={node}
               ownerUserId={item.userId}
               roomId={roomId}
               size={20}
-              className="p-2"
+              // className="m-2"
             />
           </div>
           <span className="flex min-w-0 flex-1 flex-col">
