@@ -230,6 +230,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: import.meta.env.DEV ? 0 : MIN_PROD_PASSWORD_LENGTH,
+    requireEmailVerification: true,
   },
 
   socialProviders: {

@@ -39,7 +39,7 @@ export function SigninForm() {
     });
 
     if (authError) {
-      if (authError.status === HTTP_FORBIDDEN) {
+      if (authError.code === "EMAIL_NOT_VERIFIED") {
         setEmailNotVerified(true);
       } else {
         setError(authError.message ?? "Sign-in failed. Please try again.");
@@ -92,12 +92,13 @@ export function SigninForm() {
         {emailNotVerified && (
           <div
             role="alert"
-            className="alert alert-warning flex-col items-start gap-2 text-sm"
+            className="alert alert-warning flex flex-col items-start gap-2
+              text-sm"
           >
             <span>Please verify your email address before signing in.</span>
             <button
               type="button"
-              className="btn btn-xs btn-warning"
+              className="btn btn-neutral"
               disabled={resendLoading || resendSent}
               onClick={handleResendVerification}
             >
