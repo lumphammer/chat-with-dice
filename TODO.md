@@ -49,8 +49,8 @@
 - [x] standalone filemanager has too much whitespace on mobile
 - [x] "Reshare file..." should not have dots (and maybe pick a better verb?)
 - [x] remove all console.logs
+- [x] "Preview" should be "View" (or whole thing is the link)
 
-- [ ] "Preview" should be "View" (or whole thing is the link)
 - [ ] websocket endpoint can move under `rooms` in pages tree
 
 - [ ] Fix flows for new user/login/etc.
