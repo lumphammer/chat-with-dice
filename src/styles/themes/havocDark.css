@@ -155,10 +155,10 @@
 
       clip-path: polygon(
         0 0,
-        100% 0,
-        100% calc(100% - 10px),
-        calc(100% - 10px) 100%,
-        0 100%
+        calc(100% + 1px) 0,
+        calc(100% + 1px) calc(100% - 10px),
+        calc(100% - 10px) calc(100% + 1px),
+        0 calc(100% + 1px)
       );
       border-radius: 0;
       &[disabled] {
