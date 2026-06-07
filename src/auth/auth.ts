@@ -125,33 +125,41 @@ export const auth = betterAuth({
       }
     }),
     after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path === "/sign-in") {
+      if (ctx.path.startsWith("/sign-in")) {
         // on login, update the user with their durable object id if missing
-        const headers = ctx.request?.headers;
-        if (!headers) {
+        // const user = (await getSessionFromCtx(ctx))?.user;
+
+        // const headers = ctx.request?.headers;
+        // if (!headers) {
+        //   console.log("no headers");
+        //   return;
+        // }
+        // const session = await auth.api.getSession({
+        //   headers,
+        // });
+        // if (!session) {
+        //   console.log("no session. ctx: ", ctx.context.newSession?.user); // this keeps hitting!
+        //   return;
+        // }
+        const user = ctx.context.newSession?.user;
+
+        if (!user) {
+          console.log("user not found from ctx.context.newSession?.user ");
           return;
         }
-        const session = await auth.api.getSession({
-          headers,
-        });
-        if (!session) {
-          return;
-        }
-        const user = session.user;
-        if (
-          user.userDataDOId === null ||
-          user.userDataDOId === undefined ||
-          user.userDataDOId === ""
-        ) {
+        if ([null, undefined, ""].includes(user.userDataDOId)) {
+          console.log("user data do id missing, updating", user.id);
           const durableObjectId = env.USER_DATA_DO.idFromName(
             user.id,
           ).toString();
-          await db.update(users).set({ user_data_do_id: durableObjectId });
+          await db
+            .update(users)
+            .set({ user_data_do_id: durableObjectId })
+            .where(eq(schema.users.id, user.id));
+        } else {
+          console.log("user data do id already set", user.id);
         }
       }
-      // if (ctx.path === "/sign-in/email") {
-      //     // Track login analytics
-      // }
     }),
   },
 
