@@ -384,4 +384,9 @@ export class ChatRoomDO extends DurableObject {
     }
     return mountedCap ?? null;
   }
+
+  async destroy() {
+    log(`Destroying ChatRoomDO ${this.ctx.id.toString()}`);
+    await this.ctx.storage.deleteAll();
+  }
 }
