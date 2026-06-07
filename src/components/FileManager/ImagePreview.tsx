@@ -357,6 +357,12 @@ export const ImagePreview = memo(
         onPointerCancel={handlePointerUp}
         onWheel={handleWheel}
         style={{
+          // cool self-glow effect. this is slow as molasses on iOS because it
+          // doesn't use the GPU for SVG filters, but thanks to the use of
+          // translate3d below, we effectively hide the pixels from the effect
+          // on iOS. This means that iOS doesn't get the benefit of the effect,
+          // but also runs smoothly. Users on other browsers get the effect and
+          // it's smooth because it's GPU accelerated.
           filter: "url(#hard-outer-glow)",
         }}
       >
@@ -366,7 +372,7 @@ export const ImagePreview = memo(
           className="pointer-events-none absolute top-0 left-0 max-w-none
             select-none"
           style={{
-            transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
+            transform: `translate3d(${translate.x}px, ${translate.y}px, 0) scale(${scale})`,
             transformOrigin: "top left",
           }}
           draggable={false}
