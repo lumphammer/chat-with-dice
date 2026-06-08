@@ -3,7 +3,6 @@ import cloudflare from "@astrojs/cloudflare";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, svgoOptimizer } from "astro/config";
-import { fileURLToPath } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig({
@@ -29,12 +28,6 @@ export default defineConfig({
   },
 
   vite: {
-    resolve: {
-      alias: {
-        "#": fileURLToPath(new URL("./src", import.meta.url)),
-        "@": fileURLToPath(new URL("./src", import.meta.url)),
-      },
-    },
     plugins: [
       reactSvgPlugin(),
       tailwindcss(),
