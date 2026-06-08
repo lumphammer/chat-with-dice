@@ -5,7 +5,7 @@ import { NewRoomFormWrapper } from "./_components/NewRoomForm";
 export const prerender = false;
 
 if (!Astro.locals.user) {
-  return Astro.redirect("/signin?returnUrl=/roller/new");
+  return Astro.redirect("/signin?returnUrl=/rooms/new");
 }
 ---
 

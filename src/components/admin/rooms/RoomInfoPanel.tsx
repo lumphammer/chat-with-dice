@@ -89,12 +89,12 @@ export const RoomInfoPanel = memo(
             <Field label="Open in app">
               {!isDeleted ? (
                 <a
-                  href={`/roller/${room.id}/`}
+                  href={`/rooms/${room.id}/`}
                   className="link link-hover"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  /roller/{room.id}
+                  /rooms/{room.id}
                 </a>
               ) : (
                 <span className="text-base-content/50">Room is deleted</span>

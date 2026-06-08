@@ -1,0 +1,38 @@
+---
+import { db } from "#/db";
+import HTML from "#/layouts/HTML.astro";
+import { logger } from "#/utils/logger";
+import { roomConfigValidator } from "#/validators/roomConfigValidator";
+import { defaultRoomConfig } from "#/workers/ChatRoomDO/defaultRoomConfig";
+import { DiceRoller } from "@/components/DiceRoller/DiceRoller";
+
+export const prerender = false;
+const roomId = Astro.params["roomId"] ?? "";
+const room = await db.query.rooms.findFirst({
+  where: {
+    id: roomId,
+  },
+});
+
+if (!room) {
+  return Astro.redirect("/rooms");
+}
+
+const configParseResult = roomConfigValidator.safeParse(room.config);
+const config = configParseResult.success
+  ? configParseResult.data
+  : defaultRoomConfig;
+if (configParseResult.success === false) {
+  logger.error("Room failed config validation");
+}
+---
+
+<HTML title={room?.name ?? "(room not found)"} theme={room.theme ?? undefined}>
+  <DiceRoller
+    client:only
+    roomId={roomId ?? ""}
+    config={config}
+    displayName={room.name}
+    roomOwnerId={room.createdByUserId}
+  />
+</HTML>

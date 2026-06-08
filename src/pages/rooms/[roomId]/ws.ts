@@ -4,8 +4,8 @@ import { env } from "cloudflare:workers";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url, request, locals }) => {
-  const roomId = url.searchParams.get("roomId");
+export const GET: APIRoute = async ({ request, locals, params }) => {
+  const roomId = params.roomId;
   if (!roomId) return new Response("roomId is required", { status: 400 });
 
   const user = locals.user;

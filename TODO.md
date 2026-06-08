@@ -50,10 +50,10 @@
 - [x] "Reshare file..." should not have dots (and maybe pick a better verb?)
 - [x] remove all console.logs
 - [x] "Preview" should be "View" (or whole thing is the link)
-
-- [ ] websocket endpoint can move under `rooms` in pages tree
+- [x] websocket endpoint can move under `rooms` in pages tree
 
 - [ ] Fix flows for new user/login/etc.
+
 - [ ] Swipe to move between files in preview
 - [ ] fix up MaybeError etc and use exclusively
 - [ ] Perf analysis on types

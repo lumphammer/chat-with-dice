@@ -109,7 +109,7 @@ export function NavBarAccount({
           )}
           {!sessionData?.user.isAnonymous && (
             <li>
-              <a href="/roller/rooms" onClick={closeMenu}>
+              <a href="/rooms" onClick={closeMenu}>
                 <Dices size={16} />
                 Your rooms
               </a>

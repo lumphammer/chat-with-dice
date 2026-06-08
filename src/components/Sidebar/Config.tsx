@@ -98,7 +98,7 @@ export const Config = memo(() => {
 
   const handleDeleteRoom = useCallback(async () => {
     await actions.rooms.deleteRoom({ roomId });
-    window.location.href = "/roller/rooms";
+    window.location.href = "/rooms";
   }, [roomId]);
 
   const handleToggleCapability = useCallback(
