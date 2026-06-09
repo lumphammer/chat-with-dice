@@ -1,5 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
 import { isAdminOrBetter } from "#/utils/roleHelpers.ts";
+import { SignInButton } from "./SignInButton";
 import {
   Dices,
   LogOut,
@@ -59,16 +60,7 @@ export function NavBarAccount({
   }
 
   if (!user) {
-    return (
-      <div className={wrapperClass}>
-        <a
-          href={`/signin?returnUrl=${encodeURIComponent(window.location.pathname)}`}
-          className="btn btn-primary btn-sm"
-        >
-          Sign in
-        </a>
-      </div>
-    );
+    return <SignInButton wrapperClass={wrapperClass} />;
   }
 
   const initials = getInitials(user.name, user.email);
