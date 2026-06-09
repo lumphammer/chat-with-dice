@@ -1,10 +1,10 @@
 import { db as d1 } from "#/db";
+import { isAdminOrBetterOrThrow } from "#/utils/isAdminOrBetterOrThrow";
 import { processInBatches } from "#/utils/processInBatches";
 import {
   R2_REPAIR_BATCH_SIZE,
   R2_REPAIR_SUBREQUEST_BUDGET,
 } from "#/utils/r2RepairLimits";
-import { isAdminOrBetterOrThrow } from "#/utils/roleHelpers.ts";
 import type {
   MissingBlobCleanupInput,
   MissingStorageCleanupResult,
