@@ -8,10 +8,6 @@ const HTTP_BAD_REQUEST = 400;
 const HTTP_INTERNAL_SERVER_ERROR = 500;
 
 export const GET: APIRoute = async ({ params }) => {
-  if (!import.meta.env.DEV) {
-    return new Response("Not Found", { status: HTTP_NOT_FOUND });
-  }
-
   const key = params.key;
   if (!key) {
     return new Response("Bad Request", { status: HTTP_BAD_REQUEST });
