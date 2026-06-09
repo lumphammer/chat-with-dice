@@ -1,3 +1,4 @@
+import { authClient } from "#/auth/authClient";
 import { AppWrapper } from "#/components/AppWrapper";
 import { useStateWithRef } from "#/components/useStateWithRef";
 import { GENERIC_ROOM_TYPE_NAME, type RoomTypeName } from "#/roomTypes";
@@ -7,26 +8,67 @@ import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
 import { AlertTriangleIcon as AlertIcon } from "lucide-react";
 import { DicesIcon as DiceIcon } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-export const NewRoomForm = () => {
+export const NewRoomForm = ({
+  initialIsLoggedIn,
+}: {
+  initialIsLoggedIn: boolean;
+}) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [roomName, setRoomName, roomNameRef] = useStateWithRef<string>("");
+  const [userDisplayName, setUserDisplayName, userDisplayNameRef] =
+    useStateWithRef<string>("");
   const [roomType, setRoomType] = useState<RoomTypeName>(
     GENERIC_ROOM_TYPE_NAME,
   );
-  const inputRef = useRef<HTMLInputElement>(null);
+  const roomNameInputRef = useRef<HTMLInputElement>(null);
+  const userDisplayNameInputRef = useRef<HTMLInputElement>(null);
+  const [isLoggedIn, setIsLoggedIn, isLoggedInRef] =
+    useStateWithRef(initialIsLoggedIn);
+  const { isPending, data: userData } = authClient.useSession();
+  useEffect(() => {
+    if (!isPending) {
+      setIsLoggedIn(userData !== null);
+    }
+  }, [isPending, userData, setIsLoggedIn]);
 
   const handleSubmit = useCallback(
     async (event: React.SubmitEvent) => {
       event.preventDefault();
       setError(null);
 
-      const trimmed = roomNameRef.current.trim();
-      if (!trimmed) {
+      if (!isLoggedInRef.current) {
+        const trimmedUserDisplayName = userDisplayNameRef.current.trim();
+        if (!trimmedUserDisplayName) {
+          setError("Please enter a display name.");
+          return;
+        }
+        const newUser = await authClient.signIn.anonymous();
+
+        if (newUser.error) {
+          setError(
+            newUser.error.message ?? "Something went wrong. Please try again.",
+          );
+          return;
+        }
+        const { error: updateError } = await authClient.updateUser({
+          name: trimmedUserDisplayName,
+        });
+        if (updateError) {
+          setError(
+            updateError.message ?? "Something went wrong. Please try again.",
+          );
+          return;
+        }
+        setIsLoggedIn(true);
+      }
+
+      const trimmedRoomName = roomNameRef.current.trim();
+      if (!trimmedRoomName) {
         setError("Please enter a room name.");
-        inputRef.current?.focus();
+        roomNameInputRef.current?.focus();
         return;
       }
 
@@ -34,7 +76,7 @@ export const NewRoomForm = () => {
 
       try {
         const result = await actions.rooms.createChatWithDiceRoom({
-          roomName: trimmed,
+          roomName: trimmedRoomName,
           type: roomType,
         });
         if (result.error) {
@@ -49,7 +91,13 @@ export const NewRoomForm = () => {
         setLoading(false);
       }
     },
-    [roomNameRef, roomType],
+    [
+      roomNameRef,
+      roomType,
+      userDisplayNameRef.current,
+      isLoggedInRef,
+      setIsLoggedIn,
+    ],
   );
 
   return (
@@ -74,6 +122,28 @@ export const NewRoomForm = () => {
           className="flex flex-col gap-6"
           noValidate
         >
+          {!isLoggedIn && (
+            // oxlint-disable-next-line jsx-a11y/label-has-associated-control
+            <label className="form-control w-full">
+              <div className="label">
+                <span className="label-text font-medium">
+                  What shall we call you?
+                </span>
+              </div>
+              <input
+                value={userDisplayName}
+                ref={userDisplayNameInputRef}
+                onChange={(e) => setUserDisplayName(e.target.value)}
+                type="text"
+                className="input input-bordered input-primary w-full"
+                placeholder="e.g. Friday Night D&D"
+                maxLength={80}
+                required
+                // oxlint-disable-next-line jsx-a11y/no-autofocus
+                autoFocus
+              />
+            </label>
+          )}
           {/*oxlint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label className="form-control w-full">
             <div className="label">
@@ -81,7 +151,7 @@ export const NewRoomForm = () => {
             </div>
             <input
               value={roomName}
-              ref={inputRef}
+              ref={roomNameInputRef}
               onChange={(e) => setRoomName(e.target.value)}
               type="text"
               className="input input-bordered input-primary w-full"
@@ -91,11 +161,6 @@ export const NewRoomForm = () => {
               // oxlint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
-            <div className="label">
-              <span className="label-text-alt text-base-content/50">
-                Up to 80 characters
-              </span>
-            </div>
           </label>
 
           <RoomTypePicker value={roomType} onChange={setRoomType} />
@@ -115,10 +180,14 @@ export const NewRoomForm = () => {
   );
 };
 
-export const NewRoomFormWrapper = () => {
+export const NewRoomFormWrapper = ({
+  initialIsLoggedIn,
+}: {
+  initialIsLoggedIn: boolean;
+}) => {
   return (
     <AppWrapper>
-      <NewRoomForm />
+      <NewRoomForm initialIsLoggedIn={initialIsLoggedIn} />
     </AppWrapper>
   );
 };

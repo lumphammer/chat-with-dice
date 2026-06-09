@@ -4,11 +4,10 @@ import { NewRoomFormWrapper } from "./_components/NewRoomForm";
 
 export const prerender = false;
 
-if (!Astro.locals.user) {
-  return Astro.redirect("/signin?returnUrl=/rooms/new");
-}
+const session = Astro.locals.user;
+const isLoggedIn = session !== null;
 ---
 
 <Layout title="Create a Room" class="flex items-center justify-center p-6">
-  <NewRoomFormWrapper client:load />
+  <NewRoomFormWrapper client:load initialIsLoggedIn={isLoggedIn} />
 </Layout>
