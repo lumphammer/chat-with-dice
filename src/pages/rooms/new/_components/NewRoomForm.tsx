@@ -2,11 +2,12 @@ import { authClient } from "#/auth/authClient";
 import { AppWrapper } from "#/components/AppWrapper";
 import { useStateWithRef } from "#/components/useStateWithRef";
 import { GENERIC_ROOM_TYPE_NAME, type RoomTypeName } from "#/roomTypes";
+import { generateRandomName } from "#/utils/generateRandomName.ts";
 import { logger } from "#/utils/logger.ts";
 import { RoomTypePicker } from "./RoomTypePicker";
 import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
-import { AlertTriangleIcon as AlertIcon } from "lucide-react";
+import { AlertTriangleIcon as AlertIcon, Dice6, User } from "lucide-react";
 import { DicesIcon as DiceIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -123,26 +124,33 @@ export const NewRoomForm = ({
           noValidate
         >
           {!isLoggedIn && (
-            // oxlint-disable-next-line jsx-a11y/label-has-associated-control
-            <label className="form-control w-full">
-              <div className="label">
-                <span className="label-text font-medium">
-                  What shall we call you?
-                </span>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
+                What shall we call you?
+              </legend>
+              <div className="join w-full">
+                <label className="input join-item flex-1">
+                  <User size={16} className="opacity-50" />
+                  <input
+                    ref={userDisplayNameInputRef}
+                    type="text"
+                    placeholder="Adventurous Badger"
+                    value={userDisplayName}
+                    onChange={(e) => setUserDisplayName(e.target.value)}
+                    required
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-outline join-item" //
+                  title="Generate random name"
+                  aria-label="Generate random name"
+                  onClick={() => setUserDisplayName(generateRandomName())}
+                >
+                  <Dice6 size={18} />
+                </button>
               </div>
-              <input
-                value={userDisplayName}
-                ref={userDisplayNameInputRef}
-                onChange={(e) => setUserDisplayName(e.target.value)}
-                type="text"
-                className="input input-bordered input-primary w-full"
-                placeholder="e.g. Friday Night D&D"
-                maxLength={80}
-                required
-                // oxlint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus
-              />
-            </label>
+            </fieldset>
           )}
           {/*oxlint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label className="form-control w-full">
