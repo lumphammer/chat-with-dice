@@ -38,7 +38,7 @@ function SegmentedButtonGroup<T extends number>({
   ariaLabel,
 }: SegmentedButtonGroupProps<T>) {
   return (
-    <div className="join" role="group" aria-label={ariaLabel}>
+    <fieldset className="join" aria-label={ariaLabel}>
       {options.map((option) => {
         const active = option === value;
         return (
@@ -55,7 +55,7 @@ function SegmentedButtonGroup<T extends number>({
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }
 

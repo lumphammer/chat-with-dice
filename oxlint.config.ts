@@ -53,6 +53,8 @@ export default defineConfig({
     // so many callbacks are expected to return or not; messy to keep putting
     // "return undefined"
     "typescript/consistent-return": "off",
+    // doesn't recognise JSX `htmlFor` attribute
+    "jsx-a11y/control-has-associated-label": "off",
   },
   settings: {
     "jsx-a11y": {

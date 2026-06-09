@@ -245,7 +245,7 @@ export const Sidebar = memo(
                     focusable tab buttons inside, so the click handler is a
                     mouse/touch convenience and does not need a keyboard
                     equivalent. */}
-                {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events */}
+                {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
                 <nav
                   data-sidebar-swipe-handle
                   onClick={(event) => {

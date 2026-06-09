@@ -21,7 +21,9 @@ const AccountTypeField = ({
       <HatGlasses
         aria-hidden="true"
         className="text-primary h-4 w-4"
+        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
         role="img"
+        aria-label="Anonymous user"
       />
       Anonymous
     </span>
@@ -30,7 +32,9 @@ const AccountTypeField = ({
       <CheckCircle
         aria-hidden="true"
         className="text-success h-4 w-4"
+        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
         role="img"
+        aria-label="Full user"
       />
       Full
     </span>
