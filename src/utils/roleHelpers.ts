@@ -1,4 +1,4 @@
-import { ADMIN_ROLE, SUPERADMIN_ROLE } from "#/constants.ts";
+import { ADMIN_ROLE, SUPERADMIN_ROLE } from "#/constants";
 import { ActionError } from "astro:actions";
 
 const parseRoles = (rolesString?: string | null) =>
