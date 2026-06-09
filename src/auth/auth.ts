@@ -7,7 +7,7 @@ import { isAdminOrBetter, isSuperAdmin } from "#/utils/roleHelpers";
 import { sendEmail } from "#/utils/sendEmail";
 import { generateRandomName } from "../utils/generateRandomName";
 import { adminConfig } from "./adminConfig";
-import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
@@ -16,11 +16,20 @@ import { anonymous } from "better-auth/plugins";
 import { env, waitUntil } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 
+// we are currently in limbo while we wait for
+// https://github.com/better-auth/better-auth/pull/9489 to land.
+//
+// This PR allows better-auth to generate "relations V2" syntax for the drizzle
+// schema. In the mean time we are unable to regenerate the auth schema, but
+// that should be okay for a while. And we could always make manual changes.
+//
 // see
 // https://github.com/better-auth/better-auth/issues/6766#issuecomment-3704724493
 // and
 // https://github.com/better-auth/better-auth/pull/6913
-// for why we have a funny-lookin' adapter
+// for previous iterations on this issue. We were temporarily using the
+// pkg.pr.new version of @better-auth/drizzle-adapter but it seems to have
+// become broken.
 
 const MIN_PROD_PASSWORD_LENGTH = 8;
 
