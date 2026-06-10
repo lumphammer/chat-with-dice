@@ -88,7 +88,9 @@ export function NavBarAccount({
       >
         <div className="border-base-200 border-b px-4 py-3">
           {user.name && <p className="truncate font-semibold">{user.name}</p>}
-          <p className="truncate text-xs opacity-60">{user.email}</p>
+          <p className="truncate text-sm opacity-70">
+            {sessionData?.user.isAnonymous ? "Anonymous user" : user.email}
+          </p>
         </div>
         <ul className="menu p-2">
           {sessionData?.user.isAnonymous && (
