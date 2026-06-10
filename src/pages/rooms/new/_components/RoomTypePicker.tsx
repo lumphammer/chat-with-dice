@@ -1,4 +1,5 @@
 import { roomTypes, type RoomTypeName } from "#/roomTypes";
+import { Wrench } from "lucide-react";
 
 interface RoomTypePickerProps {
   value: RoomTypeName;
@@ -7,8 +8,11 @@ interface RoomTypePickerProps {
 
 export const RoomTypePicker = ({ value, onChange }: RoomTypePickerProps) => {
   return (
-    <fieldset className="flex flex-col gap-1">
-      <legend className="label-text mb-1 font-medium">Room type</legend>
+    <fieldset className="fieldset flex flex-col gap-1">
+      <legend className="fieldset-legend">
+        <Wrench size="16" />
+        Room presets
+      </legend>
       <div className="grid grid-cols-2 gap-3">
         {Object.entries(roomTypes).map(
           ([name, { label, description, Icon }]) => {

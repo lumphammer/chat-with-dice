@@ -8,7 +8,7 @@ import { RoomTypePicker } from "./RoomTypePicker";
 import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
 import { AlertTriangleIcon as AlertIcon, Dice6, User } from "lucide-react";
-import { DicesIcon as DiceIcon } from "lucide-react";
+import { Dices, Boxes } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const NewRoomForm = ({
@@ -17,7 +17,7 @@ export const NewRoomForm = ({
   initialIsLoggedIn: boolean;
 }) => {
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [roomName, setRoomName, roomNameRef] = useStateWithRef<string>("");
   const [userDisplayName, setUserDisplayName, userDisplayNameRef] =
     useStateWithRef<string>("");
@@ -30,24 +30,34 @@ export const NewRoomForm = ({
     useStateWithRef(initialIsLoggedIn);
   const { isPending, data: userData } = authClient.useSession();
   useEffect(() => {
-    if (!isPending) {
+    if (!isPending && !isLoading) {
       setIsLoggedIn(userData !== null);
     }
-  }, [isPending, userData, setIsLoggedIn]);
+  }, [isPending, userData, setIsLoggedIn, isLoading]);
 
   const handleSubmit = useCallback(
     async (event: React.SubmitEvent) => {
       event.preventDefault();
       setError(null);
 
+      const trimmedRoomName = roomNameRef.current.trim();
+      if (!trimmedRoomName) {
+        setError("Please enter a room name.");
+        roomNameInputRef.current?.focus();
+        return;
+      }
+
       if (!isLoggedInRef.current) {
         const trimmedUserDisplayName = userDisplayNameRef.current.trim();
         if (!trimmedUserDisplayName) {
           setError("Please enter a display name.");
+          userDisplayNameInputRef.current?.focus();
           return;
         }
-        const newUser = await authClient.signIn.anonymous();
 
+        setIsLoading(true);
+
+        const newUser = await authClient.signIn.anonymous();
         if (newUser.error) {
           setError(
             newUser.error.message ?? "Something went wrong. Please try again.",
@@ -66,14 +76,7 @@ export const NewRoomForm = ({
         setIsLoggedIn(true);
       }
 
-      const trimmedRoomName = roomNameRef.current.trim();
-      if (!trimmedRoomName) {
-        setError("Please enter a room name.");
-        roomNameInputRef.current?.focus();
-        return;
-      }
-
-      setLoading(true);
+      setIsLoading(true);
 
       try {
         const result = await actions.rooms.createChatWithDiceRoom({
@@ -89,7 +92,7 @@ export const NewRoomForm = ({
           void navigate(`/rooms/${result.data.roomId}`);
         }
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     },
     [
@@ -126,23 +129,22 @@ export const NewRoomForm = ({
           {!isLoggedIn && (
             <fieldset className="fieldset">
               <legend className="fieldset-legend">
+                <User size={16} className="opacity-50" />
                 What shall we call you?
               </legend>
               <div className="join w-full">
-                <label className="input join-item flex-1">
-                  <User size={16} className="opacity-50" />
-                  <input
-                    ref={userDisplayNameInputRef}
-                    type="text"
-                    placeholder="Adventurous Badger"
-                    value={userDisplayName}
-                    onChange={(e) => setUserDisplayName(e.target.value)}
-                    required
-                  />
-                </label>
+                <input
+                  className="input join-item flex-1"
+                  ref={userDisplayNameInputRef}
+                  type="text"
+                  placeholder=""
+                  value={userDisplayName}
+                  onChange={(e) => setUserDisplayName(e.target.value)}
+                  required
+                />
                 <button
                   type="button"
-                  className="btn btn-secondary btn-outline join-item" //
+                  className="btn btn-neutral btn-outline join-item" //
                   title="Generate random name"
                   aria-label="Generate random name"
                   onClick={() => setUserDisplayName(generateRandomName())}
@@ -152,34 +154,34 @@ export const NewRoomForm = ({
               </div>
             </fieldset>
           )}
-          {/*oxlint-disable-next-line jsx-a11y/label-has-associated-control */}
-          <label className="form-control w-full">
-            <div className="label">
-              <span className="label-text font-medium">Room name</span>
-            </div>
+          <fieldset className="fieldset w-full">
+            <legend className="fieldset-legend">
+              <Boxes size={16} className="opacity-50" />
+              What shall we call your chat room?
+            </legend>
             <input
               value={roomName}
               ref={roomNameInputRef}
               onChange={(e) => setRoomName(e.target.value)}
               type="text"
-              className="input input-bordered input-primary w-full"
+              className="input input-bordered w-full"
               placeholder="e.g. Friday Night D&D"
               maxLength={80}
               required
               // oxlint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
-          </label>
+          </fieldset>
 
           <RoomTypePicker value={roomType} onChange={setRoomType} />
 
           <button
             id="submitBtn"
-            disabled={loading || roomName.trim() === ""}
+            disabled={isLoading || roomName.trim() === ""}
             type="submit"
             className="btn btn-primary disabled:btn-disabled w-full gap-2"
           >
-            <DiceIcon />
+            <Dices />
             Create Room
           </button>
         </form>
