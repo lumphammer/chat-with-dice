@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type Step = "email" | "otp" | "done";
 
-export function ForgotPasswordForm() {
+export function ResetPasswordForm() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
