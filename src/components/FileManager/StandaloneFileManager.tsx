@@ -1,4 +1,6 @@
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
+import { Toaster, useToaster } from "../Toaster";
+import { ErrorHandlingContextProvider } from "../useErrorHandling";
 import { FileManager } from "./FileManager";
 import type { BreadcrumbSegment, FileManagerLocation } from "./types";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -47,6 +49,8 @@ export const StandaloneFileManager = memo(
     const [location, setLocation] = useState(initialLocation);
     const hasSetInitialState = useRef(false);
 
+    const toaster = useToaster();
+
     useEffect(() => {
       if (hasSetInitialState.current) return;
       hasSetInitialState.current = true;
@@ -83,12 +87,24 @@ export const StandaloneFileManager = memo(
       [],
     );
 
+    const handleError = useCallback(
+      (error: Error | string) => {
+        toaster.error({
+          title: typeof error === "string" ? error : error.message,
+        });
+      },
+      [toaster],
+    );
+
     return (
-      <FileManager
-        initialNodes={initialNodes}
-        location={location}
-        onLocationChange={handleLocationChange}
-      />
+      <ErrorHandlingContextProvider value={handleError}>
+        <FileManager
+          initialNodes={initialNodes}
+          location={location}
+          onLocationChange={handleLocationChange}
+        />
+        <Toaster toaster={toaster} />
+      </ErrorHandlingContextProvider>
     );
   },
 );
