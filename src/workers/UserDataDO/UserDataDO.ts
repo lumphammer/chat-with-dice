@@ -1,8 +1,3 @@
-import {
-  HTTP_BAD_REQUEST,
-  HTTP_INTERNAL_SERVER_ERROR,
-  HTTP_NOT_FOUND,
-} from "#/constants";
 import { db as d1 } from "#/db";
 import { users } from "#/schemas/coreD1-schema";
 import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
@@ -202,7 +197,7 @@ export class UserDataDO extends DurableObject {
     log("restoring", nodeId);
     const node = await this.repo.getNode(nodeId, { include: "deleted" });
     if (!node) {
-      return error("Node not found or not soft deleted", HTTP_NOT_FOUND);
+      return error("Node not found or not soft deleted", "NOT_FOUND");
     }
     const usage = await d1.query.users.findFirst({
       where: {
@@ -214,20 +209,20 @@ export class UserDataDO extends DurableObject {
       },
     });
     if (!usage) {
-      return error("User not found", HTTP_BAD_REQUEST);
+      return error("User not found", "BAD_REQUEST");
     }
 
     const sizeBytes =
       node.file?.sizeBytes ?? node.folder?.recursiveSizeBytes ?? 0;
 
     if (usage.storage_used_bytes + sizeBytes > usage.storage_quota_bytes) {
-      return error("Storage quota exceeded", HTTP_BAD_REQUEST);
+      return error("Storage quota exceeded", "BAD_REQUEST");
     }
 
     // check shadowedness
     const isShadowed = this.repo.isNodeShadowedByADeletedFolder(nodeId);
     if (isShadowed) {
-      return error("Node is shadowed by a deleted folder", HTTP_BAD_REQUEST);
+      return error("Node is shadowed by a deleted folder", "BAD_REQUEST");
     }
 
     try {
@@ -237,12 +232,12 @@ export class UserDataDO extends DurableObject {
       if (isUniqueConstraintError(cause)) {
         return error(
           "A file with that name already exists in this folder",
-          HTTP_BAD_REQUEST,
+          "BAD_REQUEST",
         );
       }
       return error(
         `Failed to restore file: ${cause instanceof Error ? cause.message : JSON.stringify(cause)}`,
-        HTTP_INTERNAL_SERVER_ERROR,
+        "INTERNAL_SERVER_ERROR",
         cause,
       );
     }
@@ -282,7 +277,7 @@ export class UserDataDO extends DurableObject {
     if (missingNodeIds.size > 0) {
       return error(
         `Nodes not found: ${Array.from(missingNodeIds).join(", ")}`,
-        HTTP_NOT_FOUND,
+        "NOT_FOUND",
       );
     }
 
@@ -312,12 +307,12 @@ export class UserDataDO extends DurableObject {
       if (isUniqueConstraintError(cause)) {
         return error(
           "A file with that name already exists in this folder",
-          HTTP_BAD_REQUEST,
+          "BAD_REQUEST",
         );
       }
       return error(
         `Failed to create file: ${cause instanceof Error ? cause.message : JSON.stringify(cause)}`,
-        HTTP_INTERNAL_SERVER_ERROR,
+        "INTERNAL_SERVER_ERROR",
         cause,
       );
     }
