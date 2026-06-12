@@ -7,8 +7,11 @@ import {
 } from "../../capabilities/reactContexts/capabilityInfoContext";
 import { SetCapabilityStateContextProvider } from "../../capabilities/reactContexts/setCapabilityStateContext";
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
+import {
+  FeedbackToasterProvider,
+  useFeedbackToasterValue,
+} from "../FeedbackToaster";
 import { Sidebar } from "../Sidebar/Sidebar";
-import { Toaster, useToaster } from "../Toaster";
 import { AnonymousEntryDialog } from "./AnonymousEntryDialog";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
@@ -52,6 +55,8 @@ export const DiceRoller = memo(
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});
 
+    const feedbackToasterValue = useFeedbackToasterValue();
+
     const optimisticallySetCapabilityState = useCallback(
       (
         name: string,
@@ -75,16 +80,14 @@ export const DiceRoller = memo(
       [setCapabilityInfos],
     );
 
-    const toaster = useToaster();
-
     const handleAnonymousNameUpdateError = useCallback(
       (message: string) => {
-        toaster.error({
-          title: "Couldn't save your display name",
-          description: `${message} You can change it on your account page.`,
-        });
+        feedbackToasterValue.onError(
+          "Couldn't save your display name",
+          `${message} You can change it on your account page.`,
+        );
       },
-      [toaster],
+      [feedbackToasterValue],
     );
 
     const { connectionStatus, messages, sendMessage, usersOnline } =
@@ -92,12 +95,9 @@ export const DiceRoller = memo(
         roomId: roomId,
         onError: useCallback(
           (error: { errorMessage: string; detail: string }) => {
-            toaster.error({
-              title: error.errorMessage,
-              description: error.detail,
-            });
+            feedbackToasterValue.onError(error.errorMessage, error.detail);
           },
-          [toaster],
+          [feedbackToasterValue],
         ),
         setCapabilityInfos,
         setRoomConfig: setRoomConfig,
@@ -173,108 +173,114 @@ export const DiceRoller = memo(
     );
 
     return (
-      <CapabilityInfoContextProvider value={capabilityInfos}>
-        <SetCapabilityStateContextProvider
-          value={optimisticallySetCapabilityState}
-        >
-          <SendMessageContextProvider value={sendMessage}>
-            <RoomInfoContextProvider
-              value={useMemo(
-                () => ({
-                  roomConfig,
-                  setRoomConfig: handleSetRoomConfig,
-                  roomName,
-                  setRoomName: handleSetRoomName,
-                  roomId,
-                  roomOwnerId,
-                }),
-                [
-                  roomConfig,
-                  handleSetRoomConfig,
-                  handleSetRoomName,
-                  roomName,
-                  roomId,
-                  roomOwnerId,
-                ],
-              )}
-            >
-              <RoomUiNavigationContextProvider>
-                <UsersOnlineContextProvider value={usersOnline}>
-                  <div
-                    ref={outerDivRef}
-                    className={`main-area ${styles.outerDiv}`}
-                    data-theme="unset"
-                    style={
-                      {
-                        "--user-hue": hue,
-                      } satisfies UserHueStyle as UserHueStyle
-                    }
-                  >
-                    {!isPending && sessionData === null && (
-                      <AnonymousEntryDialog
-                        onUpdateNameError={handleAnonymousNameUpdateError}
-                      />
-                    )}
-                    {/* grid-area: header — targeted via > header rule in CSS module */}
-                    <Header
-                      ref={headerRef}
-                      connectionStatus={connectionStatus}
-                      roomName={roomName}
-                    />
-                    {/* chat scrolling area — grid-area: chat */}
+      <FeedbackToasterProvider feedbackToasterValue={feedbackToasterValue}>
+        <CapabilityInfoContextProvider value={capabilityInfos}>
+          <SetCapabilityStateContextProvider
+            value={optimisticallySetCapabilityState}
+          >
+            <SendMessageContextProvider value={sendMessage}>
+              <RoomInfoContextProvider
+                value={useMemo(
+                  () => ({
+                    roomConfig,
+                    setRoomConfig: handleSetRoomConfig,
+                    roomName,
+                    setRoomName: handleSetRoomName,
+                    roomId,
+                    roomOwnerId,
+                  }),
+                  [
+                    roomConfig,
+                    handleSetRoomConfig,
+                    handleSetRoomName,
+                    roomName,
+                    roomId,
+                    roomOwnerId,
+                  ],
+                )}
+              >
+                <RoomUiNavigationContextProvider>
+                  <UsersOnlineContextProvider value={usersOnline}>
                     <div
-                      ref={chatAreaRef}
-                      data-part="scroller"
-                      className={styles.chatArea}
+                      ref={outerDivRef}
+                      className={`main-area ${styles.outerDiv}`}
+                      data-theme="unset"
+                      style={
+                        {
+                          "--user-hue": hue,
+                        } satisfies UserHueStyle as UserHueStyle
+                      }
                     >
-                      <div
-                        ref={scrollContainerRef}
-                        onScroll={handleScroll}
-                        className="absolute inset-0 overflow-auto px-4"
-                      >
-                        <div className={styles.chatMessages}>
-                          {messages.map((message) => (
-                            <ChatBubble
-                              key={message.id}
-                              message={message}
-                            ></ChatBubble>
-                          ))}
-                          {messages.length === 0 && (
-                            <div className="font-italic">No messages yet</div>
-                          )}
-                          <div ref={bottomRef} />
-                        </div>
-                      </div>
-                      {hasNewMessages && (
-                        <button
-                          onClick={scrollToBottom}
-                          className="btn btn-primary btn-sm absolute bottom-4
-                            left-1/2 -translate-x-1/2 shadow-lg"
-                        >
-                          ↓ New messages
-                        </button>
+                      {!isPending && sessionData === null && (
+                        <AnonymousEntryDialog
+                          onUpdateNameError={handleAnonymousNameUpdateError}
+                        />
                       )}
+                      {/* grid-area: header — targeted via > header rule in CSS module */}
+                      <Header
+                        ref={headerRef}
+                        connectionStatus={connectionStatus}
+                        roomName={roomName}
+                      />
+                      {/* chat scrolling area — grid-area: chat */}
+                      <div
+                        ref={chatAreaRef}
+                        data-part="scroller"
+                        className={styles.chatArea}
+                      >
+                        <div
+                          ref={scrollContainerRef}
+                          onScroll={handleScroll}
+                          className="absolute inset-0 overflow-auto px-4"
+                        >
+                          <div className={styles.chatMessages}>
+                            {messages.map((message) => (
+                              <ChatBubble
+                                key={message.id}
+                                message={message}
+                              ></ChatBubble>
+                            ))}
+                            {messages.length === 0 && (
+                              <div className="font-italic">No messages yet</div>
+                            )}
+                            <div ref={bottomRef} />
+                          </div>
+                        </div>
+                        {hasNewMessages && (
+                          <button
+                            onClick={scrollToBottom}
+                            className="btn btn-primary btn-sm absolute bottom-4
+                              left-1/2 -translate-x-1/2 shadow-lg"
+                          >
+                            ↓ New messages
+                          </button>
+                        )}
+                      </div>
+                      {/* chat entry bar — grid-area: entry */}
+                      <div
+                        ref={entryAreaRef}
+                        data-part="entry"
+                        className={styles.entryArea}
+                      >
+                        <ChatForm onNewMessage={handleNewChatMessage} />
+                      </div>
+                      {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
+                      <div
+                        data-part="sidebar"
+                        className={styles.sidebarWrapper}
+                      >
+                        <Sidebar
+                          backgroundElementRefs={sidebarBackgroundRefs}
+                        />
+                      </div>
                     </div>
-                    {/* chat entry bar — grid-area: entry */}
-                    <div
-                      ref={entryAreaRef}
-                      data-part="entry"
-                      className={styles.entryArea}
-                    >
-                      <ChatForm onNewMessage={handleNewChatMessage} />
-                    </div>
-                    {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
-                    <div data-part="sidebar" className={styles.sidebarWrapper}>
-                      <Sidebar backgroundElementRefs={sidebarBackgroundRefs} />
-                    </div>
-                  </div>
-                  <Toaster toaster={toaster} />
-                </UsersOnlineContextProvider>
-              </RoomUiNavigationContextProvider>
-            </RoomInfoContextProvider>
-          </SendMessageContextProvider>
-        </SetCapabilityStateContextProvider>
-      </CapabilityInfoContextProvider>
+                  </UsersOnlineContextProvider>
+                </RoomUiNavigationContextProvider>
+              </RoomInfoContextProvider>
+            </SendMessageContextProvider>
+          </SetCapabilityStateContextProvider>
+        </CapabilityInfoContextProvider>
+      </FeedbackToasterProvider>
     );
   },
 );

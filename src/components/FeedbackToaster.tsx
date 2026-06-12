@@ -25,6 +25,8 @@ export const useFeedbackToasterValue = () => {
 
   return useMemo(
     () => ({
+      onError,
+      onInfo,
       toaster,
       feedbackContextValue: { onError, onInfo },
     }),
