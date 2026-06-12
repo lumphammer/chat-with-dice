@@ -2,6 +2,7 @@ import { SharedItemMessageDisplay } from "#/components/capabilityComponents/File
 import { SidebarFiles } from "#/components/capabilityComponents/Files/SidebarFiles";
 import { SidebarAdversaries } from "#/components/capabilityComponents/SidebarAdversaries/SidebarAdversaries";
 import { SidebarCounter } from "#/components/capabilityComponents/SidebarCounter";
+import { SidebarFeedback } from "#/components/capabilityComponents/SidebarFeedback";
 import { LaserFeelingsResultDisplay } from "#/components/capabilityComponents/SidebarLaserFeelings/LaserFeelingsResultDisplay";
 import { SidebarLaserFeelings } from "#/components/capabilityComponents/SidebarLaserFeelings/SidebarLaserFeelings";
 import { SidebarObjectives } from "#/components/capabilityComponents/SidebarObjectives/SidebarObjectives";
@@ -10,12 +11,21 @@ import { SidebarRoll } from "#/components/capabilityComponents/SidebarRoll/Sideb
 import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { adversariesCapability } from "./adversariesCapability";
 import { counterCapability } from "./counterCapability";
+import { feedbackTestCapability } from "./feedbackTestCapability";
 import { filesCapability } from "./filesCapability";
 import { laserFeelingsCapability } from "./laserFeelingsCapability";
 import { objectivesCapability } from "./objectivesCapability";
 import { rollCapability } from "./rollCapability";
 import type { AnyCapability } from "./types";
-import { Check, Dices, SquarePlus, Swords, Zap, Folder } from "lucide-react";
+import {
+  Check,
+  Dices,
+  SquarePlus,
+  Swords,
+  Zap,
+  Folder,
+  Speech,
+} from "lucide-react";
 import type { ComponentType } from "react";
 
 type CapabilityInfo = {
@@ -41,6 +51,7 @@ const capabilityNames = [
   "roll",
   "laserfeelings",
   "files",
+  "feedback",
 ] as const;
 
 export type CapabilityName = (typeof capabilityNames)[number];
@@ -108,6 +119,16 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
       },
     ],
     ChatDisplayComponent: SharedItemMessageDisplay,
+  },
+  feedback: {
+    capability: feedbackTestCapability,
+    sidebarInfos: [
+      {
+        key: "feedback",
+        SidebarComponent: SidebarFeedback,
+        IconComponent: Speech,
+      },
+    ],
   },
 };
 

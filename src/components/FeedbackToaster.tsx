@@ -41,9 +41,13 @@ export const FeedbackToasterProvider = ({
   feedbackToasterValue: ReturnType<typeof useFeedbackToasterValue>;
 }>) => {
   return (
-    <FeedbackContextProvider value={feedbackToasterValue.feedbackContextValue}>
-      {children}
+    <>
+      <FeedbackContextProvider
+        value={feedbackToasterValue.feedbackContextValue}
+      >
+        {children}
+      </FeedbackContextProvider>
       <Toaster toaster={feedbackToasterValue.toaster} />
-    </FeedbackContextProvider>
+    </>
   );
 };
