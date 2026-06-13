@@ -52,18 +52,20 @@ export const Toaster = ({
           return (
             <Toast.Root key={toast.id} className={`${toastStyles.toast}`}>
               {ToastIcon && (
-                <div className="mt-0.5 shrink-0">
+                <div className={`${toastStyles.icon}`}>
                   <ToastIcon className="h-5 w-5" />
                 </div>
               )}
-              <Toast.Title>{toast.title}</Toast.Title>
-              <Toast.Description className="text-xs leading-snug opacity-80">
+              <Toast.Title className={`${toastStyles.title}`}>
+                {toast.title}
+              </Toast.Title>
+              <Toast.Description className={`${toastStyles.details} text-sm`}>
                 {toast.description}
               </Toast.Description>
 
               <Toast.CloseTrigger
-                className="hover:bg-base-300 mt-0.5 shrink-0 cursor-pointer
-                  rounded-md p-0.5 transition-colors"
+                className={`${toastStyles.close} hover:bg-base-300 mt-0.5
+                shrink-0 cursor-pointer rounded-md p-0.5 transition-colors`}
               >
                 <XIcon className="h-4 w-4" />
               </Toast.CloseTrigger>

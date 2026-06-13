@@ -13,11 +13,22 @@
     opacity 250ms cubic-bezier(0.21, 1.02, 0.73, 1),
     height 250ms cubic-bezier(0.21, 1.02, 0.73, 1);
 
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-auto-columns: auto 1fr auto;
+  align-items: center;
   gap: var(--spacing-3, 0.75rem);
-  max-width: var(--container-md, 28rem);
-  min-width: var(--spacing-80, 20rem);
+  width: 28rem;
+    [data-scope="toast"][data-part="group"] {
+  @media (max-width: 640px) {
+      width: 100%;
+    }
+    }
+
+    [data-scope="toast"][data-part="root"] {
+      /*inset-inline: 0;*/
+      width: calc(100% - var(--gap) * 2);
+    }
+  }
   padding: var(--spacing-4, 1rem);
   background-color: var(--color-base-100);
   box-shadow: var(--shadow-lg);
@@ -43,5 +54,19 @@
       translate 250ms cubic-bezier(0.06, 0.71, 0.55, 1),
       scale 250ms cubic-bezier(0.06, 0.71, 0.55, 1),
       opacity 125ms cubic-bezier(0.06, 0.71, 0.55, 1);
+  }
+
+  .icon {
+    grid-area: 1/1;
+  }
+  .title {
+    grid-area: 1/2;
+  }
+  .close {
+    grid-area: 1/3;
+    align-self: flex-start;
+  }
+  .details {
+    grid-area: 2/1 / span 1 / span 3;
   }
 }
