@@ -22,6 +22,27 @@ export const SidebarFeedback = () => {
       >
         Send info with body
       </button>
+      <button
+        className="btn btn-info btn-wide"
+        onClick={() => {
+          onInfo(
+            "An info message about something very long and wordy that may wrap onto multiple lines and contains more details than it really needs.",
+          );
+        }}
+      >
+        Send info with long title
+      </button>
+      <button
+        className="btn btn-info btn-wide"
+        onClick={() => {
+          onInfo(
+            "An info message about something very long and wordy that may wrap onto multiple lines and contains more details than it really needs.",
+            lorem,
+          );
+        }}
+      >
+        Send info with long title and body
+      </button>
 
       <button
         className="btn btn-error btn-wide"
