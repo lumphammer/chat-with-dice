@@ -40,6 +40,9 @@
       &[data-type="info"] {
         background-color: var(--color-info);
       }
+      &[data-overlap] {
+        overflow: hidden;
+      }
 
       &[data-state="closed"] {
         transition:
