@@ -24,6 +24,7 @@ export const useToaster = () => {
         removeDelay: 250,
         max: 10,
         duration: Infinity,
+        offsets: "0rem",
       }),
     [],
   );
@@ -44,19 +45,19 @@ export const Toaster = ({
 }) => {
   return (
     <Portal>
-      <ArkToaster toaster={toaster}>
+      <ArkToaster toaster={toaster} className={toastStyles.toast}>
         {(toast) => {
           const ToastIcon = toast.type
             ? iconMap[toast.type as keyof typeof iconMap]
             : undefined;
           return (
-            <Toast.Root key={toast.id} className={`${toastStyles.toast}`}>
+            <Toast.Root key={toast.id}>
               {ToastIcon && (
                 <div className={`${toastStyles.icon}`}>
                   <ToastIcon className="h-5 w-5" />
                 </div>
               )}
-              <Toast.Title className={`${toastStyles.title}`}>
+              <Toast.Title className={toastStyles.title}>
                 {toast.title}
               </Toast.Title>
               <Toast.Description className={`${toastStyles.details} text-sm`}>
