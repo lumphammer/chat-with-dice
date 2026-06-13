@@ -50,7 +50,7 @@ export const Toaster = ({
             ? iconMap[toast.type as keyof typeof iconMap]
             : undefined;
           return (
-            <Toast.Root key={toast.id} className={toastStyles.toast}>
+            <Toast.Root key={toast.id} className={`${toastStyles.toast}`}>
               {ToastIcon && (
                 <div className="mt-0.5 shrink-0">
                   <ToastIcon className="h-5 w-5" />
