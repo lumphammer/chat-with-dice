@@ -23,6 +23,7 @@ export const useToaster = () => {
         gap: 8,
         removeDelay: 250,
         max: 10,
+        duration: Infinity,
       }),
     [],
   );
@@ -55,14 +56,10 @@ export const Toaster = ({
                   <ToastIcon className="h-5 w-5" />
                 </div>
               )}
-              <details className="flex min-w-0 flex-1 flex-col gap-1">
-                <summary className="text-sm leading-snug font-semibold">
-                  {toast.title}
-                </summary>
-                <Toast.Description className="text-xs leading-snug opacity-80">
-                  {toast.description}
-                </Toast.Description>
-              </details>
+              <Toast.Title>{toast.title}</Toast.Title>
+              <Toast.Description className="text-xs leading-snug opacity-80">
+                {toast.description}
+              </Toast.Description>
 
               <Toast.CloseTrigger
                 className="hover:bg-base-300 mt-0.5 shrink-0 cursor-pointer
