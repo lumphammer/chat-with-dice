@@ -90,17 +90,19 @@ import CyberRetroGlitch from "./cyber-retro-glitch.astro";
       in="SourceGraphic"
       result="feComponentTransfer-a52b6165"
     >
-      <feFuncB type="linear" slope="6" intercept="0"></feFuncB>
-      <feFuncG type="linear" slope="6" intercept="0"></feFuncG>
-      <feFuncR type="linear" slope="6" intercept="0"></feFuncR>
+      <feFuncB type="linear" slope="4" intercept="0"></feFuncB>
+      <feFuncG type="linear" slope="4" intercept="0"></feFuncG>
+      <feFuncR type="linear" slope="4" intercept="0"></feFuncR>
     </feComponentTransfer>
-    <feMorphology
+    <!-- this stage DESTROYS performance once the display goes over certain
+    dimensions so let's leave it out, eh? -->
+    <!-- <feMorphology
       in="feComponentTransfer-a52b6165"
       operator="dilate"
       radius="3"
-      result="feMorphology-83838a75"></feMorphology>
+      result="feMorphology-83838a75"></feMorphology> -->
     <feGaussianBlur
-      in="feMorphology-83838a75"
+      in="feComponentTransfer-a52b6165"
       stdDeviation="8"
       result="feGaussianBlur-db76bfdd"></feGaussianBlur>
     <feComposite
