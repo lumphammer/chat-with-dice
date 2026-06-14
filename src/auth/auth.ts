@@ -74,22 +74,20 @@ const getLoggedInUser = async (headers: Headers | null | undefined) => {
 };
 
 export const auth = betterAuth({
-  baseURL: {
-    // this is a bit funny - if BETTER_AUTH_URL is set it will take precedence
-    // over this setting, in contravention of what the docs say (see
-    // https://better-auth.com/docs/reference/options#baseurl)
-    //
-    // BETTER_AUTH_HOSTS is not an official env var - it's my invention to allow
-    // providing multiple comma-separated URLs. So the idea here is if we need
-    // multiple URLs, use BETTER_AUTH_HOSTS, and it will get parsed and used in
-    // config here. If there's only one URL, use BETTER_AUTH_URL and will take
-    // precedence over this. But we're using BETTER_AUTH_URL as a fallback in
-    // case better-auth's behaviour ever changes to use this config over the env
-    // var, as per docs.
-    allowedHosts: (process.env.BETTER_AUTH_HOSTS ?? process.env.BETTER_AUTH_URL)
-      .split(",")
-      .map((u) => u.trim().replace(/^https?:\/\//, "")),
-  },
+  // BETTER_AUTH_HOSTS is not an official env var - it's my invention to allow
+  // providing multiple comma-separated URLs. So the idea here is if we need
+  // multiple URLs, use BETTER_AUTH_HOSTS, and it will get parsed and used in
+  // config here. If there's only one URL, use BETTER_AUTH_URL.
+  baseURL: process.env.BETTER_AUTH_HOSTS
+    ? {
+        allowedHosts: process.env.BETTER_AUTH_HOSTS.split(",").map((hostname) =>
+          hostname
+            .trim()
+            .replace(/^https?:\/\//, "")
+            .replace(/:\d+$/, ""),
+        ),
+      }
+    : undefined,
   advanced: {
     ipAddress: {
       ipAddressHeaders: ["x-client-ip", "x-forwarded-for"],
