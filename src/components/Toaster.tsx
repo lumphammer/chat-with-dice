@@ -45,7 +45,7 @@ export const Toaster = ({
 }) => {
   return (
     <Portal>
-      <ArkToaster toaster={toaster} className={toastStyles.toast}>
+      <ArkToaster toaster={toaster} className={`${toastStyles.toast} toast`}>
         {(toast) => {
           const ToastIcon = toast.type
             ? iconMap[toast.type as keyof typeof iconMap]
@@ -53,7 +53,7 @@ export const Toaster = ({
           return (
             <Toast.Root key={toast.id}>
               {ToastIcon && (
-                <div className={`${toastStyles.icon}`}>
+                <div className={toastStyles.icon}>
                   <ToastIcon className="h-5 w-5" />
                 </div>
               )}

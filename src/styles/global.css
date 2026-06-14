@@ -131,3 +131,18 @@ body {
   background: oklch(from var(--color-base-100) l c h / 30%);
   backdrop-filter: blur(16px);
 }
+
+@layer overrides {
+  /*.toast {
+    all: revert-layer;
+  }*/
+
+  /*.toast {
+    position: fixed;
+    inset-block-end: 1rem;
+    inset-inline-end: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }*/
+}
