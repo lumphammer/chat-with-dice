@@ -1,7 +1,7 @@
-import { useFeedbackContext } from "../FeedbackContext";
+import { useFeedback } from "../FeedbackContext";
 
 export const SidebarFeedback = () => {
-  const { onError, onInfo } = useFeedbackContext();
+  const { onError, onInfo } = useFeedback();
 
   return (
     <div className="flex flex-col gap-4 p-4">

@@ -1,6 +1,6 @@
 import { logger } from "#/utils/logger.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
-import { useFeedbackContext } from "../FeedbackContext";
+import { useFeedback } from "../FeedbackContext";
 import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { HardDeleteDialog } from "./HardDeleteDialog";
 import { buildFileUrl } from "./fileUrl";
@@ -42,7 +42,7 @@ export const NodeActionsMenu = memo(
       isSharedWithRoom,
     } = useShareWithRoom(node.id, readOnly);
 
-    const { onError } = useFeedbackContext();
+    const { onError } = useFeedback();
 
     const handleDelete = async () => {
       const result = await actions.files.deleteNode({ nodeId: node.id });

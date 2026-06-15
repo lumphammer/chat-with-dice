@@ -9,13 +9,15 @@ export type FeedbackContextValue = {
 const FeedbackContext = createContext<FeedbackContextValue>({
   onError: (title: string, details?: string) => {
     logger.error(title, details);
+    alert("Error: " + title);
   },
   onInfo: (title: string, details?: string) => {
     logger.info(title, details);
+    alert("Info: " + title);
   },
 });
 
-export const useFeedbackContext = () => {
+export const useFeedback = () => {
   const { onError, onInfo } = useContext(FeedbackContext);
   const value = useMemo(
     () => ({
@@ -31,4 +33,4 @@ export const useFeedbackContext = () => {
   return value;
 };
 
-export const FeedbackContextProvider = FeedbackContext.Provider;
+export const FeedbackProvider = FeedbackContext.Provider;

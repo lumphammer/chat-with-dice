@@ -1,4 +1,4 @@
-import { useFeedbackContext } from "../FeedbackContext";
+import { useFeedback } from "../FeedbackContext";
 import { buildFileUrl } from "./fileUrl";
 import { useCallback, useState } from "react";
 
@@ -74,7 +74,7 @@ export function useUpload(
   currentFolderId: string | null,
   onComplete: () => void,
 ) {
-  const { onError } = useFeedbackContext();
+  const { onError } = useFeedback();
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
 
   const uploadFiles = useCallback(

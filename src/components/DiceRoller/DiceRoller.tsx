@@ -9,7 +9,7 @@ import { SetCapabilityStateContextProvider } from "../../capabilities/reactConte
 import { deriveHueFromUserId } from "../../utils/deriveHueFromUserId";
 import {
   FeedbackToasterProvider,
-  useFeedbackToasterValue,
+  useFeedbackToasterProvider,
 } from "../FeedbackToaster";
 import { Sidebar } from "../Sidebar/Sidebar";
 import { AnonymousEntryDialog } from "./AnonymousEntryDialog";
@@ -55,7 +55,7 @@ export const DiceRoller = memo(
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});
 
-    const feedbackToasterValue = useFeedbackToasterValue();
+    const feedbackToasterValue = useFeedbackToasterProvider();
 
     const optimisticallySetCapabilityState = useCallback(
       (

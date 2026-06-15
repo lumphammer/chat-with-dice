@@ -1,8 +1,8 @@
-import { FeedbackContextProvider } from "./FeedbackContext";
+import { FeedbackProvider } from "./FeedbackContext";
 import { Toaster, useToaster } from "./Toaster";
 import { useCallback, useMemo, type PropsWithChildren } from "react";
 
-export const useFeedbackToasterValue = () => {
+export const useFeedbackToasterProvider = () => {
   const toaster = useToaster();
   const onError = useCallback(
     (title: string, details?: string) => {
@@ -38,15 +38,13 @@ export const FeedbackToasterProvider = ({
   children,
   feedbackToasterValue,
 }: PropsWithChildren<{
-  feedbackToasterValue: ReturnType<typeof useFeedbackToasterValue>;
+  feedbackToasterValue: ReturnType<typeof useFeedbackToasterProvider>;
 }>) => {
   return (
     <>
-      <FeedbackContextProvider
-        value={feedbackToasterValue.feedbackContextValue}
-      >
+      <FeedbackProvider value={feedbackToasterValue.feedbackContextValue}>
         {children}
-      </FeedbackContextProvider>
+      </FeedbackProvider>
       <Toaster toaster={feedbackToasterValue.toaster} />
     </>
   );

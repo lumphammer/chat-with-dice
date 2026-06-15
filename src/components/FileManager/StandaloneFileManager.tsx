@@ -1,7 +1,7 @@
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import {
   FeedbackToasterProvider,
-  useFeedbackToasterValue,
+  useFeedbackToasterProvider,
 } from "../FeedbackToaster";
 import { FileManager } from "./FileManager";
 import type { BreadcrumbSegment, FileManagerLocation } from "./types";
@@ -87,7 +87,7 @@ export const StandaloneFileManager = memo(
       [],
     );
 
-    const feedbackToasterValue = useFeedbackToasterValue();
+    const feedbackToasterValue = useFeedbackToasterProvider();
 
     return (
       <FeedbackToasterProvider feedbackToasterValue={feedbackToasterValue}>
