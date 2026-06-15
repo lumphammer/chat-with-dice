@@ -236,6 +236,7 @@
     }
     .menu {
       padding: 0;
+      min-width: 100%;
       & > li > :is(button, a) {
         border-radius: 0;
         &:hover {
