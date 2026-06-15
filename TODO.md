@@ -56,13 +56,16 @@
 
 - [ ] Swipe to move between files in preview
 - [ ] fix up MaybeError etc and use exclusively
-- [ ] Perf analysis on types
-- [ ] Responsive Grids for admin
 - [ ] Periodic purge of anon users
-- [ ] Unstack, or refactor, the nest of providers in DiceRoller
 - [ ] Recent rooms list
+- [ ] "About" page, with deploy time, summary, and terms of service
+- [ ] Email-only login
+
+- [ ] Unstack, or refactor, the nest of providers in DiceRoller
 - [ ] Easier feedback channels (built-in?)
 - [ ] Move capability state storage into drizzle
+- [ ] Responsive Grids for admin
+- [ ] Perf analysis on types
 
 ### Deferred file manager items
 
