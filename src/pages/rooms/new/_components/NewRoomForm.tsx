@@ -141,6 +141,8 @@ export const NewRoomForm = ({
                   value={userDisplayName}
                   onChange={(e) => setUserDisplayName(e.target.value)}
                   required
+                  // oxlint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus={!isLoggedIn}
                 />
                 <button
                   type="button"
@@ -169,7 +171,7 @@ export const NewRoomForm = ({
               maxLength={80}
               required
               // oxlint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
+              autoFocus={isLoggedIn}
             />
           </fieldset>
 
@@ -177,7 +179,11 @@ export const NewRoomForm = ({
 
           <button
             id="submitBtn"
-            disabled={isLoading || roomName.trim() === ""}
+            disabled={
+              isLoading ||
+              roomName.trim() === "" ||
+              (!isLoggedIn && userDisplayName.trim() === "")
+            }
             type="submit"
             className="btn btn-primary disabled:btn-disabled w-full gap-2"
           >
