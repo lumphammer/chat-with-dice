@@ -1,5 +1,5 @@
 import { formatBytes } from "#/utils/formatBytes";
-import { GenericMenu, useGenericMenu } from "./GenericMenu";
+import { GenericMenu, useGenericMenu } from "../GenericMenu";
 import { QuotaBar } from "./QuotaBar";
 import type { ViewMode } from "./viewModeStore";
 import {

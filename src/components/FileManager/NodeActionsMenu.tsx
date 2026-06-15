@@ -1,7 +1,7 @@
 import { logger } from "#/utils/logger.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { useFeedback } from "../FeedbackContext";
-import { GenericMenu, useGenericMenu } from "./GenericMenu";
+import { GenericMenu, useGenericMenu } from "../GenericMenu";
 import { HardDeleteDialog } from "./HardDeleteDialog";
 import { buildFileUrl } from "./fileUrl";
 import { useShareWithRoom } from "./useShareWithRoom";
