@@ -132,17 +132,9 @@ body {
   backdrop-filter: blur(16px);
 }
 
-@layer overrides {
-  /*.toast {
+/* we're handling toast styling by hand, so revert everything that daisy does */
+.toast {
+  @layer utilities.daisyui.l1.l2.l3 {
     all: revert-layer;
-  }*/
-
-  /*.toast {
-    position: fixed;
-    inset-block-end: 1rem;
-    inset-inline-end: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }*/
+  }
 }
