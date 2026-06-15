@@ -107,6 +107,29 @@
   }*/
 }
 
+@utility noisy-bg {
+  background-image:
+    url("/noise-image.svg"),
+    linear-gradient(
+      to top right,
+      oklch(from var(--noisy-bg-color) l c h / 40%) 0%,
+      oklch(from var(--noisy-bg-color) l c h / 0%) 30%,
+      oklch(from var(--noisy-bg-color) l c h / 0%) 70%,
+      oklch(from var(--noisy-bg-color) l c h / 40%) 100%
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      oklch(from var(--noisy-bg-color) l c h / 20%) 5px,
+      transparent 5px /*oklch(from var(--color-accent) l c h / 20%) 20px*/
+    );
+  background-blend-mode: multiply, screen, normal;
+  background-size:
+    100px 100px,
+    cover,
+    cover;
+}
+
 [data-theme="havocDark"] {
   @layer utilities {
     .prose {
@@ -186,6 +209,8 @@
       border-radius: 0;
     }
     .dropdown {
+      @apply noisy-bg;
+      --noisy-bg-color: var(--color-accent);
       /*// 10px white glow*/
       /*box-shadow: 0 0 10px 10px white;*/
       /*margin: 20px;*/
@@ -207,27 +232,6 @@
         var(--chip) 100%,
         0 calc(100% - var(--chip))
       );
-      background-image:
-        /*var(--color-base-300),*/
-        url("/noise-image.svg"),
-        linear-gradient(
-          to top right,
-          oklch(from var(--color-accent) l c h / 40%) 0%,
-          oklch(from var(--color-accent) l c h / 0%) 30%,
-          oklch(from var(--color-accent) l c h / 0%) 70%,
-          oklch(from var(--color-accent) l c h / 40%) 100%
-        ),
-        repeating-linear-gradient(
-          to bottom,
-          transparent 0px,
-          oklch(from var(--color-accent) l c h / 20%) 5px,
-          transparent 5px /*oklch(from var(--color-accent) l c h / 20%) 20px*/
-        );
-      background-blend-mode: multiply, screen, normal;
-      background-size:
-        100px 100px,
-        cover,
-        cover;
       /*filter: url(#cyber-retro-glitch);*/
     }
     .menu {
@@ -424,6 +428,21 @@
         var(--color-black, #000) 50%,
         transparent
       );
+    }
+
+    .toast {
+      [data-scope="toast"][data-part="root"] {
+        @apply noisy-bg;
+        --noisy-bg-color: var(--toast-color);
+        border-image-source: linear-gradient(
+          to bottom,
+          black 0%,
+          var(--toast-color) 50%,
+          black 100%
+        );
+        border-image-slice: 1;
+        border-width: 0 0.25rem;
+      }
     }
   }
 }

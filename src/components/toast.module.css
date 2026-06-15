@@ -25,19 +25,19 @@
 
     padding: var(--spacing-4, 1rem);
     background-color: var(--color-base-100);
-    box-shadow: var(--shadow-lg);
 
     &[data-type="error"] {
-      background-color: var(--color-error);
+      --toast-color: var(--color-error);
     }
     &[data-type="warning"] {
-      background-color: var(--color-warning);
+      --toast-color: var(--color-warning);
     }
     &[data-type="success"] {
-      background-color: var(--color-success);
+      --toast-color: var(--color-success);
     }
     &[data-type="info"] {
-      background-color: var(--color-info);
+      --toast-color: var(--color-info);
+      /*background-color: var(--color-info);*/
     }
     &[data-overlap] {
       overflow: hidden;
