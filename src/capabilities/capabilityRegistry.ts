@@ -36,6 +36,7 @@ type CapabilityInfo = {
     results?: JsonData;
     messageId: string;
   }>;
+  visibility?: "public" | "dev";
 };
 
 type SidebarInfo = {
@@ -58,6 +59,7 @@ export type CapabilityName = (typeof capabilityNames)[number];
 
 export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
   counter: {
+    visibility: "public",
     capability: counterCapability,
     sidebarInfos: [
       {
@@ -68,6 +70,7 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
     ],
   },
   objectives: {
+    visibility: "public",
     capability: objectivesCapability,
     sidebarInfos: [
       {
@@ -78,6 +81,7 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
     ],
   },
   adversaries: {
+    visibility: "public",
     capability: adversariesCapability,
     sidebarInfos: [
       {
@@ -88,6 +92,7 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
     ],
   },
   roll: {
+    visibility: "public",
     capability: rollCapability,
     sidebarInfos: [
       {
@@ -99,6 +104,7 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
     ChatDisplayComponent: RollResultDisplay,
   },
   laserfeelings: {
+    visibility: "public",
     capability: laserFeelingsCapability,
     sidebarInfos: [
       {
@@ -110,6 +116,7 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
     ChatDisplayComponent: LaserFeelingsResultDisplay,
   },
   files: {
+    visibility: "public",
     capability: filesCapability,
     sidebarInfos: [
       {
@@ -121,6 +128,7 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
     ChatDisplayComponent: SharedItemMessageDisplay,
   },
   feedback: {
+    visibility: "dev",
     capability: feedbackTestCapability,
     sidebarInfos: [
       {

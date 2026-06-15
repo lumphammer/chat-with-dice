@@ -9,7 +9,12 @@ import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const capabilityNames = Object.keys(capabilityRegistry) as CapabilityName[];
+const capabilityNames = Object.entries(capabilityRegistry)
+  .filter(
+    ([_name, value]) =>
+      value.visibility === "public" || process.env.NODE_ENV === "development",
+  )
+  .map(([name]) => name as CapabilityName);
 
 function getCapabilityDefaultConfig(name: CapabilityName): unknown {
   return capabilityRegistry[name].capability.defaultConfig;
