@@ -23,7 +23,7 @@ export const useToaster = () => {
         gap: 8,
         removeDelay: 250,
         max: 10,
-        duration: Infinity,
+        duration: 10000,
         offsets: "0rem",
       }),
     [],
