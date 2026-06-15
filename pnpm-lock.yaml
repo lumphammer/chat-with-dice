@@ -203,11 +203,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@astrojs/cloudflare': 14.0.0-alpha.0
-  astro: 7.0.0-alpha.1
-  wrangler: ^4.98.0
-
 importers:
 
   .:
@@ -386,8 +381,8 @@ packages:
   '@astrojs/cloudflare@14.0.0-alpha.0':
     resolution: {integrity: sha512-ewyxsh0ptepWmMVrU8JbCa+HrpwC0tzzu/lJHMcr/5+dBvLYnoBIbHdFsv0lYcqSllIqE2gDM//MZqFUGKXCdw==}
     peerDependencies:
-      astro: 7.0.0-alpha.1
-      wrangler: ^4.98.0
+      astro: ^7.0.0-alpha.0
+      wrangler: ^4.83.0
 
   '@astrojs/compiler-binding-darwin-arm64@0.1.10':
     resolution: {integrity: sha512-zDYwHvXVCm91XUm5xBRPbZK6yx9foM+Ut2qHiL0L37r1daF1bGLhnYjNV/VP35OLH5o/A1j+9uvl1xEX2a3ftw==}
@@ -1501,7 +1496,7 @@ packages:
   '@lucide/astro@1.17.0':
     resolution: {integrity: sha512-wF5wyjF8zThvI5JVUWG1WLoFdbTcMNXouxnholAyR0EEFfWNnGP1DGsvuu7cym/2mj2vUEjPbIPPDgWwjabFRQ==}
     peerDependencies:
-      astro: 7.0.0-alpha.1
+      astro: ^4 || ^5 || ^6
 
   '@nanostores/react@1.1.0':
     resolution: {integrity: sha512-MbH35fjhcf7LAubYX5vhOChYUfTLzNLqH/mBGLVsHkcvjy0F8crO1WQwdmQ2xKbAmtpalDa2zBt3Hlg5kqr8iw==}
