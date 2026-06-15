@@ -1,9 +1,19 @@
+import { codeToStatusMap } from "./codeToStatusMap";
+import { type ActionErrorCode } from "astro:actions";
+
+type TPromise<T> = Promise<T>;
+
 export namespace MaybeError {
   // export type Success<T> = { result: "success"; data: T };
   export type Success<T = undefined> = T extends undefined
-    ? { result: "success" }
-    : { result: "success"; data: T };
-  export type Error = { result: "error"; message: string; statusCode: number };
+    ? { kind: "success" }
+    : { kind: "success"; data: T };
+  export type Error = {
+    kind: "error";
+    message: string;
+    code: ActionErrorCode;
+  };
+  export type Promise<T> = TPromise<MaybeError<T>>;
 }
 
 export type MaybeError<T> = MaybeError.Success<T> | MaybeError.Error;
@@ -13,25 +23,31 @@ export function success(): MaybeError.Success;
 export function success<T>(value: T): MaybeError.Success<T>;
 export function success<T>(value?: T): MaybeError.Success<T> {
   return value === undefined
-    ? ({ result: "success" } as MaybeError.Success<T>)
-    : ({ result: "success", data: value } as MaybeError.Success<T>);
+    ? ({ kind: "success" } as MaybeError.Success<T>)
+    : ({ kind: "success", data: value } as MaybeError.Success<T>);
 }
 
 export const error = (
   message: string,
-  statusCode: number,
+  code: ActionErrorCode,
   cause?: unknown,
 ): MaybeError.Error => ({
-  result: "error",
+  kind: "error",
   message: cause
     ? `${message} (Cause: ${cause instanceof Error ? cause.message : JSON.stringify(cause)})`
     : message,
-  statusCode,
+  code,
 });
 
 export const isSuccess = <T>(
   result: MaybeError<T>,
-): result is MaybeError.Success<T> => result.result === "success";
+): result is MaybeError.Success<T> => result.kind === "success";
 
 export const isError = <T>(result: MaybeError<T>): result is MaybeError.Error =>
-  result.result === "error";
+  result.kind === "error";
+
+export const errorToResponse = (errorObject: MaybeError.Error) => {
+  return new Response(JSON.stringify({ error: errorObject.message }), {
+    status: codeToStatusMap[errorObject.code],
+  });
+};

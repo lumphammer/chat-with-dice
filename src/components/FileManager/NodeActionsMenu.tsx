@@ -1,5 +1,6 @@
 import { logger } from "#/utils/logger.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
+import { useFeedback } from "../FeedbackContext";
 import { GenericMenu, useGenericMenu } from "./GenericMenu";
 import { HardDeleteDialog } from "./HardDeleteDialog";
 import { buildFileUrl } from "./fileUrl";
@@ -41,6 +42,8 @@ export const NodeActionsMenu = memo(
       isSharedWithRoom,
     } = useShareWithRoom(node.id, readOnly);
 
+    const { onError } = useFeedback();
+
     const handleDelete = async () => {
       const result = await actions.files.deleteNode({ nodeId: node.id });
       if (result.error) {
@@ -54,7 +57,7 @@ export const NodeActionsMenu = memo(
     const handleRestore = async () => {
       const result = await actions.files.restoreNode({ nodeId: node.id });
       if (result.error) {
-        logger.error("Failed to restore:", result.error);
+        onError(`Failed to restore ${node.name}: ${result.error.message}`);
         return;
       }
       onRefresh?.();

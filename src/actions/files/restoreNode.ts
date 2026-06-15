@@ -21,6 +21,8 @@ export const restoreNode = defineAction({
       env.USER_DATA_DO.idFromString(user.userDataDOId),
     );
     const result = await userDataDO.restoreNode(nodeId);
-    return result;
+    if (result.kind === "error") {
+      throw new ActionError({ code: result.code, message: result.message });
+    }
   },
 });

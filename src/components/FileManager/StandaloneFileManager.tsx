@@ -1,4 +1,8 @@
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
+import {
+  FeedbackToasterProvider,
+  useFeedbackToasterProvider,
+} from "../FeedbackToaster";
 import { FileManager } from "./FileManager";
 import type { BreadcrumbSegment, FileManagerLocation } from "./types";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -83,12 +87,16 @@ export const StandaloneFileManager = memo(
       [],
     );
 
+    const feedbackToasterValue = useFeedbackToasterProvider();
+
     return (
-      <FileManager
-        initialNodes={initialNodes}
-        location={location}
-        onLocationChange={handleLocationChange}
-      />
+      <FeedbackToasterProvider feedbackToasterValue={feedbackToasterValue}>
+        <FileManager
+          initialNodes={initialNodes}
+          location={location}
+          onLocationChange={handleLocationChange}
+        />
+      </FeedbackToasterProvider>
     );
   },
 );

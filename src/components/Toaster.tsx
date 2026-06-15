@@ -23,6 +23,8 @@ export const useToaster = () => {
         gap: 8,
         removeDelay: 250,
         max: 10,
+        duration: 10000,
+        offsets: "0rem",
       }),
     [],
   );
@@ -43,30 +45,28 @@ export const Toaster = ({
 }) => {
   return (
     <Portal>
-      <ArkToaster toaster={toaster}>
+      <ArkToaster toaster={toaster} className={`${toastStyles.toast} toast`}>
         {(toast) => {
           const ToastIcon = toast.type
             ? iconMap[toast.type as keyof typeof iconMap]
             : undefined;
           return (
-            <Toast.Root key={toast.id} className={toastStyles.toast}>
+            <Toast.Root key={toast.id}>
               {ToastIcon && (
-                <div className="mt-0.5 shrink-0">
+                <div className={toastStyles.icon}>
                   <ToastIcon className="h-5 w-5" />
                 </div>
               )}
-              <details className="flex min-w-0 flex-1 flex-col gap-1">
-                <summary className="text-sm leading-snug font-semibold">
-                  {toast.title}
-                </summary>
-                <Toast.Description className="text-xs leading-snug opacity-80">
-                  {toast.description}
-                </Toast.Description>
-              </details>
+              <Toast.Title className={toastStyles.title}>
+                {toast.title}
+              </Toast.Title>
+              <Toast.Description className={`${toastStyles.details} text-sm`}>
+                {toast.description}
+              </Toast.Description>
 
               <Toast.CloseTrigger
-                className="hover:bg-base-300 mt-0.5 shrink-0 cursor-pointer
-                  rounded-md p-0.5 transition-colors"
+                className={`${toastStyles.close} hover:bg-base-300 mt-0.5
+                shrink-0 cursor-pointer rounded-md p-0.5 transition-colors`}
               >
                 <XIcon className="h-4 w-4" />
               </Toast.CloseTrigger>

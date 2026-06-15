@@ -6,7 +6,7 @@ import {
   HTTP_UNAUTHORIZED,
 } from "#/constants";
 import { jsonResponse } from "#/utils/jsonResponse";
-import { isError } from "#/utils/maybeError";
+import { errorToResponse, isError } from "#/utils/maybeError";
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 
@@ -72,10 +72,7 @@ export const POST: APIRoute = async (ctx) => {
   );
 
   if (isError(createFileResult)) {
-    return jsonResponse(
-      { error: createFileResult.message },
-      createFileResult.statusCode,
-    );
+    return errorToResponse(createFileResult);
   }
 
   let r2Object: R2Object;

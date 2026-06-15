@@ -131,3 +131,10 @@ body {
   background: oklch(from var(--color-base-100) l c h / 30%);
   backdrop-filter: blur(16px);
 }
+
+/* we're handling toast styling by hand, so revert everything that daisy does */
+.toast {
+  @layer utilities.daisyui.l1.l2.l3 {
+    all: revert-layer;
+  }
+}

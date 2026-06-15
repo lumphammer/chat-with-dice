@@ -1,6 +1,5 @@
 ---
 export const prerender = false;
 // redirect travellers using the old URL format
-const roomId = Astro.params.roomId;
-return Astro.redirect(`/rooms/${roomId}`);
+return Astro.redirect(`/rooms/${Astro.params.roomId}`);
 ---
