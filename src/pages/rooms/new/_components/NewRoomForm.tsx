@@ -3,105 +3,126 @@ import { AppWrapper } from "#/components/AppWrapper";
 import { useStateWithRef } from "#/components/useStateWithRef";
 import { GENERIC_ROOM_TYPE_NAME, type RoomTypeName } from "#/roomTypes";
 import { generateRandomName } from "#/utils/generateRandomName.ts";
-import { logger } from "#/utils/logger.ts";
 import { RoomTypePicker } from "./RoomTypePicker";
 import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
 import { AlertTriangleIcon as AlertIcon, Dice6, User } from "lucide-react";
 import { Dices, Boxes } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+
+type Inputs = {
+  userDisplayName: string;
+  roomName: string;
+  preset: string;
+  server: string;
+};
 
 export const NewRoomForm = ({
   initialIsLoggedIn,
 }: {
   initialIsLoggedIn: boolean;
 }) => {
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [roomName, setRoomName, roomNameRef] = useStateWithRef<string>("");
-  const [userDisplayName, setUserDisplayName, userDisplayNameRef] =
-    useStateWithRef<string>("");
+  const {
+    register,
+    handleSubmit,
+    // watch,
+    formState: { errors },
+    setValue,
+    setError,
+    clearErrors,
+  } = useForm<Inputs>({
+    defaultValues: {
+      userDisplayName: "",
+      roomName: "",
+      preset: "generic",
+    },
+  });
+
+  // states
+  // const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [roomName, setRoomName, roomNameRef] = useStateWithRef<string>("");
+  // const [userDisplayName, setUserDisplayName, userDisplayNameRef] =
+  //   useStateWithRef<string>("");
   const [roomType, setRoomType] = useState<RoomTypeName>(
     GENERIC_ROOM_TYPE_NAME,
   );
-  const roomNameInputRef = useRef<HTMLInputElement>(null);
-  const userDisplayNameInputRef = useRef<HTMLInputElement>(null);
   const [isLoggedIn, setIsLoggedIn, isLoggedInRef] =
     useStateWithRef(initialIsLoggedIn);
-  const { isPending, data: userData } = authClient.useSession();
+
+  // element refs
+  // const roomNameInputRef = useRef<HTMLInputElement>(null);
+  // const userDisplayNameInputRef = useRef<HTMLInputElement>(null);
+
+  // session handling
+  const { isPending: isSessionPending, data: userData } =
+    authClient.useSession();
   useEffect(() => {
-    if (!isPending && !isLoading) {
+    if (!isSessionPending && !isSubmitting) {
       setIsLoggedIn(userData !== null);
     }
-  }, [isPending, userData, setIsLoggedIn, isLoading]);
+  }, [isSessionPending, userData, setIsLoggedIn, isSubmitting]);
 
-  const handleSubmit = useCallback(
-    async (event: React.SubmitEvent) => {
-      event.preventDefault();
-      setError(null);
-
-      const trimmedRoomName = roomNameRef.current.trim();
-      if (!trimmedRoomName) {
-        setError("Please enter a room name.");
-        roomNameInputRef.current?.focus();
-        return;
-      }
+  // thig submit function
+  const onSubmit: SubmitHandler<Inputs> = useCallback(
+    async (data) => {
+      // setError(null);
+      clearErrors("server");
 
       if (!isLoggedInRef.current) {
-        const trimmedUserDisplayName = userDisplayNameRef.current.trim();
-        if (!trimmedUserDisplayName) {
-          setError("Please enter a display name.");
-          userDisplayNameInputRef.current?.focus();
-          return;
-        }
+        setIsSubmitting(true);
 
-        setIsLoading(true);
-
-        const newUser = await authClient.signIn.anonymous();
+        const newUser = await authClient.signIn.anonymous({
+          query: { cache: "no-store" },
+        });
         if (newUser.error) {
-          setError(
-            newUser.error.message ?? "Something went wrong. Please try again.",
-          );
+          setError("server", {
+            message:
+              newUser.error.message ??
+              "Something went wrong. Please try again.",
+          });
           return;
         }
         const { error: updateError } = await authClient.updateUser({
-          name: trimmedUserDisplayName,
+          name: data.userDisplayName.trim(),
         });
         if (updateError) {
-          setError(
-            updateError.message ?? "Something went wrong. Please try again.",
-          );
+          setError("server", {
+            message:
+              updateError.message ?? "Something went wrong. Please try again.",
+          });
+          try {
+            await authClient.deleteAnonymousUser();
+          } catch {
+            // best-effort
+          }
           return;
         }
-        setIsLoggedIn(true);
       }
 
-      setIsLoading(true);
+      setIsSubmitting(true);
 
       try {
         const result = await actions.rooms.createChatWithDiceRoom({
-          roomName: trimmedRoomName,
+          roomName: data.roomName,
           type: roomType,
         });
         if (result.error) {
-          setError(
-            result.error.message ?? "Something went wrong. Please try again.",
-          );
-          logger.error(result.error);
+          setError("server", {
+            message:
+              result.error.message ?? "Something went wrong. Please try again.",
+          });
         } else if (!(result.data instanceof Response)) {
-          void navigate(`/rooms/${result.data.roomId}`);
+          // just for testing - do not let this pass code review
+          alert("Submitted!");
+          // void navigate(`/rooms/${result.data.roomId}`);
         }
       } finally {
-        setIsLoading(false);
+        setIsSubmitting(false);
       }
     },
-    [
-      roomNameRef,
-      roomType,
-      userDisplayNameRef.current,
-      isLoggedInRef,
-      setIsLoggedIn,
-    ],
+    [clearErrors, setError, roomType, isLoggedInRef],
   );
 
   return (
@@ -110,19 +131,19 @@ export const NewRoomForm = ({
         {/*<!-- Error banner -->*/}
         <div
           id="errorBanner"
-          data-error={error ? "" : undefined}
+          data-error={errors["root"] ? "" : undefined}
           role="alert"
           className="alert alert-error text-error-content hidden flex-row gap-3
             data-error:flex"
           aria-live="polite"
         >
           <AlertIcon className="inline" />
-          {error}
+          {errors.server?.message}
         </div>
 
         {/*<!-- Form -->*/}
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-6"
           noValidate
         >
@@ -132,15 +153,20 @@ export const NewRoomForm = ({
                 <User size={16} className="opacity-50" />
                 What shall we call you?
               </legend>
+              {errors.userDisplayName && (
+                <div className="text-error-text">
+                  {errors.userDisplayName.message}
+                </div>
+              )}
               <div className="join w-full">
                 <input
                   className="input join-item flex-1"
-                  ref={userDisplayNameInputRef}
                   type="text"
                   placeholder=""
-                  value={userDisplayName}
-                  onChange={(e) => setUserDisplayName(e.target.value)}
-                  required
+                  {...register("userDisplayName", {
+                    required: isLoggedIn ? undefined : "This is required.",
+                    setValueAs: (value) => value.trim(),
+                  })}
                   // oxlint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus={!isLoggedIn}
                 />
@@ -149,7 +175,9 @@ export const NewRoomForm = ({
                   className="btn btn-neutral btn-outline join-item" //
                   title="Generate random name"
                   aria-label="Generate random name"
-                  onClick={() => setUserDisplayName(generateRandomName())}
+                  onClick={() =>
+                    setValue("userDisplayName", generateRandomName())
+                  }
                 >
                   <Dice6 size={18} />
                 </button>
@@ -161,15 +189,21 @@ export const NewRoomForm = ({
               <Boxes size={16} className="opacity-50" />
               What shall we call your chat room?
             </legend>
+            {errors.roomName && (
+              <div className="text-error-text">{errors.roomName.message}</div>
+            )}
             <input
-              value={roomName}
-              ref={roomNameInputRef}
-              onChange={(e) => setRoomName(e.target.value)}
               type="text"
               className="input input-bordered w-full"
               placeholder="e.g. Friday Night D&D"
-              maxLength={80}
-              required
+              {...register("roomName", {
+                required: "This is required.",
+                maxLength: {
+                  message: "Maximum length is 80 characters.",
+                  value: 80,
+                },
+                setValueAs: (value) => value.trim(),
+              })}
               // oxlint-disable-next-line jsx-a11y/no-autofocus
               autoFocus={isLoggedIn}
             />
@@ -179,11 +213,11 @@ export const NewRoomForm = ({
 
           <button
             id="submitBtn"
-            disabled={
-              isLoading ||
-              roomName.trim() === "" ||
-              (!isLoggedIn && userDisplayName.trim() === "")
-            }
+            // disabled={
+            //   isLoading ||
+            //   roomName.trim() === "" ||
+            //   (!isLoggedIn && userDisplayName.trim() === "")
+            // }
             type="submit"
             className="btn btn-primary disabled:btn-disabled w-full gap-2"
           >

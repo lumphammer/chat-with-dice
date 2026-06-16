@@ -73,6 +73,7 @@
     "quikdown": "^1.2.19",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-hook-form": "^7.79.0",
     "reconnecting-websocket": "^4.4.0",
     "rollup-plugin-visualizer": "^7.0.1",
     "svgo": "^4.0.1",
