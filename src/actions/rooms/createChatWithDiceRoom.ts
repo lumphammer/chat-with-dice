@@ -1,5 +1,5 @@
 import { db } from "#/db";
-import { ROOM_TYPE_NAMES, roomTypes } from "#/roomTypes";
+import { ROOM_PRESET_NAMES, roomPresets } from "#/roomPresets.tsx";
 import { rooms } from "#/schemas/coreD1-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
@@ -13,7 +13,7 @@ export const createChatWithDiceRoom = defineAction({
   input: z.object({
     roomName: z.string().min(MIN_ROOM_NAME_LENGTH).max(MAX_ROOM_NAME_LENGTH),
     description: z.string().optional(),
-    type: z.enum(ROOM_TYPE_NAMES),
+    type: z.enum(ROOM_PRESET_NAMES),
   }),
   handler: async (input, context) => {
     const user = context.locals.user;
@@ -30,7 +30,7 @@ export const createChatWithDiceRoom = defineAction({
     // idFromName ensures the same room ID always maps to the same Durable Object
     const durableObjectId = ChatRoomNamespace.idFromName(roomId).toString();
 
-    const config = roomTypes[input.type].config;
+    const config = roomPresets[input.type].config;
 
     // we *could* use the DO id as the pk, but that feels leaky
 

@@ -16,7 +16,7 @@ const capabilityNames = Object.entries(capabilityRegistry)
   )
   .map(([name]) => name as CapabilityName);
 
-function getCapabilityDefaultConfig(name: CapabilityName): unknown {
+function getCapabilityDefaultConfig(name: CapabilityName) {
   return capabilityRegistry[name].capability.defaultConfig;
 }
 

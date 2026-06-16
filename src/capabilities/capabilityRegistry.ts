@@ -45,7 +45,7 @@ type SidebarInfo = {
   IconComponent: ComponentType;
 };
 
-const capabilityNames = [
+export const capabilityNames = [
   "counter",
   "objectives",
   "adversaries",

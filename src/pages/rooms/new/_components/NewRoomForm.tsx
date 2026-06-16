@@ -1,20 +1,23 @@
 import { authClient } from "#/auth/authClient";
 import { AppWrapper } from "#/components/AppWrapper";
 import { useStateWithRef } from "#/components/useStateWithRef";
-import { GENERIC_ROOM_TYPE_NAME, type RoomTypeName } from "#/roomTypes";
+import {
+  GENERIC_ROOM_PRESET_NAME,
+  type RoomPresetName,
+} from "#/roomPresets.tsx";
 import { generateRandomName } from "#/utils/generateRandomName.ts";
-import { RoomTypePicker } from "./RoomTypePicker";
+import { RoomPresetPicker } from "./RoomPresetPicker";
 import { actions } from "astro:actions";
-import { navigate } from "astro:transitions/client";
+// import { navigate } from "astro:transitions/client";
 import { AlertTriangleIcon as AlertIcon, Dice6, User } from "lucide-react";
 import { Dices, Boxes } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 
 type Inputs = {
   userDisplayName: string;
   roomName: string;
-  preset: string;
+  preset: RoomPresetName;
   server: string;
 };
 
@@ -31,29 +34,20 @@ export const NewRoomForm = ({
     setValue,
     setError,
     clearErrors,
+    control,
   } = useForm<Inputs>({
     defaultValues: {
       userDisplayName: "",
       roomName: "",
-      preset: "generic",
+      preset: GENERIC_ROOM_PRESET_NAME,
     },
   });
 
   // states
   // const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [roomName, setRoomName, roomNameRef] = useStateWithRef<string>("");
-  // const [userDisplayName, setUserDisplayName, userDisplayNameRef] =
-  //   useStateWithRef<string>("");
-  const [roomType, setRoomType] = useState<RoomTypeName>(
-    GENERIC_ROOM_TYPE_NAME,
-  );
   const [isLoggedIn, setIsLoggedIn, isLoggedInRef] =
     useStateWithRef(initialIsLoggedIn);
-
-  // element refs
-  // const roomNameInputRef = useRef<HTMLInputElement>(null);
-  // const userDisplayNameInputRef = useRef<HTMLInputElement>(null);
 
   // session handling
   const { isPending: isSessionPending, data: userData } =
@@ -67,7 +61,6 @@ export const NewRoomForm = ({
   // thig submit function
   const onSubmit: SubmitHandler<Inputs> = useCallback(
     async (data) => {
-      // setError(null);
       clearErrors("server");
 
       if (!isLoggedInRef.current) {
@@ -106,7 +99,7 @@ export const NewRoomForm = ({
       try {
         const result = await actions.rooms.createChatWithDiceRoom({
           roomName: data.roomName,
-          type: roomType,
+          type: data.preset,
         });
         if (result.error) {
           setError("server", {
@@ -122,7 +115,7 @@ export const NewRoomForm = ({
         setIsSubmitting(false);
       }
     },
-    [clearErrors, setError, roomType, isLoggedInRef],
+    [clearErrors, setError, isLoggedInRef],
   );
 
   return (
@@ -209,15 +202,17 @@ export const NewRoomForm = ({
             />
           </fieldset>
 
-          <RoomTypePicker value={roomType} onChange={setRoomType} />
+          <Controller
+            name="preset"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <RoomPresetPicker value={field.value} onChange={field.onChange} />
+            )}
+          />
 
           <button
             id="submitBtn"
-            // disabled={
-            //   isLoading ||
-            //   roomName.trim() === "" ||
-            //   (!isLoggedIn && userDisplayName.trim() === "")
-            // }
             type="submit"
             className="btn btn-primary disabled:btn-disabled w-full gap-2"
           >

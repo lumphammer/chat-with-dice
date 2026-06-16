@@ -1,4 +1,4 @@
-import { roomTypes } from "#/roomTypes";
+import { roomPresets } from "#/roomPresets.tsx";
 import type { rooms } from "#/schemas/coreD1-schema";
 import { InfoIcon } from "lucide-react";
 import { memo } from "react";
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export const AdminRoomRow = memo(({ room }: Props) => {
-  const typeInfo = roomTypes[room.type];
+  const typeInfo = roomPresets[room.type];
   const creatorLabel =
     room.creatorName ?? room.creatorEmail ?? room.createdByUserId;
   const isDeleted = room.deleted_time != null;
