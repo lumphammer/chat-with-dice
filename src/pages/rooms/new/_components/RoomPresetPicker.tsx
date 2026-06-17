@@ -6,12 +6,14 @@ export const RoomPresetPicker = memo(
   ({
     value,
     onChange,
+    disabled,
   }: {
     value: RoomPresetName;
     onChange: (type: RoomPresetName) => void;
+    disabled?: boolean;
   }) => {
     return (
-      <fieldset className="fieldset flex flex-col gap-1">
+      <fieldset className="fieldset flex flex-col gap-1" disabled={disabled}>
         <legend className="fieldset-legend">
           <Wrench size="16" />
           Room presets
@@ -32,6 +34,7 @@ export const RoomPresetPicker = memo(
                 >
                   <input
                     type="radio"
+                    disabled={disabled}
                     name="roomType"
                     value={name}
                     checked={isSelected}
