@@ -1,9 +1,9 @@
 import type { Alphanumeric } from "#/utils/alphanumeric";
 import type {
-  ActionCall,
   JsonData,
   JsonValidator,
-} from "#/validators/webSocketMessageSchemas";
+} from "#/validators/jsonObjectValidator.ts";
+import type { ActionCall } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";

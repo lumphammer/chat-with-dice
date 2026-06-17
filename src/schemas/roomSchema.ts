@@ -1,4 +1,4 @@
-import { ROOM_TYPE_NAMES } from "#/roomTypes";
+import { ROOM_PRESET_NAMES } from "#/roomPresets.tsx";
 import { users } from "./auth-schema";
 import { int, text, snakeCase } from "drizzle-orm/sqlite-core";
 
@@ -10,7 +10,7 @@ export const rooms = snakeCase.table("rooms", {
     .notNull()
     .references(() => users.id, { onDelete: "no action" }),
   createdTime: int().notNull(),
-  type: text({ enum: ROOM_TYPE_NAMES }).notNull(),
+  type: text({ enum: ROOM_PRESET_NAMES }).notNull(),
   config: text({ mode: "json" }),
   durableObjectId: text(),
   deleted_time: int(),

@@ -1,4 +1,4 @@
-import { roomTypes } from "#/roomTypes";
+import { roomPresets } from "#/roomPresets.tsx";
 import type { rooms } from "#/schemas/coreD1-schema";
 import type { User } from "better-auth";
 import { memo } from "react";
@@ -25,7 +25,7 @@ const Field = ({
 
 export const RoomInfoPanel = memo(
   ({ room, creator }: { room: Room; creator: User | null }) => {
-    const typeInfo = roomTypes[room.type];
+    const typeInfo = roomPresets[room.type];
     const isDeleted = room.deleted_time != null;
 
     return (

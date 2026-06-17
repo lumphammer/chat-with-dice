@@ -50,8 +50,14 @@ export const adminDeleteStorageOrphans = defineAction({
       env.USER_DATA_DO.idFromString(owner.user_data_do_id),
     );
     const freshReport = await userDataDO.checkR2Reconciliation();
+    if (freshReport.kind === "error") {
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to check storage",
+      });
+    }
     const freshOrphanKeys = new Set(
-      freshReport.orphanBlobs.map((blob) => blob.key),
+      freshReport.data.orphanBlobs.map((blob) => blob.key),
     );
 
     const result: R2OrphanCleanupResult = {
@@ -74,8 +80,10 @@ export const adminDeleteStorageOrphans = defineAction({
       }
       seenKeys.add(key);
 
-      const isFileKey = key.startsWith(freshReport.prefixes.files);
-      const isThumbnailKey = key.startsWith(freshReport.prefixes.thumbnails);
+      const isFileKey = key.startsWith(freshReport.data.prefixes.files);
+      const isThumbnailKey = key.startsWith(
+        freshReport.data.prefixes.thumbnails,
+      );
       if (!isFileKey && !isThumbnailKey) {
         result.skipped.push({ key, reason: "outside-user-prefix" });
         continue;

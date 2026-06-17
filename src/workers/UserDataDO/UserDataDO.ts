@@ -1,5 +1,5 @@
 import { db as d1 } from "#/db";
-import { users } from "#/schemas/coreD1-schema";
+import { rooms, users } from "#/schemas/coreD1-schema";
 import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
 import { processInBatches } from "#/utils/processInBatches";
@@ -39,7 +39,7 @@ import { nanoid } from "nanoid";
 
 export class UserDataDO extends DurableObject {
   private repo!: UserDataRepository;
-  private userId!: string;
+  private userId!: string | undefined;
   private scheduler!: Scheduler;
 
   constructor(ctx: DurableObjectState, env: Env) {
@@ -65,7 +65,7 @@ export class UserDataDO extends DurableObject {
    * Get the cached userId (it should never change), or if it's not in KV, look
    * up our DO id in D1 to find the user and cache it.
    */
-  private async resolveUserId(): Promise<string> {
+  private async resolveUserId(): Promise<string | undefined> {
     const cached = this.ctx.storage.kv.get("userId");
     if (typeof cached === "string") {
       return cached;
@@ -76,9 +76,7 @@ export class UserDataDO extends DurableObject {
       },
     });
     if (!user) {
-      throw new Error(
-        `User does not exist in database with user_data_do_id ${this.ctx.id.toString()}`,
-      );
+      return undefined;
     }
     this.ctx.storage.kv.put("userId", user.id);
     return user.id;
@@ -291,6 +289,9 @@ export class UserDataDO extends DurableObject {
     contentType: string,
     folderId: string | null | undefined,
   ): PromiseMaybeError<{ id: string; r2Key: string }> {
+    if (!this.userId) {
+      return error("User not found", "NOT_FOUND");
+    }
     const id = crypto.randomUUID();
     const r2Key = userFileR2Key(this.userId, id);
     log(`createFile: ${filename}, ${r2Key}`);
@@ -428,6 +429,10 @@ export class UserDataDO extends DurableObject {
     roomDurableObjectId: string;
     userDisplayName: string;
   }): Promise<NodeShareResult> {
+    if (!this.userId) {
+      return { result: "error", reason: "userId not found" };
+    }
+
     const existing: DbShare | undefined = await this.repo.findShareWithNode(
       nodeId,
       roomDurableObjectId,
@@ -498,7 +503,7 @@ export class UserDataDO extends DurableObject {
    * Read-only integrity report: folders whose stored `recursiveSizeBytes`
    * disagrees with the sum of their direct children. No repair is attempted.
    */
-  async checkFolderSizes(): Promise<FolderSizeReport> {
+  async checkFolderSizes(): PromiseMaybeError<FolderSizeReport> {
     const discrepancies = this.repo
       .findFolderSizeDiscrepancies()
       .map((row) => ({
@@ -510,10 +515,10 @@ export class UserDataDO extends DurableObject {
         deltaBytes: row.stored - row.expected,
       }));
 
-    return {
+    return success({
       generatedAt: Date.now(),
       discrepancies,
-    };
+    });
   }
 
   async recalculateFolderSizes(): Promise<FolderSizeRepairResult> {
@@ -704,7 +709,11 @@ export class UserDataDO extends DurableObject {
    * (main files + thumbnails). Reports orphan blobs, missing blobs, and size
    * mismatches. No repair is attempted.
    */
-  async checkR2Reconciliation(): Promise<R2ReconciliationReport> {
+  async checkR2Reconciliation(): PromiseMaybeError<R2ReconciliationReport> {
+    if (!this.userId) {
+      return error("User not found", "NOT_FOUND");
+    }
+
     const bucket = cfEnv.PRIVATE_R2;
     if (!bucket) {
       throw new Error("PRIVATE_R2 bucket is not configured");
@@ -800,7 +809,7 @@ export class UserDataDO extends DurableObject {
       }
     }
 
-    return {
+    return success({
       generatedAt: Date.now(),
       prefixes: { files: filesPrefix, thumbnails: thumbnailsPrefix },
       totals: {
@@ -811,10 +820,13 @@ export class UserDataDO extends DurableObject {
       orphanBlobs,
       missingBlobs,
       sizeMismatches,
-    };
+    });
   }
 
-  private async syncQuotaWithSizes() {
+  private async syncQuotaWithSizes(): PromiseMaybeError {
+    if (!this.userId) {
+      return error("User not found", "NOT_FOUND");
+    }
     // we calculate this from scratch for now so as to reduce the chance of
     // quota usage getting or staying out of sync with reality
     const total = await this.repo.getRootSize();
@@ -826,5 +838,27 @@ export class UserDataDO extends DurableObject {
         })
         .where(eq(users.id, this.userId));
     }
+    return success();
+  }
+
+  async destroy() {
+    log(`Destroying UserDataDO ${this.ctx.id.toString()}`);
+    if (this.userId) {
+      const roomResults = await d1.query.rooms.findMany({
+        where: {
+          createdByUserId: this.userId,
+        },
+      });
+      await Promise.all(
+        roomResults.map((room) => {
+          if (!room.durableObjectId) return Promise.resolve();
+          return this.env.CHAT_ROOM_DO.get(
+            this.env.CHAT_ROOM_DO.idFromString(room.durableObjectId),
+          ).destroy();
+        }),
+      );
+      await d1.delete(rooms).where(eq(rooms.createdByUserId, this.userId));
+    }
+    await this.ctx.storage.deleteAll();
   }
 }

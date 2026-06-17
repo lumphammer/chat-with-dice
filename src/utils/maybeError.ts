@@ -17,7 +17,7 @@ export namespace MaybeError {
 }
 
 export type MaybeError<T> = MaybeError.Success<T> | MaybeError.Error;
-export type PromiseMaybeError<T> = Promise<MaybeError<T>>;
+export type PromiseMaybeError<T = undefined> = Promise<MaybeError<T>>;
 
 export function success(): MaybeError.Success;
 export function success<T>(value: T): MaybeError.Success<T>;

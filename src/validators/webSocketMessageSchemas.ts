@@ -1,3 +1,8 @@
+import {
+  jsonObjectValidator,
+  type JsonData,
+  type JsonValidator,
+} from "./jsonObjectValidator";
 import { roomConfigValidator } from "./roomConfigValidator";
 import { z } from "zod/v4";
 
@@ -14,31 +19,9 @@ export const linkPreviewValidator = z.object({
 export type LinkPreview = z.infer<typeof linkPreviewValidator>;
 
 /**
- * A restricted type for JSON-serializable data which *must* be an object at the
- * top level.
- */
-export type JsonData = {
-  [key: string]: z.core.util.JSONType;
-};
-
-/**
- * A type for zod validators of JsonData
- * @see JsonData
- */
-export type JsonValidator = z.ZodType<JsonData>;
-
-/**
  * A type for zod validators of JsonData or null.
  */
 export type JsonDataOrNullValidator = z.ZodType<JsonData | null>;
-
-/**
- * A zod validator for JSON objects.
- */
-export const jsonObjectValidator = z.record(
-  z.string(),
-  z.json(),
-) satisfies JsonValidator;
 
 /**
  * Create a zod validator for chat messages.

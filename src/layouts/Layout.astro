@@ -17,6 +17,7 @@ const initialUser = serverUser
       name: serverUser.name ?? null,
       email: serverUser.email,
       image: serverUser.image ?? null,
+      isAnonymous: serverUser.isAnonymous ?? false,
     }
   : null;
 ---

@@ -30,6 +30,13 @@ export const adminStorageReport = defineAction({
       userDataDO.checkR2Reconciliation(),
     ]);
 
-    return { folderReport, r2Report };
+    if (folderReport.kind === "success" && r2Report.kind === "success") {
+      return { folderReport: folderReport.data, r2Report: r2Report.data };
+    } else {
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to check storage",
+      });
+    }
   },
 });

@@ -162,8 +162,8 @@ export function SigninForm() {
           </button>
 
           <div className="text-right text-sm">
-            <a href="/forgot-password" className="link link-primary opacity-70">
-              Forgot password?
+            <a href="/reset-password" className="link link-primary opacity-70">
+              I need to reset my password
             </a>
           </div>
         </form>

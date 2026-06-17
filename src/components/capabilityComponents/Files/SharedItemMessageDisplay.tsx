@@ -8,8 +8,8 @@ import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roo
 import { FilePreview } from "#/components/FileManager/FilePreview";
 import { NodeIcon } from "#/components/FileManager/NodeIcon";
 import { logger } from "#/utils/logger.ts";
+import type { JsonData } from "#/validators/jsonObjectValidator.ts";
 import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
-import type { JsonData } from "#/validators/webSocketMessageSchemas";
 import { memo, useMemo, useState } from "react";
 
 export const SharedItemMessageDisplay = memo(

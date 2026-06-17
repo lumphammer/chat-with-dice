@@ -155,7 +155,9 @@ export const auth = betterAuth({
           return;
         }
         if ([null, undefined, ""].includes(user.userDataDOId)) {
-          console.log("user data do id missing, updating", user.id);
+          console.log(
+            `user data do id missing for newly created user ${user.id}, adding it now`,
+          );
           const durableObjectId = env.USER_DATA_DO.idFromName(
             user.id,
           ).toString();
@@ -190,6 +192,29 @@ export const auth = betterAuth({
   },
 
   user: {
+    deleteUser: {
+      // allow users to delete themselves
+      enabled: true,
+      // but only if they're anonymous (it's safe because they don't have
+      // Durable objects that need cleaning up)
+      beforeDelete: async (user) => {
+        console.log(`deletion requested for user "${user.name} (${user.id})"`);
+        if (!(user as any).isAnonymous) {
+          throw new APIError("UNAUTHORIZED", {
+            message: "Only anonymous users can be hard deleted",
+          });
+        }
+      },
+      afterDelete: async (user) => {
+        const userDataDOId: string | null = (user as any).userDataDOId;
+        if (userDataDOId) {
+          const userDataDO = env.USER_DATA_DO.get(
+            env.USER_DATA_DO.idFromString(userDataDOId),
+          );
+          await userDataDO.destroy();
+        }
+      },
+    },
     changeEmail: {
       enabled: true,
     },
