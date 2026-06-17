@@ -7,7 +7,7 @@ import { DiceRow } from "#/components/capabilityComponents/shared/diceDisplay/Di
 import { FaceChip } from "#/components/capabilityComponents/shared/diceDisplay/FaceChip";
 import { FormulaLine } from "#/components/capabilityComponents/shared/diceDisplay/FormulaLine";
 import { ResultStat } from "#/components/capabilityComponents/shared/diceDisplay/ResultStat";
-import type { JsonData } from "#/validators/webSocketMessageSchemas";
+import type { JsonData } from "#/validators/jsonObjectValidator.ts";
 import { Sparkles } from "lucide-react";
 import { memo } from "react";
 

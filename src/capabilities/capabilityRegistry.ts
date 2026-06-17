@@ -8,7 +8,7 @@ import { SidebarLaserFeelings } from "#/components/capabilityComponents/SidebarL
 import { SidebarObjectives } from "#/components/capabilityComponents/SidebarObjectives/SidebarObjectives";
 import { RollResultDisplay } from "#/components/capabilityComponents/SidebarRoll/RollResultDisplay";
 import { SidebarRoll } from "#/components/capabilityComponents/SidebarRoll/SidebarRoll";
-import type { JsonData } from "#/validators/webSocketMessageSchemas";
+import type { JsonData } from "#/validators/jsonObjectValidator.ts";
 import { adversariesCapability } from "./adversariesCapability";
 import { counterCapability } from "./counterCapability";
 import { feedbackTestCapability } from "./feedbackTestCapability";

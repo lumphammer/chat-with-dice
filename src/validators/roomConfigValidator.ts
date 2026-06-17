@@ -1,5 +1,5 @@
 import { capabilityNames } from "#/capabilities/capabilityRegistry.ts";
-import { jsonObjectValidator } from "./webSocketMessageSchemas";
+import { jsonObjectValidator } from "./jsonObjectValidator";
 import { z } from "zod/v4";
 
 // checks a capability inside a room config, patches up the capability config to

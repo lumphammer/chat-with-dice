@@ -1,8 +1,8 @@
 import type {
-  ChatMessage,
   JsonData,
   JsonValidator,
-} from "#/validators/webSocketMessageSchemas";
+} from "#/validators/jsonObjectValidator.ts";
+import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import { useCallback, useEffect, type ComponentType } from "react";
 import type * as z from "zod";

@@ -1,7 +1,7 @@
 import type { RollType } from "#/rollTypes/createRollType";
+import type { JsonValidator } from "#/validators/jsonObjectValidator.ts";
 import {
   parseChatMessage,
-  type JsonValidator,
   type ChatMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "./Broadcaster";

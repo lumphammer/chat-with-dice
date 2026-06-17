@@ -5,10 +5,8 @@ import { useSendMessageContextSafe } from "#/components/DiceRoller/contexts/send
 import { useRefStash } from "#/components/useRefStash";
 import { toAlphanumeric } from "#/utils/alphanumeric";
 import { logger } from "#/utils/logger.ts";
-import type {
-  ActionCall,
-  JsonValidator,
-} from "#/validators/webSocketMessageSchemas";
+import type { JsonValidator } from "#/validators/jsonObjectValidator.ts";
+import type { ActionCall } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";

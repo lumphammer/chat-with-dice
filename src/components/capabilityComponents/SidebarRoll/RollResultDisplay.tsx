@@ -8,7 +8,7 @@ import {
 } from "#/capabilities/rollCapability";
 import { FormulaLine } from "#/components/capabilityComponents/shared/diceDisplay/FormulaLine";
 import { ResultStat } from "#/components/capabilityComponents/shared/diceDisplay/ResultStat";
-import type { JsonData } from "#/validators/webSocketMessageSchemas";
+import type { JsonData } from "#/validators/jsonObjectValidator.ts";
 import { HandfulDisplay } from "./HandfulDisplay";
 import { memo } from "react";
 

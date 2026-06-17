@@ -830,6 +830,19 @@ export class UserDataDO extends DurableObject {
 
   async destroy() {
     log(`Destroying UserDataDO ${this.ctx.id.toString()}`);
+    const rooms = await d1.query.rooms.findMany({
+      where: {
+        createdByUserId: this.userId,
+      },
+    });
+    await Promise.all(
+      rooms.map((room) => {
+        if (!room.durableObjectId) return;
+        return this.env.CHAT_ROOM_DO.get(
+          this.env.CHAT_ROOM_DO.idFromString(room.durableObjectId),
+        ).destroy();
+      }),
+    );
     await this.ctx.storage.deleteAll();
   }
 }
