@@ -9,12 +9,13 @@ import {
   PersonStanding,
   File,
 } from "lucide-react";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 
 type UserInfo = {
   name: string | null;
   email: string;
   image: string | null;
+  isAnonymous: boolean;
 };
 
 export function NavBarAccount({
@@ -33,15 +34,20 @@ export function NavBarAccount({
 
   // While the client-side session is still loading, use the server-provided
   // initial state so there's no skeleton flash or layout shift.
-  const user: UserInfo | null = isPending
-    ? initialUser
-    : sessionData?.user
-      ? {
-          name: sessionData.user.name ?? null,
-          email: sessionData.user.email,
-          image: sessionData.user.image ?? null,
-        }
-      : null;
+  const user: UserInfo | null = useMemo(
+    () =>
+      isPending
+        ? initialUser
+        : sessionData?.user
+          ? {
+              name: sessionData.user.name ?? null,
+              email: sessionData.user.email,
+              image: sessionData.user.image ?? null,
+              isAnonymous: sessionData.user.isAnonymous ?? false,
+            }
+          : null,
+    [sessionData, isPending, initialUser],
+  );
 
   const wrapperClass = !needsFade
     ? undefined
@@ -89,7 +95,7 @@ export function NavBarAccount({
         <div className="border-base-200 border-b px-4 py-3">
           {user.name && <p className="truncate font-semibold">{user.name}</p>}
           <p className="truncate text-sm opacity-70">
-            {sessionData?.user.isAnonymous ? "Anonymous user" : user.email}
+            {user.isAnonymous ? "Anonymous user" : user.email}
           </p>
         </div>
         <ul className="menu p-2">
