@@ -1,5 +1,5 @@
 import { db as d1 } from "#/db";
-import { users } from "#/schemas/coreD1-schema";
+import { rooms, users } from "#/schemas/coreD1-schema";
 import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
 import { error, success, type PromiseMaybeError } from "#/utils/maybeError";
 import { processInBatches } from "#/utils/processInBatches";
@@ -830,19 +830,20 @@ export class UserDataDO extends DurableObject {
 
   async destroy() {
     log(`Destroying UserDataDO ${this.ctx.id.toString()}`);
-    const rooms = await d1.query.rooms.findMany({
+    const roomResults = await d1.query.rooms.findMany({
       where: {
         createdByUserId: this.userId,
       },
     });
     await Promise.all(
-      rooms.map((room) => {
+      roomResults.map((room) => {
         if (!room.durableObjectId) return Promise.resolve();
         return this.env.CHAT_ROOM_DO.get(
           this.env.CHAT_ROOM_DO.idFromString(room.durableObjectId),
         ).destroy();
       }),
     );
+    await d1.delete(rooms).where(eq(rooms.createdByUserId, this.userId));
     await this.ctx.storage.deleteAll();
   }
 }
