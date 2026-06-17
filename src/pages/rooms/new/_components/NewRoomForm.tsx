@@ -7,7 +7,7 @@ import {
 } from "#/roomPresets.tsx";
 import { generateRandomName } from "#/utils/generateRandomName.ts";
 import { RoomPresetPicker } from "./RoomPresetPicker";
-import { isActionError } from "astro/actions/runtime/entrypoints/client.js";
+import { isActionError } from "astro:actions";
 import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
 import {

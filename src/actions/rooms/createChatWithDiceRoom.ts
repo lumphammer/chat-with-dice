@@ -1,8 +1,8 @@
 import { db } from "#/db";
 import { ROOM_PRESET_NAMES, roomPresets } from "#/roomPresets.tsx";
 import { rooms } from "#/schemas/coreD1-schema";
-import { ActionError } from "astro/actions/runtime/entrypoints/client.js";
 import { z } from "astro/zod";
+import { ActionError } from "astro:actions";
 import { defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 import { nanoid } from "nanoid";
