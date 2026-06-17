@@ -142,7 +142,9 @@ export const NewRoomForm = ({
         if (shouldDeleteUserAndLogOutOnerror) {
           try {
             await authClient.deleteUser();
-          } catch {}
+          } catch (deleteErr) {
+            console.error(`failed to clean up anonymous user`, deleteErr);
+          }
         }
       } finally {
         setIsSubmitting(false);
