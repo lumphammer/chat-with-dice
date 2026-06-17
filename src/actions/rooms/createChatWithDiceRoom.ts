@@ -3,6 +3,7 @@ import { ROOM_PRESET_NAMES, roomPresets } from "#/roomPresets.tsx";
 import { rooms } from "#/schemas/coreD1-schema";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
+import { APIError } from "better-auth";
 import { env } from "cloudflare:workers";
 import { nanoid } from "nanoid";
 
@@ -18,11 +19,14 @@ export const createChatWithDiceRoom = defineAction({
   handler: async (input, context) => {
     const user = context.locals.user;
     if (!user) {
-      return new Response("Unauthorized", { status: 401 });
+      throw new APIError("UNAUTHORIZED", { message: "Unauthorized" });
     }
     const ChatRoomNamespace = env.CHAT_ROOM_DO;
-    if (!ChatRoomNamespace)
-      return new Response("CHAT_ROOM_DO binding not found", { status: 500 });
+    if (!ChatRoomNamespace) {
+      throw new APIError("INTERNAL_SERVER_ERROR", {
+        message: "CHAT_ROOM_DO binding not found",
+      });
+    }
 
     const roomId = nanoid();
 
