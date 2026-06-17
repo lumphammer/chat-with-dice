@@ -102,14 +102,15 @@ export const NewRoomForm = ({
   // big submit function
   const onSubmit: SubmitHandler<Inputs> = useCallback(
     async (data) => {
+      // mis-en-place
       let shouldDeleteUserAndLogOutOnerror = false;
-
       clearErrors("root");
+      setIsSubmitting(true);
 
+      // wrap everything in `try`, catch at the end
       try {
         // if not logged in, start by making an anon login
         if (!isLoggedInRef.current) {
-          setIsSubmitting(true);
           // log in
           throwIfError(await authClient.signIn.anonymous());
           // set username
@@ -122,9 +123,6 @@ export const NewRoomForm = ({
           // anything goes wrong
           shouldDeleteUserAndLogOutOnerror = true;
         }
-
-        // now we're going to make the room
-        setIsSubmitting(true);
 
         const roomData = throwIfError(
           await actions.rooms.createChatWithDiceRoom({
