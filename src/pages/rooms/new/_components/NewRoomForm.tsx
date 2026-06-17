@@ -118,9 +118,7 @@ export const NewRoomForm = ({
           shouldDeleteUserAndLogOutOnerror = true;
           // set username
           throwIfError(
-            await authClient.updateUser({
-              name: data.userDisplayName.trim(),
-            }),
+            await authClient.updateUser({ name: data.userDisplayName }),
           );
         }
 
