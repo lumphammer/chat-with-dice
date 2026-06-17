@@ -827,4 +827,9 @@ export class UserDataDO extends DurableObject {
         .where(eq(users.id, this.userId));
     }
   }
+
+  async destroy() {
+    log(`Destroying UserDataDO ${this.ctx.id.toString()}`);
+    await this.ctx.storage.deleteAll();
+  }
 }
