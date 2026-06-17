@@ -44,7 +44,7 @@ function throwIfError<R extends Result>(result: R): NonNullable<R["data"]> {
     if (Object.hasOwn(result.error, "message")) {
       throw new Error((result.error as { message: string }).message);
     }
-    throw new Error("Something went wrong");
+    throw new Error("Something went wrong", { cause: result.error });
   }
   // the contract: error was nullish, so data is present
   return result.data as NonNullable<R["data"]>;
