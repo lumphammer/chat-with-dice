@@ -837,7 +837,7 @@ export class UserDataDO extends DurableObject {
     });
     await Promise.all(
       rooms.map((room) => {
-        if (!room.durableObjectId) return;
+        if (!room.durableObjectId) return Promise.resolve();
         return this.env.CHAT_ROOM_DO.get(
           this.env.CHAT_ROOM_DO.idFromString(room.durableObjectId),
         ).destroy();

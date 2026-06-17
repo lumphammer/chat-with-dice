@@ -214,7 +214,7 @@ export const auth = betterAuth({
           const userDataDO = env.USER_DATA_DO.get(
             env.USER_DATA_DO.idFromString(userDataDOId),
           );
-          userDataDO.destroy();
+          await userDataDO.destroy();
         }
       },
     },
