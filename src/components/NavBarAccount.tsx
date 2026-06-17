@@ -107,14 +107,12 @@ export function NavBarAccount({
               </a>
             </li>
           )}
-          {!sessionData?.user.isAnonymous && (
-            <li>
-              <a href="/rooms" onClick={closeMenu}>
-                <Dices size={16} />
-                Your rooms
-              </a>
-            </li>
-          )}
+          <li>
+            <a href="/rooms" onClick={closeMenu}>
+              <Dices size={16} />
+              Your rooms
+            </a>
+          </li>
           {!sessionData?.user.isAnonymous && (
             <li>
               <a href="/files" onClick={closeMenu}>
