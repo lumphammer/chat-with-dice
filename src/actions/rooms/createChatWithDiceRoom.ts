@@ -1,9 +1,9 @@
 import { db } from "#/db";
 import { ROOM_PRESET_NAMES, roomPresets } from "#/roomPresets.tsx";
 import { rooms } from "#/schemas/coreD1-schema";
+import { ActionError } from "astro/actions/runtime/entrypoints/client.js";
 import { z } from "astro/zod";
 import { defineAction } from "astro:actions";
-import { APIError } from "better-auth";
 import { env } from "cloudflare:workers";
 import { nanoid } from "nanoid";
 
@@ -19,11 +19,12 @@ export const createChatWithDiceRoom = defineAction({
   handler: async (input, context) => {
     const user = context.locals.user;
     if (!user) {
-      throw new APIError("UNAUTHORIZED", { message: "Unauthorized" });
+      throw new ActionError({ code: "UNAUTHORIZED", message: "Unauthorized" });
     }
     const ChatRoomNamespace = env.CHAT_ROOM_DO;
     if (!ChatRoomNamespace) {
-      throw new APIError("INTERNAL_SERVER_ERROR", {
+      throw new ActionError({
+        code: "INTERNAL_SERVER_ERROR",
         message: "CHAT_ROOM_DO binding not found",
       });
     }
