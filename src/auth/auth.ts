@@ -198,10 +198,7 @@ export const auth = betterAuth({
       // but only if they're anonymous (it's safe because they don't have
       // Durable objects that need cleaning up)
       beforeDelete: async (user) => {
-        console.log(
-          "deletion requested for user",
-          JSON.stringify(user, null, 2),
-        );
+        console.log(`deletion requested for user "${user.name} (${user.id})"`);
         if (!(user as any).isAnonymous) {
           throw new APIError("UNAUTHORIZED", {
             message: "Only anonymous users can be hard deleted",
