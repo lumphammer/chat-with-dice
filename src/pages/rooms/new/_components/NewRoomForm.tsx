@@ -7,6 +7,7 @@ import {
 } from "#/roomPresets.tsx";
 import { generateRandomName } from "#/utils/generateRandomName.ts";
 import { RoomPresetPicker } from "./RoomPresetPicker";
+import { isActionError } from "astro/actions/runtime/entrypoints/client.js";
 import { actions } from "astro:actions";
 import { navigate } from "astro:transitions/client";
 import {
@@ -25,6 +26,39 @@ type Inputs = {
   preset: RoomPresetName;
   root: string;
 };
+
+// astro actions and better-auth client calls both return the same shape:
+// optional data, optional error (astro uses undefined + ActionError,
+// better-auth uses null + a plain { message } object).
+type Result = { data: unknown; error: unknown };
+
+// We infer the *whole* result type as R and derive the data type from it,
+// rather than inferring a free `TData`. If `TData` were inferred directly,
+// the error branch (`data: undefined`) would pollute it to `TData | undefined`.
+// `NonNullable<R["data"]>` strips the null/undefined the error branch carries.
+function throwIfError<R extends Result>(result: R): NonNullable<R["data"]> {
+  if (result.error != null) {
+    if (isActionError(result.error)) {
+      throw result.error;
+    }
+    if (Object.hasOwn(result.error, "message")) {
+      throw new Error((result.error as { message: string }).message);
+    }
+    throw new Error("Something went wrong");
+  }
+  // the contract: error was nullish, so data is present
+  return result.data as NonNullable<R["data"]>;
+}
+
+// cannot for the life of me find an official type for this
+// type _AnonymousSigninResult = Awaited<
+//   ReturnType<RecursiveExpand<(typeof authClient)["signIn"]["anonymous"]>>
+// >;
+
+// for reference, the return value from creating a room
+// type _CreateChatWithDiceRoomResult = Awaited<
+//   ReturnType<typeof actions.rooms.createChatWithDiceRoom>
+// >;
 
 export const NewRoomForm = ({
   initialIsLoggedIn,
@@ -68,68 +102,55 @@ export const NewRoomForm = ({
   // big submit function
   const onSubmit: SubmitHandler<Inputs> = useCallback(
     async (data) => {
-      let shouldLogOutOnerror = false;
+      let shouldDeleteUserAndLogOutOnerror = false;
 
       clearErrors("root");
 
-      // if not logged in, start by making an anon login
-      if (!isLoggedInRef.current) {
+      try {
+        // if not logged in, start by making an anon login
+        if (!isLoggedInRef.current) {
+          setIsSubmitting(true);
+          // log in
+          throwIfError(await authClient.signIn.anonymous());
+          // set username
+          throwIfError(
+            await authClient.updateUser({
+              name: data.userDisplayName.trim(),
+            }),
+          );
+          // flag that we created this account so we should destroy it if
+          // anything goes wrong
+          shouldDeleteUserAndLogOutOnerror = true;
+        }
+
+        // now we're going to make the room
         setIsSubmitting(true);
 
-        // log in
-        const newUser = await authClient.signIn.anonymous({
-          query: { cache: "no-store" },
-        });
-        if (newUser.error) {
-          setError("root", {
-            type: "manual",
-            message:
-              newUser.error.message ??
-              "Something went wrong. Please try again.",
-          });
-          setIsSubmitting(false);
-          return;
-        }
+        const roomData = throwIfError(
+          await actions.rooms.createChatWithDiceRoom({
+            roomName: data.roomName,
+            type: data.preset,
+          }),
+        );
 
-        // set username
-        const { error: updateError } = await authClient.updateUser({
-          name: data.userDisplayName.trim(),
-        });
-        if (updateError) {
-          setError("root", {
-            type: "manual",
-            message:
-              updateError?.message ?? "Something went wrong. Please try again.",
-          });
-          try {
-            await authClient.deleteUser();
-          } catch {}
-          setIsSubmitting(false);
-          return;
-        }
-        shouldLogOutOnerror = true;
-      }
-
-      // now we're going to make the room
-      setIsSubmitting(true);
-      const result = await actions.rooms.createChatWithDiceRoom({
-        roomName: data.roomName,
-        type: data.preset,
-      });
-      if (result.error) {
+        // finally, send the user to their new room
+        void navigate(`/rooms/${roomData.roomId}`);
+      } catch (err) {
+        // big fat catch
         setError("root", {
           message:
-            result.error.message ?? "Something went wrong. Please try again.",
+            err instanceof Error
+              ? err.message
+              : "Something went wrong. Please try again.",
         });
-        if (shouldLogOutOnerror) {
+        if (shouldDeleteUserAndLogOutOnerror) {
           try {
             await authClient.deleteUser();
           } catch {}
         }
+      } finally {
         setIsSubmitting(false);
-        return;
       }
-      void navigate(`/rooms/${result.data.roomId}`);
     },
     [clearErrors, setError, isLoggedInRef, setIsSubmitting],
   );
