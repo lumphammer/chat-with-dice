@@ -113,15 +113,15 @@ export const NewRoomForm = ({
         if (!isLoggedInRef.current) {
           // log in
           throwIfError(await authClient.signIn.anonymous());
+          // the account now exists, so flag that we must destroy it if
+          // anything later goes wrong (e.g. updateUser or room creation)
+          shouldDeleteUserAndLogOutOnerror = true;
           // set username
           throwIfError(
             await authClient.updateUser({
               name: data.userDisplayName.trim(),
             }),
           );
-          // flag that we created this account so we should destroy it if
-          // anything goes wrong
-          shouldDeleteUserAndLogOutOnerror = true;
         }
 
         const roomData = throwIfError(
