@@ -229,6 +229,17 @@ export const DiceRoller = memo(
                         className={styles.chatArea}
                       >
                         <div
+                          className="absolute top-10 z-1 flex w-full
+                            justify-center"
+                        >
+                          <a
+                            className="link alert alert-warning"
+                            href="/signup"
+                          >
+                            Create an account to save this room!
+                          </a>
+                        </div>
+                        <div
                           ref={scrollContainerRef}
                           onScroll={handleScroll}
                           className="absolute inset-0 overflow-auto px-4"
