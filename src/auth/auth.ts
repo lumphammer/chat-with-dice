@@ -349,7 +349,12 @@ export const auth = betterAuth({
         // delete it (but delete the anon account instead.)
         const newUserAge = Date.now() - newUser.user.createdAt.getTime();
         if (newUserAge > MAX_ACCOUNT_AGE_TO_OVERWRITE_MS) {
-          db.delete(users).where(eq(users.id, anonymousUser.user.id));
+          // update any rooms created by anon to re-own them to the real user
+          await db
+            .update(schema.rooms)
+            .set({ createdByUserId: newUser.user.id })
+            .where(eq(schema.rooms.createdByUserId, anonymousUser.user.id));
+          await db.delete(users).where(eq(users.id, anonymousUser.user.id));
           return;
         }
         // d1 doesn't support true transactions yet :(
