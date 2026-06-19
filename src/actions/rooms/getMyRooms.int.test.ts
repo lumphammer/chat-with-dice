@@ -3,9 +3,9 @@ import { db } from "#/db";
 import { rooms } from "#/schemas/coreD1-schema";
 import {
   callAction,
-  createTestUser,
   makeActionContext,
-} from "#/test-utils/integration/testUser";
+} from "#/test-utils/integration/actions";
+import { createTestUser } from "#/test-utils/integration/users";
 import { nanoid } from "nanoid";
 import { describe, expect, it } from "vitest";
 
@@ -34,8 +34,6 @@ async function insertRoom(opts: {
   return id;
 }
 
-type GetMyRoomsResult = Response | Array<{ id: string }>;
-
 describe("getMyRooms", () => {
   it("returns the caller's non-deleted rooms, newest first", async () => {
     const user = await createTestUser();
@@ -52,7 +50,7 @@ describe("getMyRooms", () => {
     await insertRoom({ userId: user.id, deleted: true });
     await insertRoom({ userId: other.id });
 
-    const result = await callAction<GetMyRoomsResult>(
+    const result = await callAction(
       getMyRooms,
       undefined,
       makeActionContext(user),
@@ -64,7 +62,7 @@ describe("getMyRooms", () => {
   });
 
   it("returns a 401 Response when there is no logged-in user", async () => {
-    const result = await callAction<GetMyRoomsResult>(
+    const result = await callAction(
       getMyRooms,
       undefined,
       makeActionContext(null),

@@ -27,6 +27,29 @@ function sqlAsString(): Plugin {
   };
 }
 
+/**
+ * `astro/actions/runtime/entrypoints/server` (which we alias `astro:actions` to)
+ * imports `virtual:astro:actions/options` — a virtual module Astro injects at
+ * build time. The workers pool's bundler has no Astro context, so we stand it
+ * up here with safe defaults. We only need `defineAction` + `ActionError` in
+ * tests; the trailing-slash behavior the option controls is irrelevant.
+ */
+function stubAstroActionsVirtuals(): Plugin {
+  const RESOLVED = "\0virtual:astro:actions/options";
+  return {
+    name: "stub-astro-actions-virtuals",
+    enforce: "pre",
+    resolveId(id) {
+      if (id === "virtual:astro:actions/options") return RESOLVED;
+    },
+    load(id) {
+      if (id === RESOLVED) {
+        return "export const shouldAppendTrailingSlash = false;";
+      }
+    },
+  };
+}
+
 // Drizzle generates one folder per migration, each containing a `migration.sql`
 // using `--> statement-breakpoint` as a statement separator. The wrangler-shaped
 // `readD1Migrations` helper expects flat `*.sql` files at the top level, so we
@@ -80,6 +103,7 @@ export default defineConfig({
       {
         plugins: [
           sqlAsString(),
+          stubAstroActionsVirtuals(),
           cloudflareTest({
             main: "./src/test-utils/integration/testWorker.ts",
             miniflare: {
@@ -105,12 +129,12 @@ export default defineConfig({
         resolve: {
           alias: {
             ...sharedAlias,
-            "astro:actions": fileURLToPath(
-              new URL(
-                "./src/test-utils/integration/astroActionsShim.ts",
-                import.meta.url,
-              ),
-            ),
+            // Astro's `astro:actions` is a build-time virtual module. Point it
+            // at the real runtime entrypoint so tests use Astro's actual
+            // `defineAction` + `ActionError` — that way the `.orThrow` test
+            // pattern in `callAction` runs the genuine input validator and
+            // error wrapping, not a shim.
+            "astro:actions": "astro/actions/runtime/entrypoints/server",
           },
         },
         test: {

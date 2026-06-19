@@ -1,20 +1,21 @@
 import { createFolder } from "#/actions/files/createFolder";
 import {
   callAction,
-  createTestUser,
   makeActionContext,
-} from "#/test-utils/integration/testUser";
+} from "#/test-utils/integration/actions";
+import {
+  attachUserDataDO,
+  createTestUser,
+} from "#/test-utils/integration/users";
 import { runInDurableObject } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 
-type CreateFolderResult = { id: string; name: string };
-
 describe("createFolder", () => {
   it("creates a folder via the user's UserDataDO and returns its id and name", async () => {
-    const user = await createTestUser({ withUserDataDO: true });
+    const user = await attachUserDataDO(await createTestUser());
 
-    const result = await callAction<CreateFolderResult>(
+    const result = await callAction(
       createFolder,
       { name: "My Folder" },
       makeActionContext(user),
@@ -24,7 +25,6 @@ describe("createFolder", () => {
     expect(typeof result.id).toBe("string");
     expect(result.id.length).toBeGreaterThan(0);
 
-    if (!user.userDataDOId) throw new Error("expected userDataDOId");
     const stub = env.USER_DATA_DO.get(
       env.USER_DATA_DO.idFromString(user.userDataDOId),
     );
@@ -38,47 +38,30 @@ describe("createFolder", () => {
   });
 
   it("rejects with UNAUTHORIZED when the user has no userDataDOId", async () => {
-    const user = await createTestUser(); // no DO id
+    const user = await createTestUser(); // no DO id attached
 
     await expect(
-      callAction<CreateFolderResult>(
-        createFolder,
-        { name: "Nope" },
-        makeActionContext(user),
-      ),
+      callAction(createFolder, { name: "Nope" }, makeActionContext(user)),
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 
   it("rejects with UNAUTHORIZED when the caller is anonymous", async () => {
-    const user = await createTestUser({
-      withUserDataDO: true,
-      isAnonymous: true,
-    });
+    const user = await attachUserDataDO(
+      await createTestUser({ isAnonymous: true }),
+    );
 
     await expect(
-      callAction<CreateFolderResult>(
-        createFolder,
-        { name: "Nope" },
-        makeActionContext(user),
-      ),
+      callAction(createFolder, { name: "Nope" }, makeActionContext(user)),
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 
   it("rejects with a duplicate-name error when a sibling folder already exists", async () => {
-    const user = await createTestUser({ withUserDataDO: true });
+    const user = await attachUserDataDO(await createTestUser());
 
-    await callAction<CreateFolderResult>(
-      createFolder,
-      { name: "Dupes" },
-      makeActionContext(user),
-    );
+    await callAction(createFolder, { name: "Dupes" }, makeActionContext(user));
 
     await expect(
-      callAction<CreateFolderResult>(
-        createFolder,
-        { name: "Dupes" },
-        makeActionContext(user),
-      ),
+      callAction(createFolder, { name: "Dupes" }, makeActionContext(user)),
     ).rejects.toThrow(/already exists/i);
   });
 });
