@@ -1,5 +1,6 @@
 import { db } from "#/db";
 import { sessions, users } from "#/schemas/auth-schema";
+import { env } from "cloudflare:workers";
 import { nanoid } from "nanoid";
 
 const SESSION_LIFETIME_DAYS = 7;
@@ -25,6 +26,12 @@ type TestUserOverrides = {
   role?: string | null;
   isAnonymous?: boolean;
   storageQuotaBytes?: number;
+  /**
+   * Allocate a `USER_DATA_DO` id for this user (matching the Better Auth hook
+   * that runs on real sign-in) and persist it to the user row. Tests that hit
+   * actions or DOs which require a `userDataDOId` should pass `true`.
+   */
+  withUserDataDO?: boolean;
 };
 
 export type TestUser = {
@@ -33,6 +40,7 @@ export type TestUser = {
   email: string;
   role: string | null;
   isAnonymous: boolean;
+  userDataDOId: string | null;
   sessionToken: string;
   headers: Headers;
 };
@@ -51,6 +59,9 @@ export async function createTestUser(
   const email = overrides.email ?? `${userId}@test.example`;
   const name =
     overrides.name ?? `Test User ${userId.slice(0, NAME_FRAGMENT_LENGTH)}`;
+  const userDataDOId = overrides.withUserDataDO
+    ? env.USER_DATA_DO.idFromName(userId).toString()
+    : null;
 
   await db.insert(users).values({
     id: userId,
@@ -59,6 +70,7 @@ export async function createTestUser(
     emailVerified: overrides.emailVerified ?? true,
     role: overrides.role ?? null,
     isAnonymous: overrides.isAnonymous ?? false,
+    user_data_do_id: userDataDOId,
     storage_quota_bytes: overrides.storageQuotaBytes ?? DEFAULT_QUOTA_BYTES,
     storage_used_bytes: 0,
     createdAt: now,
@@ -83,9 +95,18 @@ export async function createTestUser(
     email,
     role: overrides.role ?? null,
     isAnonymous: overrides.isAnonymous ?? false,
+    userDataDOId,
     sessionToken,
     headers,
   };
+}
+
+/**
+ * Reload the user row from D1 — useful after an action has mutated user state
+ * (e.g. storage_used_bytes after a file upload).
+ */
+export async function refetchTestUser(userId: string) {
+  return db.query.users.findFirst({ where: { id: userId } });
 }
 
 export type ActionContext = ReturnType<typeof makeActionContext>;
@@ -104,6 +125,7 @@ export function makeActionContext(user: TestUser | null) {
             email: user.email,
             role: user.role,
             isAnonymous: user.isAnonymous,
+            userDataDOId: user.userDataDOId,
           }
         : null,
       session: user ? { userId: user.id, token: user.sessionToken } : null,

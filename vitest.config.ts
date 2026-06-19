@@ -7,7 +7,25 @@ import {
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { type Plugin, defineConfig } from "vitest/config";
+
+/**
+ * The DO-internal migration loaders (e.g. `durable-object-migrations/.../migrations.js`)
+ * `import sql from "./migration.sql"` and expect the file contents as a string.
+ * In production the Cloudflare/Astro build pipeline handles this; the workers
+ * vitest pool's bundler doesn't, so we provide it here.
+ */
+function sqlAsString(): Plugin {
+  return {
+    name: "sql-as-string",
+    enforce: "pre",
+    async load(id) {
+      if (!id.endsWith(".sql")) return null;
+      const content = await readFile(id, "utf8");
+      return `export default ${JSON.stringify(content)};`;
+    },
+  };
+}
 
 // Drizzle generates one folder per migration, each containing a `migration.sql`
 // using `--> statement-breakpoint` as a statement separator. The wrangler-shaped
@@ -61,11 +79,16 @@ export default defineConfig({
       },
       {
         plugins: [
+          sqlAsString(),
           cloudflareTest({
+            main: "./src/test-utils/integration/testWorker.ts",
             miniflare: {
               compatibilityDate: "2026-04-18",
               compatibilityFlags: ["nodejs_compat"],
               d1Databases: ["CORE_D1"],
+              durableObjects: {
+                USER_DATA_DO: { className: "UserDataDO", useSQLite: true },
+              },
               bindings: {
                 TEST_MIGRATIONS: migrations,
                 BETTER_AUTH_URL: "http://localhost/",
