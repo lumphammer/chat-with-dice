@@ -65,6 +65,9 @@ jobs:
       - name: Formatting
         run: pnpm run format:check
 
+      - name: Testing
+        run: pnpm test
+
       - name: Build
         run: |
           echo "BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}" > .env
