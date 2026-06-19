@@ -10,15 +10,15 @@ export type FeedbackContextValue = {
 const FeedbackContext = createContext<FeedbackContextValue>({
   onError: (title: ReactNode, details?: ReactNode) => {
     logger.error(title, details);
-    alert("Error: " + typeof title === "string" ? title : "<ReactNode>");
+    alert("Error: " + (typeof title === "string" ? title : "<ReactNode>"));
   },
   onWarn: (title: ReactNode, details?: ReactNode) => {
     logger.warn(title, details);
-    alert("Warning: " + typeof title === "string" ? title : "<ReactNode>");
+    alert("Warning: " + (typeof title === "string" ? title : "<ReactNode>"));
   },
   onInfo: (title: ReactNode, details?: ReactNode) => {
     logger.info(title, details);
-    alert("Info: " + typeof title === "string" ? title : "<ReactNode>");
+    alert("Info: " + (typeof title === "string" ? title : "<ReactNode>"));
   },
 });
 
