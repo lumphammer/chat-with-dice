@@ -24,21 +24,7 @@
     }
 
     padding: var(--spacing-4, 1rem);
-    background-color: var(--color-base-100);
 
-    &[data-type="error"] {
-      --toast-color: var(--color-error);
-    }
-    &[data-type="warning"] {
-      --toast-color: var(--color-warning);
-    }
-    &[data-type="success"] {
-      --toast-color: var(--color-success);
-    }
-    &[data-type="info"] {
-      --toast-color: var(--color-info);
-      /*background-color: var(--color-info);*/
-    }
     &[data-overlap] {
       overflow: hidden;
     }

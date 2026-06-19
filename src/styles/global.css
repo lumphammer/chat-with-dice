@@ -134,6 +134,22 @@ body {
 
 /* we're handling toast styling by hand, so revert everything that daisy does */
 .toast {
+  @layer components {
+    [data-scope="toast"][data-part="root"] {
+      &[data-type="error"] {
+        --toast-color: var(--color-error);
+      }
+      &[data-type="warning"] {
+        --toast-color: var(--color-warning);
+      }
+      &[data-type="success"] {
+        --toast-color: var(--color-success);
+      }
+      &[data-type="info"] {
+        --toast-color: var(--color-info);
+      }
+    }
+  }
   @layer utilities.daisyui.l1.l2.l3 {
     all: revert-layer;
   }
