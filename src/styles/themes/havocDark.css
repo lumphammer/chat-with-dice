@@ -75,13 +75,13 @@
   --color-neutral: oklch(from var(--color-base-100) 50% 0.02 h);
   --color-neutral-content: oklch(98% 0.01 240);
 
-  --color-info: oklch(70% 0.2 220);
+  --color-info: oklch(80% 0.2 220);
   --color-info-content: oklch(98% 0.01 220);
-  --color-success: oklch(50% 0.25 140);
+  --color-success: oklch(80% 0.25 140);
   --color-success-content: oklch(98% 0.01 140);
   --color-warning: oklch(80% 0.25 80);
   --color-warning-content: oklch(20% 0.05 80);
-  --color-error: oklch(40% 0.3 30);
+  --color-error: oklch(80% 0.3 30);
   --color-error-content: oklch(98% 0.01 30);
 
   /* border radius */
@@ -251,58 +251,32 @@
       }
     }
     .alert {
-      padding: 1em 2em;
-      --band-1-width: 6px;
-      --band-2-width: 4px;
-      --band-3-width: 2px;
-      --band-1-start: 0px;
-      --band-1-end: var(--band-1-width);
-      --band-2-start: calc(var(--band-1-end) + var(--band-1-width));
-      --band-2-end: calc(var(--band-2-start) + var(--band-2-width));
-      --band-3-start: calc(var(--band-2-end) + var(--band-2-width));
-      --band-3-end: calc(var(--band-3-start) + var(--band-3-width));
-      --bright: oklch(from var(--noisy-bg-color) l c h / 100%);
-      --dark: oklch(from var(--noisy-bg-color) l c h / 0%);
-      background-image:
-        url("/noise-image.svg"),
-        repeating-linear-gradient(
-          to bottom,
-          transparent 0px,
-          oklch(from var(--noisy-bg-color) l c h / 20%) 5px,
-          transparent 5px /*oklch(from var(--color-accent) l c h / 20%) 20px*/
-        ),
-        linear-gradient(
-          to right,
-          var(--bright) var(--band-1-start),
-          var(--bright) var(--band-1-end),
-          var(--dark) var(--band-1-end),
-          var(--dark) var(--band-2-start),
-          var(--bright) var(--band-2-start),
-          var(--bright) var(--band-2-end),
-          var(--dark) var(--band-2-end),
-          var(--dark) var(--band-3-start),
-          var(--bright) var(--band-3-start),
-          var(--bright) var(--band-3-end),
-          var(--dark) var(--band-3-end)
-        );
-      background-blend-mode: multiply, normal, screen;
-      background-size:
-        100px 100px,
-        cover,
-        cover;
+      @apply noisy-bg;
       background-color: var(--color-base-100);
       --noisy-bg-color: var(--color-accent);
-      border-radius: 1em;
+      /*border-radius: 1em;*/
       border-width: 0;
-    }
-    .alert-info {
-      --noisy-bg-color: var(--color-info);
-    }
-    .alert-warning {
-      --noisy-bg-color: var(--color-warning);
-    }
-    .alert-error {
-      --noisy-bg-color: var(--color-error);
+      border-radius: 0;
+      border-image-source: linear-gradient(
+        to bottom,
+        var(--noisy-bg-color) 0%,
+        oklch(from var(--noisy-bg-color) l c h / 20%) 50%,
+        var(--noisy-bg-color) 100%
+      );
+      border-image-slice: 1;
+      border-width: 0 0.25rem;
+      box-shadow:
+        0px 0px 10px var(--noisy-bg-color),
+        0px 0px 20px inset oklch(from var(--noisy-bg-color) l c h / 50%);
+      &.alert-info {
+        --noisy-bg-color: var(--color-info);
+      }
+      &.alert-warning {
+        --noisy-bg-color: var(--color-warning);
+      }
+      &.alert-error {
+        --noisy-bg-color: var(--color-error);
+      }
     }
   }
 
@@ -488,12 +462,18 @@
     .toast {
       [data-scope="toast"][data-part="root"] {
         @apply noisy-bg;
+        box-shadow:
+          0px 0px 10px var(--noisy-bg-color),
+          0px 0px 20px inset oklch(from var(--noisy-bg-color) l c h / 50%);
+
+        background-color: var(--color-base-100);
+
         --noisy-bg-color: var(--toast-color);
         border-image-source: linear-gradient(
           to bottom,
-          black 0%,
-          var(--toast-color) 50%,
-          black 100%
+          var(--noisy-bg-color) 0%,
+          black 50%,
+          var(--noisy-bg-color) 100%
         );
         border-image-slice: 1;
         border-width: 0 0.25rem;

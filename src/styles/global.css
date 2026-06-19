@@ -134,6 +134,9 @@ body {
 
 /* we're handling toast styling by hand, so revert everything that daisy does */
 .toast {
+  @layer utilities.daisyui.l1.l2.l3 {
+    all: revert-layer;
+  }
   @layer components {
     [data-scope="toast"][data-part="root"] {
       &[data-type="error"] {
@@ -150,6 +153,8 @@ body {
       }
     }
   }
+}
+.alert {
   @layer utilities.daisyui.l1.l2.l3 {
     all: revert-layer;
   }
