@@ -1,24 +1,24 @@
 import { logger } from "#/utils/logger.ts";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 
 export type FeedbackContextValue = {
-  onError: (title: string, details?: string) => void;
-  onWarn: (title: string, details?: string) => void;
-  onInfo: (title: string, details?: string) => void;
+  onError: (title: ReactNode, details?: ReactNode) => void;
+  onWarn: (title: ReactNode, details?: ReactNode) => void;
+  onInfo: (title: ReactNode, details?: ReactNode) => void;
 };
 
 const FeedbackContext = createContext<FeedbackContextValue>({
-  onError: (title: string, details?: string) => {
+  onError: (title: ReactNode, details?: ReactNode) => {
     logger.error(title, details);
-    alert("Error: " + title);
+    alert("Error: " + typeof title === "string" ? title : "<ReactNode>");
   },
-  onWarn: (title: string, details?: string) => {
+  onWarn: (title: ReactNode, details?: ReactNode) => {
     logger.warn(title, details);
-    alert("Warning: " + title);
+    alert("Warning: " + typeof title === "string" ? title : "<ReactNode>");
   },
-  onInfo: (title: string, details?: string) => {
+  onInfo: (title: ReactNode, details?: ReactNode) => {
     logger.info(title, details);
-    alert("Info: " + title);
+    alert("Info: " + typeof title === "string" ? title : "<ReactNode>");
   },
 });
 
