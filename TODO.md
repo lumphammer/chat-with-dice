@@ -53,10 +53,10 @@
 - [x] websocket endpoint can move under `rooms` in pages tree
 - [x] Fix flows for new user/login/etc.
 
+- [ ] Recent rooms list
+- [ ] Periodic purge of anon users
 - [ ] Swipe to move between files in preview
 - [ ] fix up MaybeError etc and use exclusively
-- [ ] Periodic purge of anon users
-- [ ] Recent rooms list
 - [ ] "About" page, with deploy time, summary, and terms of service
 - [ ] Email-only login
 
