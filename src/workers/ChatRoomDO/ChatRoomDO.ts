@@ -57,9 +57,7 @@ export class ChatRoomDO extends DurableObject {
   private config: RoomConfig = defaultRoomConfig;
   private stateRepository!: CapabilityStateRepository;
   private messageJiggler!: MessageJiggler;
-  private createdByUserId!: string;
   private nodeShareManager!: NodeShareManager;
-  private roomId!: string;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -73,11 +71,8 @@ export class ChatRoomDO extends DurableObject {
     // is a legitimate instantiation before we allow anything else to happen.
     void this.ctx.blockConcurrencyWhile(async () => {
       // load room from d1 or crash out
-      const { config, createdByUserId, roomId } =
-        await loadConfigFromD1OrDie(ctx);
+      const { config, roomId } = await loadConfigFromD1OrDie(ctx);
       this.config = config;
-      this.createdByUserId = createdByUserId;
-      this.roomId = roomId;
 
       // it's now safe to init the local db
       this.db = setupDB(ctx, migrations, dbSchema);
@@ -90,10 +85,8 @@ export class ChatRoomDO extends DurableObject {
         this.messageRepository,
         this.broadcaster,
       );
-      this.nodeShareManager = new NodeShareManager(
-        this.ctx,
-        this.roomId,
-        this.createdByUserId,
+      this.nodeShareManager = new NodeShareManager(this.ctx, roomId, () =>
+        this.getUserId(),
       );
 
       // Set up automatic ping/pong responses
@@ -114,6 +107,21 @@ export class ChatRoomDO extends DurableObject {
       );
       this.broadcaster.broadcastUsersOnline();
     });
+  }
+
+  private async getUserId() {
+    const roomRow = await d1.query.rooms.findFirst({
+      where: {
+        durableObjectId: this.ctx.id.toString(),
+        deleted_time: {
+          isNull: true,
+        },
+      },
+      columns: {
+        createdByUserId: true,
+      },
+    });
+    return roomRow?.createdByUserId;
   }
 
   /**
@@ -172,7 +180,7 @@ export class ChatRoomDO extends DurableObject {
         description: string,
         cb: () => void | Promise<void>,
       ) => {
-        if (this.createdByUserId !== attachment.userId) {
+        if ((await this.getUserId()) !== attachment.userId) {
           this.broadcaster.sendError(
             ws,
             `You are not the room owner and cannot ${description}`,
