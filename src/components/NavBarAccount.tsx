@@ -8,6 +8,7 @@ import {
   Shield,
   PersonStanding,
   File,
+  PaintRoller,
 } from "lucide-react";
 import { useMemo, useRef } from "react";
 
@@ -132,6 +133,14 @@ export function NavBarAccount({
               <a href="/admin" onClick={closeMenu}>
                 <Shield size={16} />
                 Admin
+              </a>
+            </li>
+          )}
+          {isAdminOrBetter(sessionData?.user.role) && (
+            <li>
+              <a href="/style-demo" onClick={closeMenu}>
+                <PaintRoller size={16} />
+                Style Demo
               </a>
             </li>
           )}

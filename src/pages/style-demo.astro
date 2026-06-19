@@ -38,6 +38,23 @@ import Layout from "#/layouts/HTML.astro";
             <div class="btn btn-outline btn-neutral">
               .btn-outline.btn-accent
             </div>
+            <div class="toast toast-info">
+              <div
+                data-scope="toast"
+                data-part="root"
+                data-type="info"
+                class="my-4 max-w-64 p-4"
+              >
+                .toast info
+              </div>
+            </div>
+            <div class="alert alert-primary my-4 max-w-64 p-4">
+              .alert.alert-primary
+            </div>
+
+            <div class="alert alert-error my-4 max-w-64 p-4">
+              .alert.alert-error
+            </div>
 
             {["bg-base-100", "bg-base-200", "bg-base-300"].map((bg) => {
               return (

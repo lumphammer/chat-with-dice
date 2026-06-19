@@ -51,8 +51,7 @@
 - [x] remove all console.logs
 - [x] "Preview" should be "View" (or whole thing is the link)
 - [x] websocket endpoint can move under `rooms` in pages tree
-
-- [ ] Fix flows for new user/login/etc.
+- [x] Fix flows for new user/login/etc.
 
 - [ ] Swipe to move between files in preview
 - [ ] fix up MaybeError etc and use exclusively

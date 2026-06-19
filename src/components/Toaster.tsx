@@ -1,4 +1,4 @@
-import toastStyles from "./toast.module.css";
+import toasterStyles from "./toaster.module.css";
 import { Portal } from "@ark-ui/react/portal";
 import {
   Toast,
@@ -45,27 +45,31 @@ export const Toaster = ({
 }) => {
   return (
     <Portal>
-      <ArkToaster toaster={toaster} className={`${toastStyles.toast} toast`}>
+      <ArkToaster toaster={toaster}>
         {(toast) => {
           const ToastIcon = toast.type
             ? iconMap[toast.type as keyof typeof iconMap]
             : undefined;
           return (
-            <Toast.Root key={toast.id}>
+            <Toast.Root
+              key={toast.id}
+              className={`${toasterStyles.toast} toast alert
+              alert-${toast.type}`}
+            >
               {ToastIcon && (
-                <div className={toastStyles.icon}>
+                <div className={toasterStyles.icon}>
                   <ToastIcon className="h-5 w-5" />
                 </div>
               )}
-              <Toast.Title className={toastStyles.title}>
+              <Toast.Title className={toasterStyles.title}>
                 {toast.title}
               </Toast.Title>
-              <Toast.Description className={`${toastStyles.details} text-sm`}>
+              <Toast.Description className={`${toasterStyles.details} text-sm`}>
                 {toast.description}
               </Toast.Description>
 
               <Toast.CloseTrigger
-                className={`${toastStyles.close} hover:bg-base-300 mt-0.5
+                className={`${toasterStyles.close} hover:bg-base-300 mt-0.5
                 shrink-0 cursor-pointer rounded-md p-0.5 transition-colors`}
               >
                 <XIcon className="h-4 w-4" />

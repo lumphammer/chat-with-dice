@@ -1,7 +1,7 @@
 import { useFeedback } from "../FeedbackContext";
 
 export const SidebarFeedback = () => {
-  const { onError, onInfo } = useFeedback();
+  const { onError, onInfo, onWarn } = useFeedback();
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -42,6 +42,23 @@ export const SidebarFeedback = () => {
         }}
       >
         Send info with long title and body
+      </button>
+
+      <button
+        className="btn btn-warning btn-wide"
+        onClick={() => {
+          onWarn("A warning message");
+        }}
+      >
+        Send warning
+      </button>
+      <button
+        className="btn btn-warning btn-wide"
+        onClick={() => {
+          onWarn("A warning message", lorem);
+        }}
+      >
+        Send warning with body
       </button>
 
       <button

@@ -138,3 +138,8 @@ body {
     all: revert-layer;
   }
 }
+.alert {
+  @layer utilities.daisyui.l1.l2.l3 {
+    all: revert-layer;
+  }
+}

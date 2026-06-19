@@ -1,11 +1,16 @@
 import { FeedbackProvider } from "./FeedbackContext";
 import { Toaster, useToaster } from "./Toaster";
-import { useCallback, useMemo, type PropsWithChildren } from "react";
+import {
+  useCallback,
+  useMemo,
+  type PropsWithChildren,
+  type ReactNode,
+} from "react";
 
 export const useFeedbackToasterProvider = () => {
   const toaster = useToaster();
   const onError = useCallback(
-    (title: string, details?: string) => {
+    (title: ReactNode, details?: ReactNode) => {
       toaster.error({
         title,
         description: details,
@@ -13,8 +18,17 @@ export const useFeedbackToasterProvider = () => {
     },
     [toaster],
   );
+  const onWarn = useCallback(
+    (title: ReactNode, details?: ReactNode) => {
+      toaster.warning({
+        title,
+        description: details,
+      });
+    },
+    [toaster],
+  );
   const onInfo = useCallback(
-    (title: string, details?: string) => {
+    (title: ReactNode, details?: ReactNode) => {
       toaster.info({
         title,
         description: details,
@@ -26,11 +40,12 @@ export const useFeedbackToasterProvider = () => {
   return useMemo(
     () => ({
       onError,
+      onWarn,
       onInfo,
       toaster,
-      feedbackContextValue: { onError, onInfo },
+      feedbackContextValue: { onError, onInfo, onWarn },
     }),
-    [toaster, onError, onInfo],
+    [toaster, onError, onInfo, onWarn],
   );
 };
 
