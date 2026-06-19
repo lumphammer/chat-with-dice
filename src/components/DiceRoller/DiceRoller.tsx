@@ -27,6 +27,8 @@ import type { UserHueStyle } from "./types";
 import { enablePatches, produce, type Patch } from "immer";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+const NAG_INTERVAL_MINUTES = 20;
+
 enablePatches();
 
 export const DiceRoller = memo(
@@ -178,9 +180,22 @@ export const DiceRoller = memo(
         sessionData?.user.isAnonymous &&
         sessionData?.user.id === roomOwnerId
       ) {
-        feedbackToasterValue.onWarn(
-          "You are not logged in! Create an account to save this room.",
+        const sendWarning = () => {
+          feedbackToasterValue.onWarn(
+            <>
+              <p>You are not logged in! Create an account to save this room.</p>
+              <a href="/signup" className="btn btn-warning">
+                Create account
+              </a>
+            </>,
+          );
+        };
+        sendWarning();
+        const interval = setInterval(
+          sendWarning,
+          1000 * 60 * NAG_INTERVAL_MINUTES,
         );
+        return () => clearInterval(interval);
       }
     }, [sessionData, isPending, feedbackToasterValue, roomOwnerId]);
 
