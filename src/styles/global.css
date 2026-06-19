@@ -137,22 +137,6 @@ body {
   @layer utilities.daisyui.l1.l2.l3 {
     all: revert-layer;
   }
-  @layer components {
-    [data-scope="toast"][data-part="root"] {
-      &[data-type="error"] {
-        --toast-color: var(--color-error);
-      }
-      &[data-type="warning"] {
-        --toast-color: var(--color-warning);
-      }
-      &[data-type="success"] {
-        --toast-color: var(--color-success);
-      }
-      &[data-type="info"] {
-        --toast-color: var(--color-info);
-      }
-    }
-  }
 }
 .alert {
   @layer utilities.daisyui.l1.l2.l3 {
