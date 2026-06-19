@@ -13,6 +13,15 @@ export const useFeedbackToasterProvider = () => {
     },
     [toaster],
   );
+  const onWarn = useCallback(
+    (title: string, details?: string) => {
+      toaster.warning({
+        title,
+        description: details,
+      });
+    },
+    [toaster],
+  );
   const onInfo = useCallback(
     (title: string, details?: string) => {
       toaster.info({
@@ -26,11 +35,12 @@ export const useFeedbackToasterProvider = () => {
   return useMemo(
     () => ({
       onError,
+      onWarn,
       onInfo,
       toaster,
-      feedbackContextValue: { onError, onInfo },
+      feedbackContextValue: { onError, onInfo, onWarn },
     }),
-    [toaster, onError, onInfo],
+    [toaster, onError, onInfo, onWarn],
   );
 };
 

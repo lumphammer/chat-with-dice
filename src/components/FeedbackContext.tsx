@@ -3,6 +3,7 @@ import { createContext, useContext, useMemo } from "react";
 
 export type FeedbackContextValue = {
   onError: (title: string, details?: string) => void;
+  onWarn: (title: string, details?: string) => void;
   onInfo: (title: string, details?: string) => void;
 };
 
@@ -11,6 +12,10 @@ const FeedbackContext = createContext<FeedbackContextValue>({
     logger.error(title, details);
     alert("Error: " + title);
   },
+  onWarn: (title: string, details?: string) => {
+    logger.warn(title, details);
+    alert("Warning: " + title);
+  },
   onInfo: (title: string, details?: string) => {
     logger.info(title, details);
     alert("Info: " + title);
@@ -18,7 +23,7 @@ const FeedbackContext = createContext<FeedbackContextValue>({
 });
 
 export const useFeedback = () => {
-  const { onError, onInfo } = useContext(FeedbackContext);
+  const { onError, onInfo, onWarn } = useContext(FeedbackContext);
   const value = useMemo(
     () => ({
       onError: (title: string | Error, details?: string) => {
@@ -27,8 +32,11 @@ export const useFeedback = () => {
       onInfo: (title: string | Error, details?: string) => {
         onInfo(typeof title === "string" ? title : title.message, details);
       },
+      onWarn: (title: string | Error, details?: string) => {
+        onWarn(typeof title === "string" ? title : title.message, details);
+      },
     }),
-    [onError, onInfo],
+    [onError, onInfo, onWarn],
   );
   return value;
 };

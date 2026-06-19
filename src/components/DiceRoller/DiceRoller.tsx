@@ -172,6 +172,18 @@ export const DiceRoller = memo(
       [sendMessage, sessionData],
     );
 
+    useEffect(() => {
+      if (
+        !isPending &&
+        sessionData?.user.isAnonymous &&
+        sessionData?.user.id === roomOwnerId
+      ) {
+        feedbackToasterValue.onWarn(
+          "You are not logged in! Create an account to save this room.",
+        );
+      }
+    }, [sessionData, isPending, feedbackToasterValue, roomOwnerId]);
+
     return (
       <FeedbackToasterProvider feedbackToasterValue={feedbackToasterValue}>
         <CapabilityInfoContextProvider value={capabilityInfos}>
@@ -228,17 +240,6 @@ export const DiceRoller = memo(
                         data-part="scroller"
                         className={styles.chatArea}
                       >
-                        <div
-                          className="absolute top-10 z-1 flex w-full
-                            justify-center"
-                        >
-                          <a
-                            className="link alert alert-warning"
-                            href="/signup"
-                          >
-                            Create an account to save this room!
-                          </a>
-                        </div>
                         <div
                           ref={scrollContainerRef}
                           onScroll={handleScroll}
