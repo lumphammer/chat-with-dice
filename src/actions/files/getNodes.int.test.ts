@@ -5,15 +5,12 @@ import {
   callAction,
   makeActionContext,
 } from "#/test-utils/integration/actions";
-import {
-  attachUserDataDO,
-  createTestUser,
-} from "#/test-utils/integration/users";
+import { createUserWithDO } from "#/test-utils/integration/users";
 import { describe, expect, it } from "vitest";
 
 describe("getNodes (self-read path)", () => {
   it("returns the caller's root-level folders, excluding soft-deleted by default", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
     const ctx = makeActionContext(user);
 
     const keep = await callAction(createFolder, { name: "Keep" }, ctx);
@@ -29,7 +26,7 @@ describe("getNodes (self-read path)", () => {
   });
 
   it("includes soft-deleted nodes when includeDeleted=true", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
     const ctx = makeActionContext(user);
 
     await callAction(createFolder, { name: "Live" }, ctx);
@@ -46,7 +43,7 @@ describe("getNodes (self-read path)", () => {
   });
 
   it("returns only the children of a given folder when folderId is set", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
     const ctx = makeActionContext(user);
 
     const parent = await callAction(createFolder, { name: "Parent" }, ctx);

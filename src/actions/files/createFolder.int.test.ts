@@ -3,17 +3,16 @@ import {
   callAction,
   makeActionContext,
 } from "#/test-utils/integration/actions";
+import { peekNode } from "#/test-utils/integration/nodes";
 import {
-  attachUserDataDO,
   createTestUser,
+  createUserWithDO,
 } from "#/test-utils/integration/users";
-import { runInDurableObject } from "cloudflare:test";
-import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 
 describe("createFolder", () => {
   it("creates a folder via the user's UserDataDO and returns its id and name", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
 
     const result = await callAction(
       createFolder,
@@ -25,16 +24,8 @@ describe("createFolder", () => {
     expect(typeof result.id).toBe("string");
     expect(result.id.length).toBeGreaterThan(0);
 
-    const stub = env.USER_DATA_DO.get(
-      env.USER_DATA_DO.idFromString(user.userDataDOId),
-    );
-    const nodes = await runInDurableObject(stub, async (_instance, state) => {
-      return state.storage.sql
-        .exec("SELECT id, name FROM nodes WHERE id = ?", result.id)
-        .toArray();
-    });
-    expect(nodes).toHaveLength(1);
-    expect(nodes[0]).toMatchObject({ id: result.id, name: "My Folder" });
+    const row = await peekNode(user.userDataDOId, result.id);
+    expect(row).toMatchObject({ id: result.id, name: "My Folder" });
   });
 
   it("rejects with UNAUTHORIZED when the user has no userDataDOId", async () => {
@@ -46,9 +37,7 @@ describe("createFolder", () => {
   });
 
   it("rejects with UNAUTHORIZED when the caller is anonymous", async () => {
-    const user = await attachUserDataDO(
-      await createTestUser({ isAnonymous: true }),
-    );
+    const user = await createUserWithDO({ isAnonymous: true });
 
     await expect(
       callAction(createFolder, { name: "Nope" }, makeActionContext(user)),
@@ -56,7 +45,7 @@ describe("createFolder", () => {
   });
 
   it("rejects with a duplicate-name error when a sibling folder already exists", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
 
     await callAction(createFolder, { name: "Dupes" }, makeActionContext(user));
 

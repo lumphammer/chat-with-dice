@@ -5,44 +5,30 @@ import {
   callAction,
   makeActionContext,
 } from "#/test-utils/integration/actions";
-import {
-  attachUserDataDO,
-  createTestUser,
-} from "#/test-utils/integration/users";
-import { runInDurableObject } from "cloudflare:test";
-import { env } from "cloudflare:workers";
+import { peekNode } from "#/test-utils/integration/nodes";
+import { createUserWithDO } from "#/test-utils/integration/users";
 import { describe, expect, it } from "vitest";
-
-function getDeletedTime(userDataDOId: string, nodeId: string) {
-  const stub = env.USER_DATA_DO.get(
-    env.USER_DATA_DO.idFromString(userDataDOId),
-  );
-  return runInDurableObject(stub, async (_instance, state) => {
-    const [row] = state.storage.sql
-      .exec("SELECT deleted_time FROM nodes WHERE id = ?", nodeId)
-      .toArray() as Array<{ deleted_time: number | null }>;
-    return row?.deleted_time;
-  });
-}
 
 describe("restoreNode", () => {
   it("clears deleted_time on a soft-deleted node", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
     const ctx = makeActionContext(user);
     const folder = await callAction(createFolder, { name: "Phoenix" }, ctx);
     await callAction(deleteNode, { nodeId: folder.id }, ctx);
 
-    expect(await getDeletedTime(user.userDataDOId, folder.id)).toBeGreaterThan(
-      0,
-    );
+    expect(
+      (await peekNode(user.userDataDOId, folder.id))?.deleted_time,
+    ).toBeGreaterThan(0);
 
     await callAction(restoreNode, { nodeId: folder.id }, ctx);
 
-    expect(await getDeletedTime(user.userDataDOId, folder.id)).toBeNull();
+    expect(
+      (await peekNode(user.userDataDOId, folder.id))?.deleted_time,
+    ).toBeNull();
   });
 
   it("rejects with NOT_FOUND when the nodeId does not exist", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
 
     await expect(
       callAction(
@@ -54,9 +40,7 @@ describe("restoreNode", () => {
   });
 
   it("rejects with UNAUTHORIZED when the caller is anonymous", async () => {
-    const user = await attachUserDataDO(
-      await createTestUser({ isAnonymous: true }),
-    );
+    const user = await createUserWithDO({ isAnonymous: true });
 
     await expect(
       callAction(

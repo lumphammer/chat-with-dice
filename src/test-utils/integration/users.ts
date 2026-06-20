@@ -132,3 +132,14 @@ export async function attachUserDataDO(
     .where(eq(users.id, user.id));
   return { ...user, userDataDOId };
 }
+
+/**
+ * Shorthand for the common test setup `attachUserDataDO(await createTestUser(...))`.
+ * Returns a user with `userDataDOId` typed as `string` so callers don't have
+ * to narrow it.
+ */
+export async function createUserWithDO(
+  overrides: TestUserOverrides = {},
+): Promise<TestUser & { userDataDOId: string }> {
+  return attachUserDataDO(await createTestUser(overrides));
+}

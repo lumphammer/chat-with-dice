@@ -4,29 +4,13 @@ import {
   callAction,
   makeActionContext,
 } from "#/test-utils/integration/actions";
-import {
-  attachUserDataDO,
-  createTestUser,
-} from "#/test-utils/integration/users";
-import { runInDurableObject } from "cloudflare:test";
-import { env } from "cloudflare:workers";
+import { peekNode } from "#/test-utils/integration/nodes";
+import { createUserWithDO } from "#/test-utils/integration/users";
 import { describe, expect, it } from "vitest";
-
-function getNodeName(userDataDOId: string, nodeId: string) {
-  const stub = env.USER_DATA_DO.get(
-    env.USER_DATA_DO.idFromString(userDataDOId),
-  );
-  return runInDurableObject(stub, async (_instance, state) => {
-    const [row] = state.storage.sql
-      .exec("SELECT name FROM nodes WHERE id = ?", nodeId)
-      .toArray() as Array<{ name: string }>;
-    return row?.name;
-  });
-}
 
 describe("renameNode", () => {
   it("updates the name on the row", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
     const ctx = makeActionContext(user);
     const folder = await callAction(createFolder, { name: "OldName" }, ctx);
 
@@ -36,11 +20,13 @@ describe("renameNode", () => {
       ctx,
     );
 
-    expect(await getNodeName(user.userDataDOId, folder.id)).toBe("NewName");
+    expect((await peekNode(user.userDataDOId, folder.id))?.name).toBe(
+      "NewName",
+    );
   });
 
   it("rejects when a sibling already has the requested name", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
     const ctx = makeActionContext(user);
     await callAction(createFolder, { name: "Taken" }, ctx);
     const other = await callAction(createFolder, { name: "Free" }, ctx);
@@ -51,7 +37,7 @@ describe("renameNode", () => {
   });
 
   it("rejects when the node does not exist", async () => {
-    const user = await attachUserDataDO(await createTestUser());
+    const user = await createUserWithDO();
 
     await expect(
       callAction(
@@ -63,9 +49,7 @@ describe("renameNode", () => {
   });
 
   it("rejects with UNAUTHORIZED when the caller is anonymous", async () => {
-    const user = await attachUserDataDO(
-      await createTestUser({ isAnonymous: true }),
-    );
+    const user = await createUserWithDO({ isAnonymous: true });
 
     await expect(
       callAction(
