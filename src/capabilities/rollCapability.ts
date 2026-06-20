@@ -1,222 +1,37 @@
-import { createCapability } from "./createCapability";
-import { z } from "zod/v4";
+import { rollClient } from "./roll/client";
+import { rollCommon } from "./roll/common";
+import { rollServer } from "./roll/server";
 
-// TERMINOLOGY
-// FACE: a die that has landed on the table and is showing a number
-// HANDFUL: a group of dice thrown together
-// FAVOUR: Advantage or disadvantage
-
-export const keepValidator = z
-  .enum(["all", "highest", "lowest", "dropHighest", "dropLowest"])
-  .default("all");
-
-export type Keep = z.infer<typeof keepValidator>;
-
-export const favourValidator = z.enum(["normal", "advantage", "disadvantage"]);
-
-export const operatorValidator = z.enum(["+", "-", "*", "/"]);
-
-export type Operator = z.infer<typeof operatorValidator>;
-
-export type Favour = z.infer<typeof favourValidator>;
-
-export const rollFormulaValidator = z.object({
-  arity: z.int().min(1),
-  cardinality: z.int().min(1),
-  modifier: z
-    .object({
-      operator: operatorValidator,
-      operand: z.number(),
-    })
-    .optional(),
-  favour: favourValidator,
-  keep: keepValidator,
-  exploding: z.boolean(),
-});
-
-export const faceValidator = z.object({
-  cardinality: z.int().min(1),
-  result: z.int().min(1),
-  exploded: z.boolean(),
-  kept: z.boolean(),
-});
-
-export type Face = z.infer<typeof faceValidator>;
-
-export const handfulValidator = z.object({
-  faces: z.array(faceValidator),
-  total: z.int(),
-  kept: z.boolean(),
-});
-
-export type Handful = z.infer<typeof handfulValidator>;
-
-export const favouredHandfulsValidator = z.object({
-  series1: handfulValidator,
-  series2: handfulValidator,
-  total: z.int(),
-});
-
-export type FavouredHandfuls = z.infer<typeof favouredHandfulsValidator>;
-
-function rollOneDie(cardinality: number): Face {
-  return {
-    cardinality,
-    exploded: false,
-    kept: true,
-    result: Math.floor(Math.random() * cardinality) + 1,
-  };
-}
-
-function rollMaybeExplodingDice(
-  cardinality: number,
-  exploding: boolean,
-): Face[] {
-  const faces: Face[] = [rollOneDie(cardinality)];
-  if (exploding) {
-    while (faces[faces.length - 1].result === cardinality) {
-      faces[faces.length - 1].exploded = true;
-      faces.push(rollOneDie(cardinality));
-    }
-  }
-  return faces;
-}
-
-function rollHandfulOfDice(
-  arity: number,
-  cardinality: number,
-  keep: Keep,
-  exploding: boolean,
-): Handful {
-  const sorted = Array.from({ length: arity }, () => {
-    return rollMaybeExplodingDice(cardinality, exploding);
-  })
-    .flat()
-    .map((face, originalIndex) => [originalIndex, face] as const)
-    .toSorted((a, b) => a[1].result - b[1].result);
-
-  if (keep === "dropHighest") {
-    sorted[sorted.length - 1][1].kept = false;
-  } else if (keep === "dropLowest") {
-    sorted[0][1].kept = false;
-  } else if (keep === "highest") {
-    for (let i = 0; i < sorted.length - 1; i++) {
-      sorted[i][1].kept = false;
-    }
-  } else if (keep === "lowest") {
-    for (let i = 1; i < sorted.length; i++) {
-      sorted[i][1].kept = false;
-    }
-  }
-
-  const restored = sorted
-    .toSorted((a, b) => a[0] - b[0])
-    .map(([_, face]) => face);
-
-  return {
-    faces: restored,
-    kept: true,
-    total: restored.reduce(
-      (acc, face) => acc + (face.kept ? face.result : 0),
-      0,
-    ),
-  };
-}
-
-function rollHandfulsWithMaybeFavour(
-  arity: number,
-  cardinality: number,
-  keep: Keep,
-  exploding: boolean,
-  favour: Favour,
-): Handful | FavouredHandfuls {
-  if (favour === "advantage") {
-    let total = 0;
-    const series1 = rollHandfulOfDice(arity, cardinality, keep, exploding);
-    const series2 = rollHandfulOfDice(arity, cardinality, keep, exploding);
-    if (series1.total > series2.total) {
-      series2.kept = false;
-      total = series1.total;
-    } else {
-      series1.kept = false;
-      total = series2.total;
-    }
-    return {
-      series1,
-      series2,
-      total,
-    };
-  } else if (favour === "disadvantage") {
-    let total = 0;
-    const series1 = rollHandfulOfDice(arity, cardinality, keep, exploding);
-    const series2 = rollHandfulOfDice(arity, cardinality, keep, exploding);
-    if (series1.total < series2.total) {
-      series2.kept = false;
-      total = series1.total;
-    } else {
-      series1.kept = false;
-      total = series2.total;
-    }
-    return {
-      series1,
-      series2,
-      total,
-    };
-  }
-  // finally
-  return rollHandfulOfDice(arity, cardinality, keep, exploding);
-}
-
-export const messageDataValidator = z.object({
-  formula: rollFormulaValidator,
-  result: z.object({
-    faces: z.union([handfulValidator, favouredHandfulsValidator]),
-    total: z.int(),
-  }),
-});
-
-function modify(operand1: number, operator: Operator, operand2: number) {
-  if (operator === "+") return operand1 + operand2;
-  if (operator === "-") return operand1 - operand2;
-  if (operator === "*") return operand1 * operand2;
-  if (operator === "/") return operand1 / operand2;
-  throw new Error(`Unknown operator: ${operator as any}`);
-}
-
-export const rollCapability = createCapability({
-  name: "roll",
-  displayName: "Roll",
-  configValidator: z.object({}),
-  defaultConfig: {},
-  stateValidator: z.object({}),
-  getInitialState: () => ({}),
-  initialise: () => {},
+/**
+ * Transitional shim (see counterCapability.ts for context). Merges the
+ * server + client halves so the existing registry and UI consumers keep
+ * working until the registry split. Also forwards the validator / type
+ * exports that React components in `SidebarRoll/` consume.
+ */
+export {
   messageDataValidator,
-  buildActions: ({ createAction }) => {
-    return {
-      doRoll: createAction({
-        payloadValidator: rollFormulaValidator,
-        effectfulFn: async ({ payload, sendChatMessage }) => {
-          const { arity, cardinality, exploding, favour, keep, modifier } =
-            payload;
-          const faceGroup = rollHandfulsWithMaybeFavour(
-            arity,
-            cardinality,
-            keep,
-            exploding,
-            favour,
-          );
-          sendChatMessage({
-            formula: payload,
-            result: {
-              faces: faceGroup,
-              total: modifier
-                ? modify(faceGroup.total, modifier.operator, modifier.operand)
-                : faceGroup.total,
-            },
-          });
-        },
-      }),
-    };
-  },
-});
+  rollFormulaValidator,
+  keepValidator,
+  favourValidator,
+  operatorValidator,
+  faceValidator,
+  handfulValidator,
+  favouredHandfulsValidator,
+  type Face,
+  type Favour,
+  type FavouredHandfuls,
+  type Handful,
+  type Keep,
+  type Operator,
+} from "./roll/common";
+
+export const rollCapability = {
+  name: rollServer.name,
+  displayName: rollServer.displayName,
+  defaultConfig: rollCommon.defaultConfig,
+  mount: rollServer.mount,
+  useMount: rollClient.useMount,
+  visibility: rollClient.visibility,
+  sidebarInfos: rollClient.sidebarInfos,
+  ChatDisplayComponent: rollClient.ChatDisplayComponent,
+};

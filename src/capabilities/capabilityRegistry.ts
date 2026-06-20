@@ -1,12 +1,3 @@
-import { SharedItemMessageDisplay } from "#/components/capabilityComponents/Files/SharedItemMessageDisplay";
-import { SidebarFiles } from "#/components/capabilityComponents/Files/SidebarFiles";
-import { SidebarAdversaries } from "#/components/capabilityComponents/SidebarAdversaries/SidebarAdversaries";
-import { SidebarFeedback } from "#/components/capabilityComponents/SidebarFeedback";
-import { LaserFeelingsResultDisplay } from "#/components/capabilityComponents/SidebarLaserFeelings/LaserFeelingsResultDisplay";
-import { SidebarLaserFeelings } from "#/components/capabilityComponents/SidebarLaserFeelings/SidebarLaserFeelings";
-import { SidebarObjectives } from "#/components/capabilityComponents/SidebarObjectives/SidebarObjectives";
-import { RollResultDisplay } from "#/components/capabilityComponents/SidebarRoll/RollResultDisplay";
-import { SidebarRoll } from "#/components/capabilityComponents/SidebarRoll/SidebarRoll";
 import type { JsonData } from "#/validators/jsonObjectValidator.ts";
 import { adversariesCapability } from "./adversariesCapability";
 import { counterCapability } from "./counterCapability";
@@ -16,7 +7,6 @@ import { laserFeelingsCapability } from "./laserFeelingsCapability";
 import { objectivesCapability } from "./objectivesCapability";
 import { rollCapability } from "./rollCapability";
 import type { AnyCapability } from "./types";
-import { Check, Dices, Swords, Zap, Folder, Speech } from "lucide-react";
 import type { ComponentType } from "react";
 
 type CapabilityInfo = {
@@ -56,73 +46,40 @@ export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
     ChatDisplayComponent: counterCapability.ChatDisplayComponent,
   },
   objectives: {
-    visibility: "public",
+    visibility: objectivesCapability.visibility,
     capability: objectivesCapability,
-    sidebarInfos: [
-      {
-        key: "objectives",
-        SidebarComponent: SidebarObjectives,
-        IconComponent: Check,
-      },
-    ],
+    sidebarInfos: objectivesCapability.sidebarInfos,
+    ChatDisplayComponent: objectivesCapability.ChatDisplayComponent,
   },
   adversaries: {
-    visibility: "public",
+    visibility: adversariesCapability.visibility,
     capability: adversariesCapability,
-    sidebarInfos: [
-      {
-        key: "adversaries",
-        SidebarComponent: SidebarAdversaries,
-        IconComponent: Swords,
-      },
-    ],
+    sidebarInfos: adversariesCapability.sidebarInfos,
+    ChatDisplayComponent: adversariesCapability.ChatDisplayComponent,
   },
   roll: {
-    visibility: "public",
+    visibility: rollCapability.visibility,
     capability: rollCapability,
-    sidebarInfos: [
-      {
-        key: "roll",
-        SidebarComponent: SidebarRoll,
-        IconComponent: Dices,
-      },
-    ],
-    ChatDisplayComponent: RollResultDisplay,
+    sidebarInfos: rollCapability.sidebarInfos,
+    ChatDisplayComponent: rollCapability.ChatDisplayComponent,
   },
   laserfeelings: {
-    visibility: "public",
+    visibility: laserFeelingsCapability.visibility,
     capability: laserFeelingsCapability,
-    sidebarInfos: [
-      {
-        key: "laserfeelings",
-        SidebarComponent: SidebarLaserFeelings,
-        IconComponent: Zap,
-      },
-    ],
-    ChatDisplayComponent: LaserFeelingsResultDisplay,
+    sidebarInfos: laserFeelingsCapability.sidebarInfos,
+    ChatDisplayComponent: laserFeelingsCapability.ChatDisplayComponent,
   },
   files: {
-    visibility: "public",
+    visibility: filesCapability.visibility,
     capability: filesCapability,
-    sidebarInfos: [
-      {
-        key: "files",
-        SidebarComponent: SidebarFiles,
-        IconComponent: Folder,
-      },
-    ],
-    ChatDisplayComponent: SharedItemMessageDisplay,
+    sidebarInfos: filesCapability.sidebarInfos,
+    ChatDisplayComponent: filesCapability.ChatDisplayComponent,
   },
   feedback: {
-    visibility: "dev",
+    visibility: feedbackTestCapability.visibility,
     capability: feedbackTestCapability,
-    sidebarInfos: [
-      {
-        key: "feedback",
-        SidebarComponent: SidebarFeedback,
-        IconComponent: Speech,
-      },
-    ],
+    sidebarInfos: feedbackTestCapability.sidebarInfos,
+    ChatDisplayComponent: feedbackTestCapability.ChatDisplayComponent,
   },
 };
 

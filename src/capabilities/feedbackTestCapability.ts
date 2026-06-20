@@ -1,15 +1,19 @@
-import { createCapability } from "./createCapability";
-import { z } from "zod/v4";
+import { feedbackClient } from "./feedback/client";
+import { feedbackCommon } from "./feedback/common";
+import { feedbackServer } from "./feedback/server";
 
-export const feedbackTestCapability = createCapability({
-  name: "feedback",
-  displayName: "Feedback test",
-  configValidator: z.object({}),
-  defaultConfig: {},
-  stateValidator: z.object({}),
-  getInitialState: ({ config }) => ({ count: config.startAt }),
-  initialise: async () => {},
-  buildActions: () => {
-    return {};
-  },
-});
+/**
+ * Transitional shim (see counterCapability.ts for context). Merges the
+ * server + client halves so the existing registry and UI consumers keep
+ * working until the registry split.
+ */
+export const feedbackTestCapability = {
+  name: feedbackServer.name,
+  displayName: feedbackServer.displayName,
+  defaultConfig: feedbackCommon.defaultConfig,
+  mount: feedbackServer.mount,
+  useMount: feedbackClient.useMount,
+  visibility: feedbackClient.visibility,
+  sidebarInfos: feedbackClient.sidebarInfos,
+  ChatDisplayComponent: feedbackClient.ChatDisplayComponent,
+};
