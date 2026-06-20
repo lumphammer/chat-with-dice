@@ -1,7 +1,6 @@
 import { SharedItemMessageDisplay } from "#/components/capabilityComponents/Files/SharedItemMessageDisplay";
 import { SidebarFiles } from "#/components/capabilityComponents/Files/SidebarFiles";
 import { SidebarAdversaries } from "#/components/capabilityComponents/SidebarAdversaries/SidebarAdversaries";
-import { SidebarCounter } from "#/components/capabilityComponents/SidebarCounter";
 import { SidebarFeedback } from "#/components/capabilityComponents/SidebarFeedback";
 import { LaserFeelingsResultDisplay } from "#/components/capabilityComponents/SidebarLaserFeelings/LaserFeelingsResultDisplay";
 import { SidebarLaserFeelings } from "#/components/capabilityComponents/SidebarLaserFeelings/SidebarLaserFeelings";
@@ -17,15 +16,7 @@ import { laserFeelingsCapability } from "./laserFeelingsCapability";
 import { objectivesCapability } from "./objectivesCapability";
 import { rollCapability } from "./rollCapability";
 import type { AnyCapability } from "./types";
-import {
-  Check,
-  Dices,
-  SquarePlus,
-  Swords,
-  Zap,
-  Folder,
-  Speech,
-} from "lucide-react";
+import { Check, Dices, Swords, Zap, Folder, Speech } from "lucide-react";
 import type { ComponentType } from "react";
 
 type CapabilityInfo = {
@@ -59,15 +50,10 @@ export type CapabilityName = (typeof capabilityNames)[number];
 
 export const capabilityRegistry: Record<CapabilityName, CapabilityInfo> = {
   counter: {
-    visibility: "public",
+    visibility: counterCapability.visibility,
     capability: counterCapability,
-    sidebarInfos: [
-      {
-        key: "counter",
-        SidebarComponent: SidebarCounter,
-        IconComponent: SquarePlus,
-      },
-    ],
+    sidebarInfos: counterCapability.sidebarInfos,
+    ChatDisplayComponent: counterCapability.ChatDisplayComponent,
   },
   objectives: {
     visibility: "public",
