@@ -26,16 +26,6 @@ export const SetCapabilityStateContextProvider = ({
   );
 };
 
-export const useSetCapabilityStateContextSafe = () => {
-  return useContext(setCapabilityStateContext);
-};
-
 export const useSetCapabilityStateContext = () => {
-  const context = useSetCapabilityStateContextSafe();
-  if (context === null) {
-    throw new Error(
-      "setCapabilityStateContext must be used within a SetCapabilityStateContextProvider",
-    );
-  }
-  return context;
+  return useContext(setCapabilityStateContext);
 };

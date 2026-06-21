@@ -1,4 +1,4 @@
-import { parseJSONC } from "#/utils/parseJSONC";
+import { parseJSONC } from "../configHelpers/parseJSONC";
 import fs from "fs";
 import crypto from "node:crypto";
 import path from "node:path";

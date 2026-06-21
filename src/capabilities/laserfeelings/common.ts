@@ -14,14 +14,11 @@ const YOUR_NUMBER_MAX = 5;
 const NUMBER_OF_DICE_MIN = 1;
 const NUMBER_OF_DICE_MAX = 4;
 
-export const yourNumberValidator = z
-  .int()
-  .min(YOUR_NUMBER_MIN)
-  .max(YOUR_NUMBER_MAX);
+const yourNumberValidator = z.int().min(YOUR_NUMBER_MIN).max(YOUR_NUMBER_MAX);
 
 export type YourNumber = z.infer<typeof yourNumberValidator>;
 
-export const numberOfDiceValidator = z
+const numberOfDiceValidator = z
   .int()
   .min(NUMBER_OF_DICE_MIN)
   .max(NUMBER_OF_DICE_MAX);
@@ -51,11 +48,11 @@ export const DEFAULT_YOUR_NUMBER: YourNumber = DEFAULT_YOUR_NUMBER_VALUE;
 export const DEFAULT_NUMBER_OF_DICE: NumberOfDice =
   DEFAULT_NUMBER_OF_DICE_VALUE;
 
-export const modeValidator = z.enum(["lasers", "feelings"]);
+const modeValidator = z.enum(["lasers", "feelings"]);
 
 export type Mode = z.infer<typeof modeValidator>;
 
-export const formulaValidator = z.object({
+const formulaValidator = z.object({
   yourNumber: yourNumberValidator,
   numberOfDice: numberOfDiceValidator,
   mode: modeValidator,
@@ -63,7 +60,7 @@ export const formulaValidator = z.object({
 
 export type Formula = z.infer<typeof formulaValidator>;
 
-export const faceValidator = z.object({
+const faceValidator = z.object({
   result: z.int().min(1).max(D6),
   success: z.boolean(),
   laserFeelings: z.boolean(),

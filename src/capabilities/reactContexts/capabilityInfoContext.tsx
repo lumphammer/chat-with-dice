@@ -37,17 +37,7 @@ export const CapabilityInfoContextProvider = ({
   );
 };
 
-export const useCapabilityInfoSafe = (name: string): CapabilityInfo => {
-  const context = useContext(capabilityInfoContext);
-  return context?.[name] ?? { initialised: false };
-};
-
 export const useCapabilityInfo = (name: string): CapabilityInfo => {
   const context = useContext(capabilityInfoContext);
-  if (context === null) {
-    throw new Error(
-      "useCapabilityInfo must be used within a CapabilityStateContextProvider",
-    );
-  }
-  return context[name] ?? { initialised: false };
+  return context?.[name] ?? { initialised: false };
 };

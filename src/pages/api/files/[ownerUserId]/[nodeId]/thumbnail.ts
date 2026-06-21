@@ -1,6 +1,8 @@
 import {
   HTTP_BAD_REQUEST,
+  HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_NOT_FOUND,
   HTTP_OK,
   HTTP_PAYLOAD_TOO_LARGE,
   HTTP_UNAUTHORIZED,
@@ -16,8 +18,6 @@ import { env } from "cloudflare:workers";
 
 export const prerender = false;
 
-const HTTP_NOT_FOUND = 404;
-const HTTP_FORBIDDEN = 403;
 const MAX_THUMBNAIL_BYTES = 1_048_576; // 1 MB
 const THUMBNAIL_CONTENT_TYPE = "image/webp";
 

@@ -2,11 +2,25 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
   "ignore": ["drizzle.config.js"],
-  "ignoreDependencies": ["cloudflare"],
+  "ignoreDependencies": [
+    "cloudflare",
+    "@astrojs/check",
+    "@astrojs/compiler-rs",
+    "@astrojs/react",
+    "@svgr/core",
+    "@svgr/plugin-jsx",
+    "@tailwindcss/vite",
+    "dotenv",
+    "oxlint",
+    "oxlint-tsgolint",
+    "rollup-plugin-visualizer",
+    "svgo"
+  ],
   "ignoreFiles": [
     "src/test-utils/**/*",
     "*.ts",
     "scripts/*",
+    "configHelpers/*",
     "src/actions/rooms/hardDeleteRoom.ts",
     "src/utils/getClassNameForDOBinding.ts"
   ]
