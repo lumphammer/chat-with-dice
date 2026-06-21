@@ -1,63 +1,13 @@
-import { createCapability } from "./createCapability";
-import { z } from "zod/v4";
-
-// TERMINOLOGY
-// FACE: a die that has landed on the table and is showing a number
-// HANDFUL: a group of dice thrown together
-// FAVOUR: Advantage or disadvantage
-
-export const keepValidator = z
-  .enum(["all", "highest", "lowest", "dropHighest", "dropLowest"])
-  .default("all");
-
-export type Keep = z.infer<typeof keepValidator>;
-
-export const favourValidator = z.enum(["normal", "advantage", "disadvantage"]);
-
-export const operatorValidator = z.enum(["+", "-", "*", "/"]);
-
-export type Operator = z.infer<typeof operatorValidator>;
-
-export type Favour = z.infer<typeof favourValidator>;
-
-export const rollFormulaValidator = z.object({
-  arity: z.int().min(1),
-  cardinality: z.int().min(1),
-  modifier: z
-    .object({
-      operator: operatorValidator,
-      operand: z.number(),
-    })
-    .optional(),
-  favour: favourValidator,
-  keep: keepValidator,
-  exploding: z.boolean(),
-});
-
-export const faceValidator = z.object({
-  cardinality: z.int().min(1),
-  result: z.int().min(1),
-  exploded: z.boolean(),
-  kept: z.boolean(),
-});
-
-export type Face = z.infer<typeof faceValidator>;
-
-export const handfulValidator = z.object({
-  faces: z.array(faceValidator),
-  total: z.int(),
-  kept: z.boolean(),
-});
-
-export type Handful = z.infer<typeof handfulValidator>;
-
-export const favouredHandfulsValidator = z.object({
-  series1: handfulValidator,
-  series2: handfulValidator,
-  total: z.int(),
-});
-
-export type FavouredHandfuls = z.infer<typeof favouredHandfulsValidator>;
+import { createServerCapability } from "#/capabilities/createServerCapability";
+import {
+  type Face,
+  type FavouredHandfuls,
+  type Handful,
+  type Keep,
+  type Favour,
+  type Operator,
+  rollCommon,
+} from "./common";
 
 function rollOneDie(cardinality: number): Face {
   return {
@@ -163,17 +113,8 @@ function rollHandfulsWithMaybeFavour(
       total,
     };
   }
-  // finally
   return rollHandfulOfDice(arity, cardinality, keep, exploding);
 }
-
-export const messageDataValidator = z.object({
-  formula: rollFormulaValidator,
-  result: z.object({
-    faces: z.union([handfulValidator, favouredHandfulsValidator]),
-    total: z.int(),
-  }),
-});
 
 function modify(operand1: number, operator: Operator, operand2: number) {
   if (operator === "+") return operand1 + operand2;
@@ -183,40 +124,27 @@ function modify(operand1: number, operator: Operator, operand2: number) {
   throw new Error(`Unknown operator: ${operator as any}`);
 }
 
-export const rollCapability = createCapability({
-  name: "roll",
-  displayName: "Roll",
-  configValidator: z.object({}),
-  defaultConfig: {},
-  stateValidator: z.object({}),
-  getInitialState: () => ({}),
+export const rollServer = createServerCapability(rollCommon, {
   initialise: () => {},
-  messageDataValidator,
-  buildActions: ({ createAction }) => {
-    return {
-      doRoll: createAction({
-        payloadValidator: rollFormulaValidator,
-        effectfulFn: async ({ payload, sendChatMessage }) => {
-          const { arity, cardinality, exploding, favour, keep, modifier } =
-            payload;
-          const faceGroup = rollHandfulsWithMaybeFavour(
-            arity,
-            cardinality,
-            keep,
-            exploding,
-            favour,
-          );
-          sendChatMessage({
-            formula: payload,
-            result: {
-              faces: faceGroup,
-              total: modifier
-                ? modify(faceGroup.total, modifier.operator, modifier.operand)
-                : faceGroup.total,
-            },
-          });
+  actionEffects: {
+    doRoll: async ({ payload, sendChatMessage }) => {
+      const { arity, cardinality, exploding, favour, keep, modifier } = payload;
+      const faceGroup = rollHandfulsWithMaybeFavour(
+        arity,
+        cardinality,
+        keep,
+        exploding,
+        favour,
+      );
+      sendChatMessage({
+        formula: payload,
+        result: {
+          faces: faceGroup,
+          total: modifier
+            ? modify(faceGroup.total, modifier.operator, modifier.operand)
+            : faceGroup.total,
         },
-      }),
-    };
+      });
+    },
   },
 });

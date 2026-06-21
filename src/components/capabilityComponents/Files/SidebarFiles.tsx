@@ -1,5 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
-import { filesCapability } from "#/capabilities/filesCapability";
+import { filesClient } from "#/capabilities/files/client";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FileManager } from "#/components/FileManager/FileManager";
 import type { FileManagerLocation } from "#/components/FileManager/types";
@@ -21,7 +21,7 @@ const isFilesTab = (value: string): value is FilesTab =>
   value === "shared" || value === "mine";
 
 export const SidebarFiles = memo(() => {
-  const capInfo = filesCapability.useMount();
+  const capInfo = filesClient.useMount();
   const { data: sessionData } = authClient.useSession();
   const { sharedFolderOpenRequest } = useRoomUiNavigationContext();
   const isAnonymous = sessionData?.user.isAnonymous ?? false;

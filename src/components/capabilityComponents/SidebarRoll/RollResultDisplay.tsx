@@ -5,7 +5,7 @@ import {
   type Handful,
   type Keep,
   type Operator,
-} from "#/capabilities/rollCapability";
+} from "#/capabilities/roll/common";
 import { FormulaLine } from "#/components/capabilityComponents/shared/diceDisplay/FormulaLine";
 import { ResultStat } from "#/components/capabilityComponents/shared/diceDisplay/ResultStat";
 import type { JsonData } from "#/validators/jsonObjectValidator.ts";

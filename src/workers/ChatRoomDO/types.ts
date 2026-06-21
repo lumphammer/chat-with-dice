@@ -1,4 +1,4 @@
-import type { SharedItem } from "#/capabilities/filesCapability.ts";
+import type { SharedItem } from "#/capabilities/files/common.ts";
 import { z } from "zod/v4";
 
 export const sessionAttachmentSchema = z.object({

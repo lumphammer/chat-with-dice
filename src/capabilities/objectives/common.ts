@@ -1,79 +1,78 @@
-import { createCapability } from "./createCapability";
+import { createCapabilityCommon } from "#/capabilities/createCapabilityCommon";
 import { nanoid } from "nanoid";
 import { z } from "zod/v4";
 
-export const adversariesCapability = createCapability({
-  name: "adversaries",
-  displayName: "Adversaries",
+export const objectivesCommon = createCapabilityCommon({
+  name: "objectives",
+  displayName: "Objectives",
   configValidator: z.object({}),
   defaultConfig: {},
   stateValidator: z.object({
-    adversaries: z.array(
+    objectives: z.array(
       z.object({
         id: z.nanoid(),
+        isPrimary: z.boolean(),
         name: z.string(),
-        threat: z.int().min(0),
         difficulty: z.int().min(0),
         startingResilience: z.int(),
         resilience: z.int(),
       }),
     ),
   }),
-  getInitialState: () => ({ adversaries: [] }),
-  initialise: async () => {},
+  getInitialState: () => ({ objectives: [] }),
   buildActions: ({ createAction }) => ({
-    createAdversary: createAction({
+    createObjective: createAction({
       payloadValidator: z.object({
         name: z.string(),
-        threat: z.int().min(0),
+        startingResilience: z.int(),
+        isPrimary: z.boolean(),
         difficulty: z.int().min(0),
-        startingResilience: z.int().min(1),
       }),
       pureFn: ({ stateDraft, payload }) => {
-        stateDraft.adversaries.push({
+        stateDraft.objectives.push({
           id: nanoid(),
           name: payload.name,
-          threat: payload.threat,
           difficulty: payload.difficulty,
           resilience: payload.startingResilience,
           startingResilience: payload.startingResilience,
+          isPrimary: payload.isPrimary,
         });
       },
     }),
-    updateAdversary: createAction({
+    updateObjective: createAction({
       payloadValidator: z.object({
         id: z.nanoid(),
         name: z.string(),
-        threat: z.int().min(0),
+        isPrimary: z.boolean(),
         difficulty: z.int().min(0),
         startingResilience: z.int().min(1),
       }),
       pureFn: ({ stateDraft, payload }) => {
-        const adversary = stateDraft.adversaries.find(
-          (a) => a.id === payload.id,
+        const objective = stateDraft.objectives.find(
+          (o) => o.id === payload.id,
         );
-        if (adversary) {
+        if (objective) {
           const damageTaken =
-            adversary.startingResilience - adversary.resilience;
+            objective.startingResilience - objective.resilience;
           const newDamageTaken = Math.min(
             damageTaken,
             payload.startingResilience,
           );
-          adversary.name = payload.name;
-          adversary.threat = payload.threat;
-          adversary.difficulty = payload.difficulty;
-          adversary.startingResilience = payload.startingResilience;
-          adversary.resilience = payload.startingResilience - newDamageTaken;
+          objective.name = payload.name;
+          objective.isPrimary = payload.isPrimary;
+          objective.difficulty = payload.difficulty;
+          objective.startingResilience = payload.startingResilience;
+          objective.resilience = payload.startingResilience - newDamageTaken;
         }
       },
     }),
-    deleteAdversary: createAction({
+    deleteObjective: createAction({
       payloadValidator: z.object({
         id: z.nanoid(),
       }),
       pureFn: ({ stateDraft, payload }) => {
-        stateDraft.adversaries = stateDraft.adversaries.filter(
-          (a) => a.id !== payload.id,
+        stateDraft.objectives = stateDraft.objectives.filter(
+          (o) => o.id !== payload.id,
         );
       },
     }),
@@ -83,15 +82,12 @@ export const adversariesCapability = createCapability({
         resilience: z.int().min(0),
       }),
       pureFn: ({ stateDraft, payload }) => {
-        const adversary = stateDraft.adversaries.find(
-          (a) => a.id === payload.id,
+        const objective = stateDraft.objectives.find(
+          (o) => o.id === payload.id,
         );
-        if (adversary) {
-          adversary.resilience = payload.resilience;
+        if (objective) {
+          objective.resilience = payload.resilience;
         }
-      },
-      effectfulFn: ({ pureFn, payload, stateDraft }) => {
-        pureFn({ payload, stateDraft });
       },
     }),
   }),

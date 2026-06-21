@@ -1,4 +1,4 @@
-import type { SharedItem } from "#/capabilities/filesCapability";
+import type { SharedItem } from "#/capabilities/files/common";
 import { getRelativeTimeString } from "#/components/DiceRoller/TimeDisplay";
 import { NodeIcon } from "#/components/FileManager/NodeIcon";
 import { memo } from "react";

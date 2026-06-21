@@ -2,7 +2,7 @@ import {
   messageDataValidator,
   type Face,
   type Formula,
-} from "#/capabilities/laserFeelingsCapability";
+} from "#/capabilities/laserfeelings/common";
 import { DiceRow } from "#/components/capabilityComponents/shared/diceDisplay/DiceRow";
 import { FaceChip } from "#/components/capabilityComponents/shared/diceDisplay/FaceChip";
 import { FormulaLine } from "#/components/capabilityComponents/shared/diceDisplay/FormulaLine";

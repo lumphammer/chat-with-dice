@@ -1,7 +1,5 @@
-import {
-  capabilityRegistry,
-  type CapabilityName,
-} from "#/capabilities/capabilityRegistry";
+import { type CapabilityName } from "#/capabilities/capabilityNames";
+import { clientCapabilityRegistry } from "#/capabilities/clientCapabilityRegistry";
 import { DeleteButton } from "#/components/capabilityComponents/shared/DeleteButton";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
@@ -9,7 +7,7 @@ import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const capabilityNames = Object.entries(capabilityRegistry)
+const capabilityNames = Object.entries(clientCapabilityRegistry)
   .filter(
     ([_name, value]) =>
       value.visibility === "public" || process.env.NODE_ENV === "development",
@@ -17,7 +15,7 @@ const capabilityNames = Object.entries(capabilityRegistry)
   .map(([name]) => name as CapabilityName);
 
 function getCapabilityDefaultConfig(name: CapabilityName) {
-  return capabilityRegistry[name].capability.defaultConfig;
+  return clientCapabilityRegistry[name].defaultConfig;
 }
 
 function setCapabilityEnabled(
@@ -170,7 +168,7 @@ export const Config = memo(() => {
                     shadow-sm"
                 >
                   <span className="font-medium">
-                    {capabilityRegistry[capabilityName].capability.displayName}
+                    {clientCapabilityRegistry[capabilityName].displayName}
                   </span>
                   <input
                     className="checkbox"

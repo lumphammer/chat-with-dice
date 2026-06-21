@@ -1,9 +1,9 @@
-import { counterCapability } from "#/capabilities/counterCapability";
+import { counterClient } from "#/capabilities/counter/client";
 import { SidebarPanel } from "./shared/SidebarPanel";
 import { memo } from "react";
 
 export const SidebarCounter = memo(() => {
-  const capInfo = counterCapability.useMount();
+  const capInfo = counterClient.useMount();
 
   if (!capInfo.initialised) {
     return "Loading...";

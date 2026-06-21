@@ -1,6 +1,6 @@
+import { createCapabilityCommon } from "#/capabilities/createCapabilityCommon";
 import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
 import { storageNodeValidator } from "#/validators/storageNodeValidator.ts";
-import { createCapability } from "./createCapability";
 import * as z from "zod/v4";
 
 // oxlint-disable-next-line no-magic-numbers
@@ -147,7 +147,7 @@ const migrateStateV3ToV4 = (
   }),
 });
 
-const filesStateValidator = z.union([
+export const filesStateValidator = z.union([
   filesStateValidatorV4,
   filesStateValidatorV3.transform(migrateStateV3ToV4),
   filesStateValidatorV2
@@ -249,7 +249,9 @@ export type FilesState = z.infer<typeof filesStateValidator>;
 
 export type SharedItem = FilesState["shares"][number];
 
-export const filesCapability = createCapability({
+export const FILES_STATE_VERSION_CONST = FILES_STATE_VERSION;
+
+export const filesCommon = createCapabilityCommon({
   name: "files",
   displayName: "Files",
   configValidator: z.object({}),
@@ -259,7 +261,6 @@ export const filesCapability = createCapability({
     version: FILES_STATE_VERSION,
     shares: [],
   }),
-  initialise: () => {},
   messageDataValidator: sharedItemMessageDataValidator,
   buildActions({ createAction }) {
     return {
@@ -267,31 +268,6 @@ export const filesCapability = createCapability({
         payloadValidator: z.object({
           nodeId: z.string(),
         }),
-        effectfulFn: async ({
-          stateDraft,
-          payload: { nodeId },
-          userId,
-          displayName,
-          nodeShareManager,
-          broadcaster,
-          sendChatMessage,
-        }) => {
-          const shareResult = await nodeShareManager.shareUserNodeId({
-            userId,
-            nodeId,
-            displayName,
-          });
-
-          if (shareResult.result === "error") {
-            broadcaster.sendErrorToUserId(userId, shareResult.reason);
-            return;
-          }
-          const sharedItem: SharedItem = shareResult.sharedItem;
-          if (shareResult.result === "created") {
-            stateDraft.shares.push(sharedItem);
-          }
-          sendChatMessage(sharedItem);
-        },
       }),
       renameShare: createAction({
         payloadValidator: z.object({
@@ -305,12 +281,6 @@ export const filesCapability = createCapability({
               s.userId === payload.ownerUserId && s.node.id === payload.nodeId,
           );
           if (share) share.node.name = payload.newName;
-        },
-        effectfulFn: async ({ stateDraft, payload, userId, pureFn }) => {
-          pureFn({
-            stateDraft,
-            payload: { ...payload, ownerUserId: userId },
-          });
         },
       }),
       unshareFile: createAction({
@@ -327,27 +297,6 @@ export const filesCapability = createCapability({
           if (index !== -1) {
             stateDraft.shares.splice(index, 1);
           }
-        },
-        effectfulFn: async ({
-          stateDraft,
-          payload,
-          userId,
-          nodeShareManager,
-          broadcaster,
-          pureFn,
-        }) => {
-          const unshareResult = await nodeShareManager.unshareUserNodeId({
-            requestingUserId: userId,
-            ownerUserId: payload.ownerUserId,
-            nodeId: payload.nodeId,
-          });
-
-          if (unshareResult.result === "error") {
-            broadcaster.sendErrorToUserId(userId, unshareResult.reason);
-            return;
-          }
-
-          pureFn({ stateDraft, payload });
         },
       }),
     };

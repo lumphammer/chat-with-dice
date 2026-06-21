@@ -1,7 +1,6 @@
-import {
-  capabilityRegistry,
-  isCapabilityName,
-} from "#/capabilities/capabilityRegistry";
+import { isCapabilityName } from "#/capabilities/capabilityNames";
+import { type ServerMountedCapability } from "#/capabilities/createServerCapability";
+import { serverCapabilityRegistry } from "#/capabilities/serverCapabilityRegistry";
 import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
 import { db as d1 } from "#/db";
 import migrations from "#/durable-object-migrations/ChatRoomDO/migrations";
@@ -9,7 +8,6 @@ import * as dbSchema from "#/schemas/ChatRoomDO-schema";
 import { rooms } from "#/schemas/coreD1-schema";
 import { type RoomConfig } from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
-import { type ServerMountedCapability } from "../../capabilities/types";
 import { setupDB } from "../utils/setupDB";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
@@ -378,8 +376,8 @@ export class ChatRoomDO extends DurableObject {
       return null;
     }
     log("Mounting capability: ", name);
-    const capabilityInfo = capabilityRegistry[name];
-    const mountedCap = await capabilityInfo.capability.mount({
+    const capability = serverCapabilityRegistry[name];
+    const mountedCap = await capability.mount({
       doCtx: this.ctx,
       messageJiggler: this.messageJiggler,
       stateRepository: this.stateRepository,

@@ -1,4 +1,4 @@
-import { createCapability } from "./createCapability";
+import { createCapabilityCommon } from "#/capabilities/createCapabilityCommon";
 import { z } from "zod/v4";
 
 // TERMINOLOGY
@@ -80,56 +80,19 @@ export const messageDataValidator = z.object({
   }),
 });
 
-function rollD6(): number {
-  return Math.floor(Math.random() * D6) + 1;
-}
+export const D6_FACES = D6;
 
-function evaluateFace(
-  result: number,
-  yourNumber: YourNumber,
-  mode: Mode,
-): Face {
-  const laserFeelings = result === yourNumber;
-  const beats = mode === "lasers" ? result < yourNumber : result > yourNumber;
-  return {
-    result,
-    laserFeelings,
-    success: laserFeelings || beats,
-  };
-}
-
-export const laserFeelingsCapability = createCapability({
+export const laserfeelingsCommon = createCapabilityCommon({
   name: "laserfeelings",
   displayName: "Lasers & Feelings",
   configValidator: z.object({}),
   defaultConfig: {},
   stateValidator: z.object({}),
   getInitialState: () => ({}),
-  initialise: () => {},
   messageDataValidator,
-  buildActions: ({ createAction }) => {
-    return {
-      doRoll: createAction({
-        payloadValidator: formulaValidator,
-        effectfulFn: async ({ payload, sendChatMessage }) => {
-          const { yourNumber, numberOfDice, mode } = payload;
-          const faces: Face[] = Array.from({ length: numberOfDice }, () =>
-            evaluateFace(rollD6(), yourNumber, mode),
-          );
-          const successCount = faces.filter((f) => f.success).length;
-          const laserFeelingsCount = faces.filter(
-            (f) => f.laserFeelings,
-          ).length;
-          sendChatMessage({
-            formula: payload,
-            result: {
-              faces,
-              successCount,
-              laserFeelingsCount,
-            },
-          });
-        },
-      }),
-    };
-  },
+  buildActions: ({ createAction }) => ({
+    doRoll: createAction({
+      payloadValidator: formulaValidator,
+    }),
+  }),
 });

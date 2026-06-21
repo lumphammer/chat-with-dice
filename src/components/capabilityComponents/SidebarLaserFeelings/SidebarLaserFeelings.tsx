@@ -1,10 +1,10 @@
-import { laserFeelingsCapability } from "#/capabilities/laserFeelingsCapability";
+import { laserfeelingsClient } from "#/capabilities/laserfeelings/client";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { LaserFeelingsForm } from "./LaserFeelingsForm";
 import { memo } from "react";
 
 export const SidebarLaserFeelings = memo(() => {
-  const capInfo = laserFeelingsCapability.useMount();
+  const capInfo = laserfeelingsClient.useMount();
 
   if (!capInfo.initialised) {
     return "Loading...";

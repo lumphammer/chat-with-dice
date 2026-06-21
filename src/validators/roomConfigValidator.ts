@@ -1,4 +1,4 @@
-import { capabilityNames } from "#/capabilities/capabilityRegistry.ts";
+import { capabilityNames } from "#/capabilities/capabilityNames.ts";
 import { jsonObjectValidator } from "./jsonObjectValidator";
 import { z } from "zod/v4";
 

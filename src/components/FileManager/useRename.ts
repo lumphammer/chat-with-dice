@@ -1,5 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
-import { filesCapability } from "#/capabilities/filesCapability";
+import { filesClient } from "#/capabilities/files/client";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { actions } from "astro:actions";
 import { useRef, useState } from "react";
@@ -14,7 +14,7 @@ export const useRename = ({
   onClick: () => void;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const filesCap = filesCapability.useMount();
+  const filesCap = filesClient.useMount();
   const { data: sessionData } = authClient.useSession();
 
   const [isRenaming, setIsRenaming] = useState(false);

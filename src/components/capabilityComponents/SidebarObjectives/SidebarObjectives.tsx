@@ -1,11 +1,11 @@
-import { objectivesCapability } from "#/capabilities/objectivesCapability";
+import { objectivesClient } from "#/capabilities/objectives/client";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { CreateObjectiveForm } from "./CreateObjectiveForm";
 import { ObjectiveDisplay } from "./ObjectiveDisplay";
 import { memo } from "react";
 
 export const SidebarObjectives = memo(() => {
-  const capInfo = objectivesCapability.useMount();
+  const capInfo = objectivesClient.useMount();
 
   if (!capInfo.initialised) {
     return "Loading...";
