@@ -7,29 +7,30 @@ import { expectTypeOf, test } from "vitest";
 // validator won't actually give us compile-time warnings if the two drift, so
 // we have this type test to ensure they stay in sync
 
-// the type of rows coming out od the db
+// the type of rows coming directly out of the db
 type DbMessageRow = typeof Messages.$inferSelect;
 
-// pruned versions of both types where the chat message validator asserts
-// narrower types
+// keys of properties that are more narrowly typed by the validator so they
+// can't be tested
+type UntestableProperties = "results" | "linkPreview";
+
+const untestableProperties = "" as UntestableProperties;
+
+// pruned versions of both types, removing properties where the chat message
+// validator asserts narrower types than the db
 type PrunedDbMessageRow = RecursiveExpand<
-  Omit<DbMessageRow, "formula" | "results" | "linkPreview">
+  Omit<DbMessageRow, UntestableProperties>
 >;
-type PrunedChatMessage = Omit<
-  ChatMessage,
-  "formula" | "results" | "linkPreview"
->;
+type PrunedChatMessage = Omit<ChatMessage, UntestableProperties>;
 
 test("Chat message validator matches database where it can", () => {
   // first, check that both types have the three properties we're excluding from
   // testing - this is an early warning that you might need to come back here
   // and update these tests
-  expectTypeOf<ChatMessage>().toHaveProperty("formula");
-  expectTypeOf<ChatMessage>().toHaveProperty("results");
-  expectTypeOf<ChatMessage>().toHaveProperty("linkPreview");
-  expectTypeOf<DbMessageRow>().toHaveProperty("formula");
-  expectTypeOf<DbMessageRow>().toHaveProperty("results");
-  expectTypeOf<DbMessageRow>().toHaveProperty("linkPreview");
-  expectTypeOf<PrunedDbMessageRow>().toEqualTypeOf<PrunedChatMessage>();
+  expectTypeOf<ChatMessage>().toHaveProperty(untestableProperties);
+  expectTypeOf<DbMessageRow>().toHaveProperty(untestableProperties);
+  // check that ChatMessage would be assignable to the DB type
+  expectTypeOf<ChatMessage>().toExtend<DbMessageRow>();
+  // check that certain properties aside, they are are otherwise identical
   expectTypeOf<PrunedChatMessage>().toEqualTypeOf<PrunedDbMessageRow>();
 });

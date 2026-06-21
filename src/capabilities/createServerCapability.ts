@@ -169,7 +169,6 @@ export function createServerCapability<
             userId,
             createdTime: Date.now(),
             displayName,
-            formula: {},
             id: nanoid(),
             linkPreview: null,
             results: data ?? {},
