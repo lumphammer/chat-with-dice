@@ -7,7 +7,7 @@ import {
   type Mode,
   type NumberOfDice,
   type YourNumber,
-} from "#/capabilities/laserFeelingsCapability";
+} from "#/capabilities/laserfeelings/common";
 import { Zap } from "lucide-react";
 import { memo, useState } from "react";
 

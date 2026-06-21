@@ -1,4 +1,4 @@
-import { objectivesCapability } from "#/capabilities/objectivesCapability";
+import { objectivesClient } from "#/capabilities/objectives/client";
 import { ExpandableForm } from "#/components/capabilityComponents/shared/ExpandableForm";
 import { useRef, useState } from "react";
 
@@ -7,7 +7,7 @@ const DEFAULT_DIFFICULTY = 0;
 
 export const CreateObjectiveForm = () => {
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const capInfo = objectivesCapability.useMount();
+  const capInfo = objectivesClient.useMount();
 
   const [name, setName] = useState("");
   const [isPrimary, setIsPrimary] = useState(false);

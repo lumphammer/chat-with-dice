@@ -1,11 +1,11 @@
-import { adversariesCapability } from "#/capabilities/adversariesCapability";
+import { adversariesClient } from "#/capabilities/adversaries/client";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { AdversaryDisplay } from "./AdversaryDisplay";
 import { CreateAdversaryForm } from "./CreateAdversaryForm";
 import { memo } from "react";
 
 export const SidebarAdversaries = memo(() => {
-  const capInfo = adversariesCapability.useMount();
+  const capInfo = adversariesClient.useMount();
 
   if (!capInfo.initialised) {
     return "Loading...";

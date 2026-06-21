@@ -1,8 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
-import {
-  filesCapability,
-  sharedItemMessageDataValidator,
-} from "#/capabilities/filesCapability";
+import { filesClient } from "#/capabilities/files/client";
+import { sharedItemMessageDataValidator } from "#/capabilities/files/common";
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FilePreview } from "#/components/FileManager/FilePreview";
@@ -18,7 +16,7 @@ export const SharedItemMessageDisplay = memo(
       () => sharedItemMessageDataValidator.safeParse(results),
       [results],
     );
-    const filesCap = filesCapability.useMount();
+    const filesCap = filesClient.useMount();
     const { roomId } = useRoomInfoContext();
     const { openSharedFolder } = useRoomUiNavigationContext();
     const { data: sessionData } = authClient.useSession();

@@ -1,8 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
-import {
-  capabilityRegistry,
-  isCapabilityName,
-} from "#/capabilities/capabilityRegistry";
+import { isCapabilityName } from "#/capabilities/capabilityNames";
+import { clientCapabilityRegistry } from "#/capabilities/clientCapabilityRegistry";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "../DiceRoller/contexts/roomUiNavigationContext";
 import { useRefStash } from "../useRefStash";
@@ -79,7 +77,7 @@ export const Sidebar = memo(
       () =>
         roomConfig.capabilities.flatMap(({ name }) =>
           isCapabilityName(name)
-            ? [[name, capabilityRegistry[name]] as const]
+            ? [[name, clientCapabilityRegistry[name]] as const]
             : [],
         ),
       [roomConfig.capabilities],
@@ -258,7 +256,8 @@ export const Sidebar = memo(
                     if (!isCapabilityName(name)) {
                       return null;
                     }
-                    const sidebarInfos = capabilityRegistry[name].sidebarInfos;
+                    const sidebarInfos =
+                      clientCapabilityRegistry[name].sidebarInfos;
                     if (!sidebarInfos) {
                       return [];
                     }
@@ -302,7 +301,8 @@ export const Sidebar = memo(
                   if (!isCapabilityName(name)) {
                     return [];
                   }
-                  const sidebarInfos = capabilityRegistry[name].sidebarInfos;
+                  const sidebarInfos =
+                    clientCapabilityRegistry[name].sidebarInfos;
                   if (!sidebarInfos) {
                     return [];
                   }

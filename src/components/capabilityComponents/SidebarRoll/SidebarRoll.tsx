@@ -1,10 +1,10 @@
-import { rollCapability } from "#/capabilities/rollCapability";
+import { rollClient } from "#/capabilities/roll/client";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { RollForm } from "./RollForm";
 import { memo } from "react";
 
 export const SidebarRoll = memo(() => {
-  const capInfo = rollCapability.useMount();
+  const capInfo = rollClient.useMount();
 
   if (!capInfo.initialised) {
     return "Loading...";

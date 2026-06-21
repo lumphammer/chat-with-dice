@@ -1,8 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
-import {
-  filesCapability,
-  type SharedItem,
-} from "#/capabilities/filesCapability";
+import { filesClient } from "#/capabilities/files/client";
+import { type SharedItem } from "#/capabilities/files/common";
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { FileManager } from "#/components/FileManager/FileManager";
@@ -14,7 +12,7 @@ import { Share2 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 export const SharedStuff = memo(() => {
-  const filesCap = filesCapability.useMount();
+  const filesCap = filesClient.useMount();
   const { roomId } = useRoomInfoContext();
   const { sharedFolderOpenRequest } = useRoomUiNavigationContext();
   const { data: sessionData } = authClient.useSession();

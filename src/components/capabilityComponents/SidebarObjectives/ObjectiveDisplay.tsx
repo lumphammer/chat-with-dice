@@ -1,10 +1,10 @@
-import { objectivesCapability } from "#/capabilities/objectivesCapability";
+import { objectivesClient } from "#/capabilities/objectives/client";
 import { ItemCard } from "#/components/capabilityComponents/shared/ItemCard";
 import { ResilienceTracker } from "#/components/capabilityComponents/shared/ResilienceTracker";
 import { ObjectiveEditForm } from "./ObjectiveEditForm";
 
 type MountedCapInfo = Extract<
-  ReturnType<typeof objectivesCapability.useMount>,
+  ReturnType<typeof objectivesClient.useMount>,
   { initialised: true }
 >;
 export type Objective = MountedCapInfo["state"]["objectives"][number];

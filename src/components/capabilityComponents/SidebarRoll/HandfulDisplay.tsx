@@ -1,4 +1,4 @@
-import type { Face, Handful } from "#/capabilities/rollCapability";
+import type { Face, Handful } from "#/capabilities/roll/common";
 import { DiceRow } from "#/components/capabilityComponents/shared/diceDisplay/DiceRow";
 import { FaceChip } from "#/components/capabilityComponents/shared/diceDisplay/FaceChip";
 

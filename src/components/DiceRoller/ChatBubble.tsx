@@ -1,8 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
-import {
-  capabilityRegistry,
-  isCapabilityName,
-} from "#/capabilities/capabilityRegistry";
+import { isCapabilityName } from "#/capabilities/capabilityNames";
+import { clientCapabilityRegistry } from "#/capabilities/clientCapabilityRegistry";
 import { isRollType } from "#/rollTypes/isRollType";
 import { rollTypeRegistry } from "#/rollTypes/rollTypeRegistry";
 import type {
@@ -127,7 +125,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
       />
     );
   } else if (isCapabilityName(message.rollType)) {
-    const { ChatDisplayComponent } = capabilityRegistry[message.rollType];
+    const { ChatDisplayComponent } = clientCapabilityRegistry[message.rollType];
     if (ChatDisplayComponent && message.results !== null) {
       display = (
         <ChatDisplayComponent

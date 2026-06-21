@@ -1,12 +1,12 @@
 import { authClient } from "#/auth/authClient.ts";
-import { filesCapability } from "#/capabilities/filesCapability";
+import { filesClient } from "#/capabilities/files/client";
 import { useCallback } from "react";
 
 export const useShareWithRoom = (
   nodeId: string | null | undefined,
   readOnly: boolean,
 ) => {
-  const filesCap = filesCapability.useMount();
+  const filesCap = filesClient.useMount();
   const { data: sessionData } = authClient.useSession();
 
   const userId = sessionData?.user.id ?? null;

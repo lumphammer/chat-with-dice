@@ -1,4 +1,4 @@
-import type { Favour, Keep, Operator } from "#/capabilities/rollCapability";
+import type { Favour, Keep, Operator } from "#/capabilities/roll/common";
 import { Dices } from "lucide-react";
 import { memo, useState } from "react";
 

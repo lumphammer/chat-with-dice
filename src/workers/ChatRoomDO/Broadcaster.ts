@@ -1,4 +1,4 @@
-import type { ServerMountedCapability } from "#/capabilities/types";
+import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type {
   ChatMessage,
