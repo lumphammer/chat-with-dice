@@ -1,8 +1,4 @@
-import {
-  jsonObjectValidator,
-  type JsonData,
-  type JsonValidator,
-} from "./jsonObjectValidator";
+import { type JsonData, type JsonValidator } from "./jsonObjectValidator";
 import { roomConfigValidator } from "./roomConfigValidator";
 import { z } from "zod/v4";
 
@@ -216,8 +212,6 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("chat"),
     payload: z.object({
-      rollType: z.string().optional(),
-      formula: jsonObjectValidator.optional(),
       chat: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
     }),
