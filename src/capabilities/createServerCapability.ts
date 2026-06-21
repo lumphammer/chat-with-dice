@@ -171,7 +171,7 @@ export function createServerCapability<
             displayName,
             id: nanoid(),
             linkPreview: null,
-            results: data ?? {},
+            capabilityData: data ?? {},
             capabilityName: common.name,
           }),
       });

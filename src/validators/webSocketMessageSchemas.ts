@@ -24,15 +24,17 @@ export type JsonDataOrNullValidator = z.ZodType<JsonData | null>;
  * Not exported — external callers should use {@link parseChatMessage} instead,
  * which returns a correctly-typed {@link ChatMessage}.
  */
-function chatMessageValidator<TResultValidator extends JsonDataOrNullValidator>(
-  resultsValidator: TResultValidator,
+function chatMessageValidator<
+  TCapabilityDataValidator extends JsonDataOrNullValidator,
+>(
+  capabilityValidator: TCapabilityDataValidator,
 ): z.ZodObject<{
   id: z.ZodString;
   displayName: z.ZodString;
   userId: z.ZodString;
   createdTime: z.ZodInt;
   capabilityName: z.ZodNullable<z.ZodString>;
-  results: z.ZodNullable<TResultValidator>;
+  capabilityData: z.ZodNullable<TCapabilityDataValidator>;
   chat: z.ZodNullable<z.ZodString>;
   linkPreview: z.ZodNullable<typeof linkPreviewValidator>;
 }> {
@@ -48,7 +50,7 @@ function chatMessageValidator<TResultValidator extends JsonDataOrNullValidator>(
     /** The type of the roll - none, formula, havoc etc */
     capabilityName: z.string().nullable(),
     /**  */
-    results: resultsValidator.nullable(),
+    capabilityData: capabilityValidator.nullable(),
     /** Chat text */
     chat: z.string().nullable(),
     /** Metadata for the first previewable URL in the chat text */

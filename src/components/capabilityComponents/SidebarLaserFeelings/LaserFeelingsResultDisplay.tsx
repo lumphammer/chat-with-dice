@@ -28,8 +28,8 @@ function getFaceAriaLabel(face: Face): string {
 }
 
 export const LaserFeelingsResultDisplay = memo(
-  ({ results }: { results?: JsonData; messageId: string }) => {
-    const parsed = messageDataValidator.safeParse(results);
+  ({ capabilityData }: { capabilityData?: JsonData; messageId: string }) => {
+    const parsed = messageDataValidator.safeParse(capabilityData);
     if (!parsed.success) return null;
 
     const { formula, result } = parsed.data;

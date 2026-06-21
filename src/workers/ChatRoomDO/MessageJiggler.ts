@@ -34,7 +34,7 @@ export class MessageJiggler {
       createdTime: Date.now(),
       id: crypto.randomUUID(),
       capabilityName: null,
-      results: null,
+      capabilityData: null,
       chat,
       linkPreview: null,
       userId,

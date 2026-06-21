@@ -12,7 +12,7 @@ type DbMessageRow = typeof Messages.$inferSelect;
 
 // keys of properties that are more narrowly typed by the validator so they
 // can't be tested
-type UntestableProperties = "results" | "linkPreview";
+type UntestableProperties = "capabilityData" | "linkPreview";
 
 const untestableProperties = "" as UntestableProperties;
 

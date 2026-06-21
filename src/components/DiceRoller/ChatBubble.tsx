@@ -112,10 +112,10 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
   if (isCapabilityName(message.capabilityName)) {
     const { ChatDisplayComponent } =
       clientCapabilityRegistry[message.capabilityName];
-    if (ChatDisplayComponent && message.results !== null) {
+    if (ChatDisplayComponent && message.capabilityData !== null) {
       display = (
         <ChatDisplayComponent
-          results={message.results}
+          capabilityData={message.capabilityData}
           messageId={message.id}
         />
       );

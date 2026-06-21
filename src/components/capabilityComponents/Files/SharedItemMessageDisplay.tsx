@@ -11,10 +11,10 @@ import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import { memo, useMemo, useState } from "react";
 
 export const SharedItemMessageDisplay = memo(
-  ({ results }: { results?: JsonData; messageId: string }) => {
+  ({ capabilityData }: { capabilityData?: JsonData; messageId: string }) => {
     const parsed = useMemo(
-      () => sharedItemMessageDataValidator.safeParse(results),
-      [results],
+      () => sharedItemMessageDataValidator.safeParse(capabilityData),
+      [capabilityData],
     );
     const filesCap = filesClient.useMount();
     const { roomId } = useRoomInfoContext();
@@ -37,7 +37,11 @@ export const SharedItemMessageDisplay = memo(
     }, [filesCap, parsed]);
 
     if (!parsed.success) {
-      logger.error("Unable to parse message data", results, parsed.error);
+      logger.error(
+        "Unable to parse message data",
+        capabilityData,
+        parsed.error,
+      );
       return null;
     }
 
