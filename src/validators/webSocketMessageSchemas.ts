@@ -1,8 +1,4 @@
-import {
-  jsonObjectValidator,
-  type JsonData,
-  type JsonValidator,
-} from "./jsonObjectValidator";
+import { type JsonData, type JsonValidator } from "./jsonObjectValidator";
 import { roomConfigValidator } from "./roomConfigValidator";
 import { z } from "zod/v4";
 
@@ -29,19 +25,16 @@ export type JsonDataOrNullValidator = z.ZodType<JsonData | null>;
  * which returns a correctly-typed {@link ChatMessage}.
  */
 function chatMessageValidator<
-  TFormulaValidator extends JsonDataOrNullValidator,
-  TResultValidator extends JsonDataOrNullValidator,
+  TCapabilityDataValidator extends JsonDataOrNullValidator,
 >(
-  formulaValidator: TFormulaValidator,
-  resultsValidator: TResultValidator,
+  capabilityValidator: TCapabilityDataValidator,
 ): z.ZodObject<{
   id: z.ZodString;
   displayName: z.ZodString;
   userId: z.ZodString;
   createdTime: z.ZodInt;
-  rollType: z.ZodNullable<z.ZodString>;
-  formula: z.ZodNullable<TFormulaValidator>;
-  results: z.ZodNullable<TResultValidator>;
+  capabilityName: z.ZodNullable<z.ZodString>;
+  capabilityData: z.ZodNullable<TCapabilityDataValidator>;
   chat: z.ZodNullable<z.ZodString>;
   linkPreview: z.ZodNullable<typeof linkPreviewValidator>;
 }> {
@@ -55,11 +48,9 @@ function chatMessageValidator<
     /** When the message was created */
     createdTime: z.int(),
     /** The type of the roll - none, formula, havoc etc */
-    rollType: z.string().nullable(),
+    capabilityName: z.string().nullable(),
     /**  */
-    formula: formulaValidator.nullable(),
-    /**  */
-    results: resultsValidator.nullable(),
+    capabilityData: capabilityValidator.nullable(),
     /** Chat text */
     chat: z.string().nullable(),
     /** Metadata for the first previewable URL in the chat text */
@@ -73,21 +64,14 @@ function chatMessageValidator<
  * TypeScript never has to push generic validators through Zod's complex
  * mapped-type machinery.
  */
-export type ChatMessage<
-  TFormula extends JsonData | null = JsonData | null,
-  TResult extends JsonData | null = JsonData | null,
-> = z.infer<
-  ReturnType<
-    typeof chatMessageValidator<z.ZodType<TFormula>, z.ZodType<TResult>>
-  >
->;
+export type ChatMessage<TResult extends JsonData | null = JsonData | null> =
+  z.infer<ReturnType<typeof chatMessageValidator<z.ZodType<TResult>>>>;
 
 /**
  * A zod validator for any chat message, with formula and result types
  * set to nullable JSON objects.
  */
 export const anyChatMessageValidator = chatMessageValidator(
-  z.record(z.string(), z.json()).nullable(),
   z.record(z.string(), z.json()).nullable(),
 );
 
@@ -98,19 +82,12 @@ export const anyChatMessageValidator = chatMessageValidator(
  * This encapsulates the single type-assertion that bridges Zod's complex
  * generic output type to our plain structural {@link ChatMessage} type.
  */
-export function parseChatMessage<
-  TFormulaValidator extends JsonValidator,
-  TResultValidator extends JsonValidator,
->(
-  formulaValidator: TFormulaValidator,
+export function parseChatMessage<TResultValidator extends JsonValidator>(
   resultValidator: TResultValidator,
   candidate: unknown,
-): ChatMessage<z.infer<TFormulaValidator>, z.infer<TResultValidator>> {
-  const validator = chatMessageValidator(formulaValidator, resultValidator);
-  return validator.parse(candidate) as ChatMessage<
-    z.infer<TFormulaValidator>,
-    z.infer<TResultValidator>
-  >;
+): ChatMessage<z.infer<TResultValidator>> {
+  const validator = chatMessageValidator(resultValidator);
+  return validator.parse(candidate) as ChatMessage<z.infer<TResultValidator>>;
 }
 
 /**
@@ -237,8 +214,6 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("chat"),
     payload: z.object({
-      rollType: z.string().optional(),
-      formula: jsonObjectValidator.optional(),
       chat: z.string().nullable(),
       displayName: z.string().min(1).max(USERNAME_MAX_LENGTH),
     }),

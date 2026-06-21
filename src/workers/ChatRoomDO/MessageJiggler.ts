@@ -1,4 +1,3 @@
-import type { RollType } from "#/rollTypes/createRollType";
 import type { JsonValidator } from "#/validators/jsonObjectValidator.ts";
 import {
   parseChatMessage,
@@ -8,7 +7,6 @@ import type { Broadcaster } from "./Broadcaster";
 import type { MessageRepository } from "./MessageRepository";
 import { extractPreviewUrl } from "./linkPreview/extractPreviewUrl";
 import { fetchLinkPreview } from "./linkPreview/fetchLinkPreview";
-import { produce, type Draft } from "immer";
 import type { z } from "zod/v4";
 
 /**
@@ -35,9 +33,8 @@ export class MessageJiggler {
     const rollerMessage: ChatMessage = {
       createdTime: Date.now(),
       id: crypto.randomUUID(),
-      rollType: null,
-      formula: null,
-      results: null,
+      capabilityName: null,
+      capabilityData: null,
       chat,
       linkPreview: null,
       userId,
@@ -70,45 +67,12 @@ export class MessageJiggler {
     }
   }
 
-  async modifyMesage<
-    TFormulaValidator extends JsonValidator,
-    TResultValidator extends JsonValidator,
-  >(
+  async getMessage<TResultValidator extends JsonValidator>(
     id: string,
-    rollType: RollType<TFormulaValidator, TResultValidator>,
-    callback: (tools: {
-      draft: Draft<
-        ChatMessage<z.infer<TFormulaValidator>, z.infer<TResultValidator>>
-      >;
-    }) => void,
-  ): Promise<void> {
-    const message = await this.messageRepository.getById(id);
-    const parsed = parseChatMessage(
-      rollType.formulaValidator,
-      rollType.resultValidator,
-      message,
-    );
-    const updated = produce(parsed, (draft) => {
-      callback({ draft });
-    });
-    // Widen to AnyChatMessage for the repository/broadcaster, which don't need
-    // the specific formula/result types.
-    await this.messageRepository.updateMessage(updated);
-    this.broadcaster.broadcastChatMessage(updated);
-  }
-
-  async getMessage<
-    TFormulaValidator extends JsonValidator,
-    TResultValidator extends JsonValidator,
-  >(
-    id: string,
-    formulaValidator: TFormulaValidator,
     resultValidator: TResultValidator,
-  ): Promise<
-    ChatMessage<z.infer<TFormulaValidator>, z.infer<TResultValidator>>
-  > {
+  ): Promise<ChatMessage<z.infer<TResultValidator>>> {
     const message = await this.messageRepository.getById(id);
-    return parseChatMessage(formulaValidator, resultValidator, message);
+    return parseChatMessage(resultValidator, message);
   }
   async updateMessage(message: ChatMessage): Promise<void> {
     await this.messageRepository.updateMessage(message);

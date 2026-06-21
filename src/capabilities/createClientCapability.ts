@@ -46,7 +46,7 @@ export type ClientCapabilityDefinition = {
   visibility?: "public" | "dev";
   sidebarInfos?: SidebarInfo[];
   ChatDisplayComponent?: ComponentType<{
-    results?: JsonData;
+    capabilityData: JsonData;
     messageId: string;
   }>;
 };
@@ -69,7 +69,7 @@ export type ClientCapability<
   visibility?: "public" | "dev";
   sidebarInfos?: SidebarInfo[];
   ChatDisplayComponent?: ComponentType<{
-    results?: JsonData;
+    capabilityData: JsonData;
     messageId: string;
   }>;
 };

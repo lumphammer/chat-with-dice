@@ -12,11 +12,9 @@ export const Messages = snakeCase.table("Messages", {
   /** When the message was created */
   createdTime: int().notNull(),
   /** The type of the roll - none, formula, havoc etc */
-  rollType: text(),
-  /** Either a dice formula or JSON */
-  formula: text({ mode: "json" }),
-  /** Structured JSON results, either from rpg die roller, or our own */
-  results: text({ mode: "json" }),
+  capabilityName: text(),
+  /** Data the capability can present as it like */
+  capabilityData: text({ mode: "json" }),
   /** Chat text */
   chat: text(),
   /** Metadata for the first previewable URL in the chat text */

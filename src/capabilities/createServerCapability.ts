@@ -169,11 +169,10 @@ export function createServerCapability<
             userId,
             createdTime: Date.now(),
             displayName,
-            formula: {},
             id: nanoid(),
             linkPreview: null,
-            results: data ?? {},
-            rollType: common.name,
+            capabilityData: data ?? {},
+            capabilityName: common.name,
           }),
       });
     } else if (commonAction.pureFn) {

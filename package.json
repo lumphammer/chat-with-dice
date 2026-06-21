@@ -8,7 +8,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "pnpm run build && astro preview",
-    "test": "vitest",
+    "test": "vitest --typecheck",
     "test:once": "pnpm test --run",
     "astro": "astro",
     "types:check": "astro check",
