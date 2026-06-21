@@ -24,7 +24,7 @@ type ChatBubbleProps = {
   message: ChatMessage;
 };
 
-export function addLinkTargets(html: string): string {
+function addLinkTargets(html: string): string {
   return html.replace(/<a\b([^>]*?)>/gi, (_match, attrs) => {
     let nextAttrs = attrs;
 

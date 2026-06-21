@@ -191,7 +191,7 @@ export class UserDataDO extends DurableObject {
     await this.scheduler.schedulePurge();
   }
 
-  async restoreNode(nodeId: string) {
+  async restoreNode(nodeId: string): PromiseMaybeError {
     log("restoring", nodeId);
     const node = await this.repo.getNode(nodeId, { include: "deleted" });
     if (!node) {
@@ -245,7 +245,7 @@ export class UserDataDO extends DurableObject {
     }
 
     await this.syncQuotaWithSizes();
-    return success(undefined);
+    return success();
   }
 
   /**

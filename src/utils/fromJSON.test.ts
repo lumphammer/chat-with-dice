@@ -1,4 +1,4 @@
-import { fromJSON } from "./fromJSON";
+import { fromJSON } from "../../configHelpers/fromJSON";
 import { describe, expect, test } from "vitest";
 import * as z from "zod";
 

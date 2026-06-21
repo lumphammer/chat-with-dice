@@ -1,3 +1,4 @@
+import { isError } from "#/utils/maybeError.ts";
 import { z } from "astro/zod";
 import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
@@ -21,7 +22,8 @@ export const restoreNode = defineAction({
       env.USER_DATA_DO.idFromString(user.userDataDOId),
     );
     const result = await userDataDO.restoreNode(nodeId);
-    if (result.kind === "error") {
+
+    if (isError(result)) {
       throw new ActionError({ code: result.code, message: result.message });
     }
   },

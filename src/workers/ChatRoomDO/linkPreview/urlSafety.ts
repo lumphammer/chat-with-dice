@@ -84,7 +84,7 @@ function isPrivateOrLocalIpv6(hostname: string): boolean {
   );
 }
 
-export function isPreviewableUrl(url: URL): boolean {
+function isPreviewableUrl(url: URL): boolean {
   if (url.protocol !== "https:") return false;
   if (url.username || url.password) return false;
 

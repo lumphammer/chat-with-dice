@@ -1,5 +1,5 @@
-export const filesPrefix = "user-files/";
-export const thumbnailsPrefix = "user-file-thumbnails/";
+const filesPrefix = "user-files/";
+const thumbnailsPrefix = "user-file-thumbnails/";
 
 // e.g. "user-files/123/"
 export const userFilesPrefix = (userId: string) => `${filesPrefix}${userId}/`;

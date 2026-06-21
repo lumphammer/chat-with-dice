@@ -60,11 +60,7 @@ function throwIfError<R extends Result>(result: R): NonNullable<R["data"]> {
 //   ReturnType<typeof actions.rooms.createChatWithDiceRoom>
 // >;
 
-export const NewRoomForm = ({
-  initialIsLoggedIn,
-}: {
-  initialIsLoggedIn: boolean;
-}) => {
+const NewRoomForm = ({ initialIsLoggedIn }: { initialIsLoggedIn: boolean }) => {
   const {
     register,
     handleSubmit,

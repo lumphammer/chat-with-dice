@@ -1,7 +1,7 @@
 import { authClient } from "#/auth/authClient";
-import { useCapabilityInfoSafe } from "#/capabilities/reactContexts/capabilityInfoContext";
-import { useSetCapabilityStateContextSafe } from "#/capabilities/reactContexts/setCapabilityStateContext";
-import { useSendMessageContextSafe } from "#/components/DiceRoller/contexts/sendMessageContext";
+import { useCapabilityInfo } from "#/capabilities/reactContexts/capabilityInfoContext";
+import { useSetCapabilityStateContext } from "#/capabilities/reactContexts/setCapabilityStateContext";
+import { useSendMessageContext } from "#/components/DiceRoller/contexts/sendMessageContext";
 import { useRefStash } from "#/components/useRefStash";
 import type { Alphanumeric } from "#/utils/alphanumeric";
 import { logger } from "#/utils/logger";
@@ -19,7 +19,7 @@ import type * as z from "zod";
 
 export type PatchRecord = [string, Patch[]];
 
-export type ClientMountedCapability<
+type ClientMountedCapability<
   TState extends JsonData = JsonData,
   TActions extends Record<string, CommonActionDefinition<TState, z.ZodType>> =
     Record<string, CommonActionDefinition<TState, z.ZodType>>,
@@ -36,7 +36,7 @@ export type ClientMountedCapability<
       };
     };
 
-export type SidebarInfo = {
+type SidebarInfo = {
   key: string;
   SidebarComponent: ComponentType;
   IconComponent: ComponentType;
@@ -104,9 +104,9 @@ export function createClientCapability<
     z.infer<TStateValidator>,
     TActions
   > => {
-    const sendMessage = useSendMessageContextSafe();
-    const setCapabilityState = useSetCapabilityStateContextSafe();
-    const info = useCapabilityInfoSafe(common.name);
+    const sendMessage = useSendMessageContext();
+    const setCapabilityState = useSetCapabilityStateContext();
+    const info = useCapabilityInfo(common.name);
     const { data: sessionData } = authClient.useSession();
 
     type CreatorsEntriesTuple = [string, AnyCommonActionDefinition];

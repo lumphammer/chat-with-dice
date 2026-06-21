@@ -35,7 +35,7 @@ export type ServerMountedCapability = {
  * common action — the effect is expected to call it (or not) to apply the
  * shared state transition.
  */
-export type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
+type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
   doCtx: DurableObjectState;
   sendChatMessage: (data: TMessageData) => void;
   broadcaster: Broadcaster;

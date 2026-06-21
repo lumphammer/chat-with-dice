@@ -1,4 +1,3 @@
-// oxlint-disable-next-line no-unused-vars
 declare type Expand<T> = T extends (...args: infer A) => infer R
   ? (...args: Expand<A>) => Expand<R>
   : T extends infer O
@@ -8,7 +7,6 @@ declare type Expand<T> = T extends (...args: infer A) => infer R
 /**
  * Recursively expand all members of T
  */
-// oxlint-disable-next-line no-unused-vars
 declare type RecursiveExpand<T> = T extends (...args: infer A) => infer R
   ? (...args: RecursiveExpand<A>) => RecursiveExpand<R>
   : T extends object
@@ -16,3 +14,15 @@ declare type RecursiveExpand<T> = T extends (...args: infer A) => infer R
       ? { [K in keyof O]: RecursiveExpand<O[K]> }
       : never
     : T;
+
+declare module "*.svg?react&variant=illustration" {
+  import type { ComponentType, SVGProps } from "react";
+  const c: ComponentType<SVGProps<SVGSVGElement>>;
+  export default c;
+}
+
+declare module "*.svg?react" {
+  import type { ComponentType, SVGProps } from "react";
+  const c: ComponentType<SVGProps<SVGSVGElement>>;
+  export default c;
+}

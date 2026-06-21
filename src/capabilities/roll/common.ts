@@ -6,21 +6,21 @@ import { z } from "zod/v4";
 // HANDFUL: a group of dice thrown together
 // FAVOUR: Advantage or disadvantage
 
-export const keepValidator = z
+const keepValidator = z
   .enum(["all", "highest", "lowest", "dropHighest", "dropLowest"])
   .default("all");
 
 export type Keep = z.infer<typeof keepValidator>;
 
-export const favourValidator = z.enum(["normal", "advantage", "disadvantage"]);
+const favourValidator = z.enum(["normal", "advantage", "disadvantage"]);
 
-export const operatorValidator = z.enum(["+", "-", "*", "/"]);
+const operatorValidator = z.enum(["+", "-", "*", "/"]);
 
 export type Operator = z.infer<typeof operatorValidator>;
 
 export type Favour = z.infer<typeof favourValidator>;
 
-export const rollFormulaValidator = z.object({
+const rollFormulaValidator = z.object({
   arity: z.int().min(1),
   cardinality: z.int().min(1),
   modifier: z
@@ -34,7 +34,7 @@ export const rollFormulaValidator = z.object({
   exploding: z.boolean(),
 });
 
-export const faceValidator = z.object({
+const faceValidator = z.object({
   cardinality: z.int().min(1),
   result: z.int().min(1),
   exploded: z.boolean(),
@@ -43,7 +43,7 @@ export const faceValidator = z.object({
 
 export type Face = z.infer<typeof faceValidator>;
 
-export const handfulValidator = z.object({
+const handfulValidator = z.object({
   faces: z.array(faceValidator),
   total: z.int(),
   kept: z.boolean(),
@@ -51,7 +51,7 @@ export const handfulValidator = z.object({
 
 export type Handful = z.infer<typeof handfulValidator>;
 
-export const favouredHandfulsValidator = z.object({
+const favouredHandfulsValidator = z.object({
   series1: handfulValidator,
   series2: handfulValidator,
   total: z.int(),

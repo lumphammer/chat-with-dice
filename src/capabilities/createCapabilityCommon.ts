@@ -37,9 +37,7 @@ export type PureActionFn<TState, TPayload> = (tools: {
 }) => void;
 
 /** Builder passed into `buildActions` so action declarations get inferred types. */
-export type CreateCommonAction<TState> = <
-  TPayloadValidator extends z.ZodType,
->(def: {
+type CreateCommonAction<TState> = <TPayloadValidator extends z.ZodType>(def: {
   payloadValidator: TPayloadValidator;
   pureFn?: PureActionFn<TState, z.infer<TPayloadValidator>>;
 }) => CommonActionDefinition<TState, TPayloadValidator>;

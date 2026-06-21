@@ -1,4 +1,4 @@
-export const SELF_OWNER_SEGMENT = "~";
+const SELF_OWNER_SEGMENT = "~";
 
 type BuildFileUrlOptions = {
   roomId?: string;

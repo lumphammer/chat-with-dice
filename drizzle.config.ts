@@ -1,5 +1,5 @@
 import { envOrDie } from "#/utils/envOrDie";
-import { screamingSnakeToCamel } from "#/utils/screamingSnakeToCamel";
+import { screamingSnakeToCamel } from "./configHelpers/screamingSnakeToCamel";
 import {
   getIdForD1Binding,
   getLocalPathForD1Binding,

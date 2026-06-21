@@ -3,7 +3,7 @@ import { DicesIcon, FlameIcon } from "lucide-react";
 import type { ComponentType } from "react";
 
 export const GENERIC_ROOM_PRESET_NAME = "generic";
-export const HAVOC_ROOM_PRESET_NAME = "havoc";
+const HAVOC_ROOM_PRESET_NAME = "havoc";
 
 export const ROOM_PRESET_NAMES = [
   GENERIC_ROOM_PRESET_NAME,
