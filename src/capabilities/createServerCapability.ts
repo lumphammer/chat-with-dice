@@ -173,7 +173,7 @@ export function createServerCapability<
             id: nanoid(),
             linkPreview: null,
             results: data ?? {},
-            rollType: common.name,
+            capabilityName: common.name,
           }),
       });
     } else if (commonAction.pureFn) {

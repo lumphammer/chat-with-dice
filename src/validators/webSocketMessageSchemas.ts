@@ -39,7 +39,7 @@ function chatMessageValidator<
   displayName: z.ZodString;
   userId: z.ZodString;
   createdTime: z.ZodInt;
-  rollType: z.ZodNullable<z.ZodString>;
+  capabilityName: z.ZodNullable<z.ZodString>;
   formula: z.ZodNullable<TFormulaValidator>;
   results: z.ZodNullable<TResultValidator>;
   chat: z.ZodNullable<z.ZodString>;
@@ -55,7 +55,7 @@ function chatMessageValidator<
     /** When the message was created */
     createdTime: z.int(),
     /** The type of the roll - none, formula, havoc etc */
-    rollType: z.string().nullable(),
+    capabilityName: z.string().nullable(),
     /**  */
     formula: formulaValidator.nullable(),
     /**  */

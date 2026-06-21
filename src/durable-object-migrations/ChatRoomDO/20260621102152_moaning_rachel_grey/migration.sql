@@ -1,0 +1,1 @@
+ALTER TABLE `Messages` RENAME COLUMN `roll_type` TO `capability_name`;

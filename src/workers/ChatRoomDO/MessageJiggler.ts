@@ -33,7 +33,7 @@ export class MessageJiggler {
     const rollerMessage: ChatMessage = {
       createdTime: Date.now(),
       id: crypto.randomUUID(),
-      rollType: null,
+      capabilityName: null,
       formula: null,
       results: null,
       chat,

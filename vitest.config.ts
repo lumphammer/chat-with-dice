@@ -98,6 +98,9 @@ export default defineConfig({
           name: "unit",
           include: ["src/**/*.test.{ts,tsx}"],
           exclude: ["src/**/*.int.test.{ts,tsx}", "**/node_modules/**"],
+          typecheck: {
+            enabled: true,
+          },
         },
       },
       {

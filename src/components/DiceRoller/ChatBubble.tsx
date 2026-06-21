@@ -109,8 +109,9 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
 
   let display: ReactNode = null;
 
-  if (isCapabilityName(message.rollType)) {
-    const { ChatDisplayComponent } = clientCapabilityRegistry[message.rollType];
+  if (isCapabilityName(message.capabilityName)) {
+    const { ChatDisplayComponent } =
+      clientCapabilityRegistry[message.capabilityName];
     if (ChatDisplayComponent && message.results !== null) {
       display = (
         <ChatDisplayComponent

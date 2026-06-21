@@ -19,6 +19,7 @@ import m0017 from './20260509154623_regular_overlord/migration.sql';
 import m0018 from './20260513133146_thin_elektra/migration.sql';
 import m0019 from './20260515151625_tidy_dragon_lord/migration.sql';
 import m0020 from './20260519174740_numerous_wendigo/migration.sql';
+import m0021 from './20260621102152_moaning_rachel_grey/migration.sql';
 
   export default {
     migrations: {
@@ -42,7 +43,8 @@ import m0020 from './20260519174740_numerous_wendigo/migration.sql';
 "20260509154623_regular_overlord": m0017,
 "20260513133146_thin_elektra": m0018,
 "20260515151625_tidy_dragon_lord": m0019,
-"20260519174740_numerous_wendigo": m0020
+"20260519174740_numerous_wendigo": m0020,
+"20260621102152_moaning_rachel_grey": m0021
 }
   }
   

@@ -1,0 +1,116 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "53a17a6f-a22e-46be-9a25-339426315828",
+  "prevIds": [
+    "39bc7b1a-5ba7-4660-8c9d-4f00584e38c2"
+  ],
+  "ddl": [
+    {
+      "name": "Messages",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "display_name",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_time",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "capability_name",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "formula",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "results",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "chat",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "link_preview",
+      "entityType": "columns",
+      "table": "Messages"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "Messages_pk",
+      "table": "Messages",
+      "entityType": "pks"
+    }
+  ],
+  "renames": [
+    "Messages.roll_type->Messages.capability_name"
+  ]
+}
