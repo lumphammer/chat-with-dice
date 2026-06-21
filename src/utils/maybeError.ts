@@ -4,9 +4,8 @@ import { type ActionErrorCode } from "astro:actions";
 type TPromise<T> = Promise<T>;
 
 export namespace MaybeError {
-  // export type Success<T> = { result: "success"; data: T };
   export type Success<T = undefined> = T extends undefined
-    ? { kind: "success" }
+    ? { kind: "success"; data?: undefined }
     : { kind: "success"; data: T };
   export type Error = {
     kind: "error";
@@ -16,7 +15,9 @@ export namespace MaybeError {
   export type Promise<T> = TPromise<MaybeError<T>>;
 }
 
-export type MaybeError<T> = MaybeError.Success<T> | MaybeError.Error;
+export type MaybeError<T = undefined> =
+  | MaybeError.Success<T>
+  | MaybeError.Error;
 export type PromiseMaybeError<T = undefined> = Promise<MaybeError<T>>;
 
 export function success(): MaybeError.Success;
@@ -38,10 +39,6 @@ export const error = (
     : message,
   code,
 });
-
-export const isSuccess = <T>(
-  result: MaybeError<T>,
-): result is MaybeError.Success<T> => result.kind === "success";
 
 export const isError = <T>(result: MaybeError<T>): result is MaybeError.Error =>
   result.kind === "error";

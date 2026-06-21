@@ -8,7 +8,7 @@ type MountedCapInfo = Extract<
   ReturnType<typeof adversariesClient.useMount>,
   { initialised: true }
 >;
-export type Adversary = MountedCapInfo["state"]["adversaries"][number];
+type Adversary = MountedCapInfo["state"]["adversaries"][number];
 
 interface Props {
   adversary: Adversary;

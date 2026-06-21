@@ -32,7 +32,3 @@ export const storageNodeValidator = z.discriminatedUnion("kind", [
 export type StorageNode = z.infer<typeof storageNodeValidator>;
 
 export type FileStorageNode = Extract<StorageNode, { kind: "file" }>;
-
-export function isFileStorageNode(node: StorageNode): node is FileStorageNode {
-  return node.kind === "file";
-}

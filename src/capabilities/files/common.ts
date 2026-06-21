@@ -147,7 +147,7 @@ const migrateStateV3ToV4 = (
   }),
 });
 
-export const filesStateValidator = z.union([
+const filesStateValidator = z.union([
   filesStateValidatorV4,
   filesStateValidatorV3.transform(migrateStateV3ToV4),
   filesStateValidatorV2
@@ -245,11 +245,9 @@ export const sharedItemMessageDataValidator = z.union([
     .transform(migrateMessageV2ToV3),
 ]);
 
-export type FilesState = z.infer<typeof filesStateValidator>;
+type FilesState = z.infer<typeof filesStateValidator>;
 
 export type SharedItem = FilesState["shares"][number];
-
-export const FILES_STATE_VERSION_CONST = FILES_STATE_VERSION;
 
 export const filesCommon = createCapabilityCommon({
   name: "files",

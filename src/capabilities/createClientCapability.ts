@@ -19,7 +19,7 @@ import type * as z from "zod";
 
 export type PatchRecord = [string, Patch[]];
 
-export type ClientMountedCapability<
+type ClientMountedCapability<
   TState extends JsonData = JsonData,
   TActions extends Record<string, CommonActionDefinition<TState, z.ZodType>> =
     Record<string, CommonActionDefinition<TState, z.ZodType>>,
@@ -36,7 +36,7 @@ export type ClientMountedCapability<
       };
     };
 
-export type SidebarInfo = {
+type SidebarInfo = {
   key: string;
   SidebarComponent: ComponentType;
   IconComponent: ComponentType;

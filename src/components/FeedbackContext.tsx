@@ -1,7 +1,7 @@
 import { logger } from "#/utils/logger.ts";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 
-export type FeedbackContextValue = {
+type FeedbackContextValue = {
   onError: (title: ReactNode, details?: ReactNode) => void;
   onWarn: (title: ReactNode, details?: ReactNode) => void;
   onInfo: (title: ReactNode, details?: ReactNode) => void;

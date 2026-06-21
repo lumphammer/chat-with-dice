@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "tags": ["-lintignore"],
+  "ignore": ["drizzle.config.js"],
+  "ignoreDependencies": ["cloudflare"],
+  "ignoreFiles": [
+    "src/test-utils/**/*",
+    "*.ts",
+    "scripts/*",
+    "src/actions/rooms/hardDeleteRoom.ts",
+    "src/utils/getClassNameForDOBinding.ts"
+  ]
+}
