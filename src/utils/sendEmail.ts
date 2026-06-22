@@ -5,6 +5,7 @@ export interface SendEmailOptions {
   subject: string;
   html: string;
   text?: string;
+  replyTo?: string;
 }
 
 export async function sendEmail({
@@ -14,6 +15,7 @@ export async function sendEmail({
   subject,
   html,
   text,
+  replyTo,
 }: SendEmailOptions): Promise<void> {
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -21,7 +23,14 @@ export async function sendEmail({
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({ from, to, subject, html, text }),
+    body: JSON.stringify({
+      from,
+      to,
+      subject,
+      html,
+      text,
+      reply_to: replyTo,
+    }),
   });
 
   if (!response.ok) {

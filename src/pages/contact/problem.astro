@@ -1,0 +1,25 @@
+---
+import Layout from "#/layouts/Layout.astro";
+import { CircleAlert } from "@lucide/astro";
+---
+
+<Layout
+  title="Feedback not sent"
+  class="flex items-center justify-center p-4 sm:p-8"
+>
+  <section class="card bg-base-100 w-full max-w-lg shadow-xl">
+    <div class="card-body items-center text-center">
+      <CircleAlert class="text-error h-12 w-12" aria-hidden="true" />
+      <h2 class="card-title">We couldn't send your feedback</h2>
+      <p>
+        Please try the form again or email
+        <a class="link link-primary" href="mailto:chatwithdice@lumphammer.net">
+          chatwithdice@lumphammer.net
+        </a>.
+      </p>
+      <div class="card-actions mt-2">
+        <a class="btn btn-primary" href="/contact">Try again</a>
+      </div>
+    </div>
+  </section>
+</Layout>
