@@ -53,12 +53,16 @@
 - [x] websocket endpoint can move under `rooms` in pages tree
 - [x] Fix flows for new user/login/etc.
 
+- [ ] Email-only login
+- [ ] Finish havocDark theme
 - [ ] Recent rooms list
+- [ ] "About" page, with deploy time, summary, and terms of service
+- [ ] Annotation/alt text
+- [ ] Cards
+
 - [ ] Periodic purge of anon users
 - [ ] Swipe to move between files in preview
 - [ ] fix up MaybeError etc and use exclusively
-- [ ] "About" page, with deploy time, summary, and terms of service
-- [ ] Email-only login
 
 - [ ] Unstack, or refactor, the nest of providers in DiceRoller
 - [ ] Easier feedback channels (built-in?)
@@ -68,7 +72,6 @@
 
 ### Deferred file manager items
 
-- [ ] Annotation/alt text
 - [ ] Move
 - [ ] Multi-select for bulk operations
 - [ ] Multi-part uploads for large files
@@ -87,7 +90,6 @@
 - [ ] FitD
   - [ ] Clocks
   - [ ] Rolls
-- [ ] Cards
 - [ ] Roll tables
 - [ ] Collaborative documents
 - [ ] Whiteboards
