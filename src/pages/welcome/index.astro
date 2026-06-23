@@ -1,0 +1,8 @@
+---
+import Layout from "#/layouts/Layout.astro";
+import { WelcomeForm } from "./_components/WelcomeForm";
+---
+
+<Layout title="Welcome" class="flex items-center justify-center p-8">
+  <WelcomeForm client:load />
+</Layout>

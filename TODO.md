@@ -52,11 +52,11 @@
 - [x] "Preview" should be "View" (or whole thing is the link)
 - [x] websocket endpoint can move under `rooms` in pages tree
 - [x] Fix flows for new user/login/etc.
+- [x] "About" page, with deploy time, summary, and terms of service
+- [x] Email-only login
 
-- [ ] Email-only login
 - [ ] Finish havocDark theme
 - [ ] Recent rooms list
-- [ ] "About" page, with deploy time, summary, and terms of service
 - [ ] Annotation/alt text
 - [ ] Cards
 
