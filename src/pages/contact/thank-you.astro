@@ -1,0 +1,17 @@
+---
+import Layout from "#/layouts/Layout.astro";
+import { CircleCheck } from "@lucide/astro";
+---
+
+<Layout title="Thank you" class="flex items-center justify-center p-4 sm:p-8">
+  <section class="card bg-base-100 w-full max-w-lg shadow-xl">
+    <div class="card-body items-center text-center">
+      <CircleCheck class="text-success h-12 w-12" aria-hidden="true" />
+      <h2 class="card-title">Feedback sent</h2>
+      <p>Thanks for taking the time to get in touch.</p>
+      <div class="card-actions mt-2">
+        <a class="btn btn-primary" href="/">Return home</a>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,22 @@
+---
+import Layout from "#/layouts/Layout.astro";
+import { FeedbackForm } from "./_components/FeedbackForm";
+---
+
+<Layout title="Contact" class="p-4 sm:p-8">
+  <div class="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <section class="prose">
+      <p class="lead">
+        Send feedback, report a problem, or ask a question using the form below.
+      </p>
+      <p>
+        You can also email
+        <a href="mailto:chatwithdice@lumphammer.net">
+          chatwithdice@lumphammer.net
+        </a>.
+      </p>
+    </section>
+
+    <FeedbackForm client:load />
+  </div>
+</Layout>
