@@ -7,7 +7,10 @@ import { useEffect, useState } from "react";
 function getSafeReturnUrl(): string {
   const raw =
     new URLSearchParams(window.location.search).get("returnUrl") ?? "/";
-  return raw.startsWith("/") ? raw : "/";
+  // Only allow same-origin absolute paths. Reject protocol-relative URLs
+  // (`//host`, and the `/\` variant some browsers normalise) which start with
+  // "/" but navigate off-origin.
+  return raw.startsWith("/") && !/^\/[/\\]/.test(raw) ? raw : "/";
 }
 
 export function WelcomeForm() {

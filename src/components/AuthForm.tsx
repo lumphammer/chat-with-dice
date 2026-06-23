@@ -9,7 +9,10 @@ type LoadingState = "idle" | "email" | "github" | "google";
 function getSafeReturnUrl(): string {
   const raw =
     new URLSearchParams(window.location.search).get("returnUrl") ?? "/";
-  return raw.startsWith("/") ? raw : "/";
+  // Only allow same-origin absolute paths. Reject protocol-relative URLs
+  // (`//host`, and the `/\` variant some browsers normalise) which start with
+  // "/" but navigate off-origin.
+  return raw.startsWith("/") && !/^\/[/\\]/.test(raw) ? raw : "/";
 }
 
 // First-time users are routed here after clicking their link so they can
@@ -41,9 +44,10 @@ export function AuthForm() {
       newUserCallbackURL: getNewUserCallbackUrl(returnUrl),
     });
 
+    setLoading("idle");
+
     if (authError) {
       setError(authError.message ?? "Something went wrong. Please try again.");
-      setLoading("idle");
     } else {
       // Shown regardless of whether the email belongs to an existing account,
       // so the response can't be used to probe which emails are registered.
