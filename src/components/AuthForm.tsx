@@ -103,47 +103,11 @@ export function AuthForm() {
   return (
     <div className="card bg-base-100 w-full max-w-md shadow-xl">
       <div className="card-body gap-4">
-        <p className="text-center text-sm font-medium">
-          Enter your email and we'll send you a link to sign in. No password
-          needed.
-        </p>
-
         {error && (
           <div role="alert" className="alert alert-error text-sm">
             <span>{error}</span>
           </div>
         )}
-
-        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
-          {/* Email */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Email</legend>
-            <label className="input w-full">
-              <Mail size={16} className="opacity-50" />
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </label>
-          </fieldset>
-
-          <button
-            type="submit"
-            className="btn btn-primary mt-1 w-full"
-            disabled={isLoading}
-          >
-            {loading === "email" && (
-              <span className="loading loading-spinner loading-sm" />
-            )}
-            Send sign-in link
-          </button>
-        </form>
-
-        <div className="divider text-xs">or</div>
 
         <div className="flex flex-col gap-2">
           <button
@@ -174,6 +138,41 @@ export function AuthForm() {
             Continue with Google
           </button>
         </div>
+
+        <div className="divider text-xs">or sign in with email</div>
+
+        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
+          {/* Email */}
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Email</legend>
+            <label className="input w-full">
+              <Mail size={16} className="opacity-50" />
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </label>
+          </fieldset>
+
+          <button
+            type="submit"
+            className="btn btn-primary mt-1 w-full"
+            disabled={isLoading}
+          >
+            {loading === "email" && (
+              <span className="loading loading-spinner loading-sm" />
+            )}
+            Send sign-in link
+          </button>
+
+          <p className="text-base-content/60 text-center text-xs">
+            We'll email you a link to sign in. No password needed.
+          </p>
+        </form>
       </div>
     </div>
   );
