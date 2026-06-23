@@ -2,7 +2,6 @@ import { authClient } from "#/auth/authClient.ts";
 import { ChangeEmailSection } from "./ChangeEmailSection";
 import { ChangeImageSection } from "./ChangeImageSection";
 import { ChangeNameSection } from "./ChangeNameSection";
-import { ChangePasswordSection } from "./ChangePasswordSection";
 import { StorageQuotaSection } from "./StorageQuotaSection";
 
 type InitialUser = {
@@ -28,7 +27,6 @@ export function AccountSettingsForm({ initialUser }: Props) {
       <ChangeImageSection currentImage={image} name={name} email={email} />
       <ChangeNameSection currentName={name ?? ""} />
       <ChangeEmailSection currentEmail={email} />
-      <ChangePasswordSection />
     </div>
   );
 }

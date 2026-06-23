@@ -1,8 +1,8 @@
 ---
 import Layout from "#/layouts/Layout.astro";
-import { SigninForm } from "./_components/SigninForm";
+import { AuthForm } from "@/components/AuthForm";
 ---
 
 <Layout title="Sign in" class="flex items-center justify-center p-8">
-  <SigninForm client:load />
+  <AuthForm client:load />
 </Layout>
