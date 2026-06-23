@@ -169,7 +169,7 @@ export function FeedbackForm() {
         </fieldset>
 
         <div
-          className="absolute -left-[10000px] h-px w-px overflow-hidden"
+          className="absolute left-[-10000px] h-px w-px overflow-hidden"
           aria-hidden="true"
         >
           <label>

@@ -33,6 +33,13 @@ export function NavBarAccount({
   const menuRef = useRef<HTMLDivElement>(null);
   const [signInHref, setSignInHref] = useState("/signin");
 
+  // When no initialUser was provided (e.g. static/prerendered pages), start
+  // invisible and fade in once the client has resolved the session, to avoid
+  // flashing the wrong state — e.g. a logged-in user briefly seeing the menu
+  // (hamburger) icon before their avatar appears.
+  const needsFade = initialUser === null;
+  const revealed = !needsFade || !isPending;
+
   useEffect(() => {
     setSignInHref(
       `/signin?returnUrl=${encodeURIComponent(window.location.pathname)}`,
@@ -68,8 +75,14 @@ export function NavBarAccount({
 
   const initials = user ? getInitials(user.name, user.email) : null;
 
+  const wrapperClass = !needsFade
+    ? undefined
+    : revealed
+      ? "animate-fadein"
+      : "opacity-0";
+
   return (
-    <div>
+    <div className={wrapperClass}>
       <button
         className="btn btn-ghost btn-circle"
         popoverTarget="nav-user-menu"
