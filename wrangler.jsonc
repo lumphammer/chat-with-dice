@@ -110,6 +110,7 @@
     "BUCKET_PUBLIC_URL": "https://r2.chatwithdice.lumphammer.net",
     "GITHUB_CLIENT_ID": "Ov23liodlIl9o0JSyRY6",
     "GOOGLE_CLIENT_ID": "869954021187-jbep8bgnl19da678buk1t3v21vm5rvgt.apps.googleusercontent.com",
+    "DISCORD_CLIENT_ID": "1519291459231285328",
     "RESEND_FROM_EMAIL": "Chat with Dice <chatwithdice@lumphammer.net>",
   },
 }

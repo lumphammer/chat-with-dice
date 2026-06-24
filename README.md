@@ -31,6 +31,8 @@ GITHUB_CLIENT_ID="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 GITHUB_CLIENT_SECRET="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 GOOGLE_CLIENT_ID="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+DISCORD_CLIENT_ID="xxxxxxxxxxxxxxxxxxx"
+DISCORD_CLIENT_SECRET="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 RESEND_API_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 RESEND_FROM_EMAIL="Your Name <yourname@example.net>"
 ```
