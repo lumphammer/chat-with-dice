@@ -1,10 +1,11 @@
 import { authClient } from "#/auth/authClient.ts";
+import { DiscordIcon } from "#/components/DiscordIcon";
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
 import { Mail } from "lucide-react";
 import { useState } from "react";
 
-type LoadingState = "idle" | "email" | "github" | "google";
+type LoadingState = "idle" | "email" | "github" | "google" | "discord";
 
 function getSafeReturnUrl(): string {
   const raw =
@@ -55,7 +56,7 @@ export function AuthForm() {
     }
   }
 
-  async function handleSocialSignIn(provider: "github" | "google") {
+  async function handleSocialSignIn(provider: "github" | "google" | "discord") {
     setError(null);
     setLoading(provider);
     const { error: authError } = await authClient.signIn.social({
@@ -140,6 +141,20 @@ export function AuthForm() {
               <GoogleIcon />
             )}
             Continue with Google
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-neutral w-full"
+            onClick={() => handleSocialSignIn("discord")}
+            disabled={isLoading}
+          >
+            {loading === "discord" ? (
+              <span className="loading loading-spinner loading-sm" />
+            ) : (
+              <DiscordIcon />
+            )}
+            Continue with Discord
           </button>
         </div>
 

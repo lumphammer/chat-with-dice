@@ -43,6 +43,8 @@ const {
   GITHUB_CLIENT_SECRET,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
+  DISCORD_CLIENT_ID,
+  DISCORD_CLIENT_SECRET,
   RESEND_API_KEY,
   RESEND_FROM_EMAIL,
 } = envOrDie([
@@ -50,6 +52,8 @@ const {
   "GITHUB_CLIENT_SECRET",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
+  "DISCORD_CLIENT_ID",
+  "DISCORD_CLIENT_SECRET",
   "RESEND_API_KEY",
   "RESEND_FROM_EMAIL",
 ]);
@@ -302,6 +306,10 @@ export const auth = betterAuth({
     google: {
       clientId: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
+    },
+    discord: {
+      clientId: DISCORD_CLIENT_ID,
+      clientSecret: DISCORD_CLIENT_SECRET,
     },
   },
 

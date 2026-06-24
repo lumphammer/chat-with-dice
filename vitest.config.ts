@@ -123,6 +123,8 @@ export default defineConfig({
                 GITHUB_CLIENT_SECRET: "test",
                 GOOGLE_CLIENT_ID: "test",
                 GOOGLE_CLIENT_SECRET: "test",
+                DISCORD_CLIENT_ID: "test",
+                DISCORD_CLIENT_SECRET: "test",
                 RESEND_API_KEY: "test",
                 RESEND_FROM_EMAIL: "test@example.com",
               },
