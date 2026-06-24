@@ -310,6 +310,20 @@ export const auth = betterAuth({
     discord: {
       clientId: DISCORD_CLIENT_ID,
       clientSecret: DISCORD_CLIENT_SECRET,
+      // Discord can return a null email (e.g. phone-only accounts), which would
+      // otherwise fail the OAuth callback since our users.email is NOT NULL.
+      // Synthesise a stable, non-deliverable placeholder from the immutable
+      // Discord user id. The `.invalid` TLD (RFC 6761) is guaranteed never to
+      // resolve, so no magic link can ever be sent to it, and the id keeps it
+      // unique per user. Only the email is overridden; other fields keep their
+      // defaults (mapProfileToUser is merged over them).
+      mapProfileToUser: (profile) => {
+        if (profile.email) return {};
+        return {
+          email: `${profile.id}@discord.invalid`,
+          emailVerified: false,
+        };
+      },
     },
   },
 
