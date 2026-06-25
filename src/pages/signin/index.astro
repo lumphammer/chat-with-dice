@@ -6,6 +6,9 @@ import { AuthForm } from "@/components/AuthForm";
 export const prerender = false;
 ---
 
-<Layout title="Sign in" class="flex items-center justify-center">
+<Layout
+  title="Sign in or create your account"
+  class="flex items-center justify-center"
+>
   <AuthForm client:load initialUser={toClientUser(Astro.locals.user)} />
 </Layout>

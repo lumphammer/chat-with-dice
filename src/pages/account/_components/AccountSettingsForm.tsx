@@ -22,9 +22,7 @@ export function AccountSettingsForm({
       {isAnonymous && (
         <div className="card bg-base-100 shadow-md">
           <div className="card-body prose">
-            <h2 className="card-title text-lg">
-              You're a guest, "{name}"
-            </h2>
+            <h2 className="card-title text-lg">You're a guest, "{name}"</h2>
             <p>Create an account to keep your settings and files.</p>
             <p>
               <a href="/signup" className="btn btn-info">

@@ -88,8 +88,8 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
           </div>
           <h2 className="text-xl font-bold">Check your inbox</h2>
           <p className="text-base-content/70 text-sm">
-            We've sent a sign-in link to <strong>{email}</strong>. Click it to
-            sign in. The link expires shortly and can only be used once.
+            We've sent a link to <strong>{email}</strong>. Click it to continue.
+            The link expires shortly and can only be used once.
           </p>
           <p className="text-base-content/50 text-xs">
             Didn't get it? Check your spam folder, or{" "}
@@ -113,6 +113,10 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
   return (
     <div className="card bg-base-100 w-full max-w-full shadow-xl lg:max-w-md">
       <div className="card-body gap-4">
+        <p className="text-base-content/60 text-center text-sm">
+          New or returning, one link does both — no password to remember.
+        </p>
+
         {error && (
           <div role="alert" className="alert alert-error text-sm">
             <span>{error}</span>
@@ -168,7 +172,7 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
           Continue with Discord
         </button>
 
-        <div className="divider mb-0 text-xs">or sign in with email</div>
+        <div className="divider mb-0 text-xs">or continue with email</div>
 
         <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
           {/* Email */}
@@ -195,11 +199,12 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
             {loading === "email" && (
               <span className="loading loading-spinner loading-sm" />
             )}
-            Send sign-in link
+            Email me a link
           </button>
 
           <p className="text-base-content/60 text-center text-xs">
-            We'll email you a link to sign in. No password needed.
+            We'll email you a link — it signs you in or sets up your account. No
+            password needed.
           </p>
         </form>
       </div>
