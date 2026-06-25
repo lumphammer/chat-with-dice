@@ -1,4 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
+import { generateRandomName } from "#/utils/generateRandomName";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
 import {
@@ -12,7 +13,6 @@ import {
   useFeedbackToasterProvider,
 } from "../FeedbackToaster";
 import { Sidebar } from "../Sidebar/Sidebar";
-import { AnonymousEntryDialog } from "./AnonymousEntryDialog";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { Header } from "./Header";
@@ -59,6 +59,49 @@ export const DiceRoller = memo(
 
     const feedbackToasterValue = useFeedbackToasterProvider();
 
+    const anonSignIn = useCallback(async () => {
+      const name = generateRandomName();
+      const { error: signInError } = await authClient.signIn.anonymous();
+      if (signInError) {
+        feedbackToasterValue.onError(
+          signInError.message ??
+            "Could not sign in anonymously. Please try refreshing.",
+        );
+        return;
+      }
+
+      const { error: updateError } = await authClient.updateUser({ name });
+      if (updateError) {
+        feedbackToasterValue.onError(
+          updateError.message ??
+            "Could not sign in anonymously. Please try refreshing.",
+        );
+        await authClient.signOut();
+        return;
+      }
+    }, [feedbackToasterValue]);
+
+    useEffect(() => {
+      if (!isPending && sessionData === null) {
+        void anonSignIn();
+      }
+      if (
+        !isPending &&
+        sessionData?.user.isAnonymous &&
+        sessionData?.user.id !== roomOwnerId
+      ) {
+        feedbackToasterValue.onInfo(
+          <>
+            <p>You've joined as a guest, {sessionData?.user.name}.</p>
+            <p>Create an account to keep your rolls and settings.</p>
+            <a href="/signup" className="btn btn-info">
+              Create account
+            </a>
+          </>,
+        );
+      }
+    }, [isPending, sessionData, anonSignIn, feedbackToasterValue, roomOwnerId]);
+
     const optimisticallySetCapabilityState = useCallback(
       (
         name: string,
@@ -80,16 +123,6 @@ export const DiceRoller = memo(
         });
       },
       [setCapabilityInfos],
-    );
-
-    const handleAnonymousNameUpdateError = useCallback(
-      (message: string) => {
-        feedbackToasterValue.onError(
-          "Couldn't save your display name",
-          `${message} You can change it on your account page.`,
-        );
-      },
-      [feedbackToasterValue],
     );
 
     const { connectionStatus, messages, sendMessage, usersOnline } =
@@ -182,7 +215,8 @@ export const DiceRoller = memo(
         const sendWarning = () => {
           feedbackToasterValue.onWarn(
             <>
-              <p>You are not logged in! Create an account to save this room.</p>
+              <p>You're playing as a guest — this room won't be saved.</p>
+              <p>Create an account to keep it.</p>
               <a href="/signup" className="btn btn-warning">
                 Create account
               </a>
@@ -237,11 +271,6 @@ export const DiceRoller = memo(
                         } satisfies UserHueStyle as UserHueStyle
                       }
                     >
-                      {!isPending && sessionData === null && (
-                        <AnonymousEntryDialog
-                          onUpdateNameError={handleAnonymousNameUpdateError}
-                        />
-                      )}
                       {/* grid-area: header — targeted via > header rule in CSS module */}
                       <Header
                         ref={headerRef}
