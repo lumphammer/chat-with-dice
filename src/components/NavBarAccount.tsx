@@ -1,4 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
+import type { ClientUser } from "#/auth/clientUser.ts";
 import { isAdminOrBetter } from "#/utils/roleHelpers.ts";
 import {
   Contact,
@@ -17,17 +18,10 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type UserInfo = {
-  name: string | null;
-  email: string;
-  image: string | null;
-  isAnonymous: boolean;
-};
-
 export function NavBarAccount({
   initialUser,
 }: {
-  initialUser: UserInfo | null;
+  initialUser: ClientUser | null;
 }) {
   const { data: sessionData, isPending } = authClient.useSession();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -48,7 +42,7 @@ export function NavBarAccount({
 
   // While the client-side session is still loading, use the server-provided
   // initial state so there's no skeleton flash or layout shift.
-  const user: UserInfo | null = useMemo(
+  const user: ClientUser | null = useMemo(
     () =>
       isPending
         ? initialUser

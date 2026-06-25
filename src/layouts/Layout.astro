@@ -1,5 +1,6 @@
 ---
 import Logo from "#/assets/logo.svg";
+import { toClientUser } from "#/auth/clientUser.ts";
 import "#/styles/global.css";
 import { NavBarAccount } from "@/components/NavBarAccount";
 import HTML from "./HTML.astro";
@@ -11,15 +12,7 @@ type Props = {
 
 const { title, class: className } = Astro.props;
 
-const serverUser = Astro.locals.user;
-const initialUser = serverUser
-  ? {
-      name: serverUser.name ?? null,
-      email: serverUser.email,
-      image: serverUser.image ?? null,
-      isAnonymous: serverUser.isAnonymous ?? false,
-    }
-  : null;
+const initialUser = toClientUser(Astro.locals.user);
 ---
 
 <HTML title={title}>

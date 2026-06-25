@@ -4,17 +4,11 @@ import { ChangeImageSection } from "./ChangeImageSection";
 import { ChangeNameSection } from "./ChangeNameSection";
 import { StorageQuotaSection } from "./StorageQuotaSection";
 
-type InitialUser = {
-  name: string | null;
-  email: string;
-  image: string | null;
-};
-
-type Props = {
-  initialUser: InitialUser;
-};
-
-export function AccountSettingsForm({ initialUser }: Props) {
+export function AccountSettingsForm({
+  initialUser,
+}: {
+  initialUser: ClientUser;
+}) {
   const { data: sessionData } = authClient.useSession();
 
   const name = sessionData?.user?.name ?? initialUser.name;
