@@ -1,8 +1,3 @@
 ---
-import Layout from "#/layouts/Layout.astro";
-import { AuthForm } from "@/components/AuthForm";
+return Astro.rewrite("/signin");
 ---
-
-<Layout title="Sign in" class="flex items-center justify-center p-8">
-  <AuthForm client:load />
-</Layout>
