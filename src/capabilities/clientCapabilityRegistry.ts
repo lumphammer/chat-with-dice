@@ -7,6 +7,7 @@ import { filesClient } from "./files/client";
 import { laserfeelingsClient } from "./laserfeelings/client";
 import { objectivesClient } from "./objectives/client";
 import { rollClient } from "./roll/client";
+import { usersClient } from "./users/client";
 
 /**
  * Client-side registry consumed by the UI (sidebars, config, chat bubbles).
@@ -30,4 +31,5 @@ export const clientCapabilityRegistry = {
   laserfeelings: laserfeelingsClient,
   files: filesClient,
   feedback: feedbackClient,
+  users: usersClient,
 } satisfies Record<CapabilityName, ClientCapability<any, any, any>>;
