@@ -55,6 +55,8 @@
 - [x] "About" page, with deploy time, summary, and terms of service
 - [x] Email-only login
 
+- [ ] Hide irrelevant parts of account admin for anons
+- [ ] Cache usernames in ChatRoomDO?
 - [ ] Finish havocDark theme
 - [ ] Recent rooms list
 - [ ] Annotation/alt text

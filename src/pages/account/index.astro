@@ -1,22 +1,18 @@
 ---
+import { toClientUser } from "#/auth/clientUser.ts";
 import Layout from "#/layouts/Layout.astro";
 import { AccountSettingsForm } from "./_components/AccountSettingsForm";
 
-const user = Astro.locals.user;
+export const prerender = false;
 
-if (!user) {
+if (!Astro.locals.user) {
   return Astro.redirect("/signin");
 }
-
-const initialUser = {
-  name: user.name ?? null,
-  email: user.email,
-  image: user.image ?? null,
-};
-
-export const prerender = false;
 ---
 
 <Layout title="Account Settings" class="flex justify-center p-8">
-  <AccountSettingsForm client:load initialUser={initialUser} />
+  <AccountSettingsForm
+    client:load
+    initialUser={toClientUser(Astro.locals.user)}
+  />
 </Layout>

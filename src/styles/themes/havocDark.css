@@ -72,7 +72,7 @@
     from var(--color-base-100) 0.92 var(--c-content) h
   );
 
-  --color-neutral: oklch(from var(--color-base-100) 50% 0.02 h);
+  --color-neutral: oklch(from var(--color-base-100) 80% 0.02 h);
   --color-neutral-content: oklch(98% 0.01 240);
 
   --color-info: oklch(80% 0.2 220);

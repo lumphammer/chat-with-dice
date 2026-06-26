@@ -1,4 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
+import type { ClientUser } from "#/auth/clientUser.ts";
 import { DiscordIcon } from "#/components/DiscordIcon";
 import { GithubIcon } from "#/components/GithubIcon";
 import { GoogleIcon } from "#/components/GoogleIcon";
@@ -25,11 +26,15 @@ function getNewUserCallbackUrl(returnUrl: string): string {
     : `/welcome?returnUrl=${encodeURIComponent(returnUrl)}`;
 }
 
-export function AuthForm() {
+export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState<LoadingState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const { data: sessionData } = authClient.useSession();
+
+  const isAnonymous = sessionData?.user.isAnonymous ?? initialUser?.isAnonymous;
+  const userName = sessionData?.user.name ?? initialUser?.name;
 
   const isLoading = loading !== "idle";
 
@@ -83,8 +88,8 @@ export function AuthForm() {
           </div>
           <h2 className="text-xl font-bold">Check your inbox</h2>
           <p className="text-base-content/70 text-sm">
-            We've sent a sign-in link to <strong>{email}</strong>. Click it to
-            sign in. The link expires shortly and can only be used once.
+            We've sent a link to <strong>{email}</strong>. Click it to continue.
+            The link expires shortly and can only be used once.
           </p>
           <p className="text-base-content/50 text-xs">
             Didn't get it? Check your spam folder, or{" "}
@@ -106,59 +111,68 @@ export function AuthForm() {
   }
 
   return (
-    <div className="card bg-base-100 w-full max-w-md shadow-xl">
+    <div className="card bg-base-100 w-full max-w-full shadow-xl lg:max-w-md">
       <div className="card-body gap-4">
+        <p className="text-base-content/60 text-center text-sm">
+          New or returning, one link does both — no password to remember.
+        </p>
+
         {error && (
           <div role="alert" className="alert alert-error text-sm">
             <span>{error}</span>
           </div>
         )}
 
-        <div className="flex flex-col gap-2">
-          <button
-            type="button"
-            className="btn btn-neutral w-full"
-            onClick={() => handleSocialSignIn("github")}
-            disabled={isLoading}
-          >
-            {loading === "github" ? (
-              <span className="loading loading-spinner loading-sm" />
-            ) : (
-              <GithubIcon />
-            )}
-            Continue with GitHub
-          </button>
+        {isAnonymous && (
+          <p className="prose alert alert-info mb-2 px-4 py-2">
+            You're signed in as a guest, <b>{userName}</b>. Creating an account
+            lets you keep your settings and files for next time.
+          </p>
+        )}
 
-          <button
-            type="button"
-            className="btn btn-neutral w-full"
-            onClick={() => handleSocialSignIn("google")}
-            disabled={isLoading}
-          >
-            {loading === "google" ? (
-              <span className="loading loading-spinner loading-sm" />
-            ) : (
-              <GoogleIcon />
-            )}
-            Continue with Google
-          </button>
+        <button
+          type="button"
+          className="btn btn-neutral w-full"
+          onClick={() => handleSocialSignIn("github")}
+          disabled={isLoading}
+        >
+          {loading === "github" ? (
+            <span className="loading loading-spinner loading-sm" />
+          ) : (
+            <GithubIcon />
+          )}
+          Continue with GitHub
+        </button>
 
-          <button
-            type="button"
-            className="btn btn-neutral w-full"
-            onClick={() => handleSocialSignIn("discord")}
-            disabled={isLoading}
-          >
-            {loading === "discord" ? (
-              <span className="loading loading-spinner loading-sm" />
-            ) : (
-              <DiscordIcon />
-            )}
-            Continue with Discord
-          </button>
-        </div>
+        <button
+          type="button"
+          className="btn btn-neutral w-full"
+          onClick={() => handleSocialSignIn("google")}
+          disabled={isLoading}
+        >
+          {loading === "google" ? (
+            <span className="loading loading-spinner loading-sm" />
+          ) : (
+            <GoogleIcon />
+          )}
+          Continue with Google
+        </button>
 
-        <div className="divider text-xs">or sign in with email</div>
+        <button
+          type="button"
+          className="btn btn-neutral w-full"
+          onClick={() => handleSocialSignIn("discord")}
+          disabled={isLoading}
+        >
+          {loading === "discord" ? (
+            <span className="loading loading-spinner loading-sm" />
+          ) : (
+            <DiscordIcon />
+          )}
+          Continue with Discord
+        </button>
+
+        <div className="divider mb-0 text-xs">or continue with email</div>
 
         <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
           {/* Email */}
@@ -185,11 +199,12 @@ export function AuthForm() {
             {loading === "email" && (
               <span className="loading loading-spinner loading-sm" />
             )}
-            Send sign-in link
+            Email me a link
           </button>
 
           <p className="text-base-content/60 text-center text-xs">
-            We'll email you a link to sign in. No password needed.
+            We'll email you a link — it signs you in or sets up your account. No
+            password needed.
           </p>
         </form>
       </div>
