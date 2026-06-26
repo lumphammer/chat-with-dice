@@ -26,7 +26,6 @@ function evaluateFace(
 }
 
 export const laserfeelingsServer = createServerCapability(laserfeelingsCommon, {
-  initialise: () => {},
   actionEffects: {
     doRoll: async ({ payload, sendChatMessage }) => {
       const { yourNumber, numberOfDice, mode } = payload;

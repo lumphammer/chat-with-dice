@@ -125,7 +125,6 @@ function modify(operand1: number, operator: Operator, operand2: number) {
 }
 
 export const rollServer = createServerCapability(rollCommon, {
-  initialise: () => {},
   actionEffects: {
     doRoll: async ({ payload, sendChatMessage }) => {
       const { arity, cardinality, exploding, favour, keep, modifier } = payload;

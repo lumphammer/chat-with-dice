@@ -56,7 +56,7 @@ export type ServerCapabilityDefinition<
     CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
   >,
 > = {
-  initialise: (tools: {
+  initialise?: (tools: {
     doCtx: DurableObjectState;
     draftState: Draft<z.infer<TStateValidator>>;
     messageJiggler: MessageJiggler;
@@ -221,7 +221,7 @@ export function createServerCapability<
     }
 
     const draftState = createDraft(state);
-    await def.initialise({
+    await def.initialise?.({
       doCtx,
       draftState,
       messageJiggler,
