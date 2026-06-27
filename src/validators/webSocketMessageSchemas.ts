@@ -142,7 +142,7 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("capabilityInit"),
     payload: z.object({
       capability: z.string(),
-      state: z.any(),
+      state: z.any().optional(),
       config: z.any().optional(),
     }),
   }),

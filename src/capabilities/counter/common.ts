@@ -8,10 +8,12 @@ export const counterCommon = createCapabilityCommon({
     validator: z.object({ startAt: z.int() }),
     default: { startAt: 0 },
   },
-  stateValidator: z.object({
-    count: z.int(),
-  }),
-  getInitialState: ({ config }) => ({ count: config.startAt }),
+  state: {
+    validator: z.object({
+      count: z.int(),
+    }),
+    getInitialState: ({ config }) => ({ count: config.startAt }),
+  },
   buildActions: ({ createAction }) => ({
     increment: createAction({
       payloadValidator: z.object({ by: z.number() }),

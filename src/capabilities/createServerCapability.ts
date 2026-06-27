@@ -11,6 +11,7 @@ import type {
   CommonCapability,
   ConfigValue,
   PureActionFn,
+  StateValue,
   inferIfZod,
 } from "./createCapabilityCommon";
 import type { Draft } from "immer";
@@ -50,22 +51,22 @@ type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
 
 export type ServerCapabilityDefinition<
   TConfigValidator extends JsonValidator | undefined,
-  TStateValidator extends JsonValidator,
+  TStateValidator extends JsonValidator | undefined,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   >,
 > = {
   initialise?: (tools: {
     doCtx: DurableObjectState;
-    draftState: Draft<z.infer<TStateValidator>>;
+    draftState: Draft<StateValue<TStateValidator>>;
     messageJiggler: MessageJiggler;
     config: ConfigValue<TConfigValidator>;
   }) => void | Promise<void>;
   actionEffects?: {
     [K in keyof TActions]?: EffectfulActionFn<
-      z.infer<TStateValidator>,
+      StateValue<TStateValidator>,
       z.infer<TActions[K]["payloadValidator"]>,
       inferIfZod<TMessageDataValidator>
     >;
@@ -96,11 +97,11 @@ export type ServerCapability = {
  */
 export function createServerCapability<
   TConfigValidator extends JsonValidator | undefined,
-  TStateValidator extends JsonValidator,
+  TStateValidator extends JsonValidator | undefined,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   >,
 >(
   common: CommonCapability<
@@ -131,7 +132,7 @@ export function createServerCapability<
     messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
     userId: string;
-    state: z.infer<TStateValidator>;
+    state: StateValue<TStateValidator>;
     actionCall: ActionCall;
     broadcaster: Broadcaster;
     displayName: string;
@@ -148,12 +149,16 @@ export function createServerCapability<
     // cast here — runtime correctness comes from the shared key.
     const effectfulFn = def.actionEffects?.[actionCall.actionName] as
       | EffectfulActionFn<
-          z.infer<TStateValidator>,
+          StateValue<TStateValidator>,
           unknown,
           inferIfZod<TMessageDataValidator>
         >
       | undefined;
-    const stateDraft = createDraft(state);
+    // Stateless capabilities have no draft to thread; their actions only ever
+    // fire effects (and never define a `pureFn`).
+    const stateDraft = (
+      common.state ? createDraft(state as object) : undefined
+    ) as Draft<StateValue<TStateValidator>>;
     if (effectfulFn) {
       await effectfulFn({
         doCtx,
@@ -179,7 +184,12 @@ export function createServerCapability<
     } else if (commonAction.pureFn) {
       commonAction.pureFn({ stateDraft, payload });
     }
-    const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
+    // Nothing to persist or broadcast for stateless capabilities — the effect
+    // (e.g. a chat message) has already run.
+    if (!common.state) {
+      return state;
+    }
+    const finalState = finishDraft(stateDraft) as StateValue<TStateValidator>;
     stateRepository.set(common.name, finalState);
     setTimeout(() => {
       broadcaster.broadcast({
@@ -213,28 +223,35 @@ export function createServerCapability<
     const validatedConfig =
       configParseResult?.data as ConfigValue<TConfigValidator>;
 
-    let state: z.infer<TStateValidator>;
-    const parseStoredStateResult = common.stateValidator.safeParse(
-      stateRepository.get(common.name),
-    );
-    if (parseStoredStateResult.success) {
-      state = parseStoredStateResult.data;
-    } else {
-      state = common.getInitialState({ config: validatedConfig });
-      stateRepository.set(common.name, state);
+    // `undefined` throughout for stateless capabilities.
+    let state = undefined as StateValue<TStateValidator>;
+    if (common.state) {
+      const parseStoredStateResult = common.state.validator?.safeParse(
+        stateRepository.get(common.name),
+      );
+      if (parseStoredStateResult?.success) {
+        state = parseStoredStateResult.data as StateValue<TStateValidator>;
+      } else {
+        state = common.state.getInitialState({ config: validatedConfig });
+        stateRepository.set(common.name, state);
+      }
     }
 
-    const draftState = createDraft(state);
+    const draftState = (
+      common.state ? createDraft(state as object) : undefined
+    ) as Draft<StateValue<TStateValidator>>;
     await def.initialise?.({
       doCtx,
       draftState,
       messageJiggler,
       config: validatedConfig,
     });
-    const finalState = finishDraft(draftState) as z.infer<TStateValidator>;
-    if (finalState !== state) {
-      state = finalState;
-      stateRepository.set(common.name, state);
+    if (common.state) {
+      const finalState = finishDraft(draftState) as StateValue<TStateValidator>;
+      if (finalState !== state) {
+        state = finalState;
+        stateRepository.set(common.name, state);
+      }
     }
     return {
       name: common.name,

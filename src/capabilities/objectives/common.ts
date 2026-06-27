@@ -5,19 +5,21 @@ import { z } from "zod/v4";
 export const objectivesCommon = createCapabilityCommon({
   name: "objectives",
   displayName: "Objectives",
-  stateValidator: z.object({
-    objectives: z.array(
-      z.object({
-        id: z.nanoid(),
-        isPrimary: z.boolean(),
-        name: z.string(),
-        difficulty: z.int().min(0),
-        startingResilience: z.int(),
-        resilience: z.int(),
-      }),
-    ),
-  }),
-  getInitialState: () => ({ objectives: [] }),
+  state: {
+    validator: z.object({
+      objectives: z.array(
+        z.object({
+          id: z.nanoid(),
+          isPrimary: z.boolean(),
+          name: z.string(),
+          difficulty: z.int().min(0),
+          startingResilience: z.int(),
+          resilience: z.int(),
+        }),
+      ),
+    }),
+    getInitialState: () => ({ objectives: [] }),
+  },
   buildActions: ({ createAction }) => ({
     createObjective: createAction({
       payloadValidator: z.object({

@@ -11,6 +11,7 @@ import type {
   CommonActionDefinition,
   CommonCapability,
   ConfigValue,
+  StateValue,
 } from "./createCapabilityCommon";
 import type { Patch } from "immer";
 import { produceWithPatches } from "immer";
@@ -21,7 +22,7 @@ import type * as z from "zod";
 export type PatchRecord = [string, Patch[]];
 
 type ClientMountedCapability<
-  TState extends JsonData = JsonData,
+  TState extends JsonData | undefined = JsonData,
   TActions extends Record<string, CommonActionDefinition<TState, z.ZodType>> =
     Record<string, CommonActionDefinition<TState, z.ZodType>>,
 > =
@@ -54,19 +55,22 @@ export type ClientCapabilityDefinition = {
 
 export type ClientCapability<
   TConfigValidator extends JsonValidator | undefined = undefined,
-  TStateValidator extends JsonValidator = JsonValidator,
+  TStateValidator extends JsonValidator | undefined = undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   > = Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   >,
 > = {
   name: Alphanumeric;
   displayName: string;
   defaultConfig: ConfigValue<TConfigValidator>;
-  useMount: () => ClientMountedCapability<z.infer<TStateValidator>, TActions>;
+  useMount: () => ClientMountedCapability<
+    StateValue<TStateValidator>,
+    TActions
+  >;
   visibility?: "public" | "dev";
   sidebarInfos?: SidebarInfo[];
   ChatDisplayComponent?: ComponentType<{
@@ -86,11 +90,11 @@ export type ClientCapability<
  */
 export function createClientCapability<
   TConfigValidator extends JsonValidator | undefined,
-  TStateValidator extends JsonValidator,
+  TStateValidator extends JsonValidator | undefined,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   >,
 >(
   common: CommonCapability<
@@ -102,7 +106,7 @@ export function createClientCapability<
   def: ClientCapabilityDefinition = {},
 ): ClientCapability<TConfigValidator, TStateValidator, TActions> {
   const useMount = (): ClientMountedCapability<
-    z.infer<TStateValidator>,
+    StateValue<TStateValidator>,
     TActions
   > => {
     const sendMessage = useSendMessageContext();
@@ -140,11 +144,15 @@ export function createClientCapability<
                     },
                   });
 
-                  if (capabilityInfoRef.current.initialised) {
+                  // Only effect-only actions (no `pureFn`) and stateless
+                  // capabilities skip the optimistic update — there's no local
+                  // transition to predict, and `state` may be `undefined`.
+                  const { pureFn } = actionDefinition;
+                  if (pureFn && capabilityInfoRef.current.initialised) {
                     const [newState, patches] = produceWithPatches(
                       capabilityInfoRef.current.state,
                       (draft) => {
-                        actionDefinition.pureFn?.({
+                        pureFn({
                           stateDraft: draft,
                           payload,
                         });
@@ -172,19 +180,21 @@ export function createClientCapability<
     if (!info || !info.initialised) {
       return { initialised: false };
     }
-    const parsedState = common.stateValidator.safeParse(info.state);
+    const parsedState = common.state?.validator?.safeParse(info.state);
     const parsedConfig = common.config?.validator?.safeParse(info.config);
     const config = (
       parsedConfig?.success ? parsedConfig.data : common.config?.default
     ) as ConfigValue<TConfigValidator>;
-    const state = parsedState.success
-      ? parsedState.data
-      : common.getInitialState({ config });
+    const state = (
+      parsedState?.success
+        ? parsedState.data
+        : common.state?.getInitialState({ config })
+    ) as StateValue<TStateValidator>;
 
     if (parsedConfig?.success === false) {
       logger.error("Received a corrupt config for capability " + common.name);
     }
-    if (!parsedState.success) {
+    if (common.state && !parsedState?.success) {
       logger.error("Received a corrupt state for capability " + common.name);
     }
 
