@@ -92,7 +92,8 @@ export type CommonCapabilityDefinition<
       config: ConfigValue<TConfigValidator>;
     }) => StateValue<TStateValidator>;
   };
-  buildActions: (tools: {
+  // omitted entirely by capabilities with no actions
+  buildActions?: (tools: {
     createAction: CreateCommonAction<StateValue<TStateValidator>>;
   }) => TActions;
 };
@@ -137,7 +138,7 @@ export function createCapabilityCommon<
   TActions extends Record<
     string,
     CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
-  >,
+  > = Record<string, never>,
   TStateValidator extends JsonValidator | undefined = undefined,
   TMessageDataValidator extends JsonValidator | undefined = undefined,
   TConfigValidator extends JsonValidator | undefined = undefined,
@@ -159,7 +160,9 @@ export function createCapabilityCommon<
     payloadValidator,
     pureFn,
   }) => ({ payloadValidator, pureFn });
-  const actions = def.buildActions({ createAction });
+  const actions = def.buildActions
+    ? def.buildActions({ createAction })
+    : ({} as TActions);
   return {
     name,
     displayName: def.displayName,
