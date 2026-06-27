@@ -5,8 +5,6 @@ import { z } from "zod/v4";
 export const adversariesCommon = createCapabilityCommon({
   name: "adversaries",
   displayName: "Adversaries",
-  configValidator: z.object({}),
-  defaultConfig: {},
   stateValidator: z.object({
     adversaries: z.array(
       z.object({

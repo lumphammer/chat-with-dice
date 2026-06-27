@@ -9,6 +9,7 @@ import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
 import type {
   CommonActionDefinition,
   CommonCapability,
+  ConfigValue,
   PureActionFn,
   inferIfZod,
 } from "./createCapabilityCommon";
@@ -48,7 +49,7 @@ type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
 }) => void | Promise<void>;
 
 export type ServerCapabilityDefinition<
-  TConfigValidator extends JsonValidator,
+  TConfigValidator extends JsonValidator | undefined,
   TStateValidator extends JsonValidator,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
@@ -60,7 +61,7 @@ export type ServerCapabilityDefinition<
     doCtx: DurableObjectState;
     draftState: Draft<z.infer<TStateValidator>>;
     messageJiggler: MessageJiggler;
-    config: z.infer<TConfigValidator>;
+    config: ConfigValue<TConfigValidator>;
   }) => void | Promise<void>;
   actionEffects?: {
     [K in keyof TActions]?: EffectfulActionFn<
@@ -94,7 +95,7 @@ export type ServerCapability = {
  * `effectfulFn`.
  */
 export function createServerCapability<
-  TConfigValidator extends JsonValidator,
+  TConfigValidator extends JsonValidator | undefined,
   TStateValidator extends JsonValidator,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
@@ -201,13 +202,16 @@ export function createServerCapability<
     stateRepository,
     nodeShareManager,
   }) => {
-    const configParseResult = common.configValidator.safeParse(config);
-    if (configParseResult.error) {
+    const configParseResult = common.config?.validator?.safeParse(config);
+    if (configParseResult?.error) {
       if (process.env.NODE_ENV !== "test") {
         logger.error("Capability config failed validation", configParseResult);
       }
       return null;
     }
+    // `undefined` for capabilities that declare no config block.
+    const validatedConfig =
+      configParseResult?.data as ConfigValue<TConfigValidator>;
 
     let state: z.infer<TStateValidator>;
     const parseStoredStateResult = common.stateValidator.safeParse(
@@ -216,7 +220,7 @@ export function createServerCapability<
     if (parseStoredStateResult.success) {
       state = parseStoredStateResult.data;
     } else {
-      state = common.getInitialState({ config: configParseResult.data });
+      state = common.getInitialState({ config: validatedConfig });
       stateRepository.set(common.name, state);
     }
 
@@ -225,7 +229,7 @@ export function createServerCapability<
       doCtx,
       draftState,
       messageJiggler,
-      config: configParseResult.data,
+      config: validatedConfig,
     });
     const finalState = finishDraft(draftState) as z.infer<TStateValidator>;
     if (finalState !== state) {
@@ -263,7 +267,7 @@ export function createServerCapability<
   return {
     name: common.name,
     displayName: common.displayName,
-    defaultConfig: common.defaultConfig,
+    defaultConfig: common.config?.default,
     mount,
   };
 }

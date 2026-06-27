@@ -82,8 +82,6 @@ export const D6_FACES = D6;
 export const laserfeelingsCommon = createCapabilityCommon({
   name: "laserfeelings",
   displayName: "Lasers & Feelings",
-  configValidator: z.object({}),
-  defaultConfig: {},
   stateValidator: z.object({}),
   getInitialState: () => ({}),
   messageDataValidator,

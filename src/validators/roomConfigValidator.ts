@@ -8,7 +8,7 @@ import { z } from "zod/v4";
 const capabilityInfoValidator = z
   .object({
     name: z.enum(capabilityNames),
-    config: jsonObjectValidator.catch({}),
+    config: z.union([z.undefined(), jsonObjectValidator]).catch(undefined),
   })
   .or(z.null())
   .catch(null);

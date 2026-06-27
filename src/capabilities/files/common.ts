@@ -252,8 +252,6 @@ export type SharedItem = FilesState["shares"][number];
 export const filesCommon = createCapabilityCommon({
   name: "files",
   displayName: "Files",
-  configValidator: z.object({}),
-  defaultConfig: {},
   stateValidator: filesStateValidator,
   getInitialState: () => ({
     version: FILES_STATE_VERSION,

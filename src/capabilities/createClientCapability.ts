@@ -10,6 +10,7 @@ import type {
   AnyCommonActionDefinition,
   CommonActionDefinition,
   CommonCapability,
+  ConfigValue,
 } from "./createCapabilityCommon";
 import type { Patch } from "immer";
 import { produceWithPatches } from "immer";
@@ -52,7 +53,7 @@ export type ClientCapabilityDefinition = {
 };
 
 export type ClientCapability<
-  TConfigValidator extends JsonValidator = JsonValidator,
+  TConfigValidator extends JsonValidator | undefined = undefined,
   TStateValidator extends JsonValidator = JsonValidator,
   TActions extends Record<
     string,
@@ -64,7 +65,7 @@ export type ClientCapability<
 > = {
   name: Alphanumeric;
   displayName: string;
-  defaultConfig: z.infer<TConfigValidator>;
+  defaultConfig: ConfigValue<TConfigValidator>;
   useMount: () => ClientMountedCapability<z.infer<TStateValidator>, TActions>;
   visibility?: "public" | "dev";
   sidebarInfos?: SidebarInfo[];
@@ -84,7 +85,7 @@ export type ClientCapability<
  * the common `pureFn`; nothing in this file touches a server effect.
  */
 export function createClientCapability<
-  TConfigValidator extends JsonValidator,
+  TConfigValidator extends JsonValidator | undefined,
   TStateValidator extends JsonValidator,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
@@ -172,15 +173,15 @@ export function createClientCapability<
       return { initialised: false };
     }
     const parsedState = common.stateValidator.safeParse(info.state);
-    const parsedConfig = common.configValidator.safeParse(info.config);
-    const config = parsedConfig.success
-      ? parsedConfig.data
-      : common.defaultConfig;
+    const parsedConfig = common.config?.validator?.safeParse(info.config);
+    const config = (
+      parsedConfig?.success ? parsedConfig.data : common.config?.default
+    ) as ConfigValue<TConfigValidator>;
     const state = parsedState.success
       ? parsedState.data
       : common.getInitialState({ config });
 
-    if (!parsedConfig.success) {
+    if (parsedConfig?.success === false) {
       logger.error("Received a corrupt config for capability " + common.name);
     }
     if (!parsedState.success) {
@@ -198,7 +199,7 @@ export function createClientCapability<
   return {
     name: common.name,
     displayName: common.displayName,
-    defaultConfig: common.defaultConfig,
+    defaultConfig: common.config?.default as ConfigValue<TConfigValidator>,
     useMount,
     visibility: def.visibility,
     sidebarInfos: def.sidebarInfos,

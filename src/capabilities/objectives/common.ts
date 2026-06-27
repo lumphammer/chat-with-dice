@@ -5,8 +5,6 @@ import { z } from "zod/v4";
 export const objectivesCommon = createCapabilityCommon({
   name: "objectives",
   displayName: "Objectives",
-  configValidator: z.object({}),
-  defaultConfig: {},
   stateValidator: z.object({
     objectives: z.array(
       z.object({

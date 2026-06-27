@@ -70,8 +70,6 @@ export const messageDataValidator = z.object({
 export const rollCommon = createCapabilityCommon({
   name: "roll",
   displayName: "Roll",
-  configValidator: z.object({}),
-  defaultConfig: {},
   stateValidator: z.object({}),
   getInitialState: () => ({}),
   messageDataValidator,
