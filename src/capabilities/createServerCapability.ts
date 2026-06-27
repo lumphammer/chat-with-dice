@@ -115,7 +115,7 @@ export function createServerCapability<
     TStateValidator,
     TMessageDataValidator,
     TActions
-  >,
+  > = {},
 ): ServerCapability {
   const handleMessage = async ({
     doCtx,
