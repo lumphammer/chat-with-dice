@@ -76,15 +76,10 @@ export type CommonCapabilityDefinition<
  * `createClientCapability` consume.
  */
 export type CommonCapability<
-  TConfigValidator extends JsonValidator = JsonValidator,
-  TStateValidator extends JsonValidator = JsonValidator,
-  TMessageDataValidator extends JsonValidator | undefined =
-    | JsonValidator
-    | undefined,
+  TConfigValidator extends JsonValidator,
+  TStateValidator extends JsonValidator,
+  TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
-    string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
-  > = Record<
     string,
     CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
   >,
