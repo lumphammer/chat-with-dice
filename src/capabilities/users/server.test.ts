@@ -13,13 +13,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Shape the users capability persists. The runtime validator lives on
 // `usersCommon`; we only need this to read state back in assertions.
 type UsersState = {
-  recentUsers: { userId: string; displayName: string; lastSeenTime: number }[];
+  recentUsers: {
+    userId: string;
+    displayName: string;
+    isAnonymous: boolean;
+    image?: string;
+    lastSeenTime: number;
+    isOnline: boolean;
+  }[];
 };
 
-const onlineUser = (userId: string, displayName = userId): OnlineUser => ({
+const onlineUser = (
+  userId: string,
+  overrides: Partial<OnlineUser> = {},
+): OnlineUser => ({
   userId,
-  displayName,
+  displayName: userId,
   isAnonymous: false,
+  ...overrides,
 });
 
 /**
@@ -78,15 +89,19 @@ describe("users capability onPresenceChange hook", () => {
 
   const readState = () => stateRepository.get("users") as UsersState;
 
-  it("adds the current online users to recentUsers", async () => {
+  it("adds the current online users to recentUsers, carrying badge fields", async () => {
     await service.hooks.onPresenceChange({
-      online: [onlineUser("alice"), onlineUser("bob")],
+      online: [
+        onlineUser("alice", { image: "https://example.com/a.png" }),
+        onlineUser("bob", { isAnonymous: true }),
+      ],
     });
 
-    expect(readState().recentUsers.map((u) => u.userId)).toEqual([
-      "alice",
-      "bob",
-    ]);
+    const { recentUsers } = readState();
+    expect(recentUsers.map((u) => u.userId)).toEqual(["alice", "bob"]);
+    expect(recentUsers.every((u) => u.isOnline)).toBe(true);
+    expect(recentUsers[0].image).toBe("https://example.com/a.png");
+    expect(recentUsers[1].isAnonymous).toBe(true);
   });
 
   it("upserts on repeat: dedupes by userId and refreshes displayName + lastSeenTime", async () => {
@@ -99,7 +114,7 @@ describe("users capability onPresenceChange hook", () => {
 
     nowSpy.mockReturnValue(secondSeen);
     await service.hooks.onPresenceChange({
-      online: [onlineUser("alice", "Alice Renamed")],
+      online: [onlineUser("alice", { displayName: "Alice Renamed" })],
     });
 
     const { recentUsers } = readState();
@@ -107,20 +122,24 @@ describe("users capability onPresenceChange hook", () => {
     expect(recentUsers[0]).toEqual({
       userId: "alice",
       displayName: "Alice Renamed",
+      isAnonymous: false,
       lastSeenTime: secondSeen,
+      isOnline: true,
     });
   });
 
-  it("keeps users who have gone offline (recently seen ⊋ online now)", async () => {
+  it("keeps users who have gone offline, flipping isOnline (recently seen ⊋ online now)", async () => {
     await service.hooks.onPresenceChange({
       online: [onlineUser("alice"), onlineUser("bob")],
     });
     await service.hooks.onPresenceChange({ online: [onlineUser("alice")] });
 
-    expect(readState().recentUsers.map((u) => u.userId)).toEqual([
-      "alice",
-      "bob",
-    ]);
+    const byId = Object.fromEntries(
+      readState().recentUsers.map((u) => [u.userId, u]),
+    );
+    expect(Object.keys(byId).sort()).toEqual(["alice", "bob"]);
+    expect(byId.alice.isOnline).toBe(true);
+    expect(byId.bob.isOnline).toBe(false);
   });
 
   it("broadcasts capabilityState with no correlation (server-initiated)", async () => {

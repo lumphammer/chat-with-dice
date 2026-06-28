@@ -91,23 +91,6 @@ export function parseChatMessage<TResultValidator extends JsonValidator>(
 }
 
 /**
- * A zod validator for an online user, with display name, ID, logged-in
- * status, and optional image URL.
- */
-const onlineUserValidator = z.object({
-  displayName: z.string(),
-  userId: z.string(),
-  isAnonymous: z.boolean(),
-  image: z.string().optional(),
-});
-
-// `OnlineUser` is the canonical presence type, defined in ChatRoomDO/types.
-// Re-exported here so the existing `usersOnline` message path keeps its
-// import. This whole online-user message type goes away in phase 2 once the
-// users capability owns presence.
-export type { OnlineUser } from "#/workers/ChatRoomDO/types";
-
-/**
  * A zod validator for a web socket server message, discriminated by type.
  */
 export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
@@ -159,18 +142,6 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("roomName"),
     payload: z.object({
       roomName: z.string(),
-    }),
-  }),
-  z.object({
-    type: z.literal("usersOnline"),
-    payload: z.object({
-      usersOnline: z.array(onlineUserValidator),
-    }),
-  }),
-  z.object({
-    type: z.literal("userOffline"),
-    payload: z.object({
-      userId: z.string(),
     }),
   }),
 ]);

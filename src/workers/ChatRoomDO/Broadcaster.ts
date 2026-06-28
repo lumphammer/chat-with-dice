@@ -150,16 +150,6 @@ export class Broadcaster {
     return deduped;
   }
 
-  broadcastUsersOnline(): void {
-    const usersOnline = this.getUsersOnline();
-    this.broadcast({
-      type: "usersOnline",
-      payload: {
-        usersOnline,
-      },
-    });
-  }
-
   currentConnectionCount(): number {
     return this.ctx.getWebSockets().filter((ws) => isConnectingOrOpen(ws))
       .length;

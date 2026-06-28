@@ -7,13 +7,12 @@ import { useRefStash } from "../useRefStash";
 import { useStateWithRef } from "../useStateWithRef";
 import { Config } from "./Config";
 import { Help } from "./Help";
-import { UsersOnline } from "./UsersOnline";
 import styles from "./sidebar.module.css";
 import { useContainerMinWidth } from "./useContainerMinWidth";
 import { useModalRegion } from "./useModalRegion";
 import { useSwipeToDismiss } from "./useSwipeToDismiss";
 import { Tabs } from "@ark-ui/react/tabs";
-import { CircleHelp, Cog, UsersRound, X } from "lucide-react";
+import { CircleHelp, Cog, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode, RefObject } from "react";
 
@@ -97,12 +96,7 @@ export const Sidebar = memo(
         ([name, capInfo]) =>
           capInfo.sidebarInfos?.map(({ key }) => `${name}.${key}`) ?? [],
       );
-      return [
-        ...capabilityTabs,
-        ...(isOwner ? ["config"] : []),
-        "usersOnline",
-        "help",
-      ];
+      return [...capabilityTabs, ...(isOwner ? ["config"] : []), "help"];
     }, [capabilities, isOwner]);
 
     const [selectedTab, setSelectedTab] = useState<string | null>(
@@ -283,12 +277,6 @@ export const Sidebar = memo(
                     </SidebarTabTrigger>
                   )}
                   <SidebarTabTrigger
-                    value="usersOnline"
-                    onTriggerClick={handleTriggerClick}
-                  >
-                    <UsersRound />
-                  </SidebarTabTrigger>{" "}
-                  <SidebarTabTrigger
                     value="help"
                     onTriggerClick={handleTriggerClick}
                   >
@@ -328,12 +316,6 @@ export const Sidebar = memo(
                 )}
                 <Tabs.Content value="help" className={styles.contentDrawer}>
                   <Help />
-                </Tabs.Content>
-                <Tabs.Content
-                  value="usersOnline"
-                  className={styles.contentDrawer}
-                >
-                  <UsersOnline />
                 </Tabs.Content>
               </section>
             </div>

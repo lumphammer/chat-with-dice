@@ -5,7 +5,6 @@ import type { RoomConfig } from "#/validators/roomConfigValidator";
 import {
   webSocketServerMessageSchema,
   type ChatMessage,
-  type OnlineUser,
   type WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { CapabilityInfoContextValue } from "../../../capabilities/reactContexts/capabilityInfoContext";
@@ -57,7 +56,6 @@ export const useChatWebSocket = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
-  const [usersOnline, setUsersOnline] = useState<OnlineUser[]>([]);
   const websocketRef = useRef<ReconnectingWebSocket>(null);
 
   useEffect(() => {
@@ -157,8 +155,6 @@ export const useChatWebSocket = ({
         setRoomConfig(data.payload.config);
       } else if (data.type === "roomName") {
         setRoomName(data.payload.roomName);
-      } else if (data.type === "usersOnline") {
-        setUsersOnline(data.payload.usersOnline);
       }
     });
     ws.addEventListener("close", () => {
@@ -208,5 +204,5 @@ export const useChatWebSocket = ({
     websocketRef.current?.send(JSON.stringify(content));
   }, []);
 
-  return { connectionStatus, messages, sendMessage, usersOnline };
+  return { connectionStatus, messages, sendMessage };
 };

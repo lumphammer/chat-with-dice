@@ -88,9 +88,7 @@ export async function handleFetch(
       );
       broadcaster.sendCapabilityInit(server, capability);
     }
-    broadcaster.broadcastUsersOnline();
-    // Phase 1: fire alongside the legacy broadcast so the users capability can
-    // start tracking presence; the broadcast goes away in phase 2.
+    // Let capabilities (e.g. `users`) react to the new connection.
     void capabilityService.hooks.onPresenceChange({
       online: broadcaster.getUsersOnline(),
     });

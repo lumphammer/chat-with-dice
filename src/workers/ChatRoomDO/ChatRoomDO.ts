@@ -105,16 +105,14 @@ export class ChatRoomDO extends DurableObject {
           }
         }),
       );
-      this.broadcaster.broadcastUsersOnline();
       this.firePresenceChange();
     });
   }
 
   /**
-   * Notify capabilities that the online-user set has changed. Phase 1: fired
-   * alongside `broadcaster.broadcastUsersOnline()` at the same sites; the
-   * legacy broadcast goes away in phase 2 once the users capability owns
-   * presence.
+   * Notify capabilities that the online-user set has changed. Fired at every
+   * connection lifecycle event (join, clean close, sweep eviction, and on
+   * boot). The `users` capability turns this into its presence state.
    */
   private firePresenceChange(): void {
     void this.capabilityService.hooks.onPresenceChange({
@@ -306,7 +304,6 @@ export class ChatRoomDO extends DurableObject {
       line += ` Error while closing: ${error instanceof Error ? error.message : String(error)}`;
     }
     log(line);
-    this.broadcaster.broadcastUsersOnline();
     this.firePresenceChange();
   }
 
@@ -363,7 +360,6 @@ export class ChatRoomDO extends DurableObject {
     log(`Alarm: Sweep evicted ${evicted}/${wses.length} connection(s)`);
     log("\nAlarm: Eviction report:\n" + report.join("\n"));
     if (evicted > 0) {
-      this.broadcaster.broadcastUsersOnline();
       this.firePresenceChange();
     }
 
