@@ -101,10 +101,11 @@ const onlineUserValidator = z.object({
   image: z.string().optional(),
 });
 
-/**
- * A type for the inferred online user type from the zod validator.
- */
-export type OnlineUser = z.infer<typeof onlineUserValidator>;
+// `OnlineUser` is the canonical presence type, defined in ChatRoomDO/types.
+// Re-exported here so the existing `usersOnline` message path keeps its
+// import. This whole online-user message type goes away in phase 2 once the
+// users capability owns presence.
+export type { OnlineUser } from "#/workers/ChatRoomDO/types";
 
 /**
  * A zod validator for a web socket server message, discriminated by type.
@@ -133,7 +134,9 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("capabilityState"),
     payload: z.object({
-      correlation: z.string(),
+      // Absent for hook-driven state changes (they have no originating action
+      // call to correlate against); present for action responses.
+      correlation: z.string().optional(),
       capability: z.string(),
       state: z.any(),
     }),

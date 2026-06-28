@@ -14,6 +14,7 @@ import type {
   StateValue,
   inferIfZod,
 } from "./createCapabilityCommon";
+import type { CapabilityHookEvents } from "./hooks";
 import type { Draft } from "immer";
 import { createDraft, finishDraft } from "immer";
 import { nanoid } from "nanoid";
@@ -28,6 +29,16 @@ export type ServerMountedCapability = {
     userId: string;
     displayName: string;
   }) => Promise<void>;
+  /**
+   * Dispatch a hook by name. No-op if this capability declares no handler for
+   * it. Typed against the global `CapabilityHookEvents` map (not the
+   * capability's own generics), so it survives the type-erased
+   * `Map<string, ServerMountedCapability>` the DO holds.
+   */
+  runHook: <K extends keyof CapabilityHookEvents>(
+    name: K,
+    event: CapabilityHookEvents[K],
+  ) => Promise<void>;
   getInitPayload: () => { capability: string; state: unknown; config: unknown };
 };
 
@@ -47,6 +58,20 @@ type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
   userId: string;
   displayName: string;
   nodeShareManager: NodeShareManager;
+}) => void | Promise<void>;
+
+/**
+ * A hook handler: a capability's reaction to a server-side event (not an action
+ * call). Like an action effect it can mutate state via `stateDraft`, but
+ * instead of a `payload`/`pureFn` it receives the hook's `event`. "Who" is part
+ * of the event (and varies per hook), so there is no top-level `userId`.
+ */
+type HookFn<TState, TEvent> = (tools: {
+  doCtx: DurableObjectState;
+  broadcaster: Broadcaster;
+  nodeShareManager: NodeShareManager;
+  stateDraft: Draft<TState>;
+  event: TEvent;
 }) => void | Promise<void>;
 
 export type ServerCapabilityDefinition<
@@ -69,6 +94,12 @@ export type ServerCapabilityDefinition<
       StateValue<TStateValidator>,
       z.infer<TActions[K]["payloadValidator"]>,
       inferIfZod<TMessageDataValidator>
+    >;
+  };
+  hooks?: {
+    [K in keyof CapabilityHookEvents]?: HookFn<
+      StateValue<TStateValidator>,
+      CapabilityHookEvents[K]
     >;
   };
 };
@@ -117,6 +148,46 @@ export function createServerCapability<
     TActions
   > = {},
 ): ServerCapability {
+  /**
+   * The shared tail for any server-side mutation: open a draft over the current
+   * state, let `run` mutate it, then (for stateful capabilities) persist and
+   * broadcast the result. Used by both `handleMessage` (action calls, with a
+   * `correlation`) and `runHook` (events, without one). Stateless capabilities
+   * have no draft and nothing to persist — `run` still fires for its effects.
+   */
+  const applyStateChange = async (
+    stateRepository: CapabilityStateRepository,
+    broadcaster: Broadcaster,
+    state: StateValue<TStateValidator>,
+    run: (
+      stateDraft: Draft<StateValue<TStateValidator>>,
+    ) => void | Promise<void>,
+    correlation?: string,
+  ): Promise<StateValue<TStateValidator>> => {
+    const stateDraft = (
+      common.state ? createDraft(state as object) : undefined
+    ) as Draft<StateValue<TStateValidator>>;
+    await run(stateDraft);
+    // Nothing to persist or broadcast for stateless capabilities — any effect
+    // (e.g. a chat message) has already run inside `run`.
+    if (!common.state) {
+      return state;
+    }
+    const finalState = finishDraft(stateDraft) as StateValue<TStateValidator>;
+    stateRepository.set(common.name, finalState);
+    setTimeout(() => {
+      broadcaster.broadcast({
+        type: "capabilityState",
+        payload: {
+          capability: common.name,
+          correlation,
+          state: finalState,
+        },
+      });
+    }, ARTIFICIAL_LAG_MS);
+    return finalState;
+  };
+
   const handleMessage = async ({
     doCtx,
     messageJiggler,
@@ -154,54 +225,39 @@ export function createServerCapability<
           inferIfZod<TMessageDataValidator>
         >
       | undefined;
-    // Stateless capabilities have no draft to thread; their actions only ever
-    // fire effects (and never define a `pureFn`).
-    const stateDraft = (
-      common.state ? createDraft(state as object) : undefined
-    ) as Draft<StateValue<TStateValidator>>;
-    if (effectfulFn) {
-      await effectfulFn({
-        doCtx,
-        stateDraft,
-        payload,
-        pureFn: commonAction.pureFn ?? (() => {}),
-        broadcaster,
-        userId,
-        displayName,
-        nodeShareManager,
-        sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
-          void messageJiggler.sendChatMessage({
-            chat: "",
+    return applyStateChange(
+      stateRepository,
+      broadcaster,
+      state,
+      async (stateDraft) => {
+        if (effectfulFn) {
+          await effectfulFn({
+            doCtx,
+            stateDraft,
+            payload,
+            pureFn: commonAction.pureFn ?? (() => {}),
+            broadcaster,
             userId,
-            createdTime: Date.now(),
             displayName,
-            id: nanoid(),
-            linkPreview: null,
-            capabilityData: data ?? {},
-            capabilityName: common.name,
-          }),
-      });
-    } else if (commonAction.pureFn) {
-      commonAction.pureFn({ stateDraft, payload });
-    }
-    // Nothing to persist or broadcast for stateless capabilities — the effect
-    // (e.g. a chat message) has already run.
-    if (!common.state) {
-      return state;
-    }
-    const finalState = finishDraft(stateDraft) as StateValue<TStateValidator>;
-    stateRepository.set(common.name, finalState);
-    setTimeout(() => {
-      broadcaster.broadcast({
-        type: "capabilityState",
-        payload: {
-          capability: common.name,
-          correlation: actionCall.correlation,
-          state: finalState,
-        },
-      });
-    }, ARTIFICIAL_LAG_MS);
-    return finalState;
+            nodeShareManager,
+            sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
+              void messageJiggler.sendChatMessage({
+                chat: "",
+                userId,
+                createdTime: Date.now(),
+                displayName,
+                id: nanoid(),
+                linkPreview: null,
+                capabilityData: data ?? {},
+                capabilityName: common.name,
+              }),
+          });
+        } else if (commonAction.pureFn) {
+          commonAction.pureFn({ stateDraft, payload });
+        }
+      },
+      actionCall.correlation,
+    );
   };
 
   const mount: ServerCapability["mount"] = async ({
@@ -272,6 +328,29 @@ export function createServerCapability<
           displayName,
           nodeShareManager,
         });
+      },
+      runHook: async (name, event) => {
+        // Single indexed access into `def.hooks`, so — unlike `actionEffects`
+        // — no correlated-key cast is needed: `event` and the handler are keyed
+        // by the same `name`.
+        const hookFn = def.hooks?.[name];
+        if (!hookFn) {
+          return;
+        }
+        state = await applyStateChange(
+          stateRepository,
+          broadcaster,
+          state,
+          async (stateDraft) => {
+            await hookFn({
+              doCtx,
+              broadcaster,
+              nodeShareManager,
+              stateDraft,
+              event,
+            });
+          },
+        );
       },
       getInitPayload: () => ({
         capability: common.name,

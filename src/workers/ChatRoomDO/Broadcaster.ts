@@ -2,9 +2,9 @@ import type { ServerMountedCapability } from "#/capabilities/createServerCapabil
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type {
   ChatMessage,
-  OnlineUser,
   WebSocketServerMessage,
 } from "#/validators/webSocketMessageSchemas";
+import type { OnlineUser } from "./types";
 import { sessionAttachmentSchema } from "./types";
 import { isConnectingOrOpen, log } from "./utils";
 
@@ -114,7 +114,7 @@ export class Broadcaster {
     });
   }
 
-  private getUsersOnline(): OnlineUser[] {
+  getUsersOnline(): OnlineUser[] {
     const sockets = this.ctx.getWebSockets();
     const onlineSockets = sockets.filter((ws) => isConnectingOrOpen(ws));
 

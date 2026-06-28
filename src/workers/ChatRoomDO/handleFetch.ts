@@ -1,5 +1,6 @@
 import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
 import type { Broadcaster } from "./Broadcaster";
+import type { CapabilityService } from "./CapabilityService";
 import type { MessageRepository } from "./MessageRepository";
 import type { SessionAttachment } from "./types";
 import { log, logError } from "./utils";
@@ -14,6 +15,7 @@ export async function handleFetch(
   messageRepository: MessageRepository,
   broadcaster: Broadcaster,
   capabilities: Map<string, ServerMountedCapability>,
+  capabilityService: CapabilityService,
 ) {
   const upgradeHeader = request.headers.get("Upgrade");
   if (upgradeHeader !== "websocket") {
@@ -87,6 +89,11 @@ export async function handleFetch(
       broadcaster.sendCapabilityInit(server, capability);
     }
     broadcaster.broadcastUsersOnline();
+    // Phase 1: fire alongside the legacy broadcast so the users capability can
+    // start tracking presence; the broadcast goes away in phase 2.
+    void capabilityService.hooks.onPresenceChange({
+      online: broadcaster.getUsersOnline(),
+    });
   }, CATCHUP_DELAY_MS);
 
   // Return the client WebSocket in the response
