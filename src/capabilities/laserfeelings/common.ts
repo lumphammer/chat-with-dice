@@ -82,6 +82,7 @@ export const D6_FACES = D6;
 export const laserfeelingsCommon = createCapabilityCommon({
   name: "laserfeelings",
   displayName: "Lasers & Feelings",
+  visibility: "public",
   messageDataValidator,
   buildActions: ({ createAction }) => ({
     doRoll: createAction({

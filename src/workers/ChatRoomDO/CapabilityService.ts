@@ -99,16 +99,32 @@ export class CapabilityService {
 
   async mountAll() {
     const config = this.getConfig();
-    // Mount all capabilities before handling any events.
-    // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
-    await Promise.all(
-      config.capabilities.map(async ({ name, config: capConfig }) => {
+    // `"always"` capabilities mount on every room regardless of config — no
+    // opt-in/out. Skip any that are also named in the config so we don't mount
+    // them twice (the config entry, with its own config, wins).
+    const configNames = new Set<string>(
+      config.capabilities.map(({ name }) => name),
+    );
+    const alwaysCapabilities = Object.values(serverCapabilityRegistry).filter(
+      (cap) => cap.visibility === "always" && !configNames.has(cap.name),
+    );
+    await Promise.all([
+      ...config.capabilities.map(async ({ name, config: capConfig }) => {
         const mountedCap = await this.mountCapability(name, capConfig);
         if (mountedCap) {
           this.capabilities.set(name, mountedCap);
         }
       }),
-    );
+      ...alwaysCapabilities.map(async (cap) => {
+        const mountedCap = await this.mountCapability(
+          cap.name,
+          cap.defaultConfig,
+        );
+        if (mountedCap) {
+          this.capabilities.set(cap.name, mountedCap);
+        }
+      }),
+    ]);
   }
 
   async onConfigChange(newConfig: RoomConfig) {

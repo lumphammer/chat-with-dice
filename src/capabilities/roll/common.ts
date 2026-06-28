@@ -70,6 +70,7 @@ export const messageDataValidator = z.object({
 export const rollCommon = createCapabilityCommon({
   name: "roll",
   displayName: "Roll",
+  visibility: "public",
   messageDataValidator,
   buildActions: ({ createAction }) => ({
     doRoll: createAction({

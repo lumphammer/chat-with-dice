@@ -5,7 +5,6 @@ import { filesCommon } from "./common";
 import { Folder } from "lucide-react";
 
 export const filesClient = createClientCapability(filesCommon, {
-  visibility: "public",
   sidebarInfos: [
     {
       key: "files",

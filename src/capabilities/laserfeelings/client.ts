@@ -5,7 +5,6 @@ import { laserfeelingsCommon } from "./common";
 import { Zap } from "lucide-react";
 
 export const laserfeelingsClient = createClientCapability(laserfeelingsCommon, {
-  visibility: "public",
   sidebarInfos: [
     {
       key: "laserfeelings",

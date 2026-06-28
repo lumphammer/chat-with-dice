@@ -12,6 +12,7 @@ import type {
   ConfigValue,
   PureActionFn,
   StateValue,
+  VisibilityMode,
   inferIfZod,
 } from "./createCapabilityCommon";
 import type { CapabilityHookEvents } from "./hooks";
@@ -107,6 +108,7 @@ export type ServerCapabilityDefinition<
 export type ServerCapability = {
   name: Alphanumeric;
   displayName: string;
+  visibility?: VisibilityMode;
   defaultConfig: unknown;
   mount: (tools: {
     doCtx: DurableObjectState;
@@ -381,6 +383,7 @@ export function createServerCapability<
   return {
     name: common.name,
     displayName: common.displayName,
+    visibility: common.visibility,
     defaultConfig: common.config?.default,
     mount,
   };

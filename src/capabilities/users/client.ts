@@ -4,7 +4,6 @@ import { usersCommon } from "./common";
 import { UsersRound } from "lucide-react";
 
 export const usersClient = createClientCapability(usersCommon, {
-  visibility: "public",
   sidebarInfos: [
     {
       key: "users",

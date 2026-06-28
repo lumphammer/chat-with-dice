@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 export const counterCommon = createCapabilityCommon({
   name: "counter",
   displayName: "Counter",
+  visibility: "public",
   config: {
     validator: z.object({ startAt: z.int() }),
     default: { startAt: 0 },

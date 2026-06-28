@@ -12,6 +12,7 @@ import type {
   CommonCapability,
   ConfigValue,
   StateValue,
+  VisibilityMode,
 } from "./createCapabilityCommon";
 import type { Patch } from "immer";
 import { produceWithPatches } from "immer";
@@ -45,7 +46,6 @@ type SidebarInfo = {
 };
 
 export type ClientCapabilityDefinition = {
-  visibility?: "public" | "dev";
   sidebarInfos?: SidebarInfo[];
   ChatDisplayComponent?: ComponentType<{
     capabilityData: JsonData;
@@ -71,7 +71,7 @@ export type ClientCapability<
     StateValue<TStateValidator>,
     TActions
   >;
-  visibility?: "public" | "dev";
+  visibility?: VisibilityMode;
   sidebarInfos?: SidebarInfo[];
   ChatDisplayComponent?: ComponentType<{
     capabilityData: JsonData;
@@ -211,7 +211,7 @@ export function createClientCapability<
     displayName: common.displayName,
     defaultConfig: common.config?.default as ConfigValue<TConfigValidator>,
     useMount,
-    visibility: def.visibility,
+    visibility: common.visibility,
     sidebarInfos: def.sidebarInfos,
     ChatDisplayComponent: def.ChatDisplayComponent,
   };
