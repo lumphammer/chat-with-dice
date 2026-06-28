@@ -217,18 +217,10 @@ export class ChatRoomDO extends DurableObject {
           userId: attachment.userId,
         });
       } else if (data.type === "action") {
-        // handle actions
-        const cap = this.capabilityService.capabilities.get(
-          data.payload.capabilityName,
+        await this.capabilityService.handleAction(
+          data.payload,
+          attachment.userId,
         );
-        if (!cap) {
-          throw new Error(`Unknown capability: ${data.payload.capabilityName}`);
-        }
-        await cap.onMessage({
-          actionCall: data.payload.actionCall,
-          userId: attachment.userId,
-          displayName: data.payload.displayName,
-        });
       } else if (data.type === "updateConfig") {
         await checkOwner("update room config", async () => {
           const newConfig = data.payload.config;

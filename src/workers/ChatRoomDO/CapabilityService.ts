@@ -4,6 +4,7 @@ import type { CapabilityHookEvents } from "#/capabilities/hooks";
 import { hookNames } from "#/capabilities/hooks";
 import { serverCapabilityRegistry } from "#/capabilities/serverCapabilityRegistry.ts";
 import type { RoomConfig } from "#/validators/roomConfigValidator.ts";
+import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas.ts";
 import type { Broadcaster } from "./Broadcaster";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
 import type { MessageJiggler } from "./MessageJiggler";
@@ -140,5 +141,20 @@ export class CapabilityService {
         }
       }),
     );
+  }
+
+  async handleAction(
+    data: Extract<WebSocketClientMessage, { type: "action" }>["payload"],
+    userId: string,
+  ) {
+    const cap = this.capabilities.get(data.capabilityName);
+    if (!cap) {
+      throw new Error(`Unknown capability: ${data.capabilityName}`);
+    }
+    await cap.onMessage({
+      actionCall: data.actionCall,
+      userId,
+      displayName: data.displayName,
+    });
   }
 }
