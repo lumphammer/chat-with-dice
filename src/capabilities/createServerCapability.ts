@@ -174,6 +174,13 @@ export function createServerCapability<
       return state;
     }
     const finalState = finishDraft(stateDraft) as StateValue<TStateValidator>;
+    // immer returns the same reference when `run` mutated nothing. For an
+    // uncorrelated change (a hook) that means there is nothing to persist or
+    // broadcast. Correlated changes (action calls) always broadcast regardless,
+    // so the client can clear the optimistic patch keyed by `correlation`.
+    if (finalState === state && correlation === undefined) {
+      return state;
+    }
     stateRepository.set(common.name, finalState);
     setTimeout(() => {
       broadcaster.broadcast({
