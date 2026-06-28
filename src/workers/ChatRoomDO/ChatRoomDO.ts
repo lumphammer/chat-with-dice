@@ -47,7 +47,6 @@ export class ChatRoomDO extends DurableObject {
   private db!: DrizzleSqliteDODatabase<typeof dbSchema>;
   private messageRepository!: MessageRepository;
   private broadcaster!: Broadcaster;
-  // private capabilities: Map<string, ServerMountedCapability> = new Map();
   private capabilityService!: CapabilityService;
   private config: RoomConfig = defaultRoomConfig;
   private messageJiggler!: MessageJiggler;
@@ -63,39 +62,55 @@ export class ChatRoomDO extends DurableObject {
     // initialisation - do this in a blockConcurrencyWhile so we can check this
     // is a legitimate instantiation before we allow anything else to happen.
     void this.ctx.blockConcurrencyWhile(async () => {
-      // load room from d1 or crash out
-      const { config, roomId } = await loadConfigFromD1OrDie(ctx);
-      this.config = config;
-
-      // it's now safe to init the local db
-      this.db = setupDB(ctx, migrations, dbSchema);
-
-      // and assemble all our helpers etc.
-      this.broadcaster = new Broadcaster(ctx);
-      this.messageRepository = new MessageRepository(this.db);
-      this.messageJiggler = new MessageJiggler(
-        this.messageRepository,
-        this.broadcaster,
-      );
-      this.capabilityService = new CapabilityService(
-        this.ctx,
-        this.messageJiggler,
-        this.broadcaster,
-        roomId,
-        () => this.getUserId(),
-        () => this.config,
-      );
-      await this.capabilityService.mountAll();
-
-      // Set up automatic ping/pong responses
-      // This keeps connections alive without waking the DO
-      this.ctx.setWebSocketAutoResponse(
-        new WebSocketRequestResponsePair("ping", "pong"),
-      );
-
-      //
-      this.firePresenceChange();
+      try {
+        await this.boot(ctx);
+      } catch (error) {
+        // The dev harness mangles boot errors (workerd hands back a binary
+        // error body that undici then tries to JSON.parse, crashing the host
+        // Node process with garbage output). Log the real error cleanly here
+        // before it escapes, then rethrow to keep the abort behaviour.
+        logError(
+          "ChatRoomDO boot failed:",
+          error instanceof Error ? (error.stack ?? error.message) : error,
+        );
+        throw error;
+      }
     });
+  }
+
+  private async boot(ctx: DurableObjectState): Promise<void> {
+    // load room from d1 or crash out
+    const { config, roomId } = await loadConfigFromD1OrDie(ctx);
+    this.config = config;
+
+    // it's now safe to init the local db
+    this.db = setupDB(ctx, migrations, dbSchema);
+
+    // and assemble all our helpers etc.
+    this.broadcaster = new Broadcaster(ctx);
+    this.messageRepository = new MessageRepository(this.db);
+    this.messageJiggler = new MessageJiggler(
+      this.messageRepository,
+      this.broadcaster,
+    );
+    this.capabilityService = new CapabilityService(
+      this.ctx,
+      this.messageJiggler,
+      this.broadcaster,
+      roomId,
+      () => this.getUserId(),
+      () => this.config,
+    );
+    await this.capabilityService.mountAll();
+
+    // Set up automatic ping/pong responses
+    // This keeps connections alive without waking the DO
+    this.ctx.setWebSocketAutoResponse(
+      new WebSocketRequestResponsePair("ping", "pong"),
+    );
+
+    //
+    this.firePresenceChange();
   }
 
   /**
