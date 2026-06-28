@@ -344,20 +344,31 @@ export function createServerCapability<
         if (!hookFn) {
           return;
         }
-        state = await applyStateChange(
-          stateRepository,
-          broadcaster,
-          state,
-          async (stateDraft) => {
-            await hookFn({
-              doCtx,
-              broadcaster,
-              nodeShareManager,
-              stateDraft,
-              event,
-            });
-          },
-        );
+        // Isolate failures: a throwing handler is logged with its capability +
+        // hook and does not reject (callers fire hooks unawaited, so an
+        // uncaught rejection would otherwise vanish) or stop sibling
+        // capabilities receiving the same hook. State is left untouched.
+        try {
+          state = await applyStateChange(
+            stateRepository,
+            broadcaster,
+            state,
+            async (stateDraft) => {
+              await hookFn({
+                doCtx,
+                broadcaster,
+                nodeShareManager,
+                stateDraft,
+                event,
+              });
+            },
+          );
+        } catch (error) {
+          logger.error(
+            `Capability "${common.name}" hook "${name}" failed`,
+            error,
+          );
+        }
       },
       getInitPayload: () => ({
         capability: common.name,

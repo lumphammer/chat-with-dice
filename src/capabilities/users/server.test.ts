@@ -1,5 +1,11 @@
-import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
+import { createCapabilityCommon } from "#/capabilities/createCapabilityCommon";
+import {
+  createServerCapability,
+  type ServerCapability,
+  type ServerMountedCapability,
+} from "#/capabilities/createServerCapability";
 import { toAlphanumeric } from "#/utils/alphanumeric";
+import { logger } from "#/utils/logger";
 import type { WebSocketServerMessage } from "#/validators/webSocketMessageSchemas";
 import { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import { CapabilityService } from "#/workers/ChatRoomDO/CapabilityService";
@@ -46,6 +52,19 @@ describe("users capability onPresenceChange hook", () => {
   let broadcastSpy: ReturnType<typeof vi.spyOn>;
   let service: CapabilityService;
 
+  // Mount a capability with the test doubles. The doCtx/messageJiggler/
+  // nodeShareManager casts stand in for Cloudflare runtime types the users
+  // path never touches.
+  const mountCap = (capability: ServerCapability) =>
+    capability.mount({
+      doCtx: {} as unknown as DurableObjectState,
+      messageJiggler: {} as unknown as MessageJiggler,
+      stateRepository,
+      config: undefined,
+      nodeShareManager: {} as unknown as NodeShareManager,
+      broadcaster,
+    });
+
   beforeEach(async () => {
     // In-memory KV behind a real `CapabilityStateRepository` (it has a nominal
     // private field, so a plain object won't structurally satisfy it). The cast
@@ -67,14 +86,7 @@ describe("users capability onPresenceChange hook", () => {
     } as unknown as DurableObjectState);
     broadcastSpy = vi.spyOn(broadcaster, "broadcast");
 
-    const mounted = await usersServer.mount({
-      doCtx: {} as unknown as DurableObjectState,
-      messageJiggler: {} as unknown as MessageJiggler,
-      stateRepository,
-      config: undefined,
-      nodeShareManager: {} as unknown as NodeShareManager,
-      broadcaster,
-    });
+    const mounted = await mountCap(usersServer);
     if (!mounted) throw new Error("users capability failed to mount");
 
     const capabilities = new Map<string, ServerMountedCapability>([
@@ -168,14 +180,7 @@ describe("users capability onPresenceChange hook", () => {
         config: undefined,
       }),
     };
-    const mounted = await usersServer.mount({
-      doCtx: {} as unknown as DurableObjectState,
-      messageJiggler: {} as unknown as MessageJiggler,
-      stateRepository,
-      config: undefined,
-      nodeShareManager: {} as unknown as NodeShareManager,
-      broadcaster,
-    });
+    const mounted = await mountCap(usersServer);
     if (!mounted) throw new Error("users capability failed to mount");
     const fanService = new CapabilityService(
       new Map<string, ServerMountedCapability>([
@@ -188,5 +193,55 @@ describe("users capability onPresenceChange hook", () => {
     await fanService.hooks.onPresenceChange(event);
 
     expect(otherRunHook).toHaveBeenCalledWith("onPresenceChange", event);
+  });
+
+  it("skips persist + broadcast when a presence event changes nothing", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(1000);
+
+    await service.hooks.onPresenceChange({ online: [onlineUser("alice")] });
+    await flushBroadcast();
+    const broadcastsAfterFirst = broadcastSpy.mock.calls.length;
+
+    // Identical set at the same instant: immer records no mutation, so there is
+    // nothing new to persist or broadcast.
+    await service.hooks.onPresenceChange({ online: [onlineUser("alice")] });
+    await flushBroadcast();
+
+    expect(broadcastSpy.mock.calls.length).toBe(broadcastsAfterFirst);
+  });
+
+  it("isolates and logs a throwing hook without affecting sibling capabilities", async () => {
+    const errorSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
+    const boomServer = createServerCapability(
+      createCapabilityCommon({ name: "boom", displayName: "Boom" }),
+      {
+        hooks: {
+          onPresenceChange: () => {
+            throw new Error("boom");
+          },
+        },
+      },
+    );
+
+    const boom = await mountCap(boomServer);
+    const users = await mountCap(usersServer);
+    if (!boom || !users) throw new Error("capability failed to mount");
+
+    const isolated = new CapabilityService(
+      new Map<string, ServerMountedCapability>([
+        [boom.name, boom],
+        [users.name, users],
+      ]),
+    );
+
+    await isolated.hooks.onPresenceChange({ online: [onlineUser("alice")] });
+
+    // The sibling capability still processed the hook…
+    expect(readState().recentUsers.map((u) => u.userId)).toEqual(["alice"]);
+    // …and the failure was logged with its capability + hook name.
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Capability "boom" hook "onPresenceChange" failed',
+      expect.any(Error),
+    );
   });
 });
