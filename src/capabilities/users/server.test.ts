@@ -13,8 +13,15 @@ import { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateR
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
 import type { OnlineUser } from "#/workers/ChatRoomDO/types";
+import type { RoomConfig } from "#/validators/roomConfigValidator";
 import { usersServer } from "./server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// `CapabilityService` now transitively imports `cloudflare:workers` (via
+// `NodeShareManager` → `#/db`), which only resolves in the workers test pool.
+// This is a unit (Node) test and never exercises the db or node-share runtime,
+// so a bare `env` stub is enough to let the module graph load.
+vi.mock("cloudflare:workers", () => ({ env: {} }));
 
 // Shape the users capability persists. The runtime validator lives on
 // `usersCommon`; we only need this to read state back in assertions.
@@ -65,6 +72,25 @@ describe("users capability onPresenceChange hook", () => {
       broadcaster,
     });
 
+  // Build a `CapabilityService` around capabilities mounted by `mountCap`. The
+  // service now constructs its own collaborators and mounts from config, but
+  // these tests drive the hook surface against a hand-built capability map, so
+  // we stub the DO collaborators and assign the pre-mounted map directly. The
+  // ctx/messageJiggler/getUserId/getConfig stubs stand in for runtime types the
+  // hook-dispatch path under test never reaches.
+  const makeService = (capabilities: Map<string, ServerMountedCapability>) => {
+    const svc = new CapabilityService(
+      {} as unknown as DurableObjectState,
+      {} as unknown as MessageJiggler,
+      broadcaster,
+      "test-room",
+      async () => undefined,
+      () => ({ capabilities: [] }) as unknown as RoomConfig,
+    );
+    svc.capabilities = capabilities;
+    return svc;
+  };
+
   beforeEach(async () => {
     // In-memory KV behind a real `CapabilityStateRepository` (it has a nominal
     // private field, so a plain object won't structurally satisfy it). The cast
@@ -92,7 +118,7 @@ describe("users capability onPresenceChange hook", () => {
     const capabilities = new Map<string, ServerMountedCapability>([
       [mounted.name, mounted],
     ]);
-    service = new CapabilityService(capabilities);
+    service = makeService(capabilities);
   });
 
   afterEach(() => {
@@ -182,7 +208,7 @@ describe("users capability onPresenceChange hook", () => {
     };
     const mounted = await mountCap(usersServer);
     if (!mounted) throw new Error("users capability failed to mount");
-    const fanService = new CapabilityService(
+    const fanService = makeService(
       new Map<string, ServerMountedCapability>([
         [mounted.name, mounted],
         [other.name, other],
@@ -227,7 +253,7 @@ describe("users capability onPresenceChange hook", () => {
     const users = await mountCap(usersServer);
     if (!boom || !users) throw new Error("capability failed to mount");
 
-    const isolated = new CapabilityService(
+    const isolated = makeService(
       new Map<string, ServerMountedCapability>([
         [boom.name, boom],
         [users.name, users],

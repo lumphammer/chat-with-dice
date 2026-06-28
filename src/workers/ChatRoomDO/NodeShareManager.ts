@@ -10,7 +10,7 @@ export class NodeShareManager {
   constructor(
     private ctx: DurableObjectState,
     private roomId: string,
-    private getRoomOwnerUserId: () => Promise<string | undefined>,
+    private getUserId: () => Promise<string | undefined>,
   ) {
     //
   }
@@ -85,7 +85,7 @@ export class NodeShareManager {
   }): Promise<NodeUnshareResult> {
     const isAllowed =
       requestingUserId === ownerUserId ||
-      requestingUserId === (await this.getRoomOwnerUserId());
+      requestingUserId === (await this.getUserId());
 
     if (!isAllowed) {
       return {

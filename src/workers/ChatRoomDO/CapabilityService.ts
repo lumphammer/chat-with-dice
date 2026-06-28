@@ -1,6 +1,14 @@
+import { isCapabilityName } from "#/capabilities/capabilityNames.ts";
 import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
 import type { CapabilityHookEvents } from "#/capabilities/hooks";
 import { hookNames } from "#/capabilities/hooks";
+import { serverCapabilityRegistry } from "#/capabilities/serverCapabilityRegistry.ts";
+import type { RoomConfig } from "#/validators/roomConfigValidator.ts";
+import type { Broadcaster } from "./Broadcaster";
+import type { CapabilityStateRepository } from "./CapabilityStateRepository";
+import type { MessageJiggler } from "./MessageJiggler";
+import { NodeShareManager } from "./NodeShareManager";
+import { log, logError } from "./utils";
 
 /**
  * Per-hook dispatcher surface: `service.hooks.onPresenceChange(event)` fans the
@@ -20,8 +28,21 @@ type HookDispatchers = {
  */
 export class CapabilityService {
   readonly hooks: HookDispatchers;
+  private stateRepository!: CapabilityStateRepository;
+  private nodeShareManager: NodeShareManager;
+  public capabilities: Map<string, ServerMountedCapability> = new Map();
 
-  constructor(private capabilities: Map<string, ServerMountedCapability>) {
+  constructor(
+    private ctx: DurableObjectState,
+    private messageJiggler: MessageJiggler,
+    private broadcaster: Broadcaster,
+    private roomId: string,
+    private getUserId: () => Promise<string | undefined>,
+    private getConfig: () => RoomConfig,
+  ) {
+    this.nodeShareManager = new NodeShareManager(this.ctx, this.roomId, () =>
+      this.getUserId(),
+    );
     // Built from the runtime `hookNames` list (there is no zod schema to read
     // keys off). The `Object.fromEntries` round-trip loses the precise per-key
     // mapping, so we re-assert it here — the keys come straight from
@@ -47,6 +68,75 @@ export class CapabilityService {
       [...this.capabilities.values()].map((capability) =>
         capability.runHook(name, event),
       ),
+    );
+  }
+
+  private async mountCapability(
+    name: string,
+    config: unknown,
+  ): Promise<ServerMountedCapability | null> {
+    if (!isCapabilityName(name)) {
+      return null;
+    }
+    log("Mounting capability: ", name);
+    const capability = serverCapabilityRegistry[name];
+    const mountedCap = await capability.mount({
+      doCtx: this.ctx,
+      messageJiggler: this.messageJiggler,
+      stateRepository: this.stateRepository,
+      config,
+      broadcaster: this.broadcaster,
+      nodeShareManager: this.nodeShareManager,
+    });
+    if (!mountedCap) {
+      logError("Failed to mount", name);
+    }
+    return mountedCap ?? null;
+  }
+
+  async mountAll() {
+    const config = this.getConfig();
+    // Mount all capabilities before handling any events.
+    // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
+    await Promise.all(
+      config.capabilities.map(async ({ name, config: capConfig }) => {
+        const mountedCap = await this.mountCapability(name, capConfig);
+        if (mountedCap) {
+          this.capabilities.set(name, mountedCap);
+        }
+      }),
+    );
+  }
+
+  async onConfigChange(newConfig: RoomConfig) {
+    // Unmount capabilities that were removed
+    const oldConfig = this.getConfig();
+    const newCapabilityNames = new Set(
+      newConfig.capabilities.map(({ name }) => name),
+    );
+    for (const { name } of oldConfig.capabilities) {
+      if (!newCapabilityNames.has(name)) {
+        this.capabilities.delete(name);
+        log(name, "unmounted");
+      }
+    }
+
+    // Mount capabilities that were added, and announce them to all
+    // currently connected clients
+    const previousCapabilityNames = new Set(
+      oldConfig.capabilities.map(({ name }) => name),
+    );
+    const addedCapabilities = newConfig.capabilities.filter(
+      ({ name }) => !previousCapabilityNames.has(name),
+    );
+    await Promise.all(
+      addedCapabilities.map(async ({ name, config: capConfig }) => {
+        const mountedCap = await this.mountCapability(name, capConfig);
+        if (mountedCap) {
+          this.capabilities.set(name, mountedCap);
+          this.broadcaster.broadcastCapabilityInit(mountedCap);
+        }
+      }),
     );
   }
 }
