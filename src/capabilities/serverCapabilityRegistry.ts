@@ -7,6 +7,7 @@ import { filesServer } from "./files/server";
 import { laserfeelingsServer } from "./laserfeelings/server";
 import { objectivesServer } from "./objectives/server";
 import { rollServer } from "./roll/server";
+import { usersServer } from "./users/server";
 
 /**
  * Server-side registry consumed by `ChatRoomDO`. Imports only the
@@ -24,4 +25,5 @@ export const serverCapabilityRegistry: Record<
   laserfeelings: laserfeelingsServer,
   files: filesServer,
   feedback: feedbackServer,
+  users: usersServer,
 };

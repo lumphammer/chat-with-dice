@@ -91,22 +91,6 @@ export function parseChatMessage<TResultValidator extends JsonValidator>(
 }
 
 /**
- * A zod validator for an online user, with display name, ID, logged-in
- * status, and optional image URL.
- */
-const onlineUserValidator = z.object({
-  displayName: z.string(),
-  userId: z.string(),
-  isAnonymous: z.boolean(),
-  image: z.string().optional(),
-});
-
-/**
- * A type for the inferred online user type from the zod validator.
- */
-export type OnlineUser = z.infer<typeof onlineUserValidator>;
-
-/**
  * A zod validator for a web socket server message, discriminated by type.
  */
 export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
@@ -133,7 +117,9 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("capabilityState"),
     payload: z.object({
-      correlation: z.string(),
+      // Absent for hook-driven state changes (they have no originating action
+      // call to correlate against); present for action responses.
+      correlation: z.string().optional(),
       capability: z.string(),
       state: z.any(),
     }),
@@ -142,8 +128,8 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("capabilityInit"),
     payload: z.object({
       capability: z.string(),
-      state: z.any(),
-      config: z.any(),
+      state: z.any().optional(),
+      config: z.any().optional(),
     }),
   }),
   z.object({
@@ -156,18 +142,6 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("roomName"),
     payload: z.object({
       roomName: z.string(),
-    }),
-  }),
-  z.object({
-    type: z.literal("usersOnline"),
-    payload: z.object({
-      usersOnline: z.array(onlineUserValidator),
-    }),
-  }),
-  z.object({
-    type: z.literal("userOffline"),
-    payload: z.object({
-      userId: z.string(),
     }),
   }),
 ]);

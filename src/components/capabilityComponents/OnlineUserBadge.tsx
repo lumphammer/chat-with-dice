@@ -1,7 +1,13 @@
 import { deriveHueFromUserId } from "#/utils/deriveHueFromUserId";
-import type { OnlineUser } from "#/validators/webSocketMessageSchemas";
 import type { UserHueStyle } from "../DiceRoller/types";
 import { memo, useMemo } from "react";
+
+/** The fields a badge needs to render — a structural subset of a room user. */
+type BadgeUser = {
+  userId: string;
+  displayName: string;
+  image?: string;
+};
 
 export const OnlineUserBadge = memo(
   ({
@@ -10,7 +16,7 @@ export const OnlineUserBadge = memo(
     showImage = false,
     large = false,
   }: {
-    user: OnlineUser;
+    user: BadgeUser;
     isCurrentUser: boolean;
     showImage?: boolean;
     large?: boolean;
@@ -48,9 +54,9 @@ export const OnlineUserBadge = memo(
         }
       >
         <span className="text-xs">{initials}</span>
-        {/*{user.displayName}*/}
-        {/*{user.image && <img alt={user.displayName} src={user.image} />}*/}
       </div>
     );
   },
 );
+
+OnlineUserBadge.displayName = "OnlineUserBadge";

@@ -2,7 +2,6 @@ import { createServerCapability } from "#/capabilities/createServerCapability";
 import { type SharedItem, filesCommon } from "./common";
 
 export const filesServer = createServerCapability(filesCommon, {
-  initialise: () => {},
   actionEffects: {
     shareFile: async ({
       stateDraft,

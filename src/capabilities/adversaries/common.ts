@@ -5,21 +5,21 @@ import { z } from "zod/v4";
 export const adversariesCommon = createCapabilityCommon({
   name: "adversaries",
   displayName: "Adversaries",
-  configValidator: z.object({}),
-  defaultConfig: {},
-  stateValidator: z.object({
-    adversaries: z.array(
-      z.object({
-        id: z.nanoid(),
-        name: z.string(),
-        threat: z.int().min(0),
-        difficulty: z.int().min(0),
-        startingResilience: z.int(),
-        resilience: z.int(),
-      }),
-    ),
-  }),
-  getInitialState: () => ({ adversaries: [] }),
+  state: {
+    validator: z.object({
+      adversaries: z.array(
+        z.object({
+          id: z.nanoid(),
+          name: z.string(),
+          threat: z.int().min(0),
+          difficulty: z.int().min(0),
+          startingResilience: z.int(),
+          resilience: z.int(),
+        }),
+      ),
+    }),
+    getInitialState: () => ({ adversaries: [] }),
+  },
   buildActions: ({ createAction }) => ({
     createAdversary: createAction({
       payloadValidator: z.object({

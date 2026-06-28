@@ -12,6 +12,26 @@ import type * as z from "zod";
 export type inferIfZod<T> = T extends z.ZodType ? z.infer<T> : T;
 
 /**
+ * The runtime value handed to `getInitialState`/`initialise` as `config`:
+ * the validator's output when the capability declares a config block, or
+ * `undefined` when it doesn't. Centralised here so the server/client
+ * definitions stay in sync.
+ */
+export type ConfigValue<TConfigValidator extends JsonValidator | undefined> =
+  TConfigValidator extends JsonValidator
+    ? z.infer<TConfigValidator>
+    : undefined;
+
+/**
+ * The state a capability manages: the validator's output when it declares a
+ * `state` block, or `undefined` when it doesn't. Stateless capabilities (those
+ * that only fire server-side effects, e.g. dice rolls) omit `state` entirely
+ * and `TState` collapses to `undefined` everywhere it's threaded.
+ */
+export type StateValue<TStateValidator extends JsonValidator | undefined> =
+  TStateValidator extends JsonValidator ? z.infer<TStateValidator> : undefined;
+
+/**
  * The shared piece of an action: a payload validator and an optional pure
  * state transition. Both sides need this — the server uses `pureFn` inside
  * `handleMessage` (when there's no effectful side), and the client uses it
@@ -43,30 +63,38 @@ type CreateCommonAction<TState> = <TPayloadValidator extends z.ZodType>(def: {
 }) => CommonActionDefinition<TState, TPayloadValidator>;
 
 export type CommonCapabilityDefinition<
-  TConfigValidator extends JsonValidator,
-  TStateValidator extends JsonValidator,
+  TConfigValidator extends JsonValidator | undefined,
+  TStateValidator extends JsonValidator | undefined,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   >,
 > = {
+  // common
   name: string;
   displayName: string;
-  configValidator: TConfigValidator;
-  defaultConfig: z.infer<TConfigValidator>;
-  stateValidator: TStateValidator;
   messageDataValidator?: TMessageDataValidator;
-  /**
-   * Pure function from config → initial state. Server uses it on first mount
-   * (when there's no stored state); client uses it as a fallback when the
-   * received state fails validation. Must not close over server-only deps.
-   */
-  getInitialState: (tools: {
-    config: z.infer<TConfigValidator>;
-  }) => z.infer<TStateValidator>;
-  buildActions: (tools: {
-    createAction: CreateCommonAction<z.infer<TStateValidator>>;
+  // config
+  config?: {
+    validator: TConfigValidator;
+    default: ConfigValue<TConfigValidator>;
+  };
+  // state — omitted entirely by stateless capabilities
+  state?: {
+    validator: TStateValidator;
+    /**
+     * Pure function from config → initial state. Server uses it on first mount
+     * (when there's no stored state); client uses it as a fallback when the
+     * received state fails validation. Must not close over server-only deps.
+     */
+    getInitialState: (tools: {
+      config: ConfigValue<TConfigValidator>;
+    }) => StateValue<TStateValidator>;
+  };
+  // omitted entirely by capabilities with no actions
+  buildActions?: (tools: {
+    createAction: CreateCommonAction<StateValue<TStateValidator>>;
   }) => TActions;
 };
 
@@ -76,28 +104,27 @@ export type CommonCapabilityDefinition<
  * `createClientCapability` consume.
  */
 export type CommonCapability<
-  TConfigValidator extends JsonValidator = JsonValidator,
-  TStateValidator extends JsonValidator = JsonValidator,
-  TMessageDataValidator extends JsonValidator | undefined =
-    | JsonValidator
-    | undefined,
+  TConfigValidator extends JsonValidator | undefined,
+  TStateValidator extends JsonValidator | undefined,
+  TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
-  > = Record<
-    string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   >,
 > = {
   name: Alphanumeric;
   displayName: string;
-  configValidator: TConfigValidator;
-  defaultConfig: z.infer<TConfigValidator>;
-  stateValidator: TStateValidator;
+  config?: {
+    validator: TConfigValidator;
+    default: ConfigValue<TConfigValidator>;
+  };
+  state?: {
+    validator: TStateValidator;
+    getInitialState: (tools: {
+      config: ConfigValue<TConfigValidator>;
+    }) => StateValue<TStateValidator>;
+  };
   messageDataValidator?: TMessageDataValidator;
-  getInitialState: (tools: {
-    config: z.infer<TConfigValidator>;
-  }) => z.infer<TStateValidator>;
   actions: TActions;
 };
 
@@ -108,13 +135,13 @@ export type CommonCapability<
  * in the sibling `server.ts` / `client.ts` files.
  */
 export function createCapabilityCommon<
-  TConfigValidator extends JsonValidator,
-  TStateValidator extends JsonValidator,
-  TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
-  >,
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
+  > = Record<string, never>,
+  TStateValidator extends JsonValidator | undefined = undefined,
+  TMessageDataValidator extends JsonValidator | undefined = undefined,
+  TConfigValidator extends JsonValidator | undefined = undefined,
 >(
   def: CommonCapabilityDefinition<
     TConfigValidator,
@@ -129,19 +156,19 @@ export function createCapabilityCommon<
   TActions
 > {
   const name = toAlphanumeric(def.name);
-  const createAction: CreateCommonAction<z.infer<TStateValidator>> = ({
+  const createAction: CreateCommonAction<StateValue<TStateValidator>> = ({
     payloadValidator,
     pureFn,
   }) => ({ payloadValidator, pureFn });
-  const actions = def.buildActions({ createAction });
+  const actions = def.buildActions
+    ? def.buildActions({ createAction })
+    : ({} as TActions);
   return {
     name,
     displayName: def.displayName,
-    configValidator: def.configValidator,
-    defaultConfig: def.defaultConfig,
-    stateValidator: def.stateValidator,
+    config: def.config,
+    state: def.state,
     messageDataValidator: def.messageDataValidator,
-    getInitialState: def.getInitialState,
     actions,
   };
 }

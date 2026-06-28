@@ -54,8 +54,8 @@
 - [x] Fix flows for new user/login/etc.
 - [x] "About" page, with deploy time, summary, and terms of service
 - [x] Email-only login
+- [x] Hide irrelevant parts of account admin for anons
 
-- [ ] Hide irrelevant parts of account admin for anons
 - [ ] Cache usernames in ChatRoomDO?
 - [ ] Finish havocDark theme
 - [ ] Recent rooms list

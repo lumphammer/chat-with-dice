@@ -10,6 +10,7 @@ import { type RoomConfig } from "#/validators/roomConfigValidator";
 import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchemas";
 import { setupDB } from "../utils/setupDB";
 import { Broadcaster } from "./Broadcaster";
+import { CapabilityService } from "./CapabilityService";
 import { CapabilityStateRepository } from "./CapabilityStateRepository";
 import { MessageJiggler } from "./MessageJiggler";
 import { MessageRepository } from "./MessageRepository";
@@ -52,6 +53,7 @@ export class ChatRoomDO extends DurableObject {
   private messageRepository!: MessageRepository;
   private broadcaster!: Broadcaster;
   private capabilities: Map<string, ServerMountedCapability> = new Map();
+  private capabilityService = new CapabilityService(this.capabilities);
   private config: RoomConfig = defaultRoomConfig;
   private stateRepository!: CapabilityStateRepository;
   private messageJiggler!: MessageJiggler;
@@ -103,7 +105,18 @@ export class ChatRoomDO extends DurableObject {
           }
         }),
       );
-      this.broadcaster.broadcastUsersOnline();
+      this.firePresenceChange();
+    });
+  }
+
+  /**
+   * Notify capabilities that the online-user set has changed. Fired at every
+   * connection lifecycle event (join, clean close, sweep eviction, and on
+   * boot). The `users` capability turns this into its presence state.
+   */
+  private firePresenceChange(): void {
+    void this.capabilityService.hooks.onPresenceChange({
+      online: this.broadcaster.getUsersOnline(),
     });
   }
 
@@ -143,6 +156,7 @@ export class ChatRoomDO extends DurableObject {
       this.messageRepository,
       this.broadcaster,
       this.capabilities,
+      this.capabilityService,
     );
   }
 
@@ -290,7 +304,7 @@ export class ChatRoomDO extends DurableObject {
       line += ` Error while closing: ${error instanceof Error ? error.message : String(error)}`;
     }
     log(line);
-    this.broadcaster.broadcastUsersOnline();
+    this.firePresenceChange();
   }
 
   /**
@@ -346,7 +360,7 @@ export class ChatRoomDO extends DurableObject {
     log(`Alarm: Sweep evicted ${evicted}/${wses.length} connection(s)`);
     log("\nAlarm: Eviction report:\n" + report.join("\n"));
     if (evicted > 0) {
-      this.broadcaster.broadcastUsersOnline();
+      this.firePresenceChange();
     }
 
     // Re-arm only while there's something worth watching.

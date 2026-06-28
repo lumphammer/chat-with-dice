@@ -9,9 +9,12 @@ import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
 import type {
   CommonActionDefinition,
   CommonCapability,
+  ConfigValue,
   PureActionFn,
+  StateValue,
   inferIfZod,
 } from "./createCapabilityCommon";
+import type { CapabilityHookEvents } from "./hooks";
 import type { Draft } from "immer";
 import { createDraft, finishDraft } from "immer";
 import { nanoid } from "nanoid";
@@ -26,6 +29,16 @@ export type ServerMountedCapability = {
     userId: string;
     displayName: string;
   }) => Promise<void>;
+  /**
+   * Dispatch a hook by name. No-op if this capability declares no handler for
+   * it. Typed against the global `CapabilityHookEvents` map (not the
+   * capability's own generics), so it survives the type-erased
+   * `Map<string, ServerMountedCapability>` the DO holds.
+   */
+  runHook: <K extends keyof CapabilityHookEvents>(
+    name: K,
+    event: CapabilityHookEvents[K],
+  ) => Promise<void>;
   getInitPayload: () => { capability: string; state: unknown; config: unknown };
 };
 
@@ -47,26 +60,46 @@ type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
   nodeShareManager: NodeShareManager;
 }) => void | Promise<void>;
 
+/**
+ * A hook handler: a capability's reaction to a server-side event (not an action
+ * call). Like an action effect it can mutate state via `stateDraft`, but
+ * instead of a `payload`/`pureFn` it receives the hook's `event`. "Who" is part
+ * of the event (and varies per hook), so there is no top-level `userId`.
+ */
+type HookFn<TState, TEvent> = (tools: {
+  doCtx: DurableObjectState;
+  broadcaster: Broadcaster;
+  nodeShareManager: NodeShareManager;
+  stateDraft: Draft<TState>;
+  event: TEvent;
+}) => void | Promise<void>;
+
 export type ServerCapabilityDefinition<
-  TConfigValidator extends JsonValidator,
-  TStateValidator extends JsonValidator,
+  TConfigValidator extends JsonValidator | undefined,
+  TStateValidator extends JsonValidator | undefined,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   >,
 > = {
-  initialise: (tools: {
+  initialise?: (tools: {
     doCtx: DurableObjectState;
-    draftState: Draft<z.infer<TStateValidator>>;
+    draftState: Draft<StateValue<TStateValidator>>;
     messageJiggler: MessageJiggler;
-    config: z.infer<TConfigValidator>;
+    config: ConfigValue<TConfigValidator>;
   }) => void | Promise<void>;
   actionEffects?: {
     [K in keyof TActions]?: EffectfulActionFn<
-      z.infer<TStateValidator>,
+      StateValue<TStateValidator>,
       z.infer<TActions[K]["payloadValidator"]>,
       inferIfZod<TMessageDataValidator>
+    >;
+  };
+  hooks?: {
+    [K in keyof CapabilityHookEvents]?: HookFn<
+      StateValue<TStateValidator>,
+      CapabilityHookEvents[K]
     >;
   };
 };
@@ -94,12 +127,12 @@ export type ServerCapability = {
  * `effectfulFn`.
  */
 export function createServerCapability<
-  TConfigValidator extends JsonValidator,
-  TStateValidator extends JsonValidator,
+  TConfigValidator extends JsonValidator | undefined,
+  TStateValidator extends JsonValidator | undefined,
   TMessageDataValidator extends JsonValidator | undefined,
   TActions extends Record<
     string,
-    CommonActionDefinition<z.infer<TStateValidator>, z.ZodType>
+    CommonActionDefinition<StateValue<TStateValidator>, z.ZodType>
   >,
 >(
   common: CommonCapability<
@@ -113,8 +146,55 @@ export function createServerCapability<
     TStateValidator,
     TMessageDataValidator,
     TActions
-  >,
+  > = {},
 ): ServerCapability {
+  /**
+   * The shared tail for any server-side mutation: open a draft over the current
+   * state, let `run` mutate it, then (for stateful capabilities) persist and
+   * broadcast the result. Used by both `handleMessage` (action calls, with a
+   * `correlation`) and `runHook` (events, without one). Stateless capabilities
+   * have no draft and nothing to persist — `run` still fires for its effects.
+   */
+  const applyStateChange = async (
+    stateRepository: CapabilityStateRepository,
+    broadcaster: Broadcaster,
+    state: StateValue<TStateValidator>,
+    run: (
+      stateDraft: Draft<StateValue<TStateValidator>>,
+    ) => void | Promise<void>,
+    correlation?: string,
+  ): Promise<StateValue<TStateValidator>> => {
+    const stateDraft = (
+      common.state ? createDraft(state as object) : undefined
+    ) as Draft<StateValue<TStateValidator>>;
+    await run(stateDraft);
+    // Nothing to persist or broadcast for stateless capabilities — any effect
+    // (e.g. a chat message) has already run inside `run`.
+    if (!common.state) {
+      return state;
+    }
+    const finalState = finishDraft(stateDraft) as StateValue<TStateValidator>;
+    // immer returns the same reference when `run` mutated nothing. For an
+    // uncorrelated change (a hook) that means there is nothing to persist or
+    // broadcast. Correlated changes (action calls) always broadcast regardless,
+    // so the client can clear the optimistic patch keyed by `correlation`.
+    if (finalState === state && correlation === undefined) {
+      return state;
+    }
+    stateRepository.set(common.name, finalState);
+    setTimeout(() => {
+      broadcaster.broadcast({
+        type: "capabilityState",
+        payload: {
+          capability: common.name,
+          correlation,
+          state: finalState,
+        },
+      });
+    }, ARTIFICIAL_LAG_MS);
+    return finalState;
+  };
+
   const handleMessage = async ({
     doCtx,
     messageJiggler,
@@ -130,7 +210,7 @@ export function createServerCapability<
     messageJiggler: MessageJiggler;
     stateRepository: CapabilityStateRepository;
     userId: string;
-    state: z.infer<TStateValidator>;
+    state: StateValue<TStateValidator>;
     actionCall: ActionCall;
     broadcaster: Broadcaster;
     displayName: string;
@@ -147,50 +227,44 @@ export function createServerCapability<
     // cast here — runtime correctness comes from the shared key.
     const effectfulFn = def.actionEffects?.[actionCall.actionName] as
       | EffectfulActionFn<
-          z.infer<TStateValidator>,
+          StateValue<TStateValidator>,
           unknown,
           inferIfZod<TMessageDataValidator>
         >
       | undefined;
-    const stateDraft = createDraft(state);
-    if (effectfulFn) {
-      await effectfulFn({
-        doCtx,
-        stateDraft,
-        payload,
-        pureFn: commonAction.pureFn ?? (() => {}),
-        broadcaster,
-        userId,
-        displayName,
-        nodeShareManager,
-        sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
-          void messageJiggler.sendChatMessage({
-            chat: "",
+    return applyStateChange(
+      stateRepository,
+      broadcaster,
+      state,
+      async (stateDraft) => {
+        if (effectfulFn) {
+          await effectfulFn({
+            doCtx,
+            stateDraft,
+            payload,
+            pureFn: commonAction.pureFn ?? (() => {}),
+            broadcaster,
             userId,
-            createdTime: Date.now(),
             displayName,
-            id: nanoid(),
-            linkPreview: null,
-            capabilityData: data ?? {},
-            capabilityName: common.name,
-          }),
-      });
-    } else if (commonAction.pureFn) {
-      commonAction.pureFn({ stateDraft, payload });
-    }
-    const finalState = finishDraft(stateDraft) as z.infer<TStateValidator>;
-    stateRepository.set(common.name, finalState);
-    setTimeout(() => {
-      broadcaster.broadcast({
-        type: "capabilityState",
-        payload: {
-          capability: common.name,
-          correlation: actionCall.correlation,
-          state: finalState,
-        },
-      });
-    }, ARTIFICIAL_LAG_MS);
-    return finalState;
+            nodeShareManager,
+            sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
+              void messageJiggler.sendChatMessage({
+                chat: "",
+                userId,
+                createdTime: Date.now(),
+                displayName,
+                id: nanoid(),
+                linkPreview: null,
+                capabilityData: data ?? {},
+                capabilityName: common.name,
+              }),
+          });
+        } else if (commonAction.pureFn) {
+          commonAction.pureFn({ stateDraft, payload });
+        }
+      },
+      actionCall.correlation,
+    );
   };
 
   const mount: ServerCapability["mount"] = async ({
@@ -201,36 +275,46 @@ export function createServerCapability<
     stateRepository,
     nodeShareManager,
   }) => {
-    const configParseResult = common.configValidator.safeParse(config);
-    if (configParseResult.error) {
+    const configParseResult = common.config?.validator?.safeParse(config);
+    if (configParseResult?.error) {
       if (process.env.NODE_ENV !== "test") {
         logger.error("Capability config failed validation", configParseResult);
       }
       return null;
     }
+    // `undefined` for capabilities that declare no config block.
+    const validatedConfig =
+      configParseResult?.data as ConfigValue<TConfigValidator>;
 
-    let state: z.infer<TStateValidator>;
-    const parseStoredStateResult = common.stateValidator.safeParse(
-      stateRepository.get(common.name),
-    );
-    if (parseStoredStateResult.success) {
-      state = parseStoredStateResult.data;
-    } else {
-      state = common.getInitialState({ config: configParseResult.data });
-      stateRepository.set(common.name, state);
+    // `undefined` throughout for stateless capabilities.
+    let state = undefined as StateValue<TStateValidator>;
+    if (common.state) {
+      const parseStoredStateResult = common.state.validator?.safeParse(
+        stateRepository.get(common.name),
+      );
+      if (parseStoredStateResult?.success) {
+        state = parseStoredStateResult.data as StateValue<TStateValidator>;
+      } else {
+        state = common.state.getInitialState({ config: validatedConfig });
+        stateRepository.set(common.name, state);
+      }
     }
 
-    const draftState = createDraft(state);
-    await def.initialise({
+    const draftState = (
+      common.state ? createDraft(state as object) : undefined
+    ) as Draft<StateValue<TStateValidator>>;
+    await def.initialise?.({
       doCtx,
       draftState,
       messageJiggler,
-      config: configParseResult.data,
+      config: validatedConfig,
     });
-    const finalState = finishDraft(draftState) as z.infer<TStateValidator>;
-    if (finalState !== state) {
-      state = finalState;
-      stateRepository.set(common.name, state);
+    if (common.state) {
+      const finalState = finishDraft(draftState) as StateValue<TStateValidator>;
+      if (finalState !== state) {
+        state = finalState;
+        stateRepository.set(common.name, state);
+      }
     }
     return {
       name: common.name,
@@ -252,6 +336,40 @@ export function createServerCapability<
           nodeShareManager,
         });
       },
+      runHook: async (name, event) => {
+        // Single indexed access into `def.hooks`, so — unlike `actionEffects`
+        // — no correlated-key cast is needed: `event` and the handler are keyed
+        // by the same `name`.
+        const hookFn = def.hooks?.[name];
+        if (!hookFn) {
+          return;
+        }
+        // Isolate failures: a throwing handler is logged with its capability +
+        // hook and does not reject (callers fire hooks unawaited, so an
+        // uncaught rejection would otherwise vanish) or stop sibling
+        // capabilities receiving the same hook. State is left untouched.
+        try {
+          state = await applyStateChange(
+            stateRepository,
+            broadcaster,
+            state,
+            async (stateDraft) => {
+              await hookFn({
+                doCtx,
+                broadcaster,
+                nodeShareManager,
+                stateDraft,
+                event,
+              });
+            },
+          );
+        } catch (error) {
+          logger.error(
+            `Capability "${common.name}" hook "${name}" failed`,
+            error,
+          );
+        }
+      },
       getInitPayload: () => ({
         capability: common.name,
         state,
@@ -263,7 +381,7 @@ export function createServerCapability<
   return {
     name: common.name,
     displayName: common.displayName,
-    defaultConfig: common.defaultConfig,
+    defaultConfig: common.config?.default,
     mount,
   };
 }
