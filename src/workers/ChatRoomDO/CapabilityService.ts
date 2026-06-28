@@ -5,7 +5,7 @@ import { hookNames } from "#/capabilities/hooks";
 import { serverCapabilityRegistry } from "#/capabilities/serverCapabilityRegistry.ts";
 import type { RoomConfig } from "#/validators/roomConfigValidator.ts";
 import type { Broadcaster } from "./Broadcaster";
-import type { CapabilityStateRepository } from "./CapabilityStateRepository";
+import { CapabilityStateRepository } from "./CapabilityStateRepository";
 import type { MessageJiggler } from "./MessageJiggler";
 import { NodeShareManager } from "./NodeShareManager";
 import { log, logError } from "./utils";
@@ -40,9 +40,11 @@ export class CapabilityService {
     private getUserId: () => Promise<string | undefined>,
     private getConfig: () => RoomConfig,
   ) {
-    this.nodeShareManager = new NodeShareManager(this.ctx, this.roomId, () =>
+    this.nodeShareManager = new NodeShareManager(ctx, this.roomId, () =>
       this.getUserId(),
     );
+    this.stateRepository = new CapabilityStateRepository(ctx.storage.kv);
+
     // Built from the runtime `hookNames` list (there is no zod schema to read
     // keys off). The `Object.fromEntries` round-trip loses the precise per-key
     // mapping, so we re-assert it here — the keys come straight from
