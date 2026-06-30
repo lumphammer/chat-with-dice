@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 export const usersCommon = createCapabilityCommon({
   name: "users",
   displayName: "Users",
-  visibility: "public",
+  visibility: "always",
   state: {
     validator: z.object({
       // Everyone seen in this room since the DO last (re)booted. `isOnline`
