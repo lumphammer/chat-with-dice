@@ -6,6 +6,7 @@ import {
 } from "#/capabilities/createServerCapability";
 import { toAlphanumeric } from "#/utils/alphanumeric";
 import { logger } from "#/utils/logger";
+import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketServerMessage } from "#/validators/webSocketMessageSchemas";
 import { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import { CapabilityService } from "#/workers/ChatRoomDO/CapabilityService";
@@ -13,7 +14,6 @@ import { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateR
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
 import type { OnlineUser } from "#/workers/ChatRoomDO/types";
-import type { RoomConfig } from "#/validators/roomConfigValidator";
 import { usersServer } from "./server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -54,6 +54,7 @@ const flushBroadcast = () =>
   new Promise<void>((resolve) => setTimeout(resolve));
 
 describe("users capability onPresenceChange hook", () => {
+  let kv: SyncKvStorage;
   let stateRepository: CapabilityStateRepository;
   let broadcaster: Broadcaster;
   let broadcastSpy: ReturnType<typeof vi.spyOn>;
@@ -80,7 +81,7 @@ describe("users capability onPresenceChange hook", () => {
   // hook-dispatch path under test never reaches.
   const makeService = (capabilities: Map<string, ServerMountedCapability>) => {
     const svc = new CapabilityService(
-      {} as unknown as DurableObjectState,
+      { storage: { kv } } as unknown as DurableObjectState,
       {} as unknown as MessageJiggler,
       broadcaster,
       "test-room",
@@ -97,7 +98,7 @@ describe("users capability onPresenceChange hook", () => {
     // stands in for the Cloudflare `SyncKvStorage` runtime type, which isn't
     // available in the unit (Node) test environment.
     const store = new Map<string, unknown>();
-    const kv = {
+    kv = {
       get: (key: string) => store.get(key),
       put: (key: string, value: unknown) => void store.set(key, value),
     } as unknown as SyncKvStorage;
