@@ -6,6 +6,7 @@ import {
 } from "#/capabilities/createServerCapability";
 import { toAlphanumeric } from "#/utils/alphanumeric";
 import { logger } from "#/utils/logger";
+import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketServerMessage } from "#/validators/webSocketMessageSchemas";
 import { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import { CapabilityService } from "#/workers/ChatRoomDO/CapabilityService";
@@ -15,6 +16,12 @@ import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
 import type { OnlineUser } from "#/workers/ChatRoomDO/types";
 import { usersServer } from "./server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// `CapabilityService` now transitively imports `cloudflare:workers` (via
+// `NodeShareManager` → `#/db`), which only resolves in the workers test pool.
+// This is a unit (Node) test and never exercises the db or node-share runtime,
+// so a bare `env` stub is enough to let the module graph load.
+vi.mock("cloudflare:workers", () => ({ env: {} }));
 
 // Shape the users capability persists. The runtime validator lives on
 // `usersCommon`; we only need this to read state back in assertions.
@@ -47,6 +54,7 @@ const flushBroadcast = () =>
   new Promise<void>((resolve) => setTimeout(resolve));
 
 describe("users capability onPresenceChange hook", () => {
+  let kv: SyncKvStorage;
   let stateRepository: CapabilityStateRepository;
   let broadcaster: Broadcaster;
   let broadcastSpy: ReturnType<typeof vi.spyOn>;
@@ -65,13 +73,32 @@ describe("users capability onPresenceChange hook", () => {
       broadcaster,
     });
 
+  // Build a `CapabilityService` around capabilities mounted by `mountCap`. The
+  // service now constructs its own collaborators and mounts from config, but
+  // these tests drive the hook surface against a hand-built capability map, so
+  // we stub the DO collaborators and assign the pre-mounted map directly. The
+  // ctx/messageJiggler/getUserId/getConfig stubs stand in for runtime types the
+  // hook-dispatch path under test never reaches.
+  const makeService = (capabilities: Map<string, ServerMountedCapability>) => {
+    const svc = new CapabilityService(
+      { storage: { kv } } as unknown as DurableObjectState,
+      {} as unknown as MessageJiggler,
+      broadcaster,
+      "test-room",
+      async () => undefined,
+      () => ({ capabilities: [] }) as unknown as RoomConfig,
+    );
+    svc.capabilities = capabilities;
+    return svc;
+  };
+
   beforeEach(async () => {
     // In-memory KV behind a real `CapabilityStateRepository` (it has a nominal
     // private field, so a plain object won't structurally satisfy it). The cast
     // stands in for the Cloudflare `SyncKvStorage` runtime type, which isn't
     // available in the unit (Node) test environment.
     const store = new Map<string, unknown>();
-    const kv = {
+    kv = {
       get: (key: string) => store.get(key),
       put: (key: string, value: unknown) => void store.set(key, value),
     } as unknown as SyncKvStorage;
@@ -92,7 +119,7 @@ describe("users capability onPresenceChange hook", () => {
     const capabilities = new Map<string, ServerMountedCapability>([
       [mounted.name, mounted],
     ]);
-    service = new CapabilityService(capabilities);
+    service = makeService(capabilities);
   });
 
   afterEach(() => {
@@ -182,7 +209,7 @@ describe("users capability onPresenceChange hook", () => {
     };
     const mounted = await mountCap(usersServer);
     if (!mounted) throw new Error("users capability failed to mount");
-    const fanService = new CapabilityService(
+    const fanService = makeService(
       new Map<string, ServerMountedCapability>([
         [mounted.name, mounted],
         [other.name, other],
@@ -227,7 +254,7 @@ describe("users capability onPresenceChange hook", () => {
     const users = await mountCap(usersServer);
     if (!boom || !users) throw new Error("capability failed to mount");
 
-    const isolated = new CapabilityService(
+    const isolated = makeService(
       new Map<string, ServerMountedCapability>([
         [boom.name, boom],
         [users.name, users],

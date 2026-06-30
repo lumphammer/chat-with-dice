@@ -10,7 +10,10 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 const capabilityNames = Object.entries(clientCapabilityRegistry)
   .filter(
     ([_name, value]) =>
-      value.visibility === "public" || process.env.NODE_ENV === "development",
+      // `"always"` capabilities have no opt-in/out, so they never appear in the
+      // config toggle UI.
+      value.visibility !== "always" &&
+      (value.visibility === "public" || process.env.NODE_ENV === "development"),
   )
   .map(([name]) => name as CapabilityName);
 

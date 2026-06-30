@@ -252,6 +252,7 @@ export type SharedItem = FilesState["shares"][number];
 export const filesCommon = createCapabilityCommon({
   name: "files",
   displayName: "Files",
+  visibility: "public",
   state: {
     validator: filesStateValidator,
     getInitialState: () => ({

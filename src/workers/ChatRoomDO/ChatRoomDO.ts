@@ -1,6 +1,3 @@
-import { isCapabilityName } from "#/capabilities/capabilityNames";
-import { type ServerMountedCapability } from "#/capabilities/createServerCapability";
-import { serverCapabilityRegistry } from "#/capabilities/serverCapabilityRegistry";
 import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
 import { db as d1 } from "#/db";
 import migrations from "#/durable-object-migrations/ChatRoomDO/migrations";
@@ -11,10 +8,8 @@ import { webSocketClientMessageSchema } from "#/validators/webSocketMessageSchem
 import { setupDB } from "../utils/setupDB";
 import { Broadcaster } from "./Broadcaster";
 import { CapabilityService } from "./CapabilityService";
-import { CapabilityStateRepository } from "./CapabilityStateRepository";
 import { MessageJiggler } from "./MessageJiggler";
 import { MessageRepository } from "./MessageRepository";
-import { NodeShareManager } from "./NodeShareManager";
 import { defaultRoomConfig } from "./defaultRoomConfig";
 import { handleFetch } from "./handleFetch";
 import { loadConfigFromD1OrDie } from "./loadConfigFromD1OrDie";
@@ -52,12 +47,9 @@ export class ChatRoomDO extends DurableObject {
   private db!: DrizzleSqliteDODatabase<typeof dbSchema>;
   private messageRepository!: MessageRepository;
   private broadcaster!: Broadcaster;
-  private capabilities: Map<string, ServerMountedCapability> = new Map();
-  private capabilityService = new CapabilityService(this.capabilities);
+  private capabilityService!: CapabilityService;
   private config: RoomConfig = defaultRoomConfig;
-  private stateRepository!: CapabilityStateRepository;
   private messageJiggler!: MessageJiggler;
-  private nodeShareManager!: NodeShareManager;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -70,43 +62,55 @@ export class ChatRoomDO extends DurableObject {
     // initialisation - do this in a blockConcurrencyWhile so we can check this
     // is a legitimate instantiation before we allow anything else to happen.
     void this.ctx.blockConcurrencyWhile(async () => {
-      // load room from d1 or crash out
-      const { config, roomId } = await loadConfigFromD1OrDie(ctx);
-      this.config = config;
-
-      // it's now safe to init the local db
-      this.db = setupDB(ctx, migrations, dbSchema);
-
-      // and assemble all our helpers etc.
-      this.broadcaster = new Broadcaster(ctx);
-      this.messageRepository = new MessageRepository(this.db);
-      this.stateRepository = new CapabilityStateRepository(ctx.storage.kv);
-      this.messageJiggler = new MessageJiggler(
-        this.messageRepository,
-        this.broadcaster,
-      );
-      this.nodeShareManager = new NodeShareManager(this.ctx, roomId, () =>
-        this.getUserId(),
-      );
-
-      // Set up automatic ping/pong responses
-      // This keeps connections alive without waking the DO
-      this.ctx.setWebSocketAutoResponse(
-        new WebSocketRequestResponsePair("ping", "pong"),
-      );
-
-      // Mount all capabilities before handling any events.
-      // blockConcurrencyWhile guarantees no messages are dispatched until this resolves.
-      await Promise.all(
-        this.config.capabilities.map(async ({ name, config: capConfig }) => {
-          const mountedCap = await this.mountCapability(name, capConfig);
-          if (mountedCap) {
-            this.capabilities.set(name, mountedCap);
-          }
-        }),
-      );
-      this.firePresenceChange();
+      try {
+        await this.boot(ctx);
+      } catch (error) {
+        // The dev harness mangles boot errors (workerd hands back a binary
+        // error body that undici then tries to JSON.parse, crashing the host
+        // Node process with garbage output). Log the real error cleanly here
+        // before it escapes, then rethrow to keep the abort behaviour.
+        logError(
+          "ChatRoomDO boot failed:",
+          error instanceof Error ? (error.stack ?? error.message) : error,
+        );
+        throw error;
+      }
     });
+  }
+
+  private async boot(ctx: DurableObjectState): Promise<void> {
+    // load room from d1 or crash out
+    const { config, roomId } = await loadConfigFromD1OrDie(ctx);
+    this.config = config;
+
+    // it's now safe to init the local db
+    this.db = setupDB(ctx, migrations, dbSchema);
+
+    // and assemble all our helpers etc.
+    this.broadcaster = new Broadcaster(ctx);
+    this.messageRepository = new MessageRepository(this.db);
+    this.messageJiggler = new MessageJiggler(
+      this.messageRepository,
+      this.broadcaster,
+    );
+    this.capabilityService = new CapabilityService(
+      this.ctx,
+      this.messageJiggler,
+      this.broadcaster,
+      roomId,
+      () => this.getUserId(),
+      () => this.config,
+    );
+    await this.capabilityService.mountAll();
+
+    // Set up automatic ping/pong responses
+    // This keeps connections alive without waking the DO
+    this.ctx.setWebSocketAutoResponse(
+      new WebSocketRequestResponsePair("ping", "pong"),
+    );
+
+    //
+    this.firePresenceChange();
   }
 
   /**
@@ -155,7 +159,6 @@ export class ChatRoomDO extends DurableObject {
       this.ctx,
       this.messageRepository,
       this.broadcaster,
-      this.capabilities,
       this.capabilityService,
     );
   }
@@ -214,16 +217,10 @@ export class ChatRoomDO extends DurableObject {
           userId: attachment.userId,
         });
       } else if (data.type === "action") {
-        // handle actions
-        const cap = this.capabilities.get(data.payload.capabilityName);
-        if (!cap) {
-          throw new Error(`Unknown capability: ${data.payload.capabilityName}`);
-        }
-        await cap.onMessage({
-          actionCall: data.payload.actionCall,
-          userId: attachment.userId,
-          displayName: data.payload.displayName,
-        });
+        await this.capabilityService.handleAction(
+          data.payload,
+          attachment.userId,
+        );
       } else if (data.type === "updateConfig") {
         await checkOwner("update room config", async () => {
           const newConfig = data.payload.config;
@@ -233,34 +230,7 @@ export class ChatRoomDO extends DurableObject {
             .set({ config: newConfig })
             .where(eq(rooms.durableObjectId, this.ctx.id.toString()));
 
-          // Unmount capabilities that were removed
-          const newCapabilityNames = new Set(
-            newConfig.capabilities.map(({ name }) => name),
-          );
-          for (const { name } of this.config.capabilities) {
-            if (!newCapabilityNames.has(name)) {
-              this.capabilities.delete(name);
-              log(name, "unmounted");
-            }
-          }
-
-          // Mount capabilities that were added, and announce them to all
-          // currently connected clients
-          const previousCapabilityNames = new Set(
-            this.config.capabilities.map(({ name }) => name),
-          );
-          const addedCapabilities = newConfig.capabilities.filter(
-            ({ name }) => !previousCapabilityNames.has(name),
-          );
-          await Promise.all(
-            addedCapabilities.map(async ({ name, config: capConfig }) => {
-              const mountedCap = await this.mountCapability(name, capConfig);
-              if (mountedCap) {
-                this.capabilities.set(name, mountedCap);
-                this.broadcaster.broadcastCapabilityInit(mountedCap);
-              }
-            }),
-          );
+          await this.capabilityService.onConfigChange(newConfig);
 
           this.config = newConfig;
           this.broadcaster.brodcastConfig(newConfig);
@@ -380,29 +350,6 @@ export class ChatRoomDO extends DurableObject {
     logError("WebSocket error:", error);
     // Treat errors as disconnections
     await this.webSocketClose(ws, WEBSOCKET_INTERNAL_ERROR); //, "WebSocket error", false);
-  }
-
-  private async mountCapability(
-    name: string,
-    config: unknown,
-  ): Promise<ServerMountedCapability | null> {
-    if (!isCapabilityName(name)) {
-      return null;
-    }
-    log("Mounting capability: ", name);
-    const capability = serverCapabilityRegistry[name];
-    const mountedCap = await capability.mount({
-      doCtx: this.ctx,
-      messageJiggler: this.messageJiggler,
-      stateRepository: this.stateRepository,
-      config,
-      broadcaster: this.broadcaster,
-      nodeShareManager: this.nodeShareManager,
-    });
-    if (!mountedCap) {
-      logError("Failed to mount", name);
-    }
-    return mountedCap ?? null;
   }
 
   async destroy() {

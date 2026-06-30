@@ -4,7 +4,6 @@ import { adversariesCommon } from "./common";
 import { Swords } from "lucide-react";
 
 export const adversariesClient = createClientCapability(adversariesCommon, {
-  visibility: "public",
   sidebarInfos: [
     {
       key: "adversaries",

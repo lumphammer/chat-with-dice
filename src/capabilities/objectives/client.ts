@@ -4,7 +4,6 @@ import { objectivesCommon } from "./common";
 import { Check } from "lucide-react";
 
 export const objectivesClient = createClientCapability(objectivesCommon, {
-  visibility: "public",
   sidebarInfos: [
     {
       key: "objectives",

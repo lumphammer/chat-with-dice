@@ -5,7 +5,6 @@ import { rollCommon } from "./common";
 import { Dices } from "lucide-react";
 
 export const rollClient = createClientCapability(rollCommon, {
-  visibility: "public",
   sidebarInfos: [
     {
       key: "roll",

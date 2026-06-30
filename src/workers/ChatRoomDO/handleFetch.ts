@@ -1,4 +1,3 @@
-import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
 import type { Broadcaster } from "./Broadcaster";
 import type { CapabilityService } from "./CapabilityService";
 import type { MessageRepository } from "./MessageRepository";
@@ -14,7 +13,6 @@ export async function handleFetch(
   ctx: DurableObjectState,
   messageRepository: MessageRepository,
   broadcaster: Broadcaster,
-  capabilities: Map<string, ServerMountedCapability>,
   capabilityService: CapabilityService,
 ) {
   const upgradeHeader = request.headers.get("Upgrade");
@@ -82,7 +80,7 @@ export async function handleFetch(
     const messages = await messageRepository.getRecent();
     log(`Sending ${messages.length} messages to ${displayName} (${userId})`);
     broadcaster.sendCatchUp(server, messages);
-    for (const capability of capabilities.values()) {
+    for (const capability of capabilityService.capabilities.values()) {
       log(
         `Sending "${capability.name}" capability state to ${displayName} (${userId})`,
       );

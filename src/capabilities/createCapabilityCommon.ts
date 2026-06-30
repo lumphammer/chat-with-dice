@@ -12,6 +12,16 @@ import type * as z from "zod";
 export type inferIfZod<T> = T extends z.ZodType ? z.infer<T> : T;
 
 /**
+ * How a capability surfaces to clients and the server:
+ * - `"public"` — shown in the room-config toggle UI; opt-in per room.
+ * - `"dev"` — only shown in the config UI in development.
+ * - `"always"` — always mounted on every room, no opt-in/out; hidden from the
+ *   config UI. Needs to be visible to the server (to auto-mount), which is why
+ *   `visibility` lives on the common kernel rather than the client half.
+ */
+export type VisibilityMode = "public" | "dev" | "always";
+
+/**
  * The runtime value handed to `getInitialState`/`initialise` as `config`:
  * the validator's output when the capability declares a config block, or
  * `undefined` when it doesn't. Centralised here so the server/client
@@ -74,6 +84,7 @@ export type CommonCapabilityDefinition<
   // common
   name: string;
   displayName: string;
+  visibility?: VisibilityMode;
   messageDataValidator?: TMessageDataValidator;
   // config
   config?: {
@@ -114,6 +125,7 @@ export type CommonCapability<
 > = {
   name: Alphanumeric;
   displayName: string;
+  visibility?: VisibilityMode;
   config?: {
     validator: TConfigValidator;
     default: ConfigValue<TConfigValidator>;
@@ -166,6 +178,7 @@ export function createCapabilityCommon<
   return {
     name,
     displayName: def.displayName,
+    visibility: def.visibility,
     config: def.config,
     state: def.state,
     messageDataValidator: def.messageDataValidator,

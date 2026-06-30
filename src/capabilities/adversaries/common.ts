@@ -5,6 +5,7 @@ import { z } from "zod/v4";
 export const adversariesCommon = createCapabilityCommon({
   name: "adversaries",
   displayName: "Adversaries",
+  visibility: "public",
   state: {
     validator: z.object({
       adversaries: z.array(
