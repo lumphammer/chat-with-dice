@@ -111,43 +111,39 @@ const migrateStateV3ToV4 = (
   v3: z.infer<typeof filesStateValidatorV3>,
 ): z.infer<typeof filesStateValidatorV4> => ({
   version: FILES_STATE_VERSION,
-  shares: v3.shares.map((v3Share) => {
-    return {
-      dateShared: v3Share.dateShared,
-      userDisplayName: v3Share.userDisplayName,
-      userId: v3Share.userId,
-      node:
-        v3Share.kind === "folder"
-          ? {
-              ...v3Share,
-              kind: "folder",
-              version: 1,
-              id: v3Share.nodeId,
-              parentFolderId: "",
-              createdTime: 1,
-              deletedTime: null,
-              sizeBytes: 0,
-            }
-          : {
-              ...v3Share,
-              kind: "file",
-              version: 1,
-              id: v3Share.nodeId,
-              parentFolderId: "",
-              createdTime: 1,
-              deletedTime: null,
-              contentType: v3Share.contentType ?? "application/octet-stream",
-              thumbnailContentType: v3Share.thumbnailR2Key
-                ? "image/webp"
-                : null,
-              thumbnailSizeBytes: v3Share.thumbnailR2Key ? 1 : null,
-              sizeBytes: v3Share.sizeBytes,
-            },
-    };
-  }),
+  shares: v3.shares.map((v3Share) => ({
+    dateShared: v3Share.dateShared,
+    userDisplayName: v3Share.userDisplayName,
+    userId: v3Share.userId,
+    node:
+      v3Share.kind === "folder"
+        ? {
+            kind: "folder",
+            version: 1,
+            id: v3Share.nodeId,
+            name: v3Share.name,
+            parentFolderId: "",
+            createdTime: 1,
+            deletedTime: null,
+            sizeBytes: 0,
+          }
+        : {
+            kind: "file",
+            version: 1,
+            id: v3Share.nodeId,
+            name: v3Share.name,
+            parentFolderId: "",
+            createdTime: 1,
+            deletedTime: null,
+            contentType: v3Share.contentType ?? "application/octet-stream",
+            thumbnailContentType: v3Share.thumbnailR2Key ? "image/webp" : null,
+            thumbnailSizeBytes: v3Share.thumbnailR2Key ? 1 : null,
+            sizeBytes: v3Share.sizeBytes,
+          },
+  })),
 });
 
-const filesStateValidator = z.union([
+export const filesStateValidator = z.union([
   filesStateValidatorV4,
   filesStateValidatorV3.transform(migrateStateV3ToV4),
   filesStateValidatorV2
