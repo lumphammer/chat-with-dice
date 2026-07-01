@@ -11,6 +11,7 @@
     "test": "vitest --typecheck",
     "test:once": "pnpm test --run",
     "bench:types": "tsx src/capabilities/files/union.bench.ts",
+    "bench:runtime": "tsx src/capabilities/files/union.runtime.bench.ts",
     "astro": "astro",
     "types:check": "astro check",
     "deploy": "pnpm run build && wrangler deploy",

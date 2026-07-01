@@ -1,0 +1,68 @@
+{
+    "updates": [
+        {
+            "position": {
+                "method": "<anonymous>",
+                "file": "/home/ndc/projects/chat-with-dice/src/capabilities/files/union.runtime.bench.ts",
+                "line": 55,
+                "char": 4
+            },
+            "serializedValue": [
+                99.08,
+                "ns"
+            ],
+            "snapFunctionName": "mean",
+            "baselinePath": [
+                "discriminatedUnion + extend — parse file"
+            ]
+        },
+        {
+            "position": {
+                "method": "<anonymous>",
+                "file": "/home/ndc/projects/chat-with-dice/src/capabilities/files/union.runtime.bench.ts",
+                "line": 59,
+                "char": 4
+            },
+            "serializedValue": [
+                124.36,
+                "ns"
+            ],
+            "snapFunctionName": "mean",
+            "baselinePath": [
+                "discriminatedUnion + extend — parse folder"
+            ]
+        },
+        {
+            "position": {
+                "method": "<anonymous>",
+                "file": "/home/ndc/projects/chat-with-dice/src/capabilities/files/union.runtime.bench.ts",
+                "line": 63,
+                "char": 4
+            },
+            "serializedValue": [
+                563.03,
+                "ns"
+            ],
+            "snapFunctionName": "mean",
+            "baselinePath": [
+                "intersection — parse file"
+            ]
+        },
+        {
+            "position": {
+                "method": "<anonymous>",
+                "file": "/home/ndc/projects/chat-with-dice/src/capabilities/files/union.runtime.bench.ts",
+                "line": 67,
+                "char": 4
+            },
+            "serializedValue": [
+                571.26,
+                "ns"
+            ],
+            "snapFunctionName": "mean",
+            "baselinePath": [
+                "intersection — parse folder"
+            ]
+        }
+    ]
+}
