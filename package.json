@@ -10,6 +10,7 @@
     "preview": "pnpm run build && astro preview",
     "test": "vitest --typecheck",
     "test:once": "pnpm test --run",
+    "bench:types": "tsx src/capabilities/files/union.bench.ts",
     "astro": "astro",
     "types:check": "astro check",
     "deploy": "pnpm run build && wrangler deploy",
@@ -33,6 +34,7 @@
   },
   "dependencies": {
     "@ark-ui/react": "^5.37.2",
+    "@ark/attest": "^0.56.1",
     "@astrojs/check": "0.9.9",
     "@astrojs/cloudflare": "14.0.0",
     "@astrojs/compiler-rs": "^0.2.2",
@@ -79,6 +81,7 @@
     "rollup-plugin-visualizer": "^7.0.1",
     "svgo": "^4.0.1",
     "tailwindcss": "^4.3.1",
+    "tsx": "^4.22.4",
     "vitest": "^4.1.9",
     "wrangler": "^4.103.0",
     "zod": "^4.4.3"
