@@ -1,5 +1,6 @@
 import { createCapabilityCommon } from "#/capabilities/createCapabilityCommon";
 import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestampThatShouldBeEpochMs.ts";
+import { versioned } from "#/utils/versioned.ts";
 import { storageNodeValidator } from "#/validators/storageNodeValidator.ts";
 import * as z from "zod/v4";
 
@@ -111,53 +112,43 @@ const migrateStateV3ToV4 = (
   v3: z.infer<typeof filesStateValidatorV3>,
 ): z.infer<typeof filesStateValidatorV4> => ({
   version: FILES_STATE_VERSION,
-  shares: v3.shares.map((v3Share) => {
-    return {
-      dateShared: v3Share.dateShared,
-      userDisplayName: v3Share.userDisplayName,
-      userId: v3Share.userId,
-      node:
-        v3Share.kind === "folder"
-          ? {
-              ...v3Share,
-              kind: "folder",
-              version: 1,
-              id: v3Share.nodeId,
-              parentFolderId: "",
-              createdTime: 1,
-              deletedTime: null,
-              sizeBytes: 0,
-            }
-          : {
-              ...v3Share,
-              kind: "file",
-              version: 1,
-              id: v3Share.nodeId,
-              parentFolderId: "",
-              createdTime: 1,
-              deletedTime: null,
-              contentType: v3Share.contentType ?? "application/octet-stream",
-              thumbnailContentType: v3Share.thumbnailR2Key
-                ? "image/webp"
-                : null,
-              thumbnailSizeBytes: v3Share.thumbnailR2Key ? 1 : null,
-              sizeBytes: v3Share.sizeBytes,
-            },
-    };
-  }),
+  shares: v3.shares.map((v3Share) => ({
+    dateShared: v3Share.dateShared,
+    userDisplayName: v3Share.userDisplayName,
+    userId: v3Share.userId,
+    node:
+      v3Share.kind === "folder"
+        ? {
+            kind: "folder",
+            version: 1,
+            id: v3Share.nodeId,
+            name: v3Share.name,
+            parentFolderId: "",
+            createdTime: 1,
+            deletedTime: null,
+            sizeBytes: 0,
+          }
+        : {
+            kind: "file",
+            version: 1,
+            id: v3Share.nodeId,
+            name: v3Share.name,
+            parentFolderId: "",
+            createdTime: 1,
+            deletedTime: null,
+            contentType: v3Share.contentType ?? "application/octet-stream",
+            thumbnailContentType: v3Share.thumbnailR2Key ? "image/webp" : null,
+            thumbnailSizeBytes: v3Share.thumbnailR2Key ? 1 : null,
+            sizeBytes: v3Share.sizeBytes,
+          },
+  })),
 });
 
-const filesStateValidator = z.union([
-  filesStateValidatorV4,
-  filesStateValidatorV3.transform(migrateStateV3ToV4),
-  filesStateValidatorV2
-    .transform(migrateStateV2ToV3)
-    .transform(migrateStateV3ToV4),
-  filesStateValidatorV1
-    .transform(migrateStateV1ToV2)
-    .transform(migrateStateV2ToV3)
-    .transform(migrateStateV3ToV4),
-]);
+export const filesStateValidator = versioned(filesStateValidatorV1)
+  .then(filesStateValidatorV2, migrateStateV1ToV2)
+  .then(filesStateValidatorV3, migrateStateV2ToV3)
+  .then(filesStateValidatorV4, migrateStateV3ToV4)
+  .build();
 
 const sharedItemMessageDataValidatorV1 = z.discriminatedUnion("kind", [
   z.object({
@@ -237,13 +228,12 @@ const migrateMessageV2ToV3 = (
   };
 };
 
-export const sharedItemMessageDataValidator = z.union([
-  sharedItemMessageDataValidatorV3,
-  sharedItemMessageDataValidatorV2.transform(migrateMessageV2ToV3),
-  sharedItemMessageDataValidatorV1
-    .transform(migrateMessageV1ToV2)
-    .transform(migrateMessageV2ToV3),
-]);
+export const sharedItemMessageDataValidator = versioned(
+  sharedItemMessageDataValidatorV1,
+)
+  .then(sharedItemMessageDataValidatorV2, migrateMessageV1ToV2)
+  .then(sharedItemMessageDataValidatorV3, migrateMessageV2ToV3)
+  .build();
 
 type FilesState = z.infer<typeof filesStateValidator>;
 
