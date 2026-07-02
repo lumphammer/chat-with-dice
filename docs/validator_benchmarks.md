@@ -17,7 +17,10 @@ The two shapes, in zod:
 const core = z.object({ name: z.string(), nodeId: z.string() });
 z.discriminatedUnion("kind", [
   core.extend({ kind: z.literal("file"), r2Key: z.string() }),
-  core.extend({ kind: z.literal("folder"), viewMode: z.enum(["list", "grid"]) }),
+  core.extend({
+    kind: z.literal("folder"),
+    viewMode: z.enum(["list", "grid"]),
+  }),
 ]);
 
 // B: intersection of a common object with a bare discriminated union
@@ -56,17 +59,17 @@ Two gotchas worth remembering if we ever redo this:
 
 ### Type-checking cost — instantiations, lower = cheaper to compile
 
-| Shape                         | zod       | ArkType    |
-| ----------------------------- | --------- | ---------- |
-| union / inlined-common (A)    | 2 359     | 9 964      |
-| intersection (B)              | **1 923** | 11 461     |
+| Shape                      | zod       | ArkType |
+| -------------------------- | --------- | ------- |
+| union / inlined-common (A) | 2 359     | 9 964   |
+| intersection (B)           | **1 923** | 11 461  |
 
 ### Runtime cost — nanoseconds per parse, lower = faster
 
-| Shape            | zod (file / folder) | ArkType (file / folder) |
-| ---------------- | ------------------- | ----------------------- |
-| union / extend   | ~110 / ~135 ns      | **~5 ns**               |
-| intersection     | ~560–750 ns         | **~5 ns**               |
+| Shape          | zod (file / folder) | ArkType (file / folder) |
+| -------------- | ------------------- | ----------------------- |
+| union / extend | ~110 / ~135 ns      | **~5 ns**               |
+| intersection   | ~560–750 ns         | **~5 ns**               |
 
 (Runtime figures are indicative and machine-dependent; treat the orders of
 magnitude as the signal, not the exact nanoseconds. The instantiation counts,
@@ -76,16 +79,16 @@ by contrast, are deterministic.)
 
 **The compile-vs-runtime trade-off flips depending on engine.**
 
-- In **zod**, the intersection (B) is *cheaper to type-check* but roughly **5×
+- In **zod**, the intersection (B) is _cheaper to type-check_ but roughly **5×
   slower to parse**. That's because `z.intersection` stays a live combinator: it
   runs both schemas on every parse and deep-merges their outputs. Shape A folds
   the common fields into each branch and parses in a single pass.
 - In **ArkType**, the union (A) is the cheaper one to type-check, and the
   intersection carries **no runtime penalty** — both parse identically (~5 ns).
-  ArkType's `.and()` computes the *reduced* intersection at definition time, so
+  ArkType's `.and()` computes the _reduced_ intersection at definition time, so
   the two shapes converge to the exact same flat validator.
 
-**Cross-engine:** ArkType is ~4–6× *more* expensive to type-check (its
+**Cross-engine:** ArkType is ~4–6× _more_ expensive to type-check (its
 string-DSL parsing is heavy at the type level) but 20×–140× faster at runtime,
 because it compiles each validator down to a specialised, monomorphic JS
 function instead of walking a schema-object tree per call.
@@ -99,11 +102,11 @@ Despite ArkType's runtime dominance, we're staying on zod. The reasoning:
    few seconds of validator compute across a whole day. We're optimising
    nanoseconds we don't spend.
 2. **Startup / construction cost matters more for us, and likely favours zod.**
-   Our real concern is validator *construction* time — the work done at module
+   Our real concern is validator _construction_ time — the work done at module
    load, which hits slow client machines on page load and our Durable Objects on
    cold start. ArkType buys its parse speed precisely by doing more work up front
    at construction, so on the axis we actually care about it would probably be
-   *worse*. (Note: we benchmarked type-check cost and parse cost, but not
+   _worse_. (Note: we benchmarked type-check cost and parse cost, but not
    construction cost — if this ever becomes pressing, that's the benchmark to
    add.)
 3. **One syntax.** Astro uses zod for Astro action validation, so staying on zod
