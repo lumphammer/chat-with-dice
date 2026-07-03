@@ -71,7 +71,7 @@ jobs:
       - name: Build
         run: |
           echo "BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}" > .env
-          pnpm run build
+          CLOUDFLARE_ENV=staging pnpm run build
 
       - name: Instrument folder
         run: |
