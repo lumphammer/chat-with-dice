@@ -4,7 +4,6 @@
   "name": "chat-with-dice",
   "compatibility_date": "2026-04-18",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "route": "https://chatwithdice.lumphammer.net",
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",
@@ -75,7 +74,6 @@
   ],
   "env": {
     "staging": {
-      "route": "https://staging.chatwithdice.lumphammer.net",
       "durable_objects": {
         "bindings": [
           {
