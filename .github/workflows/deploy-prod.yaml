@@ -1,0 +1,14 @@
+name: Deploy to production
+
+on: workflow_dispatch
+
+jobs:
+  build-and-deploy:
+    # inputs default to "" ⇒ prod / top-level config.
+    # github_environment: production is a GitHub deployment Environment (distinct
+    # from the wrangler env) so a required-reviewer approval rule can be attached
+    # later.
+    uses: ./.github/workflows/build-and-deploy.yaml
+    with:
+      github_environment: production
+    secrets: inherit

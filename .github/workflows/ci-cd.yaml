@@ -28,62 +28,10 @@ jobs:
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           fi
 
-  build:
+  build-and-deploy:
     needs: check-commit-message
     if: needs.check-commit-message.outputs.should_run == 'true'
-    env:
-      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - uses: pnpm/action-setup@v6
-        with:
-          run_install: true
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Instrumentation
-        run: |
-          pwd
-          ls -l
-          cat tsconfig.json
-          export
-          node --version
-          pnpm --version
-          pnpm exec tsc --version
-
-      - name: Typecheck
-        run: pnpm run types:check
-
-      - name: Linting
-        run: pnpm run lint:check
-
-      - name: Formatting
-        run: pnpm run format:check
-
-      - name: Testing
-        run: pnpm test
-
-      - name: Build
-        run: |
-          echo "BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}" > .env
-          CLOUDFLARE_ENV=staging pnpm run build
-
-      - name: Instrument folder
-        run: |
-          echo "ls -la dist/"
-          ls -la dist/
-          echo "cat dist/client/.assetsignore"
-          cat dist/client/.assetsignore
-
-      - name: Publish to Cloudflare (staging)
-        if: github.ref == 'refs/heads/main'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          environment: staging
+    uses: ./.github/workflows/build-and-deploy.yaml
+    with:
+      cloudflare_env: staging
+    secrets: inherit

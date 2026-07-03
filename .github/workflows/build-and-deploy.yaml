@@ -1,0 +1,79 @@
+name: Build and deploy
+
+on:
+  workflow_call:
+    inputs:
+      cloudflare_env:
+        description: "Cloudflare env: baked in at build time (CLOUDFLARE_ENV) and used as wrangler --env on deploy. Empty targets the top-level (prod) config."
+        type: string
+        required: false
+        default: ""
+      github_environment:
+        description: "GitHub deployment Environment to run under (for approval gates). Empty means none."
+        type: string
+        required: false
+        default: ""
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    # Empty ⇒ no environment gate (staging); "production" lets a required-reviewer
+    # rule be attached later. Must live here, not on the caller job — reusable
+    # workflow callers can't set `environment`.
+    environment: ${{ inputs.github_environment }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: true
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Instrumentation
+        run: |
+          pwd
+          ls -l
+          cat tsconfig.json
+          export
+          node --version
+          pnpm --version
+          pnpm exec tsc --version
+
+      - name: Typecheck
+        run: pnpm run types:check
+
+      - name: Linting
+        run: pnpm run lint:check
+
+      - name: Formatting
+        run: pnpm run format:check
+
+      - name: Testing
+        run: pnpm test
+
+      - name: Build
+        env:
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          CLOUDFLARE_ENV: ${{ inputs.cloudflare_env }}
+        run: |
+          echo "BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}" > .env
+          pnpm run build
+
+      - name: Instrument folder
+        run: |
+          echo "ls -la dist/"
+          ls -la dist/
+          echo "cat dist/client/.assetsignore"
+          cat dist/client/.assetsignore
+
+      - name: Publish to Cloudflare
+        if: github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          environment: ${{ inputs.cloudflare_env }}
