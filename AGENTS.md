@@ -67,3 +67,7 @@ Default label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `read
 ### Domain docs
 
 Single-context repo — `CONTEXT.md` + `docs/adr/` at the root. See `docs/agents/domain.md`.
+
+## Running local CLI tools
+
+We use `pnpm exec`, not `npx`, to run CLI tools. (`pnpm dlx` to download-and-run if needed.)
