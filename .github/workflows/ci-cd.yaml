@@ -80,9 +80,10 @@ jobs:
           echo "cat dist/client/.assetsignore"
           cat dist/client/.assetsignore
 
-      - name: Publish to Cloudflare
+      - name: Publish to Cloudflare (staging)
         if: github.ref == 'refs/heads/main'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          environment: staging

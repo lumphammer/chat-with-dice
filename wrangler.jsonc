@@ -4,6 +4,7 @@
   "name": "chat-with-dice",
   "compatibility_date": "2026-04-18",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "route": "https://chatwithdice.lumphammer.net",
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",
@@ -74,6 +75,7 @@
   ],
   "env": {
     "staging": {
+      "route": "https://staging.chatwithdice.lumphammer.net",
       "durable_objects": {
         "bindings": [
           {
@@ -91,8 +93,27 @@
           "binding": "CORE_D1",
           "database_name": "chat-with-dice-staging",
           "database_id": "454c91ea-ab3d-4966-a8e3-9c4063e28eda",
+          "migrations_dir": "./migrations/coreD1",
         },
       ],
+      "r2_buckets": [
+        {
+          "bucket_name": "chat-with-dice-staging",
+          "binding": "PUBLIC_R2",
+        },
+        {
+          "bucket_name": "chat-with-dice-private-staging",
+          "binding": "PRIVATE_R2",
+        },
+      ],
+      "vars": {
+        "BETTER_AUTH_URL": "https://staging.chatwithdice.lumphammer.net/",
+        "BUCKET_PUBLIC_URL": "https://r2.staging.chatwithdice.lumphammer.net",
+        "GITHUB_CLIENT_ID": "Ov23lid5GdopuEUooMvR",
+        "GOOGLE_CLIENT_ID": "951353988201-r7mnlahgotir23h85l25aao1tt1iurcd.apps.googleusercontent.com",
+        "DISCORD_CLIENT_ID": "TODO",
+        "RESEND_FROM_EMAIL": "Chat with Dice <chatwithdice@lumphammer.net>",
+      },
     },
   },
   "r2_buckets": [
@@ -109,7 +130,7 @@
     "BETTER_AUTH_URL": "https://chatwithdice.lumphammer.net/",
     "BUCKET_PUBLIC_URL": "https://r2.chatwithdice.lumphammer.net",
     "GITHUB_CLIENT_ID": "Ov23liodlIl9o0JSyRY6",
-    "GOOGLE_CLIENT_ID": "869954021187-jbep8bgnl19da678buk1t3v21vm5rvgt.apps.googleusercontent.com",
+    "GOOGLE_CLIENT_ID": "951353988201-099m7p5qd7dh088njenpr4eh07cqugi0.apps.googleusercontent.com",
     "DISCORD_CLIENT_ID": "1519291459231285328",
     "RESEND_FROM_EMAIL": "Chat with Dice <chatwithdice@lumphammer.net>",
   },
