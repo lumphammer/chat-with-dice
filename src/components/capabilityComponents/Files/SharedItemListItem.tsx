@@ -1,6 +1,6 @@
 import type { SharedItem } from "#/capabilities/files/common";
-import { getRelativeTimeString } from "#/components/DiceRoller/TimeDisplay";
 import { NodeIcon } from "#/components/FileManager/NodeIcon";
+import { getRelativeTimeString } from "#/utils/getRelativeTimeString.ts";
 import { memo } from "react";
 
 const UNKNOWN_SHARED_TIME_LABEL = "shared earlier";

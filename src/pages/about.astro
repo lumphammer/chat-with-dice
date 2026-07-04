@@ -1,5 +1,8 @@
 ---
 import Layout from "#/layouts/Layout.astro";
+
+const builtAtTime = Date.now();
+const dateStringUTCISO = new Date().toISOString();
 ---
 
 <Layout title="About" class="p-4 sm:p-8">
@@ -20,7 +23,7 @@ import Layout from "#/layouts/Layout.astro";
     <h2>Open source</h2>
     <p>
       Chat with Dice is open-source software. You can inspect the code, report
-      problems, and follow development in the
+      problems, and follow development in the{" "}
       <a href="https://github.com/lumphammer/chat-with-dice">
         lumphammer/chat-with-dice GitHub repository
       </a>.
@@ -31,5 +34,33 @@ import Layout from "#/layouts/Layout.astro";
       <li><a href="/terms">Read the terms of service</a></li>
       <li><a href="/contact">Contact us or send feedback</a></li>
     </ul>
+    <p>
+      Site built: <span data-timestamp={builtAtTime} id="timestamp"
+        >{dateStringUTCISO}</span
+      >
+    </p>
   </article>
 </Layout>
+
+<script>
+  import { getRelativeTimeString } from "#/utils/getRelativeTimeString";
+
+  function enableClickableTimestamp() {
+    const timestampSpan = document.getElementById("timestamp");
+    if (!timestampSpan) {
+      return;
+    }
+    const timestamp = Number(timestampSpan?.dataset.timestamp);
+    const relativeTimeString = getRelativeTimeString(timestamp);
+    const absoluteTimeString = timestampSpan.textContent;
+    let showRelative = true;
+    timestampSpan.textContent = relativeTimeString;
+    timestampSpan.addEventListener("click", () => {
+      showRelative = !showRelative;
+      timestampSpan.textContent = showRelative
+        ? relativeTimeString
+        : absoluteTimeString;
+    });
+  }
+  enableClickableTimestamp();
+</script>
