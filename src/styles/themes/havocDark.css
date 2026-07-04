@@ -132,6 +132,59 @@
 
 [data-theme="havocDark"] {
   @layer utilities {
+    .chat-bubble {
+      background-color: transparent;
+      padding: 1em;
+      --border-color: oklch(60% 50% var(--user-hue));
+      --trans-color: oklch(60% 50% var(--user-hue)/30%);
+      --border-width-unitless: 2;
+      --glow-width-unitless: 20;
+      --unit: 1px;
+      --border-width: calc(var(--unit) * var(--border-width-unitless));
+      --glow-width: calc(var(--unit) * var(--glow-width-unitless));
+      --overall-width: calc(var(--border-width) + var(--glow-width));
+      /* first arg to pow should be unitless sum of border and glow */
+      --diag-last-bit: calc(
+        var(--unit) * sqrt(calc(pow(var(--glow-width-unitless), 2) / 2))
+      );
+      --diag-total: hypot(var(--overall-width), var(--overall-width));
+      --diag-first-bit: calc(
+        var(--diag-total) - calc(var(--diag-last-bit) + var(--border-width))
+      );
+      --diag-end-of-line: calc(var(--diag-total) - var(--diag-last-bit));
+
+      background:
+        0 0 / var(--overall-width) var(--overall-width) no-repeat
+          linear-gradient(
+            135deg,
+            transparent 0%,
+            transparent var(--diag-first-bit),
+            var(--border-color) var(--diag-first-bit),
+            var(--border-color) var(--diag-end-of-line),
+            var(--trans-color) var(--diag-end-of-line),
+            transparent var(--diag-total)
+          ),
+        0 var(--overall-width) / var(--overall-width)
+          calc(100% - calc(2 * var(--overall-width))) no-repeat
+          linear-gradient(
+            90deg,
+            var(--border-color) 0,
+            var(--border-color) var(--border-width),
+            var(--trans-color) var(--border-width),
+            transparent var(--overall-width)
+          ),
+        0 100% / var(--overall-width) var(--overall-width) no-repeat
+          linear-gradient(
+            45deg,
+            transparent 0%,
+            transparent var(--diag-first-bit),
+            var(--border-color) var(--diag-first-bit),
+            var(--border-color) var(--diag-end-of-line),
+            var(--trans-color) var(--diag-end-of-line),
+            transparent var(--diag-total)
+          );
+      /*background*/
+    }
     .prose {
       h1,
       h2,

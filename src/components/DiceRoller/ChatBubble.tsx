@@ -135,10 +135,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
         <span className="mr-4">{message.displayName}</span>
         <TimeDisplay timeStamp={message.createdTime} />
       </header>
-      <div
-        className="w-fit rounded-xl bg-(--user-colour) px-4 pt-1 pb-1 text-base
-          group-data-is-mine:ml-auto"
-      >
+      <div className="chat-bubble">
         {message.chat && (
           <>
             <p
