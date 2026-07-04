@@ -1,4 +1,4 @@
-@import "#/styles/global.css";
+@reference "#/styles/global.css";
 /* inspiration: https://freefrontend.com/css-sidebar-menus/ */
 
 @property --sidebar-width {
