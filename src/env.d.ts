@@ -5,7 +5,6 @@ declare namespace App {
     // Add custom locals here
     user: (typeof import("#/auth/auth.ts").auth.$Infer.Session)["user"] | null;
     session:
-      | (typeof import("#/auth/auth.ts").auth.$Infer.Session)["session"]
-      | null;
+      (typeof import("#/auth/auth.ts").auth.$Infer.Session)["session"] | null;
   }
 }
