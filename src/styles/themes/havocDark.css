@@ -249,8 +249,8 @@
         var(--hdt-diag-first-bit) + var(--hdt-border-width-fudge)
       );
 
-      background-blend-mode:
-        normal, normal, normal, color-dodge, soft-light, soft-light;
+      background-blend-mode: screen, screen, screen, soft-light, screen;
+      mix-blend-mode: screen;
 
       .group[data-is-mine] & {
         clip-path: polygon(
@@ -289,15 +289,13 @@
               var(--hdt-border-color) var(--hdt-diag-end-of-line),
               transparent var(--hdt-diag-end-of-line)
             ),
-          /*gradient*/
-            radial-gradient(farthest-side at center right, white 0%, black 100%),
-          linear-gradient(to left, var(--hdt-trans-color) 0%, transparent 100%),
           repeating-linear-gradient(
             to bottom,
             transparent 0px,
             oklch(from var(--hdt-trans-color) l c h / 20%) 5px,
-            transparent 5px /*oklch(from var(--color-accent) l c h / 20%) 20px*/
-          );
+            transparent 5px
+          ),
+          linear-gradient(to left, var(--hdt-trans-color) 0%, #000 100%);
       }
       clip-path: polygon(
         var(--hdt-horiz-dead) 0,
@@ -336,13 +334,13 @@
             transparent var(--hdt-diag-end-of-line)
           ),
         /*gradient*/
-          linear-gradient(to right, var(--hdt-trans-color) 0%, transparent 100%),
-        repeating-linear-gradient(
-          to bottom,
-          transparent 0px,
-          oklch(from var(--hdt-trans-color) l c h / 20%) 5px,
-          transparent 5px /*oklch(from var(--color-accent) l c h / 20%) 20px*/
-        );
+          repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            oklch(from var(--hdt-trans-color) l c h / 20%) 5px,
+            transparent 5px
+          ),
+        linear-gradient(to right, var(--hdt-trans-color) 0%, #000 100%);
     }
     .prose {
       h1,
