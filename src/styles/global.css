@@ -143,3 +143,17 @@ body {
     all: revert-layer;
   }
 }
+
+.chat-bubble {
+  @layer utilities.daisyui.l1.l2.l3 {
+    all: revert-layer;
+  }
+}
+
+@utility chat-bubble {
+  width: fit-content;
+  background-color: oklch(20% 30% var(--user-hue));
+  &:is(:where(.group)[data-is-mine] *) {
+    margin-left: auto;
+  }
+}
