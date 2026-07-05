@@ -210,11 +210,11 @@
     .chat-bubble {
       background-color: transparent;
       padding: 1em;
-      --hdt-border-color: oklch(60% 50% var(--user-hue));
+      --hdt-border-color: oklch(80% 50% var(--user-hue));
       --hdt-trans-color: oklch(60% 50% var(--user-hue)/30%);
 
-      --hdt-border-width-unitless: 2;
-      --hdt-border-radius-unitless: 20;
+      --hdt-border-width-unitless: 3;
+      --hdt-border-radius-unitless: 9;
       --hdt-unit: 1px;
       --hdt-border-width: calc(
         var(--hdt-border-width-unitless) * var(--hdt-unit)
@@ -239,12 +239,74 @@
         var(--hdt-diag-last-bit-unitless) * var(--hdt-unit)
       );
 
+      --hdt-border-width-fudge: calc(var(--hdt-border-width) * 1.1);
+
       --hdt-diag-first-bit: calc(
         var(--hdt-diag-total) -
-          calc(var(--hdt-border-width) + var(--hdt-diag-last-bit))
+          calc(var(--hdt-border-width-fudge) + var(--hdt-diag-last-bit))
       );
       --hdt-diag-end-of-line: calc(
-        var(--hdt-diag-first-bit) + var(--hdt-border-width)
+        var(--hdt-diag-first-bit) + var(--hdt-border-width-fudge)
+      );
+
+      background-blend-mode:
+        normal, normal, normal, color-dodge, soft-light, soft-light;
+
+      .group[data-is-mine] & {
+        clip-path: polygon(
+          0 0,
+          calc(100% - var(--hdt-horiz-dead)) 0,
+          100% var(--hdt-horiz-dead),
+          100% calc(100% - var(--hdt-horiz-dead)),
+          calc(100% - var(--hdt-horiz-dead)) 100%,
+          0 100%
+        );
+
+        background:
+          100% 0 / var(--hdt-border-radius) var(--hdt-border-radius) no-repeat
+            linear-gradient(
+              225deg,
+              transparent 0%,
+              transparent var(--hdt-diag-first-bit),
+              var(--hdt-border-color) var(--hdt-diag-first-bit),
+              var(--hdt-border-color) var(--hdt-diag-end-of-line),
+              transparent var(--hdt-diag-end-of-line)
+            ),
+          100% var(--hdt-border-radius) / var(--hdt-border-width)
+            calc(100% - calc(2 * var(--hdt-border-radius))) no-repeat
+            linear-gradient(
+              90deg,
+              var(--hdt-border-color) 0,
+              var(--hdt-border-color) var(--hdt-border-width)
+            ),
+          100% 100% / var(--hdt-border-radius) var(--hdt-border-radius)
+            no-repeat
+            linear-gradient(
+              315deg,
+              transparent 0%,
+              transparent var(--hdt-diag-first-bit),
+              var(--hdt-border-color) var(--hdt-diag-first-bit),
+              var(--hdt-border-color) var(--hdt-diag-end-of-line),
+              transparent var(--hdt-diag-end-of-line)
+            ),
+          /*gradient*/
+            radial-gradient(farthest-side at center right, white 0%, black 100%),
+          linear-gradient(to left, var(--hdt-trans-color) 0%, transparent 100%),
+          repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            oklch(from var(--hdt-trans-color) l c h / 20%) 5px,
+            transparent 5px /*oklch(from var(--color-accent) l c h / 20%) 20px*/
+          );
+      }
+      clip-path: polygon(
+        var(--hdt-horiz-dead) 0,
+        100% 0,
+        100% 100%,
+        var(--hdt-horiz-dead) 100%,
+
+        0 calc(100% - var(--hdt-horiz-dead)),
+        0 var(--hdt-horiz-dead)
       );
 
       background:
@@ -272,8 +334,15 @@
             var(--hdt-border-color) var(--hdt-diag-first-bit),
             var(--hdt-border-color) var(--hdt-diag-end-of-line),
             transparent var(--hdt-diag-end-of-line)
-          );
-      /*background*/
+          ),
+        /*gradient*/
+          linear-gradient(to right, var(--hdt-trans-color) 0%, transparent 100%),
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0px,
+          oklch(from var(--hdt-trans-color) l c h / 20%) 5px,
+          transparent 5px /*oklch(from var(--color-accent) l c h / 20%) 20px*/
+        );
     }
     .prose {
       h1,
