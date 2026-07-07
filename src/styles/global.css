@@ -18,8 +18,8 @@ body {
 }
 
 @import "./themeUtils.css";
-@import "./themes/havocDark.css";
-@import "./themes/havocLight.css";
+/*@import "./themes/havocDark.css";
+@import "./themes/havocLight.css";*/
 
 @theme {
   /*
@@ -166,4 +166,8 @@ body {
   &:is(:where(.group)[data-is-mine] *) {
     margin-left: auto;
   }
+}
+
+.foo {
+  color: red;
 }
