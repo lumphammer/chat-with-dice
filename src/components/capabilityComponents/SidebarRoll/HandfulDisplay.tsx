@@ -1,4 +1,5 @@
 import type { Face, Handful } from "#/capabilities/roll/common";
+import { CompositeFaceChip } from "#/components/capabilityComponents/shared/diceDisplay/CompositeFaceChip";
 import { DiceRow } from "#/components/capabilityComponents/shared/diceDisplay/DiceRow";
 import { FaceChip } from "#/components/capabilityComponents/shared/diceDisplay/FaceChip";
 
@@ -32,15 +33,25 @@ export function HandfulDisplay({
 }: HandfulDisplayProps) {
   return (
     <DiceRow dimmed={dimmed}>
-      {handful.faces.map((face, i) => (
-        <FaceChip
-          key={i}
-          value={face.result}
-          degree={getRollFaceDegree(face)}
-          dropped={!face.kept}
-          ariaLabel={getRollFaceAriaLabel(face)}
-        />
-      ))}
+      {handful.faces.map((face, i) =>
+        face.components ? (
+          <CompositeFaceChip
+            key={i}
+            components={face.components}
+            degree={getRollFaceDegree(face)}
+            dropped={!face.kept}
+            ariaLabel={getRollFaceAriaLabel(face)}
+          />
+        ) : (
+          <FaceChip
+            key={i}
+            value={face.result}
+            degree={getRollFaceDegree(face)}
+            dropped={!face.kept}
+            ariaLabel={getRollFaceAriaLabel(face)}
+          />
+        ),
+      )}
       {showSubtotal && (
         <>
           <span className="text-base-content/30 mx-0.5">=</span>

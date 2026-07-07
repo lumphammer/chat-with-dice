@@ -136,6 +136,18 @@ body {
     font-size: 1.3em;
     position: relative;
   }
+
+  /* A composite die (d66, d100): its digit chips sit flush together so the
+     pair reads as one joined die. */
+  .dice-face-pair {
+    display: inline-flex;
+    gap: 0;
+    align-items: center;
+  }
+
+  .dice-face-pair .dice-face:not(:last-child) {
+    border-right-width: 0;
+  }
 }
 
 @utility frost {

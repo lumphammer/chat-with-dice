@@ -1,15 +1,12 @@
-import type { Favour, Keep, Operator } from "#/capabilities/roll/common";
+import {
+  DIE_CHOICES,
+  type Favour,
+  type Keep,
+  type Operator,
+  type RollFormula,
+} from "#/capabilities/roll/common";
 import { Dices } from "lucide-react";
 import { memo, useState } from "react";
-
-type RollFormula = {
-  arity: number;
-  cardinality: number;
-  modifier?: { operator: Operator; operand: number };
-  favour: Favour;
-  keep: Keep;
-  exploding: boolean;
-};
 
 type RollFormProps = {
   onRoll: (formula: RollFormula) => void;
@@ -18,17 +15,7 @@ type RollFormProps = {
 const RADIX_DECIMAL = 10;
 const MAX_ARITY = 20;
 
-const D4 = 4;
-const D6 = 6;
-const D8 = 8;
-const D10 = 10;
-const D12 = 12;
-const D20 = 20;
-const D100 = 100;
-
-const DEFAULT_CARDINALITY = D6;
-
-const COMMON_DIE_SIZES = [D4, D6, D8, D10, D12, D20, D100] as const;
+const DEFAULT_DIE_LABEL = "d6";
 
 const KEEP_OPTIONS: { value: Keep; label: string }[] = [
   { value: "all", label: "All dice" },
@@ -57,7 +44,7 @@ const FieldLabel = ({ children }: { children: React.ReactNode }) => (
 
 export const RollForm = memo(({ onRoll }: RollFormProps) => {
   const [arity, setArity] = useState(1);
-  const [cardinality, setCardinality] = useState(DEFAULT_CARDINALITY);
+  const [dieLabel, setDieLabel] = useState<string>(DEFAULT_DIE_LABEL);
   const [keep, setKeep] = useState<Keep>("all");
   const [favour, setFavour] = useState<Favour>("normal");
   const [exploding, setExploding] = useState(false);
@@ -66,7 +53,7 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
 
   const handleReset = () => {
     setArity(1);
-    setCardinality(DEFAULT_CARDINALITY);
+    setDieLabel(DEFAULT_DIE_LABEL);
     setKeep("all");
     setFavour("normal");
     setExploding(false);
@@ -75,9 +62,12 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
   };
 
   const handleRoll = () => {
+    const die =
+      DIE_CHOICES.find((choice) => choice.label === dieLabel) ?? DIE_CHOICES[1];
     onRoll({
       arity: Math.max(1, arity),
-      cardinality: Math.max(1, cardinality),
+      cardinality: die.cardinality,
+      dieType: die.dieType,
       keep,
       favour,
       exploding,
@@ -108,16 +98,14 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
           />
           <span className="text-base-content/40 font-mono font-bold">d</span>
           <select
-            value={cardinality}
-            onChange={(e) =>
-              setCardinality(parseInt(e.target.value, RADIX_DECIMAL))
-            }
+            value={dieLabel}
+            onChange={(e) => setDieLabel(e.target.value)}
             className="select select-sm flex-1"
             aria-label="Die size"
           >
-            {COMMON_DIE_SIZES.map((size) => (
-              <option key={size} value={size}>
-                d{size}
+            {DIE_CHOICES.map((choice) => (
+              <option key={choice.label} value={choice.label}>
+                {choice.label}
               </option>
             ))}
           </select>

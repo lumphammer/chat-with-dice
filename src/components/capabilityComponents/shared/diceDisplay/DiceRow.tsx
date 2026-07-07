@@ -9,7 +9,7 @@ type DiceRowProps = {
 export function DiceRow({ children, dimmed = false }: DiceRowProps) {
   return (
     <div
-      className={`flex flex-wrap items-center gap-1 transition-opacity ${
+      className={`flex flex-wrap items-center gap-2 transition-opacity ${
         dimmed ? "opacity-35" : ""
       }`}
     >

@@ -751,5 +751,11 @@
         text-decoration-thickness: 2px;
       }
     }
+
+    /* On a joined composite die, show the critical "!" only once, after the
+       whole pair, rather than once per digit chip. */
+    .dice-face-pair .dice-face:not(:last-child)[data-degree="critical"]:after {
+      content: none;
+    }
   }
 }

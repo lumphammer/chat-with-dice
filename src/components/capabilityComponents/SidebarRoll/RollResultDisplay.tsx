@@ -1,10 +1,8 @@
 import {
   messageDataValidator,
   type FavouredHandfuls,
-  type Favour,
   type Handful,
-  type Keep,
-  type Operator,
+  type RollFormula,
 } from "#/capabilities/roll/common";
 import { FormulaLine } from "#/components/capabilityComponents/shared/diceDisplay/FormulaLine";
 import { ResultStat } from "#/components/capabilityComponents/shared/diceDisplay/ResultStat";
@@ -18,14 +16,7 @@ function isFavouredHandfuls(
   return "series1" in faces;
 }
 
-function formatFormula(formula: {
-  arity: number;
-  cardinality: number;
-  modifier?: { operator: Operator; operand: number };
-  favour: Favour;
-  keep: Keep;
-  exploding: boolean;
-}): string {
+function formatFormula(formula: RollFormula): string {
   const { arity, cardinality, modifier, favour, keep, exploding } = formula;
   let label = `${arity}d${cardinality}`;
 
