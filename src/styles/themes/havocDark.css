@@ -713,22 +713,41 @@
      * Dice faces
      **************************************************************************/
     .dice-face {
+      font-family: "Orbitron Variable";
+      font-size: 1em;
+      height: 2.4em;
+      width: 2.4em;
+      /*padding: 0.2em;*/
       font-weight: 600;
       border: 1px solid var(--color-base-content);
+      --color: var(--color-base-content);
+      border-image: linear-gradient(
+        to bottom right,
+        var(--color) 0%,
+        transparent 50%,
+        var(--color) 100%
+      );
+      border-image-slice: 1;
+      color: var(--color);
       /**/
       &[data-degree="failure"] {
-        /**/
+        --color: var(--color-error);
       }
 
       &[data-degree="success"] {
-        /**/
+        --color: var(--color-success);
       }
 
       &[data-degree="critical"] {
-        /**/
+        --color: var(--color-success);
+        /*box-shadow: 0 0 4px 4px var(--color-success) inset;*/
+        &:after {
+          content: "!";
+        }
       }
       &[data-dropped] {
         text-decoration-line: line-through;
+        opacity: 80%;
         text-decoration-thickness: 2px;
       }
     }
