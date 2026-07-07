@@ -1,5 +1,3 @@
-import faceStyles from "#/styles/faces.module.css";
-
 type FaceChipProps = {
   value: number | string;
   /** Drives the data-degree visual styling in faces.module.css */
@@ -18,9 +16,9 @@ export function FaceChip({
 }: FaceChipProps) {
   return (
     <span
-      className={`${faceStyles.face}
-        ${dropped ? "line-through decoration-2" : ""}`}
+      className={"dice-face"}
       data-degree={degree}
+      data-dropped={dropped ? "true" : undefined}
       aria-label={ariaLabel ?? String(value)}
     >
       {value}
