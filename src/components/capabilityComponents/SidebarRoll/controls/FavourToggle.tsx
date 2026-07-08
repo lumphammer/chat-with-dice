@@ -1,4 +1,6 @@
 import type { Favour } from "#/capabilities/roll/common";
+import { SegmentedRadioGroup } from "./SegmentedRadioGroup";
+import { useId } from "react";
 
 type FavourToggleProps = {
   value: Favour;
@@ -12,21 +14,16 @@ const FAVOUR_OPTIONS: { value: Favour; label: string }[] = [
   { value: "disadvantage", label: "Disadv." },
 ];
 
-// The wrapping <Field> legend names this group, so the row is a plain join.
-export const FavourToggle = ({ value, onChange }: FavourToggleProps) => (
-  <div className="join w-full">
-    {FAVOUR_OPTIONS.map((option) => (
-      <button
-        key={option.value}
-        type="button"
-        onClick={() => onChange(option.value)}
-        className={`btn btn-sm join-item min-w-0 flex-1 px-1 ${
-          option.value === value ? "btn-primary" : "btn-neutral"
-        }`}
-        aria-pressed={option.value === value}
-      >
-        {option.label}
-      </button>
-    ))}
-  </div>
-);
+// The wrapping <Field> legend names this group, so the row needs no duplicate
+// aria-label.
+export const FavourToggle = ({ value, onChange }: FavourToggleProps) => {
+  const name = useId();
+  return (
+    <SegmentedRadioGroup
+      name={name}
+      value={value}
+      options={FAVOUR_OPTIONS}
+      onChange={onChange}
+    />
+  );
+};

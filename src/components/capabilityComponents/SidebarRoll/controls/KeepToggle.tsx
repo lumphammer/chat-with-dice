@@ -1,4 +1,6 @@
 import type { Keep } from "#/capabilities/roll/common";
+import { SegmentedRadioGroup } from "./SegmentedRadioGroup";
+import { useId } from "react";
 
 type KeepToggleProps = {
   value: Keep;
@@ -39,47 +41,28 @@ const KEEP_ENDS: { value: KeepEnd; label: string }[] = [
 
 export const KeepToggle = ({ value, onChange }: KeepToggleProps) => {
   const { mode, end } = KEEP_DECODE[value];
+  const modeName = useId();
+  const endName = useId();
   return (
     <div className="flex gap-2">
-      <fieldset
-        className="join m-0 min-w-0 flex-1 border-0 p-0"
-        aria-label="Keep or drop dice"
-      >
-        {KEEP_MODES.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => onChange(encodeKeep(option.value, end))}
-            className={`btn btn-sm join-item min-w-0 flex-1 px-1 ${
-              option.value === mode ? "btn-primary" : "btn-neutral"
-            }`}
-            aria-pressed={option.value === mode}
-          >
-            {option.label}
-          </button>
-        ))}
-      </fieldset>
-      <fieldset
-        className="join m-0 min-w-0 border-0 p-0"
-        aria-label="Which end"
-      >
-        {KEEP_ENDS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            disabled={mode === "all"}
-            onClick={() => onChange(encodeKeep(mode, option.value))}
-            className={`btn btn-sm join-item px-2 ${
-              mode !== "all" && option.value === end
-                ? "btn-primary"
-                : "btn-neutral"
-            }`}
-            aria-pressed={mode !== "all" && option.value === end}
-          >
-            {option.label}
-          </button>
-        ))}
-      </fieldset>
+      <SegmentedRadioGroup
+        name={modeName}
+        value={mode}
+        options={KEEP_MODES}
+        onChange={(nextMode) => onChange(encodeKeep(nextMode, end))}
+        className="join min-w-0 flex-1"
+        ariaLabel="Keep or drop dice"
+      />
+      <SegmentedRadioGroup
+        name={endName}
+        value={mode === "all" ? undefined : end}
+        options={KEEP_ENDS}
+        onChange={(nextEnd) => onChange(encodeKeep(mode, nextEnd))}
+        className="join min-w-0"
+        disabled={mode === "all"}
+        optionClassName="btn btn-sm join-item px-2"
+        ariaLabel="Which end"
+      />
     </div>
   );
 };
