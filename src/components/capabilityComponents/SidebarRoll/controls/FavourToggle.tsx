@@ -12,11 +12,9 @@ const FAVOUR_OPTIONS: { value: Favour; label: string }[] = [
   { value: "disadvantage", label: "Disadv." },
 ];
 
+// The wrapping <Field> legend names this group, so the row is a plain join.
 export const FavourToggle = ({ value, onChange }: FavourToggleProps) => (
-  <fieldset
-    className="join m-0 w-full min-w-0 border-0 p-0"
-    aria-label="Favour"
-  >
+  <div className="join w-full">
     {FAVOUR_OPTIONS.map((option) => (
       <button
         key={option.value}
@@ -30,5 +28,5 @@ export const FavourToggle = ({ value, onChange }: FavourToggleProps) => (
         {option.label}
       </button>
     ))}
-  </fieldset>
+  </div>
 );

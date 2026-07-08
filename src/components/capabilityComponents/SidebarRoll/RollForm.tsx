@@ -8,7 +8,7 @@ import {
 import { DieSizeToggle } from "./controls/DieSizeToggle";
 import { ExplodingToggle } from "./controls/ExplodingToggle";
 import { FavourToggle } from "./controls/FavourToggle";
-import { FieldLabel } from "./controls/FieldLabel";
+import { Field } from "./controls/Field";
 import { KeepToggle } from "./controls/KeepToggle";
 import { NumberCombo } from "./controls/NumberCombo";
 import { OperatorToggle } from "./controls/OperatorToggle";
@@ -80,9 +80,14 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <FieldLabel>Dice</FieldLabel>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        handleRoll();
+      }}
+      className="flex flex-col gap-4"
+    >
+      <Field label="Dice">
         <NumberCombo
           value={arity}
           onChange={(n) => setArity(Math.max(1, n))}
@@ -91,27 +96,23 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
           quickOptions={QUICK_PICKS}
           ariaLabel="Number of dice"
         />
-      </div>
+      </Field>
 
-      <div>
-        <FieldLabel>Die size</FieldLabel>
+      <Field label="Die size">
         <DieSizeToggle value={dieLabel} onChange={setDieLabel} />
-      </div>
+      </Field>
 
-      <div>
-        <FieldLabel>Favour</FieldLabel>
+      <Field label="Favour">
         <FavourToggle value={favour} onChange={setFavour} />
-      </div>
+      </Field>
 
-      <div>
-        <FieldLabel>Keep</FieldLabel>
+      <Field label="Keep">
         <KeepToggle value={keep} onChange={setKeep} />
-      </div>
+      </Field>
 
       <ExplodingToggle value={exploding} onChange={setExploding} />
 
-      <div>
-        <FieldLabel>Modifier</FieldLabel>
+      <Field label="Modifier">
         <div className="flex flex-col gap-2">
           <OperatorToggle value={modOp} onChange={setModOp} />
           <NumberCombo
@@ -122,13 +123,9 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
             ariaLabel="Modifier value"
           />
         </div>
-      </div>
+      </Field>
 
-      <button
-        type="button"
-        onClick={handleRoll}
-        className="btn btn-primary mt-2 w-full"
-      >
+      <button type="submit" className="btn btn-primary mt-2 w-full">
         <Dices className="h-5 w-5" />
         Roll {rollSummary}
       </button>
@@ -139,7 +136,7 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
       >
         Reset
       </button>
-    </div>
+    </form>
   );
 });
 

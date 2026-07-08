@@ -11,10 +11,7 @@ type DieSizeToggleProps = {
 export const DieSizeToggle = ({ value, onChange }: DieSizeToggleProps) => (
   <div className="flex items-center gap-2">
     <span className="text-base-content/40 font-mono text-lg font-bold">d</span>
-    <fieldset
-      className="join m-0 min-w-0 flex-1 border-0 p-0"
-      aria-label="Die size"
-    >
+    <div className="join min-w-0 flex-1">
       {DIE_CHOICES.map((choice) => (
         <button
           key={choice.label}
@@ -29,6 +26,6 @@ export const DieSizeToggle = ({ value, onChange }: DieSizeToggleProps) => (
           {choice.label.slice(1)}
         </button>
       ))}
-    </fieldset>
+    </div>
   </div>
 );

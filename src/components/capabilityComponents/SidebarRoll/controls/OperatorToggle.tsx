@@ -8,12 +8,11 @@ type OperatorToggleProps = {
 
 const OPERATOR_OPTIONS: readonly Operator[] = ["+", "-", "*", "/"];
 
-// Segmented +/−/×/÷ instead of a native <select>.
+// Segmented +/−/×/÷ instead of a native <select>. A nested sub-group of the
+// Modifier field, so it keeps its own aria-label to distinguish it from the
+// operand input alongside.
 export const OperatorToggle = ({ value, onChange }: OperatorToggleProps) => (
-  <fieldset
-    className="join m-0 min-w-0 border-0 p-0"
-    aria-label="Modifier operator"
-  >
+  <fieldset className="join m-0 min-w-0 border-0 p-0" aria-label="Operator">
     {OPERATOR_OPTIONS.map((operator) => (
       <button
         key={operator}
