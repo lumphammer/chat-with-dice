@@ -5,6 +5,14 @@ import {
   type Operator,
   type RollFormula,
 } from "#/capabilities/roll/common";
+import { DieSizeToggle } from "./controls/DieSizeToggle";
+import { ExplodingToggle } from "./controls/ExplodingToggle";
+import { FavourToggle } from "./controls/FavourToggle";
+import { FieldLabel } from "./controls/FieldLabel";
+import { KeepToggle } from "./controls/KeepToggle";
+import { NumberCombo } from "./controls/NumberCombo";
+import { OperatorToggle } from "./controls/OperatorToggle";
+import { OPERATOR_GLYPHS } from "./controls/operatorGlyphs";
 import { Dices } from "lucide-react";
 import { memo, useState } from "react";
 
@@ -12,34 +20,13 @@ type RollFormProps = {
   onRoll: (formula: RollFormula) => void;
 };
 
-const RADIX_DECIMAL = 10;
 const MAX_ARITY = 20;
-
 const DEFAULT_DIE_LABEL = "d6";
-
-const KEEP_OPTIONS: { value: Keep; label: string }[] = [
-  { value: "all", label: "All dice" },
-  { value: "highest", label: "Keep highest" },
-  { value: "lowest", label: "Keep lowest" },
-  { value: "dropHighest", label: "Drop highest" },
-  { value: "dropLowest", label: "Drop lowest" },
-];
-
-const FAVOUR_OPTIONS: { value: Favour; label: string }[] = [
-  { value: "normal", label: "Normal" },
-  { value: "advantage", label: "Advantage" },
-  { value: "disadvantage", label: "Disadvantage" },
-];
-
-const OPERATOR_OPTIONS: Operator[] = ["+", "-", "*", "/"];
-
-const FieldLabel = ({ children }: { children: React.ReactNode }) => (
-  <p
-    className="text-base-content/50 mb-1 text-xs font-semibold tracking-wide
-      uppercase"
-  >
-    {children}
-  </p>
+// Values offered in each NumberCombo's ⋮ menu: 1…6, the common low counts.
+const QUICK_PICK_COUNT = 6;
+const QUICK_PICKS = Array.from(
+  { length: QUICK_PICK_COUNT },
+  (_, index) => index + 1,
 );
 
 export const RollForm = memo(({ onRoll }: RollFormProps) => {
@@ -61,6 +48,22 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
     setModOperand(0);
   };
 
+  // Live preview of the formula on the Roll button, e.g. "Roll 2d6 × 2".
+  const rollSummary = (
+    <>
+      {Math.max(1, arity)}
+      {dieLabel}{" "}
+      {modOperand !== 0 ? (
+        <>
+          <span className="text-xl">{OPERATOR_GLYPHS[modOp]}</span>
+          {modOperand}
+        </>
+      ) : (
+        ""
+      )}
+    </>
+  );
+
   const handleRoll = () => {
     const die =
       DIE_CHOICES.find((choice) => choice.label === dieLabel) ?? DIE_CHOICES[1];
@@ -78,108 +81,45 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Dice count + size */}
       <div>
         <FieldLabel>Dice</FieldLabel>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min={1}
-            max={MAX_ARITY}
-            value={arity}
-            onChange={(e) =>
-              setArity(
-                Math.max(1, parseInt(e.target.value, RADIX_DECIMAL) || 1),
-              )
-            }
-            onFocus={(e) => e.target.select()}
-            className="input input-sm w-16 text-center"
-            aria-label="Number of dice"
-          />
-          <span className="text-base-content/40 font-mono font-bold">d</span>
-          <select
-            value={dieLabel}
-            onChange={(e) => setDieLabel(e.target.value)}
-            className="select select-sm flex-1"
-            aria-label="Die size"
-          >
-            {DIE_CHOICES.map((choice) => (
-              <option key={choice.label} value={choice.label}>
-                {choice.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <NumberCombo
+          value={arity}
+          onChange={(n) => setArity(Math.max(1, n))}
+          min={1}
+          max={MAX_ARITY}
+          quickOptions={QUICK_PICKS}
+          ariaLabel="Number of dice"
+        />
       </div>
 
-      {/* Favour */}
+      <div>
+        <FieldLabel>Die size</FieldLabel>
+        <DieSizeToggle value={dieLabel} onChange={setDieLabel} />
+      </div>
+
       <div>
         <FieldLabel>Favour</FieldLabel>
-        <select
-          value={favour}
-          onChange={(e) => setFavour(e.target.value as Favour)}
-          className="select select-sm w-full"
-        >
-          {FAVOUR_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        <FavourToggle value={favour} onChange={setFavour} />
       </div>
 
-      {/* Keep */}
       <div>
         <FieldLabel>Keep</FieldLabel>
-        <select
-          value={keep}
-          onChange={(e) => setKeep(e.target.value as Keep)}
-          className="select select-sm w-full"
-        >
-          {KEEP_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        <KeepToggle value={keep} onChange={setKeep} />
       </div>
 
-      {/* Exploding */}
-      <label className="flex cursor-pointer items-center gap-3">
-        <input
-          type="checkbox"
-          checked={exploding}
-          onChange={(e) => setExploding(e.target.checked)}
-          className="checkbox checkbox-sm"
-        />
-        <span className="text-sm">Exploding dice</span>
-      </label>
+      <ExplodingToggle value={exploding} onChange={setExploding} />
 
-      {/* Modifier */}
       <div>
         <FieldLabel>Modifier</FieldLabel>
-        <div className="flex items-center gap-2">
-          <select
-            value={modOp}
-            onChange={(e) => setModOp(e.target.value as Operator)}
-            className="select select-sm w-16"
-            aria-label="Modifier operator"
-          >
-            {OPERATOR_OPTIONS.map((op) => (
-              <option key={op} value={op}>
-                {op}
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
+        <div className="flex flex-col gap-2">
+          <OperatorToggle value={modOp} onChange={setModOp} />
+          <NumberCombo
             value={modOperand}
-            onChange={(e) =>
-              setModOperand(parseInt(e.target.value, RADIX_DECIMAL) || 0)
-            }
-            onFocus={(e) => e.target.select()}
-            className="input input-sm flex-1 text-center"
-            aria-label="Modifier value"
+            onChange={setModOperand}
+            min={0}
+            quickOptions={QUICK_PICKS}
+            ariaLabel="Modifier value"
           />
         </div>
       </div>
@@ -190,7 +130,7 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
         className="btn btn-primary mt-2 w-full"
       >
         <Dices className="h-5 w-5" />
-        Roll
+        Roll {rollSummary}
       </button>
       <button
         type="button"
