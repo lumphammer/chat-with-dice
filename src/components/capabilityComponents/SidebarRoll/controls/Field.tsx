@@ -13,8 +13,8 @@ type FieldProps = {
 export const Field = ({ label, children }: FieldProps) => (
   <fieldset className="m-0 min-w-0 border-0 p-0">
     <legend
-      className="text-base-content/50 mb-1 p-0 text-xs font-semibold
-        tracking-wide uppercase"
+      className="text-base-content mb-1 p-0 text-xs font-semibold tracking-wide
+        uppercase"
     >
       {label}
     </legend>

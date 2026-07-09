@@ -50,7 +50,6 @@ export const KeepToggle = ({ value, onChange }: KeepToggleProps) => {
         value={mode}
         options={KEEP_MODES}
         onChange={(nextMode) => onChange(encodeKeep(nextMode, end))}
-        className="join min-w-0 flex-1"
         ariaLabel="Keep or drop dice"
       />
       <SegmentedRadioGroup
@@ -58,9 +57,7 @@ export const KeepToggle = ({ value, onChange }: KeepToggleProps) => {
         value={mode === "all" ? undefined : end}
         options={KEEP_ENDS}
         onChange={(nextEnd) => onChange(encodeKeep(mode, nextEnd))}
-        className="join min-w-0"
         disabled={mode === "all"}
-        optionClassName="btn btn-sm join-item px-2"
         ariaLabel="Which end"
       />
     </div>

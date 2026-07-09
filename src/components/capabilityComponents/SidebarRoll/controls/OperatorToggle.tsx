@@ -26,8 +26,8 @@ export const OperatorToggle = ({ value, onChange }: OperatorToggleProps) => {
       value={value}
       onChange={onChange}
       ariaLabel="Operator"
-      className="join min-w-0"
-      optionClassName="btn join-item flex-1 text-2xl leading-none"
+      optionClassName="text-2xl align-top pb-1"
+      // className=""
       options={OPERATOR_SEGMENT_OPTIONS}
     />
   );

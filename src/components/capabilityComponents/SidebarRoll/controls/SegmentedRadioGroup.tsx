@@ -7,17 +7,6 @@ export type SegmentedRadioOption<Value extends string> = {
   disabled?: boolean;
 };
 
-type SegmentedRadioGroupProps<Value extends string> = {
-  name: string;
-  value?: Value;
-  options: readonly SegmentedRadioOption<Value>[];
-  onChange: (value: Value) => void;
-  ariaLabel?: string;
-  className?: string;
-  disabled?: boolean;
-  optionClassName?: string;
-};
-
 export const SegmentedRadioGroup = <Value extends string>({
   name,
   value,
@@ -26,8 +15,17 @@ export const SegmentedRadioGroup = <Value extends string>({
   ariaLabel,
   className = "join w-full",
   disabled = false,
-  optionClassName = "btn btn-sm join-item min-w-0 flex-1 px-1",
-}: SegmentedRadioGroupProps<Value>) => {
+  optionClassName = "",
+}: {
+  name: string;
+  value?: Value;
+  options: readonly SegmentedRadioOption<Value>[];
+  onChange: (value: Value) => void;
+  ariaLabel?: string;
+  className?: string;
+  disabled?: boolean;
+  optionClassName?: string;
+}) => {
   const controls = (
     <div className={className}>
       {options.map((option) => {
@@ -36,7 +34,8 @@ export const SegmentedRadioGroup = <Value extends string>({
         return (
           <label
             key={option.value}
-            className={`${optionClassName} focus-within:ring-primary/50
+            className={`${optionClassName} btn btn-sm
+            focus-within:ring-primary/50 join-item min-w-0 flex-1 px-1
             focus-within:ring-2 ${isSelected ? "btn-primary" : "btn-neutral"}
             ${isDisabled ? "btn-disabled" : ""}`}
           >

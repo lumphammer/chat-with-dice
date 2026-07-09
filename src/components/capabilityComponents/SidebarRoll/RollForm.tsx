@@ -85,9 +85,9 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
         event.preventDefault();
         handleRoll();
       }}
-      className="flex flex-col gap-4"
+      className="mt-4 flex flex-col gap-4"
     >
-      <Field label="Dice">
+      <Field label="Number of dice">
         <NumberCombo
           value={arity}
           onChange={(n) => setArity(Math.max(1, n))}

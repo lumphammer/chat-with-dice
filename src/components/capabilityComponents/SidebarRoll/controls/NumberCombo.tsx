@@ -35,23 +35,23 @@ export const NumberCombo = ({
     onValueChange={(details) => {
       if (!Number.isNaN(details.valueAsNumber)) onChange(details.valueAsNumber);
     }}
-    className="flex items-stretch gap-1"
+    className="flex items-stretch gap-1 join"
   >
     <NumberInput.DecrementTrigger
-      className="btn btn-neutral btn-lg btn-square"
+      className="btn btn-sm px-4 btn-neutraljoin-item"
       aria-label={`Decrease ${ariaLabel}`}
     >
       <ChevronsDown className="h-5 w-5" />
     </NumberInput.DecrementTrigger>
 
     <NumberInput.Input
-      className="input input-lg w-16 flex-1 text-center text-lg font-bold"
+      className="input input-sm w-16 flex-1 text-center text-lg font-bold join-item"
       aria-label={ariaLabel}
     />
 
     <Menu.Root onSelect={(details) => onChange(Number(details.value))}>
       <Menu.Trigger
-        className="btn btn-lg btn-square"
+        className="btn btn-md btn-square join-item"
         aria-label={`Choose ${ariaLabel} from list`}
       >
         <EllipsisVertical className="h-4 w-4" />
@@ -81,7 +81,7 @@ export const NumberCombo = ({
     </Menu.Root>
 
     <NumberInput.IncrementTrigger
-      className="btn btn-neutral btn-lg btn-square"
+      className="btn btn-neutral btn-sm px-4 join-item"
       aria-label={`Increase ${ariaLabel}`}
     >
       <ChevronsUp className="h-5 w-5" />
