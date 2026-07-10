@@ -1,4 +1,5 @@
 import { DIE_CHOICES } from "#/capabilities/roll/common";
+import { Fieldset } from "./Fieldset";
 import { SegmentedRadioGroup } from "./SegmentedRadioGroup";
 import { useId } from "react";
 
@@ -20,14 +21,15 @@ export const DieSizeToggle = ({
 }) => {
   const name = useId();
   return (
-    <div className="flex items-center gap-2">
-      <span className="btn p-0">d</span>
+    <Fieldset label="Die Size" className="flex">
+      <span className="btn btn-sm mr-2 p-0">d</span>
       <SegmentedRadioGroup
         name={name}
         value={value}
         onChange={onChange}
+        className="flex-1"
         options={DIE_SIZE_OPTIONS}
       />
-    </div>
+    </Fieldset>
   );
 };

@@ -8,7 +8,7 @@ import {
 import { DieSizeToggle } from "./controls/DieSizeToggle";
 import { ExplodingToggle } from "./controls/ExplodingToggle";
 import { FavourToggle } from "./controls/FavourToggle";
-import { Field } from "./controls/Field";
+import { Fieldset } from "./controls/Fieldset";
 import { KeepToggle } from "./controls/KeepToggle";
 import { NumberCombo } from "./controls/NumberCombo";
 import { OperatorToggle } from "./controls/OperatorToggle";
@@ -87,7 +87,7 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
       }}
       className="mt-4 flex flex-col gap-4"
     >
-      <Field label="Number of dice">
+      <Fieldset label="Number of dice">
         <NumberCombo
           value={arity}
           onChange={(n) => setArity(Math.max(1, n))}
@@ -96,23 +96,11 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
           quickOptions={QUICK_PICKS}
           ariaLabel="Number of dice"
         />
-      </Field>
+      </Fieldset>
 
-      <Field label="Die size">
-        <DieSizeToggle value={dieLabel} onChange={setDieLabel} />
-      </Field>
+      <DieSizeToggle value={dieLabel} onChange={setDieLabel} />
 
-      <Field label="Favour">
-        <FavourToggle value={favour} onChange={setFavour} />
-      </Field>
-
-      <Field label="Keep">
-        <KeepToggle value={keep} onChange={setKeep} />
-      </Field>
-
-      <ExplodingToggle value={exploding} onChange={setExploding} />
-
-      <Field label="Modifier">
+      <Fieldset label="Modifier">
         <div className="flex flex-col gap-2">
           <OperatorToggle value={modOp} onChange={setModOp} />
           <NumberCombo
@@ -123,7 +111,13 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
             ariaLabel="Modifier value"
           />
         </div>
-      </Field>
+      </Fieldset>
+
+      <FavourToggle value={favour} onChange={setFavour} />
+
+      <KeepToggle value={keep} onChange={setKeep} />
+
+      <ExplodingToggle value={exploding} onChange={setExploding} />
 
       <button type="submit" className="btn btn-primary mt-2 w-full">
         <Dices className="h-5 w-5" />

@@ -1,4 +1,5 @@
 import type { Keep } from "#/capabilities/roll/common";
+import { Fieldset } from "./Fieldset";
 import { SegmentedRadioGroup } from "./SegmentedRadioGroup";
 import { useId } from "react";
 
@@ -44,11 +45,12 @@ export const KeepToggle = ({ value, onChange }: KeepToggleProps) => {
   const modeName = useId();
   const endName = useId();
   return (
-    <div className="flex gap-2">
+    <Fieldset label="Keep" className="flex gap-2">
       <SegmentedRadioGroup
         name={modeName}
         value={mode}
         options={KEEP_MODES}
+        className="flex-1"
         onChange={(nextMode) => onChange(encodeKeep(nextMode, end))}
         ariaLabel="Keep or drop dice"
       />
@@ -57,9 +59,10 @@ export const KeepToggle = ({ value, onChange }: KeepToggleProps) => {
         value={mode === "all" ? undefined : end}
         options={KEEP_ENDS}
         onChange={(nextEnd) => onChange(encodeKeep(mode, nextEnd))}
+        className="flex-1"
         disabled={mode === "all"}
         ariaLabel="Which end"
       />
-    </div>
+    </Fieldset>
   );
 };

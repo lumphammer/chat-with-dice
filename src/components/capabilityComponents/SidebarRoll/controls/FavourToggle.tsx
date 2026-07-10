@@ -1,4 +1,5 @@
 import type { Favour } from "#/capabilities/roll/common";
+import { Fieldset } from "./Fieldset";
 import { SegmentedRadioGroup } from "./SegmentedRadioGroup";
 import { useId } from "react";
 
@@ -20,11 +21,13 @@ export const FavourToggle = ({
 }) => {
   const name = useId();
   return (
-    <SegmentedRadioGroup
-      name={name}
-      value={value}
-      options={FAVOUR_OPTIONS}
-      onChange={onChange}
-    />
+    <Fieldset label="Favour">
+      <SegmentedRadioGroup
+        name={name}
+        value={value}
+        options={FAVOUR_OPTIONS}
+        onChange={onChange}
+      />
+    </Fieldset>
   );
 };

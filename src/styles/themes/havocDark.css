@@ -434,9 +434,12 @@
         0 calc(100% + 1px)
       );
       border-radius: 0;
-      &[disabled] {
+      &[disabled],
+      &:has([disabled]) {
         --btn-color: var(--color-base-content);
         opacity: 50%;
+        cursor: not-allowed;
+        pointer-events: all;
       }
       &:hover {
         background: radial-gradient(

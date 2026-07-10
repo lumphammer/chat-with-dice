@@ -1,3 +1,4 @@
+import { Fieldset } from "./Fieldset";
 import type { ReactNode } from "react";
 
 export type SegmentedRadioOption<Value extends string> = {
@@ -13,7 +14,7 @@ export const SegmentedRadioGroup = <Value extends string>({
   options,
   onChange,
   ariaLabel,
-  className = "join w-full",
+  className = "",
   disabled = false,
   optionClassName = "",
 }: {
@@ -26,45 +27,51 @@ export const SegmentedRadioGroup = <Value extends string>({
   disabled?: boolean;
   optionClassName?: string;
 }) => {
-  const controls = (
-    <div className={className}>
-      {options.map((option) => {
-        const isSelected = option.value === value;
-        const isDisabled = disabled || option.disabled;
-        return (
-          <label
-            key={option.value}
-            className={`${optionClassName} btn btn-sm
-            focus-within:ring-primary/50 join-item min-w-0 flex-1 px-1
-            focus-within:ring-2 ${isSelected ? "btn-primary" : "btn-neutral"}
-            ${isDisabled ? "btn-disabled" : ""}`}
-          >
-            <input
-              type="radio"
-              name={name}
-              value={option.value}
-              checked={isSelected}
-              disabled={isDisabled}
-              onChange={() => onChange(option.value)}
-              className="sr-only"
-              aria-label={option.ariaLabel}
-            />
-            {option.label}
-          </label>
-        );
-      })}
-    </div>
-  );
+  const controls = options.map((option) => {
+    const isSelected = option.value === value;
+    const isDisabled = disabled || option.disabled;
+    return (
+      <label
+        key={option.value}
+        // className={`${optionClassName} btn btn-sm btn-neutral
+        //   focus-within:ring-primary/50 join-item has-checked:btn-primary
+        //   has-disabled:btn-disabled group-disabled:btn-disabled
+        //   group-has-disabled:btn-disabled disabled:btn-disabled min-w-0 flex-1
+        //   px-1 focus-within:ring-2`}
+        className={`${optionClassName} btn btn-sm btn-neutral
+          focus-within:ring-primary/50 join-item has-checked:btn-primary
+          has-disabled:btn-disabled min-w-0 flex-1 px-1 focus-within:ring-2`}
+      >
+        <input
+          type="radio"
+          name={name}
+          value={option.value}
+          checked={isSelected}
+          disabled={isDisabled}
+          onChange={() => onChange(option.value)}
+          className="sr-only"
+          aria-label={option.ariaLabel}
+        />
+        {option.label}
+      </label>
+    );
+  });
 
-  if (!ariaLabel) return controls;
+  if (!ariaLabel)
+    return (
+      <div className="group join m-0 w-full min-w-0 border-0 p-0">
+        {controls}
+      </div>
+    );
 
   return (
-    <fieldset
-      className="m-0 min-w-0 border-0 p-0"
-      aria-label={ariaLabel}
+    <Fieldset
+      className={`group join m-0 w-full min-w-0 border-0 p-0 ${className}`}
+      label={ariaLabel}
       disabled={disabled}
+      showLegend={false}
     >
       {controls}
-    </fieldset>
+    </Fieldset>
   );
 };
