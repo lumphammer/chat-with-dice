@@ -67,15 +67,20 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
   const handleRoll = () => {
     const die =
       DIE_CHOICES.find((choice) => choice.label === dieLabel) ?? DIE_CHOICES[1];
+    const normalizedArity = Math.max(1, Math.trunc(arity));
+    const normalizedModOperand = Math.trunc(modOperand);
+
     onRoll({
-      arity: Math.max(1, arity),
+      arity: normalizedArity,
       cardinality: die.cardinality,
       dieType: die.dieType,
       keep,
       favour,
       exploding,
       modifier:
-        modOperand !== 0 ? { operator: modOp, operand: modOperand } : undefined,
+        normalizedModOperand !== 0
+          ? { operator: modOp, operand: normalizedModOperand }
+          : undefined,
     });
   };
 
@@ -90,7 +95,7 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
       <Fieldset label="Number of dice">
         <NumberCombo
           value={arity}
-          onChange={(n) => setArity(Math.max(1, n))}
+          onChange={(n) => setArity(Math.max(1, Math.trunc(n)))}
           min={1}
           max={MAX_ARITY}
           quickOptions={QUICK_PICKS}
@@ -105,7 +110,7 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
           <OperatorToggle value={modOp} onChange={setModOp} />
           <NumberCombo
             value={modOperand}
-            onChange={setModOperand}
+            onChange={(n) => setModOperand(Math.trunc(n))}
             min={0}
             quickOptions={QUICK_PICKS}
             ariaLabel="Modifier value"
