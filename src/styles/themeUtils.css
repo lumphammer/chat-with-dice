@@ -128,30 +128,33 @@
     var(--_bevel-horiz-dead) + 2 * var(--_bevel-clip-bleed)
   );
 
-  /* alpha-gated colours: toggle 0 -> fully transparent -> no-op under screen */
+  /* Alpha-gated colours: a toggled-off layer becomes fully transparent (a no-op
+  under screen). We *scale* the source alpha rather than replacing it, so a
+  transparent --bevel-color stays transparent instead of decaying to opaque
+  black (transparent === rgba(0,0,0,0), whose l/c/h are black). */
   --_bevel-c-tl: oklch(
-    from var(--bevel-color) l c h / calc(var(--bevel-tl) * 100%)
+    from var(--bevel-color) l c h / calc(alpha* var(--bevel-tl))
   );
   --_bevel-c-tr: oklch(
-    from var(--bevel-color) l c h / calc(var(--bevel-tr) * 100%)
+    from var(--bevel-color) l c h / calc(alpha* var(--bevel-tr))
   );
   --_bevel-c-br: oklch(
-    from var(--bevel-color) l c h / calc(var(--bevel-br) * 100%)
+    from var(--bevel-color) l c h / calc(alpha* var(--bevel-br))
   );
   --_bevel-c-bl: oklch(
-    from var(--bevel-color) l c h / calc(var(--bevel-bl) * 100%)
+    from var(--bevel-color) l c h / calc(alpha* var(--bevel-bl))
   );
   --_bevel-c-t: oklch(
-    from var(--bevel-color) l c h / calc(var(--bevel-border-t) * 100%)
+    from var(--bevel-color) l c h / calc(alpha* var(--bevel-border-t))
   );
   --_bevel-c-r: oklch(
-    from var(--bevel-color) l c h / calc(var(--bevel-border-r) * 100%)
+    from var(--bevel-color) l c h / calc(alpha* var(--bevel-border-r))
   );
   --_bevel-c-b: oklch(
-    from var(--bevel-color) l c h / calc(var(--bevel-border-b) * 100%)
+    from var(--bevel-color) l c h / calc(alpha* var(--bevel-border-b))
   );
   --_bevel-c-l: oklch(
-    from var(--bevel-color) l c h / calc(var(--bevel-border-l) * 100%)
+    from var(--bevel-color) l c h / calc(alpha* var(--bevel-border-l))
   );
 
   background-color: transparent;
