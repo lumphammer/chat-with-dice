@@ -14,6 +14,8 @@
  *   --bevel-color         border colour                        (<color>)
  *   --bevel-tl/tr/br/bl   chamfer + bevel a corner             (0 | 1)
  *   --bevel-border-t/r/b/l draw a straight border on a side    (0 | 1)
+ *   --bevel-clip-bleed    how far the clip-path sits outside the box so a
+ *                         :focus-visible outline shows (default 6px)
  *   --bevel-fill          extra background layer(s), drawn last (default none)
  *   --bevel-border-blend  background-blend-mode for the border layers (screen)
  *   --bevel-fill-blend    background-blend-mode for those fills
@@ -113,11 +115,18 @@
   );
   --_bevel-diag-end: calc(var(--_bevel-diag-first-bit) + var(--_bevel-fudge));
 
-  /* clip-path chamfer offset per corner (collapses to a point when toggled off) */
-  --_bevel-tl-off: calc(var(--bevel-tl) * var(--_bevel-horiz-dead));
-  --_bevel-tr-off: calc(var(--bevel-tr) * var(--_bevel-horiz-dead));
-  --_bevel-br-off: calc(var(--bevel-br) * var(--_bevel-horiz-dead));
-  --_bevel-bl-off: calc(var(--bevel-bl) * var(--_bevel-horiz-dead));
+  /* Clip-path geometry. We expand the whole polygon outward by
+  --bevel-clip-bleed so a :focus-visible outline (drawn just outside the border
+  box) isn't clipped away. Each chamfer's diagonal has slope +/-1, so its two
+  vertices slide *along that same line* out to the bled edges: the line's
+  position is unchanged, so the body's corner is still clipped identically,
+  while a square (toggled-off) corner just pushes out to a sharp bled corner. */
+  --_bevel-clip-bleed: var(--bevel-clip-bleed, 6px);
+  --_bevel-clip-nb: calc(-1 * var(--_bevel-clip-bleed));
+  /* distance a chamfered vertex travels along its diagonal: horiz-dead + 2*bleed */
+  --_bevel-clip-chamf: calc(
+    var(--_bevel-horiz-dead) + 2 * var(--_bevel-clip-bleed)
+  );
 
   /* alpha-gated colours: toggle 0 -> fully transparent -> no-op under screen */
   --_bevel-c-tl: oklch(
@@ -152,14 +161,37 @@
   border-radius: 0;
 
   clip-path: polygon(
-    var(--_bevel-tl-off) 0,
-    calc(100% - var(--_bevel-tr-off)) 0,
-    100% var(--_bevel-tr-off),
-    100% calc(100% - var(--_bevel-br-off)),
-    calc(100% - var(--_bevel-br-off)) 100%,
-    var(--_bevel-bl-off) 100%,
-    0 calc(100% - var(--_bevel-bl-off)),
-    0 var(--_bevel-tl-off)
+    /* top-left */
+      calc(var(--_bevel-clip-nb) + var(--bevel-tl) * var(--_bevel-clip-chamf))
+      var(--_bevel-clip-nb),
+    /* top-right */
+      calc(
+        100% + var(--_bevel-clip-bleed) - var(--bevel-tr) *
+          var(--_bevel-clip-chamf)
+      )
+      var(--_bevel-clip-nb),
+    calc(100% + var(--_bevel-clip-bleed))
+      calc(var(--_bevel-clip-nb) + var(--bevel-tr) * var(--_bevel-clip-chamf)),
+    /* bottom-right */ calc(100% + var(--_bevel-clip-bleed))
+      calc(
+        100% + var(--_bevel-clip-bleed) - var(--bevel-br) *
+          var(--_bevel-clip-chamf)
+      ),
+    calc(
+        100% + var(--_bevel-clip-bleed) - var(--bevel-br) *
+          var(--_bevel-clip-chamf)
+      )
+      calc(100% + var(--_bevel-clip-bleed)),
+    /* bottom-left */
+      calc(var(--_bevel-clip-nb) + var(--bevel-bl) * var(--_bevel-clip-chamf))
+      calc(100% + var(--_bevel-clip-bleed)),
+    var(--_bevel-clip-nb)
+      calc(
+        100% + var(--_bevel-clip-bleed) - var(--bevel-bl) *
+          var(--_bevel-clip-chamf)
+      ),
+    /* back to top-left */ var(--_bevel-clip-nb)
+      calc(var(--_bevel-clip-nb) + var(--bevel-tl) * var(--_bevel-clip-chamf))
   );
 
   background:
