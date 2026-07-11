@@ -61,8 +61,7 @@ export const NumberCombo = ({
         <Menu.Positioner>
           <Menu.Content
             className="bg-base-100 border-base-content/10 rounded-box z-50
-              max-h-52 min-w-16 overflow-y-auto border p-1 shadow-lg
-              focus:outline-none"
+              min-w-16 overflow-y-auto border p-1 shadow-lg focus:outline-none"
           >
             {quickOptions.map((option) => (
               <Menu.Item
