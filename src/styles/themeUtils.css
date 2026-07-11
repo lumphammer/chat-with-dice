@@ -15,6 +15,7 @@
  *   --bevel-tl/tr/br/bl   chamfer + bevel a corner             (0 | 1)
  *   --bevel-border-t/r/b/l draw a straight border on a side    (0 | 1)
  *   --bevel-fill          extra background layer(s), drawn last (default none)
+ *   --bevel-border-blend  background-blend-mode for the border layers (screen)
  *   --bevel-fill-blend    background-blend-mode for those fills
  *   --bevel-mix-blend     mix-blend-mode for the whole element (default screen)
  *
@@ -145,6 +146,10 @@
   );
 
   background-color: transparent;
+  /* corner shape is entirely owned by clip-path below; a stray border-radius
+  would round the box the border/background layers paint into and soften the
+  square corners */
+  border-radius: 0;
 
   clip-path: polygon(
     var(--_bevel-tl-off) 0,
@@ -211,8 +216,14 @@
       no-repeat linear-gradient(var(--_bevel-c-l) 0, var(--_bevel-c-l) 100%),
     /* consumer-injected decorative fill */ var(--bevel-fill, transparent);
 
+  /* The 8 border layers share --bevel-border-blend (screen for the glowy
+  chat-bubble look; set it to `normal` for crisp opaque borders). The fill
+  layer(s) get their own blend via --bevel-fill-blend. */
   background-blend-mode:
-    screen, screen, screen, screen, screen, screen, screen, screen,
+    var(--bevel-border-blend, screen), var(--bevel-border-blend, screen),
+    var(--bevel-border-blend, screen), var(--bevel-border-blend, screen),
+    var(--bevel-border-blend, screen), var(--bevel-border-blend, screen),
+    var(--bevel-border-blend, screen), var(--bevel-border-blend, screen),
     var(--bevel-fill-blend, normal);
   mix-blend-mode: var(--bevel-mix-blend, screen);
 }

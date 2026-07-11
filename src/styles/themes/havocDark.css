@@ -211,23 +211,33 @@
       letter-spacing: 0.05em;
     }
     .btn {
+      @apply bevel;
       font-family: "Orbitron Variable";
-      background: radial-gradient(
+      color: var(--btn-color-text);
+      /* the bevel utility draws every border; drop daisyUI's native one so it
+      doesn't double up (or leak through on borderless variants like btn-soft) */
+      border: 0;
+
+      /* Chamfer only the bottom-right corner, but draw a real border all the
+      way round — including across the chamfer, which the old clip-path could
+      not do. */
+      --bevel-radius: 10px;
+      --bevel-border-width: 1px;
+      --bevel-color: var(--btn-color);
+      --bevel-br: 1;
+      --bevel-border-t: 1;
+      --bevel-border-r: 1;
+      --bevel-border-b: 1;
+      --bevel-border-l: 1;
+      /* crisp opaque borders + normal compositing (not the glowy bubble look) */
+      --bevel-border-blend: normal;
+      --bevel-mix-blend: normal;
+      --bevel-fill: radial-gradient(
         ellipse at center,
         transparent 0%,
         oklch(from var(--btn-color) l c h / 30%) 100%
       );
-      color: var(--btn-color-text);
-      border: 1px solid var(--btn-color);
 
-      clip-path: polygon(
-        0 0,
-        calc(100% + 1px) 0,
-        calc(100% + 1px) calc(100% - 10px),
-        calc(100% - 10px) calc(100% + 1px),
-        0 calc(100% + 1px)
-      );
-      border-radius: 0;
       &[disabled],
       &:has([disabled]) {
         --btn-color: var(--color-base-content);
@@ -236,7 +246,7 @@
         pointer-events: all;
       }
       &:hover {
-        background: radial-gradient(
+        --bevel-fill: radial-gradient(
           ellipse at center,
           transparent 0%,
           oklch(from var(--btn-color) l c h / 15%) 100%
@@ -246,10 +256,12 @@
       }
     }
     .btn-soft {
-      border: none;
+      /* no border, keep the fill + chamfer */
+      --bevel-color: transparent;
     }
     .btn-outline {
-      background: none;
+      /* border only, no fill */
+      --bevel-fill: transparent;
     }
     .input,
     .select {
