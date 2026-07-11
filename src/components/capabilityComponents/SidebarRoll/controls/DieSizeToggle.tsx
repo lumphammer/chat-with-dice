@@ -22,7 +22,7 @@ export const DieSizeToggle = ({
   const name = useId();
   return (
     <Fieldset label="Die Size" className="flex">
-      <span className="btn btn-sm mr-2 p-0">d</span>
+      <span className="btn btn-sm btn-ghost mr-2 p-0">d</span>
       <SegmentedRadioGroup
         name={name}
         value={value}

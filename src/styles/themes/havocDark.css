@@ -263,6 +263,11 @@
       /* border only, no fill */
       --bevel-fill: transparent;
     }
+    .btn-ghost {
+      /* no border, no fill */
+      --bevel-color: transparent;
+      --bevel-fill: transparent;
+    }
     .input,
     .select {
       border-radius: 0;
