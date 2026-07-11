@@ -131,247 +131,41 @@
     cover;
 }
 
-@property --hdt-border-width-unitless {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 0;
-}
-@property --hdt-border-radius-unitless {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 0;
-}
-
-@property --hdt-horiz-dead-unitless {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 0;
-}
-
-@property --hdt-diag-last-bit-unitless {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 0;
-}
-
-@property --hdt-unit {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --hdt-border-width {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --hdt-border-radius {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --hdt-horiz-dead {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --hdt-diag-total {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --hdt-diag-last-bit {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --hdt-diag-first-bit {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --hdt-diag-end-of-line {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-
-@property --hdt-diag-last-bit {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --hdt-diag-last-bit {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-
 [data-theme="havocDark"] {
   @layer utilities {
     .chat-bubble {
-      background-color: transparent;
+      @apply bevel;
       padding: 1em;
-      /* hdt* prefix to avoid clashing and make it easier to search on dev tools */
-      --hdt-border-color: oklch(80% 50% var(--user-hue));
-      --hdt-trans-color: oklch(60% 50% var(--user-hue)/30%);
+      --bevel-color: oklch(80% 50% var(--user-hue));
+      --hdt-trans-color: oklch(60% 50% var(--user-hue) / 30%);
 
-      /**
-       * Hold onto yourself, we're doing some more trigonometry in CSS! The
-       * basic idea is to draw in a bevelled edge down the left hand side using
-       * background elements with linear-gradients. There are three, and each
-       * one has a fixed position and size, and is non-repeating.
-       *
-       * The first one is a square in the top left. It has a "gradient" which
-       * effectively creates a diagonal line at 45 degrees. The is the top part
-       * of the bevel.
-       *
-       * The second is a thin rectangle down the left hand side.
-       *
-       * The third is a square at the bottom left, like the first one but angled
-       * at 90 degrees to it. This is the bottom part of the bevel.
-       *
-       * Then we also add a cool sci-fi glowing scanline effect with two more
-       * background elements.
-       */
-
-      /* we need unitless values so we can do pow(...) */
-      --hdt-border-width-unitless: 3;
-      --hdt-border-radius-unitless: 9;
-      /* define the "unit" as one of whatever we're using */
-      --hdt-unit: 1px;
-      /* unitless * unit = actual length */
-      --hdt-border-width: calc(
-        var(--hdt-border-width-unitless) * var(--hdt-unit)
-      );
-      --hdt-border-radius: calc(
-        var(--hdt-border-radius-unitless) * var(--hdt-unit)
-      );
-      /* distance between border width and border radius */
-      --hdt-horiz-dead-unitless: calc(
-        var(--hdt-border-radius-unitless) - var(--hdt-border-width-unitless)
-      );
-      --hdt-horiz-dead: calc(var(--hdt-horiz-dead-unitless) * var(--hdt-unit));
-
-      /* total diagonal measurement of the corner box */
-      --hdt-diag-total: hypot(
-        var(--hdt-border-radius),
-        var(--hdt-border-radius)
-      );
-
-      /* in the linear-gradient that defined the corner shape, the lengh from
-      the edge of the border to the inside corner of the box*/
-      --hdt-diag-last-bit-unitless: sqrt(
-        calc(pow(var(--hdt-horiz-dead-unitless), 2) / 2)
-      );
-      --hdt-diag-last-bit: calc(
-        var(--hdt-diag-last-bit-unitless) * var(--hdt-unit)
-      );
-
-      /* because of antialiasing, we need to fudge this a tiny bit */
-      --hdt-border-width-fudge: calc(var(--hdt-border-width) * 1.1);
-
-      /*the distance from the top left corner of the corner box to the start of
-      the border*/
-      --hdt-diag-first-bit: calc(
-        var(--hdt-diag-total) -
-          calc(var(--hdt-border-width-fudge) + var(--hdt-diag-last-bit))
-      );
-      /* the distance from the tiop left corner of the corner box to the *end*
-      of the border */
-      --hdt-diag-end-of-line: calc(
-        var(--hdt-diag-first-bit) + var(--hdt-border-width-fudge)
-      );
-
-      /* blend modes... keeping everything screen enhances the sci-fi aesthetic.
-      "soft-light" on the big horizontal gradient means the whole thing fades
-      off nicely */
-      background-blend-mode: screen, screen, screen, soft-light, screen;
-      mix-blend-mode: screen;
-
-      clip-path: polygon(
-        var(--hdt-horiz-dead) 0,
-        100% 0,
-        100% 100%,
-        var(--hdt-horiz-dead) 100%,
-
-        0 calc(100% - var(--hdt-horiz-dead)),
-        0 var(--hdt-horiz-dead)
-      );
-
-      background:
-        0 0 / var(--hdt-border-radius) var(--hdt-border-radius) no-repeat
-          linear-gradient(
-            135deg,
-            transparent 0%,
-            transparent var(--hdt-diag-first-bit),
-            var(--hdt-border-color) var(--hdt-diag-first-bit),
-            var(--hdt-border-color) var(--hdt-diag-end-of-line),
-            transparent var(--hdt-diag-end-of-line)
-          ),
-        0 var(--hdt-border-radius) / var(--hdt-border-width)
-          calc(100% - calc(2 * var(--hdt-border-radius))) no-repeat
-          linear-gradient(
-            90deg,
-            var(--hdt-border-color) 0,
-            var(--hdt-border-color) var(--hdt-border-width)
-          ),
-        0 100% / var(--hdt-border-radius) var(--hdt-border-radius) no-repeat
-          linear-gradient(
-            45deg,
-            transparent 0%,
-            transparent var(--hdt-diag-first-bit),
-            var(--hdt-border-color) var(--hdt-diag-first-bit),
-            var(--hdt-border-color) var(--hdt-diag-end-of-line),
-            transparent var(--hdt-diag-end-of-line)
-          ),
-        /*gradient*/
-          repeating-linear-gradient(
-            to bottom,
-            transparent 0px,
-            oklch(from var(--hdt-trans-color) l c h / 20%) 5px,
-            transparent 5px
-          ),
+      /* Left-oriented: bevel the top-left and bottom-left corners and draw the
+      border down the left side. The sci-fi scanline + glow fill is injected
+      into the bevel via --bevel-fill. */
+      --bevel-tl: 1;
+      --bevel-bl: 1;
+      --bevel-border-l: 1;
+      --bevel-fill:
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0px,
+          oklch(from var(--hdt-trans-color) l c h / 20%) 5px,
+          transparent 5px
+        ),
         linear-gradient(to right, var(--hdt-trans-color) 0%, #000 100%);
+      /* scanline = soft-light, big glow gradient = screen (matches the old order) */
+      --bevel-fill-blend: soft-light, screen;
 
-      /* Messages from the current user are oriented the other way, so we're just
-      repeating the above rules but changed to accentiuate the RHS of the bubble */
+      /* Messages from the current user are mirrored to the right: same effect,
+      just different corner/side toggles and a flipped glow gradient. */
       .group[data-is-mine] & {
-        clip-path: polygon(
-          0 0,
-          calc(100% - var(--hdt-horiz-dead)) 0,
-          100% var(--hdt-horiz-dead),
-          100% calc(100% - var(--hdt-horiz-dead)),
-          calc(100% - var(--hdt-horiz-dead)) 100%,
-          0 100%
-        );
-
-        background:
-          100% 0 / var(--hdt-border-radius) var(--hdt-border-radius) no-repeat
-            linear-gradient(
-              225deg,
-              transparent 0%,
-              transparent var(--hdt-diag-first-bit),
-              var(--hdt-border-color) var(--hdt-diag-first-bit),
-              var(--hdt-border-color) var(--hdt-diag-end-of-line),
-              transparent var(--hdt-diag-end-of-line)
-            ),
-          100% var(--hdt-border-radius) / var(--hdt-border-width)
-            calc(100% - calc(2 * var(--hdt-border-radius))) no-repeat
-            linear-gradient(
-              90deg,
-              var(--hdt-border-color) 0,
-              var(--hdt-border-color) var(--hdt-border-width)
-            ),
-          100% 100% / var(--hdt-border-radius) var(--hdt-border-radius)
-            no-repeat
-            linear-gradient(
-              315deg,
-              transparent 0%,
-              transparent var(--hdt-diag-first-bit),
-              var(--hdt-border-color) var(--hdt-diag-first-bit),
-              var(--hdt-border-color) var(--hdt-diag-end-of-line),
-              transparent var(--hdt-diag-end-of-line)
-            ),
+        --bevel-tl: 0;
+        --bevel-bl: 0;
+        --bevel-border-l: 0;
+        --bevel-tr: 1;
+        --bevel-br: 1;
+        --bevel-border-r: 1;
+        --bevel-fill:
           repeating-linear-gradient(
             to bottom,
             transparent 0px,
@@ -417,29 +211,42 @@
       letter-spacing: 0.05em;
     }
     .btn {
+      @apply bevel;
       font-family: "Orbitron Variable";
-      background: radial-gradient(
+      color: var(--btn-color-text);
+      /* the bevel utility draws every border; drop daisyUI's native one so it
+      doesn't double up (or leak through on borderless variants like btn-soft) */
+      border: 0;
+
+      /* Chamfer only the bottom-right corner, but draw a real border all the
+      way round — including across the chamfer, which the old clip-path could
+      not do. */
+      --bevel-radius: 10px;
+      --bevel-border-width: 1px;
+      --bevel-color: var(--btn-color);
+      --bevel-br: 1;
+      --bevel-border-t: 1;
+      --bevel-border-r: 1;
+      --bevel-border-b: 1;
+      --bevel-border-l: 1;
+      /* crisp opaque borders + normal compositing (not the glowy bubble look) */
+      --bevel-border-blend: normal;
+      --bevel-mix-blend: normal;
+      --bevel-fill: radial-gradient(
         ellipse at center,
         transparent 0%,
         oklch(from var(--btn-color) l c h / 30%) 100%
       );
-      color: var(--btn-color-text);
-      border: 1px solid var(--btn-color);
 
-      clip-path: polygon(
-        0 0,
-        calc(100% + 1px) 0,
-        calc(100% + 1px) calc(100% - 10px),
-        calc(100% - 10px) calc(100% + 1px),
-        0 calc(100% + 1px)
-      );
-      border-radius: 0;
-      &[disabled] {
+      &[disabled],
+      &:has([disabled]) {
         --btn-color: var(--color-base-content);
         opacity: 50%;
+        cursor: not-allowed;
+        pointer-events: all;
       }
       &:hover {
-        background: radial-gradient(
+        --bevel-fill: radial-gradient(
           ellipse at center,
           transparent 0%,
           oklch(from var(--btn-color) l c h / 15%) 100%
@@ -449,10 +256,30 @@
       }
     }
     .btn-soft {
-      border: none;
+      /* no border, keep the fill + chamfer */
+      --bevel-color: transparent;
     }
     .btn-outline {
-      background: none;
+      /* border only, no fill */
+      --bevel-fill: transparent;
+    }
+    .btn-ghost {
+      /* no border, no fill */
+      --bevel-color: transparent;
+      --bevel-fill: transparent;
+    }
+    .join > .btn.join-item {
+      /* joined buttons read as one bar: only the outer ends keep a bevel */
+      --bevel-br: 0;
+      --bevel-bl: 0;
+      &:first-child {
+        /* left end -> bevel the bottom-left corner */
+        --bevel-bl: 1;
+      }
+      &:last-child {
+        /* right end -> bevel the bottom-right corner (the .btn default) */
+        --bevel-br: 1;
+      }
     }
     .input,
     .select {
