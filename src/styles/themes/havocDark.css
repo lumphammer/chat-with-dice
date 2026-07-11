@@ -268,6 +268,19 @@
       --bevel-color: transparent;
       --bevel-fill: transparent;
     }
+    .join > .btn.join-item {
+      /* joined buttons read as one bar: only the outer ends keep a bevel */
+      --bevel-br: 0;
+      --bevel-bl: 0;
+      &:first-child {
+        /* left end -> bevel the bottom-left corner */
+        --bevel-bl: 1;
+      }
+      &:last-child {
+        /* right end -> bevel the bottom-right corner (the .btn default) */
+        --bevel-br: 1;
+      }
+    }
     .input,
     .select {
       border-radius: 0;

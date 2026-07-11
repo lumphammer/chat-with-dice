@@ -52,7 +52,7 @@ export const NumberCombo = ({
 
     <Menu.Root onSelect={(details) => onChange(Number(details.value))}>
       <Menu.Trigger
-        className="btn btn-md btn-square join-item"
+        className="btn btn-sm btn-ghost btn-square join-item"
         aria-label={`Choose ${ariaLabel} from list`}
       >
         <EllipsisVertical className="h-4 w-4" />
