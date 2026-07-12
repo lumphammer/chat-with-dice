@@ -90,7 +90,10 @@ export const RollForm = memo(({ onRoll }: RollFormProps) => {
         event.preventDefault();
         handleRoll();
       }}
-      className="mt-4 flex flex-col gap-4"
+      // this used to be a flex-col with gap-4, but due to a longstanding Safari
+      // bug, fieldsets get measured wrongly in flex boxes:
+      // https://bugs.webkit.org/show_bug.cgi?id=245402
+      className="mt-4 space-y-4"
     >
       <Fieldset label="Number of dice">
         <NumberCombo
