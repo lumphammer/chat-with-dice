@@ -135,7 +135,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
         <span className="mr-4">{message.displayName}</span>
         <TimeDisplay timeStamp={message.createdTime} />
       </header>
-      <div className="chat-bubble">
+      <div className="chat-bubble max-w-full">
         {message.chat && (
           <>
             <p

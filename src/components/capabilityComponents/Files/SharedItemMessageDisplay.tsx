@@ -71,8 +71,8 @@ export const SharedItemMessageDisplay = memo(
         <button
           type="button"
           onClick={handleOpen}
-          className="btn btn-primary m-1 box-content flex flex-row gap-4 py-1
-            pr-2 pl-1"
+          className="btn btn-primary m-1 box-content flex h-auto max-w-full
+            flex-row gap-4 py-1 pr-2 pl-1"
         >
           <div
             className="flex size-10 shrink-0 items-center justify-center
@@ -83,20 +83,14 @@ export const SharedItemMessageDisplay = memo(
               ownerUserId={item.userId}
               roomId={roomId}
               size={20}
-              // className="m-2"
             />
           </div>
           <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate font-medium">{node.name}</span>
+            <span className="font-medium wrap-anywhere">{node.name}</span>
             <span className="text-base-content/50 truncate text-sm">
               {metadata}
             </span>
           </span>
-          {/*{isFile ? (
-            <Eye size={16} className="text-base-content/50 shrink-0" />
-          ) : (
-            <FolderOpen size={16} className="text-base-content/50 shrink-0" />
-          )}*/}
         </button>
         {previewNode && (
           <FilePreview
