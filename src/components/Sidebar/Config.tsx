@@ -124,7 +124,6 @@ export const Config = memo(() => {
 
   return (
     <SidebarPanel title="Config" isSaving={false}>
-      <p>{["primary", "secondary", "accent"]}</p>
       <form
         className="mt-4"
         onSubmit={(e) => {
