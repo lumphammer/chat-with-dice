@@ -100,12 +100,6 @@
   /* effects */
   --depth: 0;
   --noise: 0;
-
-  /*@layer components {
-    .main-area {
-      background: green;
-    }
-  }*/
 }
 
 /* The noise effect as a bare background-image layer list. Exposing it as a
@@ -150,6 +144,7 @@ background-color out from under them. Our selector outspecifies the bg-* class,
 so the noise would end up blending against transparency. */
 @utility noisy-bg {
   @apply noisy-bg-layers;
+
   background-image: var(--noisy-bg-images);
   background-blend-mode: var(--noisy-bg-blend);
 }
@@ -274,8 +269,6 @@ so the noise would end up blending against transparency. */
           transparent 0%,
           oklch(from var(--btn-color) l c h / 15%) 100%
         );
-
-        /*scale: 1.1;*/
       }
     }
     .btn-soft {
@@ -311,9 +304,6 @@ so the noise would end up blending against transparency. */
     .dropdown {
       @apply noisy-bg;
       --noisy-bg-color: var(--color-accent);
-      /*// 10px white glow*/
-      /*box-shadow: 0 0 10px 10px white;*/
-      /*margin: 20px;*/
       border: 3px solid;
       border-image-slice: 1;
       border-width: 3px;
@@ -332,8 +322,6 @@ so the noise would end up blending against transparency. */
         var(--chip) 100%,
         0 calc(100% - var(--chip))
       );
-      /*filter: url(#cyber-retro-glitch);*/
-      /*mix-blend-mode: screen;*/
     }
     .menu {
       padding: 0;
@@ -355,7 +343,6 @@ so the noise would end up blending against transparency. */
       @apply noisy-bg;
       background-color: var(--color-base-100);
       --noisy-bg-color: var(--color-accent);
-      /*border-radius: 1em;*/
       border-width: 0;
       border-radius: 0;
       border-image-source: linear-gradient(
@@ -478,14 +465,9 @@ so the noise would end up blending against transparency. */
         height: 200%;
         z-index: -1;
         backdrop-filter: blur(16px);
-        /*background: oklch(from var(--color-base-100) l c h / 0.5);*/
         background: linear-gradient(
           to bottom,
-          /*
-            Replace this with your site’s
-            actual background color:
-          */
-            var(--color-base-100) 0%,
+          var(--color-base-100) 0%,
           transparent 50%
         );
         mask-image: linear-gradient(
@@ -568,7 +550,6 @@ so the noise would end up blending against transparency. */
       font-size: 1em;
       height: 2.4em;
       width: 2.4em;
-      /*padding: 0.2em;*/
       font-weight: 600;
       border: 1px solid var(--color-base-content);
       --color: var(--color-base-content);
@@ -591,7 +572,6 @@ so the noise would end up blending against transparency. */
 
       &[data-degree="critical"] {
         --color: var(--color-success);
-        /*box-shadow: 0 0 4px 4px var(--color-success) inset;*/
         &:after {
           content: "!";
         }
