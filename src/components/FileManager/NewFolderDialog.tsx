@@ -84,7 +84,7 @@ const NewFolderDialogComponent = forwardRef<
               // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
-            {error && <p className="text-error text-sm">{error}</p>}
+            {error && <p className="text-error">{error}</p>}
             <div className="modal-action">
               <button
                 type="button"

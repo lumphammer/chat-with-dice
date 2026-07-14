@@ -16,8 +16,8 @@ export const ShowMoreDialog = memo(({ html }: ShowMoreDialogProps) => {
           command="show-modal"
           commandfor={dialogId}
           // onClick={() => setShowMore(true)}
-          className="btn btn-secondary btn-link relative -top-1 h-auto px-2 py-0
-            text-sm"
+          className="btn btn-secondary btn-link relative -top-1 h-auto px-2
+            py-0"
         >
           Show more
         </button>

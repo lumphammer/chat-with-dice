@@ -42,7 +42,7 @@ export const HardDeleteDialog = memo(
               <h3 className="text-lg font-bold capitalize">
                 Permanently delete "{name}"?
               </h3>
-              <p className="text-base-content/70 py-2 text-sm">
+              <p className="text-base-content/70 py-2">
                 This cannot be undone.
               </p>
               <div className="modal-action">

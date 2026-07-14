@@ -23,11 +23,7 @@ export const Fieldset = ({
     {...(showLegend ? {} : { "aria-label": label })}
     disabled={disabled}
   >
-    {showLegend && (
-      <legend className="mb-1 text-xs font-semibold tracking-wide uppercase">
-        {label}
-      </legend>
-    )}
+    {showLegend && <legend className="label">{label}</legend>}
     {children}
   </fieldset>
 );

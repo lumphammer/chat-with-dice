@@ -100,7 +100,7 @@ export function FeedbackForm() {
     >
       <div className="card-body gap-4">
         {error && (
-          <div className="alert alert-error text-sm" role="alert">
+          <div className="alert alert-error" role="alert">
             <span>{error}</span>
           </div>
         )}
@@ -127,7 +127,7 @@ export function FeedbackForm() {
             />
           </label>
           {fieldErrors.email && (
-            <p id="feedback-email-error" className="text-error mt-1 text-sm">
+            <p id="feedback-email-error" className="text-error mt-1">
               {fieldErrors.email}
             </p>
           )}
@@ -162,7 +162,7 @@ export function FeedbackForm() {
             characters
           </p>
           {fieldErrors.message && (
-            <p id="feedback-message-error" className="text-error mt-1 text-sm">
+            <p id="feedback-message-error" className="text-error mt-1">
               {fieldErrors.message}
             </p>
           )}

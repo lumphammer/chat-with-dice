@@ -1,5 +1,6 @@
 @reference "#/styles/global.css";
 @import "@fontsource-variable/orbitron";
+@import "@fontsource-variable/exo-2";
 /*@fontsource-variable/nunito-sans*/
 
 /* =============================================================================
@@ -150,6 +151,10 @@ so the noise would end up blending against transparency. */
 }
 
 [data-theme="havocDark"] {
+  body {
+    font-family: "Exo 2 Variable";
+    font-size: 16px;
+  }
   @layer utilities {
     .chat-bubble {
       @apply bevel;
@@ -228,73 +233,79 @@ so the noise would end up blending against transparency. */
       font-family: "Orbitron Variable";
       letter-spacing: 0.05em;
     }
-    .btn {
-      @apply bevel;
-      font-family: "Orbitron Variable";
-      color: var(--btn-color-text);
-      /* the bevel utility draws every border; drop daisyUI's native one so it
+    @layer components {
+      .btn {
+        @apply bevel;
+        /*text-transform: uppercase;*/
+        /*font-variant-caps: all-small-caps;*/
+        font-weight: 400;
+        /*font-size: var(--text-sm);*/
+        letter-spacing: var(--tracking-wide);
+        color: var(--btn-color-text);
+        /* the bevel utility draws every border; drop daisyUI's native one so it
       doesn't double up (or leak through on borderless variants like btn-soft) */
-      border: 0;
+        border: 0;
 
-      /* Chamfer only the bottom-right corner, but draw a real border all the
+        /* Chamfer only the bottom-right corner, but draw a real border all the
       way round — including across the chamfer, which the old clip-path could
       not do. */
-      --bevel-radius: 10px;
-      --bevel-border-width: 1px;
-      --bevel-color: var(--btn-color);
-      --bevel-br: 1;
-      --bevel-border-t: 1;
-      --bevel-border-r: 1;
-      --bevel-border-b: 1;
-      --bevel-border-l: 1;
-      /* crisp opaque borders + normal compositing (not the glowy bubble look) */
-      --bevel-border-blend: normal;
-      --bevel-mix-blend: normal;
-      --bevel-fill: radial-gradient(
-        ellipse at center,
-        transparent 0%,
-        oklch(from var(--btn-color) l c h / 30%) 100%
-      );
-
-      &[disabled],
-      &:has([disabled]) {
-        --btn-color: var(--color-base-content);
-        opacity: 50%;
-        cursor: not-allowed;
-        pointer-events: all;
-      }
-      &:hover {
+        --bevel-radius: 10px;
+        --bevel-border-width: 1px;
+        --bevel-color: var(--btn-color);
+        --bevel-br: 1;
+        --bevel-border-t: 1;
+        --bevel-border-r: 1;
+        --bevel-border-b: 1;
+        --bevel-border-l: 1;
+        /* crisp opaque borders + normal compositing (not the glowy bubble look) */
+        --bevel-border-blend: normal;
+        --bevel-mix-blend: normal;
         --bevel-fill: radial-gradient(
           ellipse at center,
           transparent 0%,
-          oklch(from var(--btn-color) l c h / 15%) 100%
+          oklch(from var(--btn-color) l c h / 30%) 100%
         );
+
+        &[disabled],
+        &:has([disabled]) {
+          --btn-color: var(--color-base-content);
+          opacity: 50%;
+          cursor: not-allowed;
+          pointer-events: all;
+        }
+        &:hover {
+          --bevel-fill: radial-gradient(
+            ellipse at center,
+            transparent 0%,
+            oklch(from var(--btn-color) l c h / 15%) 100%
+          );
+        }
       }
-    }
-    .btn-soft {
-      /* no border, keep the fill + chamfer */
-      --bevel-color: transparent;
-    }
-    .btn-outline {
-      /* border only, no fill */
-      --bevel-fill: transparent;
-    }
-    .btn-ghost {
-      /* no border, no fill */
-      --bevel-color: transparent;
-      --bevel-fill: transparent;
-    }
-    .join > .btn.join-item {
-      /* joined buttons read as one bar: only the outer ends keep a bevel */
-      --bevel-br: 0;
-      --bevel-bl: 0;
-      &:first-child {
-        /* left end -> bevel the bottom-left corner */
-        --bevel-bl: 1;
+      .btn-soft {
+        /* no border, keep the fill + chamfer */
+        --bevel-color: transparent;
       }
-      &:last-child {
-        /* right end -> bevel the bottom-right corner (the .btn default) */
-        --bevel-br: 1;
+      .btn-outline {
+        /* border only, no fill */
+        --bevel-fill: transparent;
+      }
+      .btn-ghost {
+        /* no border, no fill */
+        --bevel-color: transparent;
+        --bevel-fill: transparent;
+      }
+      .join > .btn.join-item {
+        /* joined buttons read as one bar: only the outer ends keep a bevel */
+        --bevel-br: 0;
+        --bevel-bl: 0;
+        &:first-child {
+          /* left end -> bevel the bottom-left corner */
+          --bevel-bl: 1;
+        }
+        &:last-child {
+          /* right end -> bevel the bottom-right corner (the .btn default) */
+          --bevel-br: 1;
+        }
       }
     }
     .input,
@@ -400,6 +411,10 @@ so the noise would end up blending against transparency. */
       so they don't round the painted box or double up */
       border-radius: 0;
       border: 0;
+    }
+    .label {
+      color: inherit;
+      font-family: "Orbitron Variable";
     }
   }
 

@@ -228,6 +228,9 @@ importers:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.16.20
         version: 0.16.20(@vitest/runner@4.1.9)(@vitest/snapshot@4.1.9)(vitest@4.1.9(@types/node@25.9.4)(vite@8.1.3(@types/node@25.9.4)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))
+      '@fontsource-variable/exo-2':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@fontsource-variable/orbitron':
         specifier: ^5.2.8
         version: 5.2.8
@@ -1185,6 +1188,9 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@fontsource-variable/exo-2@5.2.8':
+    resolution: {integrity: sha512-P3k8XX+RE1E8QA4/EpR0wSmcvenHjYd7NUNbPNH8iUSA9mGDkPVxE6cxOsx7ksRKY1p0R1ExndDNTpzwwLgkVg==}
 
   '@fontsource-variable/orbitron@5.2.8':
     resolution: {integrity: sha512-Jazvuj2cgBq663z1j/+JdwH2ztqQ8RaGhJgdHYphFbtfowiFaR74R8UgZl7x1skbXmUMWWH1jXfG7mrYFIYK0A==}
@@ -5429,6 +5435,8 @@ snapshots:
       '@floating-ui/utils': 0.2.11
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@fontsource-variable/exo-2@5.2.8': {}
 
   '@fontsource-variable/orbitron@5.2.8': {}
 

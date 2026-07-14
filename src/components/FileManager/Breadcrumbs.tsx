@@ -123,7 +123,7 @@ const MeasurementCrumbs = ({
   const hiddenSegments = currentSegment ? segments.slice(0, -1) : [];
 
   return (
-    <div className="flex w-max items-center gap-1 text-sm whitespace-nowrap">
+    <div className="flex w-max items-center gap-1 text-lg whitespace-nowrap">
       <RootCrumb
         onNavigate={() => undefined}
         icon={rootIcon}

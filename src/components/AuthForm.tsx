@@ -87,7 +87,7 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
             <Mail size={28} className="text-success" />
           </div>
           <h2 className="text-xl font-bold">Check your inbox</h2>
-          <p className="text-base-content/70 text-sm">
+          <p className="text-base-content/70">
             We've sent a link to <strong>{email}</strong>. Click it to continue.
             The link expires shortly and can only be used once.
           </p>
@@ -113,12 +113,12 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
   return (
     <div className="card bg-base-100 w-full max-w-full shadow-xl lg:max-w-md">
       <div className="card-body gap-4">
-        <p className="text-base-content/60 text-center text-sm">
+        <p className="text-base-content/60 text-center">
           New or returning, one link does both — no password to remember.
         </p>
 
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="alert alert-error">
             <span>{error}</span>
           </div>
         )}

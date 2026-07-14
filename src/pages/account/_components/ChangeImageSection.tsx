@@ -139,13 +139,13 @@ export function ChangeImageSection({ currentImage, name, email }: Props) {
         <h2 className="card-title text-lg">Profile photo</h2>
 
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="alert alert-error">
             <span>{error}</span>
           </div>
         )}
 
         {successMsg && (
-          <div role="alert" className="alert alert-success text-sm">
+          <div role="alert" className="alert alert-success">
             <span>{successMsg}</span>
           </div>
         )}

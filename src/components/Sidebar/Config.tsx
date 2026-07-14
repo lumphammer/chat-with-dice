@@ -133,7 +133,7 @@ export const Config = memo(() => {
       >
         <label
           htmlFor="config-room-name"
-          className="mb-2 block text-sm font-medium"
+          className="mb-2 block text-xl font-medium"
         >
           Room name
         </label>

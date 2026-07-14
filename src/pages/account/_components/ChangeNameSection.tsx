@@ -33,13 +33,13 @@ export function ChangeNameSection({ currentName }: { currentName: string }) {
         <h2 className="card-title text-lg">Display name</h2>
 
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="alert alert-error sm">
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div role="alert" className="alert alert-success text-sm">
+          <div role="alert" className="alert alert-success">
             <span>Display name updated.</span>
           </div>
         )}

@@ -39,6 +39,7 @@
     "@astrojs/react": "6.0.1",
     "@better-auth/drizzle-adapter": "^1.6.23",
     "@cloudflare/vitest-pool-workers": "^0.16.20",
+    "@fontsource-variable/exo-2": "^5.2.8",
     "@fontsource-variable/orbitron": "^5.2.8",
     "@lucide/astro": "^1.23.0",
     "@nanostores/react": "^1.1.0",

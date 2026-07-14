@@ -51,7 +51,7 @@ export const RoomPresetPicker = memo(
                       }
                     />
                     <p
-                      className={`text-sm leading-tight font-semibold ${
+                      className={`leading-tight font-semibold ${
                         isSelected ? "text-primary-text" : ""
                       }`}
                     >

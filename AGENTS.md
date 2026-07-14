@@ -71,3 +71,7 @@ Single-context repo — `CONTEXT.md` + `docs/adr/` at the root. See `docs/agents
 ## Running local CLI tools
 
 We use `pnpm exec`, not `npx`, to run CLI tools. (`pnpm dlx` to download-and-run if needed.)
+
+## Tailwind and Fonts
+
+Avoid using .text-sm or smaller unless a piece of text is truly incidental (in which case does it need to be on screen at all?) The basic rule is: if it's on screen, it's to be read, and if it's to be read, it should be easy to read.

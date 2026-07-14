@@ -58,7 +58,7 @@ export function WelcomeForm() {
             <PartyPopper size={28} className="text-primary" />
           </div>
           <h2 className="text-xl font-bold">Welcome to Chat with Dice!</h2>
-          <p className="text-base-content/70 text-sm">
+          <p className="text-base-content/70">
             We've picked a display name for you. Keep it, edit it, or roll for a
             new one — you can always change it later.
           </p>

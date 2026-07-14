@@ -37,7 +37,7 @@ export function ChangeEmailSection({ currentEmail }: { currentEmail: string }) {
       <div className="card-body gap-4">
         <div>
           <h2 className="card-title text-lg">Email address</h2>
-          <p className="text-base-content/60 mt-0.5 text-sm">
+          <p className="text-base-content/60 mt-0.5">
             Current:{" "}
             <span className="text-base-content/80 font-medium">
               {currentEmail}
@@ -46,13 +46,13 @@ export function ChangeEmailSection({ currentEmail }: { currentEmail: string }) {
         </div>
 
         {error && (
-          <div role="alert" className="alert alert-error text-sm">
+          <div role="alert" className="alert alert-error">
             <span>{error}</span>
           </div>
         )}
 
         {sent && (
-          <div role="alert" className="alert alert-success text-sm">
+          <div role="alert" className="alert alert-success">
             <span>
               Verification link sent! Check your new inbox and click the link to
               confirm the change.

@@ -1,4 +1,4 @@
-import { roomPresets, type RoomPresetName } from "#/roomPresets.tsx";
+import { type RoomPresetName } from "#/roomPresets.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { actions } from "astro:actions";
 import { CalendarDays, DoorOpen, Plus } from "lucide-react";
@@ -33,7 +33,7 @@ export const RoomList = () => {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Your Rooms</h2>
-        <a href="/rooms/new" className="btn btn-primary btn-sm gap-2">
+        <a href="/rooms/new" className="btn btn-primary gap-2">
           <Plus size={16} />
           New Room
         </a>
@@ -70,7 +70,7 @@ export const RoomList = () => {
           <DoorOpen size={48} strokeWidth={1.5} />
           <div>
             <p className="text-lg font-semibold">No rooms yet</p>
-            <p className="text-sm">Create a room to get started.</p>
+            <p className="">Create a room to get started.</p>
           </div>
         </div>
       )}
@@ -95,36 +95,18 @@ function RoomCard({ room }: { room: Room }) {
     <li className="card bg-base-300 transition-shadow hover:shadow-md">
       <div className="card-body gap-2 py-4">
         <h3 className="card-title text-lg leading-tight">{room.name}</h3>
-        {room.description && (
-          <p className="text-sm opacity-70">{room.description}</p>
-        )}
+        {room.description && <p className="opacity-70">{room.description}</p>}
         <div className="mt-1 flex items-center justify-between">
           <span className="flex items-center gap-1 text-xs opacity-50">
             <CalendarDays size={12} />
             {formattedDate}
           </span>
-          <RoomTypeBadge type={room.type} />
-          <a
-            href={`/rooms/${room.id}`}
-            className="btn btn-primary btn-sm gap-2"
-          >
+          <a href={`/rooms/${room.id}`} className="btn btn-primary gap-2">
             <DoorOpen size={14} />
             Enter
           </a>
         </div>
       </div>
     </li>
-  );
-}
-
-function RoomTypeBadge({ type }: { type: RoomPresetName }) {
-  const option = roomPresets[type];
-  if (!option) return null;
-  const { Icon, label } = option;
-  return (
-    <span className="flex items-center gap-1 text-xs opacity-50">
-      <Icon size={12} />
-      {label}
-    </span>
   );
 }
