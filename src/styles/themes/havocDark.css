@@ -108,8 +108,23 @@
   }*/
 }
 
-@utility noisy-bg {
-  background-image:
+/* The noise effect as a bare background-image layer list. Exposing it as a
+variable lets the list be spliced into someone else's background stack — notably
+`bevel`, which owns the whole `background` property and takes decorative layers
+via --bevel-fill.
+
+This has to be a utility rather than a `:root` variable: the layers reference
+var(--noisy-bg-color), and var() inside a custom property is substituted against
+the element the property is *declared* on. Declared at :root, --noisy-bg-color
+would be unset and the whole list would resolve to invalid.
+
+Sizes are left implicit so the list stays a plain image list, usable by both
+background-image and --bevel-fill. `auto` reproduces the sizes we used to set
+explicitly: noise-image.svg is intrinsically 100x100 so it tiles at 100px, and
+the gradients have no intrinsic size so they fill the positioning area (what
+`cover` gave). */
+@utility noisy-bg-layers {
+  --noisy-bg-images:
     url("/noise-image.svg"),
     linear-gradient(
       to top right,
@@ -122,13 +137,21 @@
       to bottom,
       transparent 0px,
       oklch(from var(--noisy-bg-color) l c h / 20%) 5px,
-      transparent 5px /*oklch(from var(--color-accent) l c h / 20%) 20px*/
+      transparent 5px
     );
-  background-blend-mode: multiply, screen, normal;
-  background-size:
-    100px 100px,
-    cover,
-    cover;
+  --noisy-bg-blend: multiply, screen, normal;
+}
+
+/* Standalone use: paint the noise over whatever background-color the element
+already has. This must stay on the background-image longhand — consumers get
+their opaque backdrop from a bg-* utility in the markup (e.g. .dropdown is
+`class="dropdown ... bg-base-100"`), and the `background` shorthand would reset
+background-color out from under them. Our selector outspecifies the bg-* class,
+so the noise would end up blending against transparency. */
+@utility noisy-bg {
+  @apply noisy-bg-layers;
+  background-image: var(--noisy-bg-images);
+  background-blend-mode: var(--noisy-bg-blend);
 }
 
 [data-theme="havocDark"] {
@@ -310,6 +333,7 @@
         0 calc(100% - var(--chip))
       );
       /*filter: url(#cyber-retro-glitch);*/
+      /*mix-blend-mode: screen;*/
     }
     .menu {
       padding: 0;
@@ -354,6 +378,41 @@
       &.alert-error {
         --noisy-bg-color: var(--color-error);
       }
+    }
+    .modal-box {
+      /* `bevel` owns the `background` property, so the noise can't be applied
+      on top of it — instead we hand bevel the noise layers via --bevel-fill,
+      the hook it provides for decorative fills (cf. .chat-bubble). */
+      @apply noisy-bg-layers;
+      @apply bevel;
+      --noisy-bg-color: var(--color-accent);
+      --bevel-fill: var(--noisy-bg-images);
+      --bevel-fill-blend: var(--noisy-bg-blend);
+
+      --bevel-color: var(--color-accent);
+      --bevel-radius: 16px;
+      --bevel-border-width: 1px;
+
+      /* bevel every corner and draw the border all the way round */
+      --bevel-tl: 1;
+      --bevel-tr: 1;
+      --bevel-br: 1;
+      --bevel-bl: 1;
+      --bevel-border-t: 1;
+      --bevel-border-r: 1;
+      --bevel-border-b: 1;
+      --bevel-border-l: 1;
+      /* crisp opaque borders, not the glowy chat-bubble look */
+      --bevel-border-blend: normal;
+      --bevel-mix-blend: normal;
+
+      /* bevel's `background` shorthand resets background-color, so daisyUI's
+      base-100 fill has to be restored after the @apply */
+      background-color: var(--color-base-100);
+      /* corner shape comes from bevel's clip-path; drop daisyUI's radius/border
+      so they don't round the painted box or double up */
+      border-radius: 0;
+      border: 0;
     }
   }
 
