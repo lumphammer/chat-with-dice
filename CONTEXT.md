@@ -76,6 +76,8 @@ _Avoid_: Room file, shared file
 - A **Pile** has no order — a draw picks at random from the **Cards** not in its **Discard**
 - A **Pile** persists until it is **Reset** or its **Deck** is unshared; a **Room** has no concept of a session, so nothing returns **Cards** to a **Pile** implicitly
 - Removing the **Room Share** for a **Deck** discards that **Deck**'s **Pile**, so re-sharing the **Deck** later starts a fresh **Pile** rather than resuming an old one
+- Deleting a **Deck** hides its **Pile** rather than discarding it, and restoring the **Deck** brings the **Pile** back with its **Discard** intact — deleting is reversible where unsharing is not
+- Deleting one **Card Image** from a shared **Deck** leaves the **Pile** alone: that **Card** stops being drawable, and any **Card Draw Message** naming it becomes unavailable
 - A **Card Draw Message** stays in the chat log after its **Pile** is **Reset** or discarded, but records a draw that no longer reflects the **Pile**
 - **Deck** configuration is owned by the **Deck** and travels with it into any **Room**
 - **Pile** configuration, such as whether drawn **Cards** return to the **Pile**, is room-level and does not travel
@@ -92,6 +94,8 @@ _Avoid_: Room file, shared file
 - **Room Share** summaries include owner identity for display and disambiguation
 - **Room Share** browsing exposes paths relative to the shared root, not the owner's private parent folders
 - **Room Share** cache drift is corrected by retrying idempotent commands, lazy validation on access, and explicit resynchronization from user file stores
+- The owner's file store tells every affected **Room** when a **Room Share** stops being viewable or becomes viewable again, so a **Room** learns a **User File** has been deleted or restored without having to ask
+- A **Room Share** whose **User File** is deleted becomes unavailable but is not removed: the grant outlives the deletion because deletion is reversible
 - **Room Share** commands are idempotent for grants, while **Shared Item Message** creation is deduplicated by command correlation
 - The room **Files** sidebar contains both room-shared files and the current user's personal file tree
 - A **User File** can be granted to many **Rooms**

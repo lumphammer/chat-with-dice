@@ -38,6 +38,6 @@ The central map is not incidental. `ServerMountedCapability.runHook` is typed ag
 
 - Adding a hook to a capability is: declare the event in its `hooks.ts`, add one line to the composed map, add one line to the registry. The `Record` makes forgetting the last one a type error.
 - `dispatch` still fans out to every mounted capability, including the one that fired. A capability handling its own hook is a smell, but post-commit flushing makes it safe rather than corrupting, so we do not exclude the sender.
-- `files:onShareRemoved` fires with `{ ownerUserId, nodeId }` — the data available today. ADR-0001 needs `shareId` on it to key Piles; that arrives with the Files state version bump, alongside the `cards` work.
+- `files:onShareRemoved` fires with `{ ownerUserId, nodeId }`. An earlier draft of ADR-0001 wanted `shareId` here too, to key Piles by the grant's identity; that was dropped, and this payload is now the final shape. See ADR-0001 decision 5.
 - The hook fires on any non-error unshare, including `not-found`, because the postcondition is the same: there is no share for that node in this Room, so a consumer should drop its derived state either way.
 - This lands before any `cards` code, so the kernel change can be reviewed on its own.
