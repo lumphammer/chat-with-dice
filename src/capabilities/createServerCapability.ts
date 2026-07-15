@@ -15,13 +15,21 @@ import type {
   VisibilityMode,
   inferIfZod,
 } from "./createCapabilityCommon";
-import type { CapabilityHookEvents } from "./hooks";
+import type { CapabilityHookEvents, FireHook, HookDispatch } from "./hooks";
 import type { Draft } from "immer";
 import { createDraft, finishDraft } from "immer";
 import { nanoid } from "nanoid";
 import type * as z from "zod";
 
 const ARTIFICIAL_LAG_MS = 0;
+
+/**
+ * A hook fired by an action effect, captured as a thunk rather than a
+ * `{ name, event }` pair. Closing over both while the generic key is still
+ * bound keeps them correlated, which a stored pair would lose — the union of
+ * every name against the union of every event, needing a cast to dispatch.
+ */
+type DeferredHook = () => Promise<void>;
 
 export type ServerMountedCapability = {
   name: Alphanumeric;
@@ -59,6 +67,12 @@ type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
   userId: string;
   displayName: string;
   nodeShareManager: NodeShareManager;
+  /**
+   * Fire a hook at the other mounted capabilities. Deferred until this
+   * action's state change has committed, so bailing out or throwing after
+   * calling it means it never fires.
+   */
+  fireHook: FireHook;
 }) => void | Promise<void>;
 
 /**
@@ -117,6 +131,8 @@ export type ServerCapability = {
     config: unknown;
     nodeShareManager: NodeShareManager;
     broadcaster: Broadcaster;
+    /** Fans a hook out to every mounted capability. */
+    dispatchHook: HookDispatch;
   }) => Promise<ServerMountedCapability | null>;
 };
 
@@ -156,6 +172,13 @@ export function createServerCapability<
    * broadcast the result. Used by both `handleMessage` (action calls, with a
    * `correlation`) and `runHook` (events, without one). Stateless capabilities
    * have no draft and nothing to persist — `run` still fires for its effects.
+   *
+   * Hooks fired by `run` are appended to `deferred` rather than dispatched.
+   * Dispatching inline would let a hook land back on this capability while the
+   * draft above is still open, so the handler's own `finishDraft` would race
+   * this one and lose an update. The caller flushes once the new state is
+   * live — deliberately not here, because at this point the mount closure's
+   * `state` still holds the pre-action value.
    */
   const applyStateChange = async (
     stateRepository: CapabilityStateRepository,
@@ -163,13 +186,19 @@ export function createServerCapability<
     state: StateValue<TStateValidator>,
     run: (
       stateDraft: Draft<StateValue<TStateValidator>>,
+      fireHook: FireHook,
     ) => void | Promise<void>,
+    dispatchHook: HookDispatch,
+    deferred: DeferredHook[],
     correlation?: string,
   ): Promise<StateValue<TStateValidator>> => {
+    const fireHook: FireHook = (name, event) => {
+      deferred.push(() => dispatchHook(name, event));
+    };
     const stateDraft = (
       common.state ? createDraft(state as object) : undefined
     ) as Draft<StateValue<TStateValidator>>;
-    await run(stateDraft);
+    await run(stateDraft, fireHook);
     // Nothing to persist or broadcast for stateless capabilities — any effect
     // (e.g. a chat message) has already run inside `run`.
     if (!common.state) {
@@ -207,6 +236,8 @@ export function createServerCapability<
     userId,
     displayName,
     nodeShareManager,
+    dispatchHook,
+    deferred,
   }: {
     doCtx: DurableObjectState;
     messageJiggler: MessageJiggler;
@@ -217,6 +248,8 @@ export function createServerCapability<
     broadcaster: Broadcaster;
     displayName: string;
     nodeShareManager: NodeShareManager;
+    dispatchHook: HookDispatch;
+    deferred: DeferredHook[];
   }) => {
     const commonAction = common.actions[actionCall.actionName];
     if (!commonAction) {
@@ -238,7 +271,7 @@ export function createServerCapability<
       stateRepository,
       broadcaster,
       state,
-      async (stateDraft) => {
+      async (stateDraft, fireHook) => {
         if (effectfulFn) {
           await effectfulFn({
             doCtx,
@@ -249,6 +282,7 @@ export function createServerCapability<
             userId,
             displayName,
             nodeShareManager,
+            fireHook,
             sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
               void messageJiggler.sendChatMessage({
                 chat: "",
@@ -265,6 +299,8 @@ export function createServerCapability<
           commonAction.pureFn({ stateDraft, payload });
         }
       },
+      dispatchHook,
+      deferred,
       actionCall.correlation,
     );
   };
@@ -276,6 +312,7 @@ export function createServerCapability<
     messageJiggler,
     stateRepository,
     nodeShareManager,
+    dispatchHook,
   }) => {
     const configParseResult = common.config?.validator?.safeParse(config);
     if (configParseResult?.error) {
@@ -326,6 +363,7 @@ export function createServerCapability<
             setTimeout(resolve, ARTIFICIAL_LAG_MS),
           );
         }
+        const deferred: DeferredHook[] = [];
         state = await handleMessage({
           doCtx,
           messageJiggler,
@@ -336,7 +374,25 @@ export function createServerCapability<
           userId,
           displayName,
           nodeShareManager,
+          dispatchHook,
+          deferred,
         });
+        // Only now is `state` the post-action value, so a handler that reaches
+        // back into this capability sees committed state rather than the value
+        // this action started from. `dispatch` fans out to every capability
+        // including this one; handling your own hook is a smell, but flushing
+        // here makes it merely pointless rather than corrupting.
+        //
+        // Serial on purpose: two hooks from one action can land on the same
+        // consumer, and `runHook` reads and reassigns that capability's `state`
+        // around an immer draft. Running them together would race those drafts
+        // and lose one update — the same hazard the queue exists to avoid, just
+        // moved. `dispatch` already parallelises across capabilities, which is
+        // safe because their states are disjoint.
+        for (const dispatch of deferred) {
+          // oxlint-disable-next-line no-await-in-loop
+          await dispatch();
+        }
       },
       runHook: async (name, event) => {
         // Single indexed access into `def.hooks`, so — unlike `actionEffects`
@@ -364,6 +420,10 @@ export function createServerCapability<
                 event,
               });
             },
+            dispatchHook,
+            // Handlers are not handed a `fireHook`, so nothing can queue here.
+            // Hook-fires-hook is a cascade risk with no use case yet.
+            [],
           );
         } catch (error) {
           logger.error(

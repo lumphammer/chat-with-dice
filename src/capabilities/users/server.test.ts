@@ -62,7 +62,8 @@ describe("users capability onPresenceChange hook", () => {
 
   // Mount a capability with the test doubles. The doCtx/messageJiggler/
   // nodeShareManager casts stand in for Cloudflare runtime types the users
-  // path never touches.
+  // path never touches. `users` fires no hooks of its own, so `dispatchHook`
+  // no-ops.
   const mountCap = (capability: ServerCapability) =>
     capability.mount({
       doCtx: {} as unknown as DurableObjectState,
@@ -71,6 +72,7 @@ describe("users capability onPresenceChange hook", () => {
       config: undefined,
       nodeShareManager: {} as unknown as NodeShareManager,
       broadcaster,
+      dispatchHook: async () => {},
     });
 
   // Build a `CapabilityService` around capabilities mounted by `mountCap`. The
