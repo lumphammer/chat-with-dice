@@ -14,7 +14,7 @@ A chat message recording one draw from a **Pile**: which **Card** came up, and w
 An image used in a **Deck**. It is a front, a **Common Back**, or an **Individual Back**.
 
 **Common Back**:
-One **Card Image** used as the back of every **Card** in a **Deck**.
+One **Card Image** used as the back of every **Card** in a **Deck** that has no **Individual Back** of its own. A **Deck** need not have one.
 
 **Deck**:
 A folder full of images plus the associated configuration, owned by one user.
@@ -24,11 +24,11 @@ _Avoid_: Card set
 The **Cards** already drawn from a **Pile**. Only meaningful when the **Room** has drawn **Cards** not returning to the **Pile**.
 
 **Face Down**:
-A **Card** drawn showing its back rather than its front. Requires the **Deck** to have a back for that **Card**. Face Down is a presentation choice, not a secrecy guarantee.
+A **Card** drawn showing its back rather than its front. Only possible for a **Card** that has a back. Face Down is a presentation choice, not a secrecy guarantee.
 _Avoid_: Flipped, hidden
 
 **Individual Back**:
-A **Card Image** used as the back of exactly one **Card**, in place of the **Deck**'s **Common Back**.
+A **Card Image** used as the back of exactly one **Card**. It takes precedence over a **Common Back**, but does not need one to exist — plenty of sets give every **Card** its own back and have no **Common Back** at all.
 
 **Inverted**:
 A **Card** drawn rotated 180° while still showing its front, as if turned around flat on the table. Distinct from **Face Down**.
@@ -65,9 +65,10 @@ _Avoid_: Room file, shared file
 - A **Deck** is a **User File** folder of **Card Images** plus configuration, owned by the same user
 - **Card Images** are the direct children of the **Deck** folder; images nested in subfolders of it are not **Card Images**
 - A **Card** has one front **Card Image** and at most one back **Card Image**
-- A **Card**'s back is the **Deck**'s **Common Back** unless that **Card** has an **Individual Back**
+- A **Card**'s back is its **Individual Back** if it has one, otherwise the **Deck**'s **Common Back** if there is one, otherwise the **Card** has no back
+- A **Deck** can mix **Cards** with backs and **Cards** without, and can give every **Card** an **Individual Back** without having a **Common Back** at all
 - Pairing a front with an **Individual Back** can be proposed automatically from **Card Image** names, but a **Deck** that defeats the heuristic can be paired by hand
-- A **Deck** whose **Cards** have no backs cannot produce **Face Down** draws
+- A **Card** with no back cannot be drawn **Face Down**, even where other **Cards** in the same **Deck** can be
 - A **Deck** is made available to a **Room** by a **Room Share** pointing at its folder; there is no separate deck-sharing grant
 - A shared **Deck** appears in the room **Files** sidebar as a folder, so participants can browse its **Card Images** directly
 - A **Pile** belongs to exactly one **Room** and draws from exactly one **Deck**
