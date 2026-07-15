@@ -1,7 +1,6 @@
 @reference "#/styles/global.css";
 @import "@fontsource-variable/orbitron";
-@import "@fontsource-variable/exo-2";
-/*@fontsource-variable/nunito-sans*/
+@import "@fontsource-variable/nunito-sans";
 
 /* =============================================================================
  * Dark theme
@@ -151,9 +150,10 @@ so the noise would end up blending against transparency. */
 }
 
 [data-theme="havocDark"] {
-  body {
-    font-family: "Exo 2 Variable";
-    font-size: 16px;
+  &:is(html) {
+    /*font-family: "Exo 2 Variable";*/
+    font-family: "Nunito Sans Variable";
+    font-size: 18px;
   }
   @layer utilities {
     .chat-bubble {
@@ -236,9 +236,10 @@ so the noise would end up blending against transparency. */
     @layer components {
       .btn {
         @apply bevel;
+        font-family: "Orbitron Variable";
         /*text-transform: uppercase;*/
         /*font-variant-caps: all-small-caps;*/
-        font-weight: 400;
+        /*font-weight: 400;*/
         /*font-size: var(--text-sm);*/
         letter-spacing: var(--tracking-wide);
         color: var(--btn-color-text);
@@ -414,7 +415,11 @@ so the noise would end up blending against transparency. */
     }
     .label {
       color: inherit;
-      font-family: "Orbitron Variable";
+      /*font-family: "Orbitron Variable";*/
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      font-size: var(--text-xs);
+      opacity: 80%;
     }
   }
 
