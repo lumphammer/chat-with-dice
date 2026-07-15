@@ -7,23 +7,39 @@ Chat With Dice is a tabletop RPG chat app where room participants talk, roll dic
 **Card**:
 A **Card Image**, or a pair of **Card Images**, stored in a **Deck** and drawn from a **Pile**.
 
+**Card Draw Message**:
+A chat message recording one draw from a **Pile**: which **Card** came up, and whether it came up **Inverted** or **Face Down**.
+
 **Card Image**:
-An image used in a **Deck**. It is a front, a common back, or an individual back.
+An image used in a **Deck**. It is a front, a **Common Back**, or an **Individual Back**.
+
+**Common Back**:
+One **Card Image** used as the back of every **Card** in a **Deck**.
 
 **Deck**:
 A folder full of images plus the associated configuration, owned by one user.
 _Avoid_: Card set
 
+**Discard**:
+The **Cards** already drawn from a **Pile**. Only meaningful when the **Room** has drawn **Cards** not returning to the **Pile**.
+
 **Face Down**:
 A **Card** drawn showing its back rather than its front. Requires the **Deck** to have a back for that **Card**. Face Down is a presentation choice, not a secrecy guarantee.
 _Avoid_: Flipped, hidden
+
+**Individual Back**:
+A **Card Image** used as the back of exactly one **Card**, in place of the **Deck**'s **Common Back**.
 
 **Inverted**:
 A **Card** drawn rotated 180° while still showing its front, as if turned around flat on the table. Distinct from **Face Down**.
 _Avoid_: Flipped, reversed, upside-down
 
 **Pile**:
-The per-room, stateful version of a **Deck**: what has been drawn, what remains, and the room's own draw rules. You draw from a **Pile**, not a **Deck**.
+The per-room, stateful version of a **Deck**: its **Discard**, what remains, and the room's own draw rules. You draw from a **Pile**, not a **Deck**.
+
+**Reset**:
+Returning every **Card** in a **Pile**'s **Discard** to that **Pile**.
+_Avoid_: Shuffle, reshuffle
 
 **Room**:
 A shared play space with a chat log and optional side-panel tools.
@@ -47,14 +63,20 @@ _Avoid_: Room file, shared file
 ## Relationships
 
 - A **Deck** is a **User File** folder of **Card Images** plus configuration, owned by the same user
+- **Card Images** are the direct children of the **Deck** folder; images nested in subfolders of it are not **Card Images**
 - A **Card** has one front **Card Image** and at most one back **Card Image**
-- A back **Card Image** is either the **Deck**'s common back, shared by every **Card**, or an individual back belonging to one **Card**
+- A **Card**'s back is the **Deck**'s **Common Back** unless that **Card** has an **Individual Back**
+- Pairing a front with an **Individual Back** can be proposed automatically from **Card Image** names, but a **Deck** that defeats the heuristic can be paired by hand
 - A **Deck** whose **Cards** have no backs cannot produce **Face Down** draws
 - A **Deck** is made available to a **Room** by a **Room Share** pointing at its folder; there is no separate deck-sharing grant
 - A shared **Deck** appears in the room **Files** sidebar as a folder, so participants can browse its **Card Images** directly
 - A **Pile** belongs to exactly one **Room** and draws from exactly one **Deck**
 - A **Deck** can back **Piles** in many **Rooms**, and those **Piles** are independent of each other
 - Drawing from a **Pile** never changes the **Deck**
+- A **Pile** has no order — a draw picks at random from the **Cards** not in its **Discard**
+- A **Pile** persists until it is **Reset** or its **Deck** is unshared; a **Room** has no concept of a session, so nothing returns **Cards** to a **Pile** implicitly
+- Removing the **Room Share** for a **Deck** discards that **Deck**'s **Pile**, so re-sharing the **Deck** later starts a fresh **Pile** rather than resuming an old one
+- A **Card Draw Message** stays in the chat log after its **Pile** is **Reset** or discarded, but records a draw that no longer reflects the **Pile**
 - **Deck** configuration is owned by the **Deck** and travels with it into any **Room**
 - **Pile** configuration, such as whether drawn **Cards** return to the **Pile**, is room-level and does not travel
 - Whether a **Deck** permits **Inverted** or **Face Down** draws is **Deck** configuration; whether a given draw came up **Inverted** or **Face Down** is a property of that draw
@@ -118,4 +140,5 @@ _Avoid_: Room file, shared file
 - "flip" is ambiguous between turning a **Card** **Face Down** and turning it **Inverted**; use the specific term.
 - "drawing from a deck" is normal speech for drawing from a **Pile**, and is fine where context is obvious. Only the **Pile** has draw state.
 - "reversed", the usual tarot term, means **Inverted** here.
+- "shuffle" is ambiguous between **Reset** and reordering what remains. A **Pile** has no order, so reordering is meaningless and the intended action is always **Reset**.
 - **Face Down** is presentation, not secrecy — a **Card Image** a client can display is a **Card Image** a determined participant can find.
