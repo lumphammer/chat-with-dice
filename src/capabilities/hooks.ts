@@ -13,6 +13,22 @@ type RoomHookEvents = {
    * state, so there is no honest "join"/"leave" edge to emit.
    */
   onPresenceChange: { online: OnlineUser[] };
+  /**
+   * Fired when an owner's file store reports that shared nodes have become
+   * viewable or stopped being viewable from this room — because the owner
+   * binned or restored the node, or an ancestor of it.
+   *
+   * This is *not* unsharing: the grant survives, because soft delete is
+   * reversible. Anything holding state derived from a share should hide it
+   * rather than forget it, or a restore will have nothing to bring back.
+   *
+   * Carries only the nodes whose availability actually changed, so it is
+   * edge-triggered rather than level-triggered — the owner's store may hold
+   * thousands of nodes and the room has no use for the rest.
+   */
+  onShareAvailabilityChange: {
+    changes: { ownerUserId: string; nodeId: string; unavailable: boolean }[];
+  };
 };
 
 /**
@@ -48,6 +64,7 @@ export type CapabilityHookEvents = RoomHookEvents & FilesHookEvents;
  */
 const hookRegistry: Record<keyof CapabilityHookEvents, true> = {
   onPresenceChange: true,
+  onShareAvailabilityChange: true,
   "files:onShareRemoved": true,
 };
 

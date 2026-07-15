@@ -21,6 +21,15 @@ export type FolderSizeDiscrepancyRow = {
   expected: number;
 };
 
+/** A share row plus whether it is currently viewable from its room. */
+export type ShareAvailabilityRow = {
+  node_id: string;
+  room_id: string;
+  room_durable_object_id: string;
+  /** SQLite has no boolean: `EXISTS` yields 1 or 0. */
+  unavailable: number;
+};
+
 /**
  * Owns the per-user durable SQLite database: migrations, the Drizzle adapter,
  * and every individual query the UserDataDO needs.
@@ -552,6 +561,55 @@ export class UserDataRepository {
     roomDurableObjectId: string;
   }) {
     return this.db.insert(dbSchema.roomResourceShares).values(values);
+  }
+
+  /**
+   * Every share whose node is `nodeId` or a descendant of it, with whether that
+   * share is currently viewable from its room.
+   *
+   * This is the set of shares affected by binning or restoring `nodeId`: the
+   * grant may sit on the node itself, or on a shared folder somewhere beneath
+   * it that the delete shadows. Availability is recomputed per share rather
+   * than assumed from the operation, because a restore only re-exposes a share
+   * if no *other* ancestor is still in the trash.
+   */
+  findSharesAtOrBelow(nodeId: string): ShareAvailabilityRow[] {
+    const result = this.db.run(sql`
+      WITH RECURSIVE subtree (node_id) AS (
+        SELECT id FROM nodes WHERE id = ${nodeId}
+        UNION ALL
+        SELECT n.id
+        FROM subtree s
+        JOIN nodes n ON n.parent_folder_id = s.node_id
+      ),
+      -- Every (share, ancestor-or-self) pair, so a share is unavailable when
+      -- any node on its path to the root is in the trash. Mirrors the rule in
+      -- isNodeReachableFromShare.
+      share_lineage (share_node_id, node_id, parent_folder_id, deleted_time) AS (
+        SELECT n.id, n.id, n.parent_folder_id, n.deleted_time
+        FROM subtree s
+        JOIN room_resource_shares rrs ON rrs.node_id = s.node_id
+        JOIN nodes n ON n.id = rrs.node_id
+        UNION ALL
+        SELECT sl.share_node_id, n.id, n.parent_folder_id, n.deleted_time
+        FROM share_lineage sl
+        JOIN nodes n ON n.folder_id = sl.parent_folder_id
+        WHERE sl.parent_folder_id IS NOT NULL
+      )
+      SELECT
+        rrs.node_id AS node_id,
+        rrs.room_id AS room_id,
+        rrs.room_durable_object_id AS room_durable_object_id,
+        EXISTS (
+          SELECT 1 FROM share_lineage sl
+          WHERE sl.share_node_id = rrs.node_id
+            AND sl.deleted_time IS NOT NULL
+        ) AS unavailable
+      FROM room_resource_shares rrs
+      JOIN subtree s ON s.node_id = rrs.node_id
+    `);
+
+    return result.toArray() as ShareAvailabilityRow[];
   }
 
   deleteShare(nodeId: string, roomId: string, roomDurableObjectId: string) {
