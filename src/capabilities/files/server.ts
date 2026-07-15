@@ -41,6 +41,7 @@ export const filesServer = createServerCapability(filesCommon, {
       nodeShareManager,
       broadcaster,
       pureFn,
+      fireHook,
     }) => {
       const unshareResult = await nodeShareManager.unshareUserNodeId({
         requestingUserId: userId,
@@ -54,6 +55,14 @@ export const filesServer = createServerCapability(filesCommon, {
       }
 
       pureFn({ stateDraft, payload });
+
+      // Fires for "not-found" as well as "removed": either way there is now no
+      // live share for this node here, so anything holding state derived from
+      // it should drop that state. Queued until this action commits.
+      fireHook("files:onShareRemoved", {
+        ownerUserId: payload.ownerUserId,
+        nodeId: payload.nodeId,
+      });
     },
   },
 });
