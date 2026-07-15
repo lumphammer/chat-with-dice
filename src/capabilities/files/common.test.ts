@@ -8,9 +8,20 @@ import { describe, expect, test } from "vitest";
 type Overrides = Record<string, unknown>;
 
 // The current on-disk version `filesStateValidator` upgrades everything to.
-const CURRENT_VERSION = 4;
+const CURRENT_VERSION = 5;
 
-// --- V4 (current) -----------------------------------------------------------
+// --- V5 (current) -----------------------------------------------------------
+
+const v5Share = (overrides: Overrides = {}) => ({
+  userId: "u1",
+  userDisplayName: "User One",
+  dateShared: 1234,
+  node: v4FileNode(),
+  unavailable: false,
+  ...overrides,
+});
+
+// --- V4 (no `unavailable`) --------------------------------------------------
 
 const v4FileNode = (overrides: Overrides = {}) => ({
   version: 1,
@@ -122,7 +133,53 @@ const v1FolderShare = (overrides: Overrides = {}) => ({
 });
 
 describe("filesStateValidator", () => {
-  describe("V4 (current shape)", () => {
+  describe("V5 (current shape)", () => {
+    test("parses a state and preserves availability", () => {
+      const state = filesStateValidator.parse({
+        version: 5,
+        shares: [
+          v5Share(),
+          v5Share({ node: v4FolderNode(), unavailable: true }),
+        ],
+      });
+
+      expect(state.version).toBe(CURRENT_VERSION);
+      expect(state.shares.map((share) => share.unavailable)).toEqual([
+        false,
+        true,
+      ]);
+    });
+
+    test("rejects a share with no availability", () => {
+      const { unavailable: _omitted, ...shareWithoutAvailability } = v5Share();
+
+      expect(
+        filesStateValidator.safeParse({
+          version: 5,
+          shares: [shareWithoutAvailability],
+        }).success,
+      ).toBe(false);
+    });
+
+    test("parses empty shares (matches getInitialState)", () => {
+      expect(filesStateValidator.parse({ version: 5, shares: [] })).toEqual({
+        version: 5,
+        shares: [],
+      });
+    });
+  });
+
+  describe("V4 → V5 migration", () => {
+    test("assumes a share cached before availability tracking is available", () => {
+      const state = filesStateValidator.parse({
+        version: 4,
+        shares: [v4Share()],
+      });
+
+      expect(state.version).toBe(CURRENT_VERSION);
+      expect(state.shares[0].unavailable).toBe(false);
+    });
+
     test("parses a state with file and folder nodes", () => {
       const state = filesStateValidator.parse({
         version: 4,
@@ -185,17 +242,10 @@ describe("filesStateValidator", () => {
         Date.parse("2024-01-01T00:00:00Z"),
       );
     });
-
-    test("parses empty shares (matches getInitialState)", () => {
-      expect(filesStateValidator.parse({ version: 4, shares: [] })).toEqual({
-        version: 4,
-        shares: [],
-      });
-    });
   });
 
-  describe("V3 → V4 migration", () => {
-    test("migrates a file share into a V4 node", () => {
+  describe("V3 → V5 migration", () => {
+    test("migrates a file share into a V5 share", () => {
       const state = filesStateValidator.parse({
         version: 3,
         shares: [v3FileShare()],
@@ -209,6 +259,7 @@ describe("filesStateValidator", () => {
         userId: "u1",
         userDisplayName: "User One",
         dateShared: 1234,
+        unavailable: false,
         node: {
           kind: "file",
           version: 1,
@@ -275,7 +326,7 @@ describe("filesStateValidator", () => {
     });
   });
 
-  describe("V2 → V4 migration", () => {
+  describe("V2 → V5 migration", () => {
     test("defaults a missing sizeBytes to 0 and builds the full node", () => {
       const state = filesStateValidator.parse({
         version: 2,
@@ -317,7 +368,7 @@ describe("filesStateValidator", () => {
     });
   });
 
-  describe("V1 → V4 migration", () => {
+  describe("V1 → V5 migration", () => {
     test("parses a state with no version field and defaults dateShared to 0", () => {
       const state = filesStateValidator.parse({
         shares: [v1FileShare(), v1FolderShare()],
@@ -369,7 +420,7 @@ describe("filesStateValidator", () => {
       ).toBe(false);
     });
 
-    test("rejects a V4 file node missing contentType (no silent fallback)", () => {
+    test("rejects a V5 file node missing contentType (no silent fallback)", () => {
       const result = filesStateValidator.safeParse({
         version: 4,
         shares: [

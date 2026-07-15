@@ -5,7 +5,7 @@ import { storageNodeValidator } from "#/validators/storageNodeValidator.ts";
 import * as z from "zod/v4";
 
 // oxlint-disable-next-line no-magic-numbers
-const FILES_STATE_VERSION = 4 as const;
+const FILES_STATE_VERSION = 5 as const;
 
 const filesStateValidatorV1 = z.object({
   shares: z.array(
@@ -77,19 +77,42 @@ const filesStateValidatorV3 = z.object({
   ),
 });
 
+/**
+ * What the owner's file store hands back when a node is shared, and what a
+ * Shared Item Message carries. Deliberately free of room-local state: a
+ * message is a snapshot of one sharing event, so it has no business tracking
+ * whether the file is still there.
+ */
+const sharedItemValidator = z.object({
+  userId: z.string(),
+  userDisplayName: z.string(),
+  dateShared: z.preprocess(fixStringTimestampThatShouldBeEpochMs, z.number()),
+  node: storageNodeValidator,
+});
+
+/**
+ * A share as the room caches it: the shared item plus whether it is currently
+ * viewable from here.
+ */
+const roomShareValidatorV5 = sharedItemValidator.extend({
+  /**
+   * True once the owner has binned the node or one of its ancestors, pushed
+   * here by the owner's file store. The grant itself survives — soft delete is
+   * reversible — so this is not the same as being unshared, and a restore
+   * flips it back.
+   */
+  unavailable: z.boolean(),
+});
+
 const filesStateValidatorV4 = z.object({
+  // oxlint-disable-next-line no-magic-numbers
+  version: z.literal(4),
+  shares: z.array(sharedItemValidator),
+});
+
+const filesStateValidatorV5 = z.object({
   version: z.literal(FILES_STATE_VERSION),
-  shares: z.array(
-    z.object({
-      userId: z.string(),
-      userDisplayName: z.string(),
-      dateShared: z.preprocess(
-        fixStringTimestampThatShouldBeEpochMs,
-        z.number(),
-      ),
-      node: storageNodeValidator,
-    }),
-  ),
+  shares: z.array(roomShareValidatorV5),
 });
 
 const migrateStateV1ToV2 = (
@@ -111,7 +134,8 @@ const migrateStateV2ToV3 = (
 const migrateStateV3ToV4 = (
   v3: z.infer<typeof filesStateValidatorV3>,
 ): z.infer<typeof filesStateValidatorV4> => ({
-  version: FILES_STATE_VERSION,
+  // oxlint-disable-next-line no-magic-numbers
+  version: 4,
   shares: v3.shares.map((v3Share) => ({
     dateShared: v3Share.dateShared,
     userDisplayName: v3Share.userDisplayName,
@@ -144,10 +168,21 @@ const migrateStateV3ToV4 = (
   })),
 });
 
+// Shares cached before this version predate availability tracking. Assume they
+// are fine: the owner's file store pushes the truth on the next change, and a
+// stale "available" merely 403s on click, as it does today.
+const migrateStateV4ToV5 = (
+  v4: z.infer<typeof filesStateValidatorV4>,
+): z.infer<typeof filesStateValidatorV5> => ({
+  version: FILES_STATE_VERSION,
+  shares: v4.shares.map((share) => ({ ...share, unavailable: false })),
+});
+
 export const filesStateValidator = versioned(filesStateValidatorV1)
   .then(filesStateValidatorV2, migrateStateV1ToV2)
   .then(filesStateValidatorV3, migrateStateV2ToV3)
   .then(filesStateValidatorV4, migrateStateV3ToV4)
+  .then(filesStateValidatorV5, migrateStateV4ToV5)
   .build();
 
 const sharedItemMessageDataValidatorV1 = z.discriminatedUnion("kind", [
@@ -173,8 +208,7 @@ const sharedItemMessageDataValidatorV1 = z.discriminatedUnion("kind", [
 const sharedItemMessageDataValidatorV2 =
   filesStateValidatorV3.shape.shares.element;
 
-const sharedItemMessageDataValidatorV3 =
-  filesStateValidatorV4.shape.shares.element;
+const sharedItemMessageDataValidatorV3 = sharedItemValidator;
 
 const migrateMessageV1ToV2 = (
   data: z.infer<typeof sharedItemMessageDataValidatorV1>,
@@ -235,9 +269,14 @@ export const sharedItemMessageDataValidator = versioned(
   .then(sharedItemMessageDataValidatorV3, migrateMessageV2ToV3)
   .build();
 
-type FilesState = z.infer<typeof filesStateValidator>;
+/**
+ * One sharing event, as the owner's file store reports it and as a Shared Item
+ * Message records it.
+ */
+export type SharedItem = z.infer<typeof sharedItemValidator>;
 
-export type SharedItem = FilesState["shares"][number];
+/** A share as the room caches it: a {@link SharedItem} plus its availability. */
+export type RoomShare = z.infer<typeof roomShareValidatorV5>;
 
 export const filesCommon = createCapabilityCommon({
   name: "files",
