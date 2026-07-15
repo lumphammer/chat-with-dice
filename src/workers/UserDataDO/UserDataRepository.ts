@@ -484,25 +484,34 @@ export class UserDataRepository {
    * True if `nodeId` or any of its ancestor folders is in
    * `room_resource_shares` for `roomId`. Read-side authorization for cross-user
    * file/folder access: sharing a folder grants access to every descendant.
+   *
+   * A node in the trash is not reachable, and neither is one *shadowed* by a
+   * deleted ancestor — deleting a folder puts everything under it in the trash,
+   * including any shared folder, so the grant stops applying even though the
+   * share row survives (soft delete is reversible, so the row has to). That is
+   * why the walk runs to the root collecting `deleted_time` rather than
+   * filtering deleted nodes out: filtering only *stops* the walk, which still
+   * matches a share sitting below the deleted ancestor.
    */
   isNodeReachableFromShare(nodeId: string, roomId: string): boolean {
     const result = this.db.run(sql`
-      WITH RECURSIVE ancestors (node_id, parent_folder_id) AS (
-        SELECT id, parent_folder_id
+      WITH RECURSIVE ancestors (node_id, parent_folder_id, deleted_time) AS (
+        SELECT id, parent_folder_id, deleted_time
         FROM nodes
         WHERE id = ${nodeId}
-          AND deleted_time IS NULL
         UNION ALL
-        SELECT n.id, n.parent_folder_id
+        SELECT n.id, n.parent_folder_id, n.deleted_time
         FROM ancestors a
         JOIN nodes n ON n.folder_id = a.parent_folder_id
         WHERE a.parent_folder_id IS NOT NULL
-          AND n.deleted_time IS NULL
       )
       SELECT 1
       FROM ancestors a
       JOIN room_resource_shares rrs ON rrs.node_id = a.node_id
       WHERE rrs.room_id = ${roomId}
+        AND NOT EXISTS (
+          SELECT 1 FROM ancestors WHERE deleted_time IS NOT NULL
+        )
       LIMIT 1
     `);
 
