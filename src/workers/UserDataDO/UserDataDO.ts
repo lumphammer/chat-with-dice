@@ -172,6 +172,60 @@ export class UserDataDO extends DurableObject {
     return { id, name };
   }
 
+  /**
+   * Tell every room holding a share at or below `nodeId` whether that share is
+   * still viewable. Call *after* the change lands, since availability is read
+   * back out of the database rather than inferred from the operation.
+   *
+   * Best-effort and non-fatal: a room that cannot be reached keeps a stale
+   * entry in its sidebar, which 403s on click exactly as it did before this
+   * existed. Failing the user's delete over it would be a worse trade.
+   */
+  private async notifyRoomsOfShareAvailability(nodeId: string): Promise<void> {
+    if (!this.userId) {
+      return;
+    }
+    const ownerUserId = this.userId;
+
+    const rows = this.repo.findSharesAtOrBelow(nodeId);
+    if (rows.length === 0) {
+      return;
+    }
+
+    // One RPC per room, not per share: a room holding several shares under the
+    // binned folder should hear once.
+    const byRoom = new Map<
+      string,
+      { nodeId: string; unavailable: boolean }[]
+    >();
+    for (const row of rows) {
+      const changes = byRoom.get(row.room_durable_object_id) ?? [];
+      changes.push({
+        nodeId: row.node_id,
+        unavailable: row.unavailable === 1,
+      });
+      byRoom.set(row.room_durable_object_id, changes);
+    }
+
+    await Promise.all(
+      [...byRoom].map(async ([roomDurableObjectId, changes]) => {
+        try {
+          const room = cfEnv.CHAT_ROOM_DO.get(
+            cfEnv.CHAT_ROOM_DO.idFromString(roomDurableObjectId),
+          );
+          await room.onShareAvailabilityChange(
+            changes.map((change) => ({ ...change, ownerUserId })),
+          );
+        } catch (cause) {
+          logError(
+            `Failed to notify room ${roomDurableObjectId} of share availability`,
+            cause,
+          );
+        }
+      }),
+    );
+  }
+
   async softDeleteNode(nodeId: string) {
     const node = await this.repo.getNode(nodeId);
     if (!node) {
@@ -179,6 +233,7 @@ export class UserDataDO extends DurableObject {
     }
 
     await this.repo.softDeleteNode(nodeId);
+    await this.notifyRoomsOfShareAvailability(nodeId);
 
     const sizeToSubtract = node.file
       ? node.file.sizeBytes
@@ -245,6 +300,7 @@ export class UserDataDO extends DurableObject {
     }
 
     await this.syncQuotaWithSizes();
+    await this.notifyRoomsOfShareAvailability(nodeId);
     return success();
   }
 

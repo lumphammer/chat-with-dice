@@ -24,7 +24,7 @@ export const filesServer = createServerCapability(filesCommon, {
       }
       const sharedItem: SharedItem = shareResult.sharedItem;
       if (shareResult.result === "created") {
-        stateDraft.shares.push(sharedItem);
+        stateDraft.shares.push({ ...sharedItem, unavailable: false });
       }
       sendChatMessage(sharedItem);
     },
@@ -41,6 +41,7 @@ export const filesServer = createServerCapability(filesCommon, {
       nodeShareManager,
       broadcaster,
       pureFn,
+      fireHook,
     }) => {
       const unshareResult = await nodeShareManager.unshareUserNodeId({
         requestingUserId: userId,
@@ -54,6 +55,31 @@ export const filesServer = createServerCapability(filesCommon, {
       }
 
       pureFn({ stateDraft, payload });
+
+      // Fires for "not-found" as well as "removed": either way there is now no
+      // live share for this node here, so anything holding state derived from
+      // it should drop that state. Queued until this action commits.
+      fireHook("files:onShareRemoved", {
+        ownerUserId: payload.ownerUserId,
+        nodeId: payload.nodeId,
+      });
+    },
+  },
+  hooks: {
+    onShareAvailabilityChange: ({ stateDraft, event: { changes } }) => {
+      for (const change of changes) {
+        const share = stateDraft.shares.find(
+          (candidate) =>
+            candidate.userId === change.ownerUserId &&
+            candidate.node.id === change.nodeId,
+        );
+        // A change for a share this room never cached is normal, not an error:
+        // the owner's store fans one delete out to every room holding a share
+        // under that node, and rooms disagree about what they cache.
+        if (share) {
+          share.unavailable = change.unavailable;
+        }
+      }
     },
   },
 });

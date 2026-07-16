@@ -49,7 +49,8 @@ export class CapabilityService {
     // Built from the runtime `hookNames` list (there is no zod schema to read
     // keys off). The `Object.fromEntries` round-trip loses the precise per-key
     // mapping, so we re-assert it here — the keys come straight from
-    // `hookNames`, so this is sound.
+    // `hookNames`, which is exhaustive over `CapabilityHookEvents` by
+    // construction, so this is sound.
     this.hooks = Object.fromEntries(
       hookNames.map((name) => [
         name,
@@ -90,6 +91,7 @@ export class CapabilityService {
       config,
       broadcaster: this.broadcaster,
       nodeShareManager: this.nodeShareManager,
+      dispatchHook: (hookName, event) => this.dispatch(hookName, event),
     });
     if (!mountedCap) {
       logError("Failed to mount", name);

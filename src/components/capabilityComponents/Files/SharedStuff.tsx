@@ -86,9 +86,11 @@ export const SharedStuff = memo(() => {
 
   const sortedShares = useMemo(() => {
     if (!filesCap.initialised) return [];
-    return [...filesCap.state.shares].sort(
-      (a, b) => b.dateShared - a.dateShared,
-    );
+    // Shares whose owner has binned the file (or a folder above it) drop out of
+    // the list. The grant is still there and a restore brings them back.
+    return filesCap.state.shares
+      .filter((share) => !share.unavailable)
+      .sort((a, b) => b.dateShared - a.dateShared);
   }, [filesCap]);
 
   useEffect(() => {

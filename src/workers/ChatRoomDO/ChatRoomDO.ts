@@ -352,6 +352,18 @@ export class ChatRoomDO extends DurableObject {
     await this.webSocketClose(ws, WEBSOCKET_INTERNAL_ERROR); //, "WebSocket error", false);
   }
 
+  /**
+   * Called by an owner's `UserDataDO` when nodes shared with this room become
+   * viewable or stop being viewable. Fans the news out to the capabilities as
+   * a hook — `files` hides the share, and anything deriving state from a share
+   * gets a chance to react.
+   */
+  async onShareAvailabilityChange(
+    changes: { ownerUserId: string; nodeId: string; unavailable: boolean }[],
+  ): Promise<void> {
+    await this.capabilityService.hooks.onShareAvailabilityChange({ changes });
+  }
+
   async destroy() {
     log(`Destroying ChatRoomDO ${this.ctx.id.toString()}`);
     await this.ctx.storage.deleteAll();

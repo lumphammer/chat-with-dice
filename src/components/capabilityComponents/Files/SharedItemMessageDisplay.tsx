@@ -26,10 +26,15 @@ export const SharedItemMessageDisplay = memo(
       null,
     );
 
+    // Viewable, rather than merely granted: unsharing drops the share from the
+    // room's list, while binning the file keeps the grant and marks it
+    // unavailable. Either way there is nothing here to open, and a restore
+    // makes the message live again.
     const isAvailable = useMemo(() => {
       if (!parsed.success || !filesCap.initialised) return false;
       return filesCap.state.shares.some(
         (share) =>
+          !share.unavailable &&
           share.node.kind === parsed.data.node.kind &&
           share.node.id === parsed.data.node.id &&
           share.userId === parsed.data.userId,
