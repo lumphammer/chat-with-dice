@@ -15,7 +15,7 @@ vi.mock("cloudflare:workers", () => ({ env: {} }));
 const OWNER = "owner-user";
 
 const node = (id: string): StorageNode => ({
-  version: 1,
+  version: 2,
   kind: "folder",
   id,
   name: id,
@@ -23,6 +23,7 @@ const node = (id: string): StorageNode => ({
   createdTime: 1,
   deletedTime: null,
   sizeBytes: 0,
+  isDeck: false,
 });
 
 const share = (nodeId: string, unavailable = false) => ({
@@ -46,7 +47,7 @@ describe("files onShareAvailabilityChange hook", () => {
     }));
 
   const mountWith = async (shares: ReturnType<typeof share>[]) => {
-    stateRepository.set("files", { version: 5, shares });
+    stateRepository.set("files", { version: 6, shares });
     const result = await filesServer.mount({
       doCtx: {} as unknown as DurableObjectState,
       messageJiggler: {} as unknown as MessageJiggler,
