@@ -440,6 +440,21 @@ export class UserDataDO extends DurableObject {
     }
   }
 
+  async setFolderIsDeck(nodeId: string, isDeck: boolean) {
+    const node = await this.repo.getNode(nodeId);
+    if (!node) {
+      throw new Error("File or folder not found");
+    }
+    if (!node.folder) {
+      throw new Error("Only folders can be Decks");
+    }
+    if (isDeck) {
+      await this.repo.markFolderAsDeck(nodeId);
+    } else {
+      await this.repo.unmarkFolderAsDeck(nodeId);
+    }
+  }
+
   async getFile(
     nodeId: string,
     { include = "live" }: { include?: "deleted" | "live" | "all" } = {},

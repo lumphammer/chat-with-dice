@@ -8,6 +8,7 @@ import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
 import {
   Download,
+  Layers,
   Pencil,
   Share2,
   Trash2,
@@ -62,6 +63,18 @@ export const NodeActionsMenu = memo(
       }
       onRefresh?.();
     };
+    const handleToggleDeck = async () => {
+      const result = await actions.files.setFolderIsDeck({
+        nodeId: node.id,
+        isDeck: node.kind === "folder" ? !node.isDeck : true,
+      });
+      if (result.error) {
+        onError(`Failed to update ${node.name}: ${result.error.message}`);
+        return;
+      }
+      onRefresh?.();
+    };
+
     const isDeleted = node.deletedTime !== null;
     const isLive = !isDeleted;
     const downloadUrl =
@@ -106,6 +119,14 @@ export const NodeActionsMenu = memo(
             <button type="button" onClick={wrapMenuAction(onStartRename)}>
               <Pencil size={14} />
               Rename
+            </button>
+          </li>
+        )}
+        {isLive && !readOnly && node.kind === "folder" && (
+          <li>
+            <button type="button" onClick={wrapMenuAction(handleToggleDeck)}>
+              <Layers size={14} />
+              {node.isDeck ? "Unmark as Deck" : "Mark as Deck"}
             </button>
           </li>
         )}

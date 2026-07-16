@@ -1,7 +1,13 @@
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { FileTypeIcon } from "./FileTypeIcon";
 import { buildFileUrl } from "./fileUrl";
-import { Folder, FolderX, Trash2, type LucideProps } from "lucide-react";
+import {
+  Folder,
+  FolderX,
+  Layers,
+  Trash2,
+  type LucideProps,
+} from "lucide-react";
 import { memo, type SVGProps } from "react";
 
 const Thumbnail = ({
@@ -77,7 +83,7 @@ export const NodeIcon = memo(
     }
     // folders
     if (node.kind === "folder") {
-      return <Folder {...rest} />;
+      return node.isDeck ? <Layers {...rest} /> : <Folder {...rest} />;
     }
 
     // icons

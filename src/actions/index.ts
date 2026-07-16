@@ -11,6 +11,7 @@ import { getNodes } from "./files/getNodes";
 import { hardDeleteNode } from "./files/hardDeleteNode";
 import { renameNode } from "./files/renameNode";
 import { restoreNode } from "./files/restoreNode";
+import { setFolderIsDeck } from "./files/setFolderIsDeck";
 import { createChatWithDiceRoom } from "./rooms/createChatWithDiceRoom";
 import { deleteRoom } from "./rooms/deleteRoom";
 import { getMyRooms } from "./rooms/getMyRooms";
@@ -28,6 +29,7 @@ export const server = {
     renameNode,
     hardDeleteNode,
     restoreNode,
+    setFolderIsDeck,
   },
   admin: {
     updateRoom: adminUpdateRoom,

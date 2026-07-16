@@ -5,6 +5,7 @@ import m0003 from './20260515151638_calm_captain_universe/migration.sql';
 import m0004 from './20260523084153_worthless_sprite/migration.sql';
 import m0005 from './20260604133830_previous_ozymandias/migration.sql';
 import m0006 from './20260604143119_natural_nick_fury/migration.sql';
+import m0007 from './20260716152933_gigantic_human_fly/migration.sql';
 
   export default {
     migrations: {
@@ -14,7 +15,8 @@ import m0006 from './20260604143119_natural_nick_fury/migration.sql';
 "20260515151638_calm_captain_universe": m0003,
 "20260523084153_worthless_sprite": m0004,
 "20260604133830_previous_ozymandias": m0005,
-"20260604143119_natural_nick_fury": m0006
+"20260604143119_natural_nick_fury": m0006,
+"20260716152933_gigantic_human_fly": m0007
 }
   }
   

@@ -90,6 +90,11 @@ export const NodeListItem = memo(
                   text-sm"
               >
                 {node.name}
+                {node.kind === "folder" && node.isDeck && (
+                  <span className="badge badge-ghost badge-sm ml-2 align-middle">
+                    Deck
+                  </span>
+                )}
               </span>
             )}
           </div>

@@ -5,7 +5,34 @@ import { storageNodeValidator } from "#/validators/storageNodeValidator.ts";
 import * as z from "zod/v4";
 
 // oxlint-disable-next-line no-magic-numbers
-const FILES_STATE_VERSION = 5 as const;
+const FILES_STATE_VERSION = 6 as const;
+
+// Frozen copy of storageNodeValidator's shape as it was before the Deck bump
+// (no `isDeck`). Historical versions (V4, V5) must keep validating exactly
+// what was actually stored under them, so they can't follow
+// storageNodeValidator's `isDeck` bump — that's what filesStateValidatorV6 and
+// migrateStateV5ToV6 are for.
+const storageNodeCoreFieldsV1 = z.object({
+  version: z.literal(1),
+  id: z.string(),
+  name: z.string(),
+  parentFolderId: z.string().nullable(),
+  createdTime: z.preprocess(fixStringTimestampThatShouldBeEpochMs, z.number()),
+  deletedTime: z.number().nullable(),
+  sizeBytes: z.number(),
+});
+
+const storageNodeValidatorV1 = z.discriminatedUnion("kind", [
+  storageNodeCoreFieldsV1.extend({
+    kind: z.literal("folder"),
+  }),
+  storageNodeCoreFieldsV1.extend({
+    kind: z.literal("file"),
+    contentType: z.string(),
+    thumbnailContentType: z.string().nullable(),
+    thumbnailSizeBytes: z.number().nullable(),
+  }),
+]);
 
 const filesStateValidatorV1 = z.object({
   shares: z.array(
@@ -79,6 +106,45 @@ const filesStateValidatorV3 = z.object({
 
 /**
  * What the owner's file store hands back when a node is shared, and what a
+ * Shared Item Message carries, as it was before the Deck bump (`node` has no
+ * `isDeck`). Frozen for V4/V5, which must keep validating exactly what was
+ * actually stored under them.
+ */
+const sharedItemValidatorV1 = z.object({
+  userId: z.string(),
+  userDisplayName: z.string(),
+  dateShared: z.preprocess(fixStringTimestampThatShouldBeEpochMs, z.number()),
+  node: storageNodeValidatorV1,
+});
+
+/**
+ * A share as the room caches it: the shared item plus whether it is currently
+ * viewable from here, as it was before the Deck bump.
+ */
+const roomShareValidatorV5 = sharedItemValidatorV1.extend({
+  /**
+   * True once the owner has binned the node or one of its ancestors, pushed
+   * here by the owner's file store. The grant itself survives — soft delete is
+   * reversible — so this is not the same as being unshared, and a restore
+   * flips it back.
+   */
+  unavailable: z.boolean(),
+});
+
+const filesStateValidatorV4 = z.object({
+  // oxlint-disable-next-line no-magic-numbers
+  version: z.literal(4),
+  shares: z.array(sharedItemValidatorV1),
+});
+
+const filesStateValidatorV5 = z.object({
+  // oxlint-disable-next-line no-magic-numbers
+  version: z.literal(5),
+  shares: z.array(roomShareValidatorV5),
+});
+
+/**
+ * What the owner's file store hands back when a node is shared, and what a
  * Shared Item Message carries. Deliberately free of room-local state: a
  * message is a snapshot of one sharing event, so it has no business tracking
  * whether the file is still there.
@@ -94,7 +160,7 @@ const sharedItemValidator = z.object({
  * A share as the room caches it: the shared item plus whether it is currently
  * viewable from here.
  */
-const roomShareValidatorV5 = sharedItemValidator.extend({
+const roomShareValidatorV6 = sharedItemValidator.extend({
   /**
    * True once the owner has binned the node or one of its ancestors, pushed
    * here by the owner's file store. The grant itself survives — soft delete is
@@ -104,15 +170,9 @@ const roomShareValidatorV5 = sharedItemValidator.extend({
   unavailable: z.boolean(),
 });
 
-const filesStateValidatorV4 = z.object({
-  // oxlint-disable-next-line no-magic-numbers
-  version: z.literal(4),
-  shares: z.array(sharedItemValidator),
-});
-
-const filesStateValidatorV5 = z.object({
+const filesStateValidatorV6 = z.object({
   version: z.literal(FILES_STATE_VERSION),
-  shares: z.array(roomShareValidatorV5),
+  shares: z.array(roomShareValidatorV6),
 });
 
 const migrateStateV1ToV2 = (
@@ -174,8 +234,26 @@ const migrateStateV3ToV4 = (
 const migrateStateV4ToV5 = (
   v4: z.infer<typeof filesStateValidatorV4>,
 ): z.infer<typeof filesStateValidatorV5> => ({
-  version: FILES_STATE_VERSION,
+  // oxlint-disable-next-line no-magic-numbers
+  version: 5,
   shares: v4.shares.map((share) => ({ ...share, unavailable: false })),
+});
+
+const migrateStorageNodeV1ToV2 = (
+  node: z.infer<typeof storageNodeValidatorV1>,
+): z.infer<typeof storageNodeValidator> =>
+  node.kind === "folder"
+    ? { ...node, version: 2, isDeck: false }
+    : { ...node, version: 2 };
+
+const migrateStateV5ToV6 = (
+  v5: z.infer<typeof filesStateValidatorV5>,
+): z.infer<typeof filesStateValidatorV6> => ({
+  version: FILES_STATE_VERSION,
+  shares: v5.shares.map((share) => ({
+    ...share,
+    node: migrateStorageNodeV1ToV2(share.node),
+  })),
 });
 
 export const filesStateValidator = versioned(filesStateValidatorV1)
@@ -183,6 +261,7 @@ export const filesStateValidator = versioned(filesStateValidatorV1)
   .then(filesStateValidatorV3, migrateStateV2ToV3)
   .then(filesStateValidatorV4, migrateStateV3ToV4)
   .then(filesStateValidatorV5, migrateStateV4ToV5)
+  .then(filesStateValidatorV6, migrateStateV5ToV6)
   .build();
 
 const sharedItemMessageDataValidatorV1 = z.discriminatedUnion("kind", [
@@ -208,7 +287,9 @@ const sharedItemMessageDataValidatorV1 = z.discriminatedUnion("kind", [
 const sharedItemMessageDataValidatorV2 =
   filesStateValidatorV3.shape.shares.element;
 
-const sharedItemMessageDataValidatorV3 = sharedItemValidator;
+const sharedItemMessageDataValidatorV3 = sharedItemValidatorV1;
+
+const sharedItemMessageDataValidatorV4 = sharedItemValidator;
 
 const migrateMessageV1ToV2 = (
   data: z.infer<typeof sharedItemMessageDataValidatorV1>,
@@ -262,11 +343,19 @@ const migrateMessageV2ToV3 = (
   };
 };
 
+const migrateMessageV3ToV4 = (
+  data: z.infer<typeof sharedItemMessageDataValidatorV3>,
+): z.infer<typeof sharedItemMessageDataValidatorV4> => ({
+  ...data,
+  node: migrateStorageNodeV1ToV2(data.node),
+});
+
 export const sharedItemMessageDataValidator = versioned(
   sharedItemMessageDataValidatorV1,
 )
   .then(sharedItemMessageDataValidatorV2, migrateMessageV1ToV2)
   .then(sharedItemMessageDataValidatorV3, migrateMessageV2ToV3)
+  .then(sharedItemMessageDataValidatorV4, migrateMessageV3ToV4)
   .build();
 
 /**
@@ -276,7 +365,7 @@ export const sharedItemMessageDataValidator = versioned(
 export type SharedItem = z.infer<typeof sharedItemValidator>;
 
 /** A share as the room caches it: a {@link SharedItem} plus its availability. */
-export type RoomShare = z.infer<typeof roomShareValidatorV5>;
+export type RoomShare = z.infer<typeof roomShareValidatorV6>;
 
 export const filesCommon = createCapabilityCommon({
   name: "files",

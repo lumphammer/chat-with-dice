@@ -35,7 +35,7 @@ export async function listAllR2Objects(
 export const dbNodeToStorageNode = (dbNode: DbNode): StorageNode => {
   if (dbNode.folder) {
     return {
-      version: 1,
+      version: 2,
       kind: "folder",
       createdTime: fixStringTimestampThatShouldBeEpochMs(dbNode.createdTime),
       deletedTime: dbNode.deletedTime,
@@ -43,11 +43,12 @@ export const dbNodeToStorageNode = (dbNode: DbNode): StorageNode => {
       name: dbNode.name,
       parentFolderId: dbNode.parentFolderId,
       sizeBytes: dbNode.folder.recursiveSizeBytes,
+      isDeck: dbNode.folder.deck !== null,
     };
   }
   if (dbNode.file) {
     return {
-      version: 1,
+      version: 2,
       kind: "file",
       createdTime: fixStringTimestampThatShouldBeEpochMs(dbNode.createdTime),
       deletedTime: dbNode.deletedTime,
