@@ -9,8 +9,9 @@ import { z } from "zod/v4";
  *
  * `ownerUserId` + `card.nodeId` are the trust-bearing pair: the image is served
  * (and re-authorised) through the `/api/files/[ownerUserId]/[nodeId]` route.
- * The Deck and Card names are snapshot display metadata, exactly like a Shared
- * Item Message — a draw is a record of one moment, not a live view.
+ * The Deck and Card names are snapshot display metadata — a draw is a record of
+ * one moment, not a live view — but both are filled in server-side from the
+ * owner's file store, never from anything the drawer supplied.
  */
 export const cardDrawMessageDataValidator = z.object({
   ownerUserId: z.string(),
@@ -40,13 +41,12 @@ export const cardsCommon = createCapabilityCommon({
   buildActions: ({ createAction }) => ({
     draw: createAction({
       // The Deck is identified by its owner and folder node id — the only two
-      // things the server needs to authorise and list Cards. `deckName` is
-      // carried through purely so the Card Draw Message can label its Deck; it
-      // is display text, never trusted for access.
+      // things the server needs to authorise, validate deck-ness, and list
+      // Cards. The Deck's name is not accepted from the caller; the server reads
+      // it from the owner's file store so a drawer cannot mislabel the Deck.
       payloadValidator: z.object({
         ownerUserId: z.string(),
         deckNodeId: z.string(),
-        deckName: z.string(),
       }),
     }),
   }),

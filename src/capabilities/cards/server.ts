@@ -43,7 +43,7 @@ export const cardsServer = createServerCapability(cardsCommon, {
 
       sendChatMessage({
         ownerUserId: payload.ownerUserId,
-        deck: { nodeId: payload.deckNodeId, name: payload.deckName },
+        deck: { nodeId: payload.deckNodeId, name: result.deckName },
         card: { nodeId: card.nodeId, name: card.name },
       });
     },

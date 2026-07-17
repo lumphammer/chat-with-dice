@@ -2,7 +2,7 @@ import { cardsClient } from "#/capabilities/cards/client";
 import { filesClient } from "#/capabilities/files/client";
 import type { RoomShare } from "#/capabilities/files/common";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
-import { Layers } from "lucide-react";
+import { DeckRow } from "./DeckRow";
 import { memo, useMemo } from "react";
 
 /**
@@ -52,34 +52,16 @@ export const SidebarCards = memo(() => {
       ) : (
         <ul className="animate-fadein mt-2 flex min-w-0 flex-col gap-1">
           {decks.map((deck) => (
-            <li
+            <DeckRow
               key={deck.node.id}
-              className="border-base-300 bg-base-100 rounded-box flex
-                items-center gap-3 border px-3 py-2"
-            >
-              <span
-                className="bg-base-200 flex size-10 shrink-0 items-center
-                  justify-center rounded"
-              >
-                <Layers size={20} />
-              </span>
-              <span className="min-w-0 flex-1 truncate font-medium">
-                {deck.node.name}
-              </span>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() =>
-                  cardsCap.actions.draw({
-                    ownerUserId: deck.userId,
-                    deckNodeId: deck.node.id,
-                    deckName: deck.node.name,
-                  })
-                }
-              >
-                Draw
-              </button>
-            </li>
+              deck={deck}
+              onDraw={() =>
+                cardsCap.actions.draw({
+                  ownerUserId: deck.userId,
+                  deckNodeId: deck.node.id,
+                })
+              }
+            />
           ))}
         </ul>
       )}

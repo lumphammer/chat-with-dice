@@ -52,7 +52,7 @@ const draw = (mounted: ServerMountedCapability) =>
     actionCall: {
       correlation: "c1",
       actionName: "draw",
-      params: { ownerUserId: OWNER, deckNodeId: DECK, deckName: "Magus" },
+      params: { ownerUserId: OWNER, deckNodeId: DECK },
     },
     userId: DRAWER,
     displayName: "Drawer",
@@ -66,6 +66,7 @@ describe("cards draw action", () => {
   it("draws a card and posts a Card Draw Message", async () => {
     const listDeckCards = vi.fn<ListDeckCards>().mockResolvedValue({
       result: "ok",
+      deckName: "Magus",
       cards: [
         { nodeId: "card-a", name: "The Fool" },
         { nodeId: "card-b", name: "The Magician" },
@@ -79,7 +80,8 @@ describe("cards draw action", () => {
       ownerUserId: OWNER,
       deckNodeId: DECK,
     });
-    // Math.random pinned to 0 → index 0.
+    // Math.random pinned to 0 → index 0. The deck name comes from the
+    // authoritative listDeckCards result, not from the draw payload.
     expect(sentMessages).toEqual([
       {
         ownerUserId: OWNER,
@@ -93,7 +95,7 @@ describe("cards draw action", () => {
   it("fails gracefully drawing from a deck with no cards", async () => {
     const listDeckCards = vi
       .fn<ListDeckCards>()
-      .mockResolvedValue({ result: "ok", cards: [] });
+      .mockResolvedValue({ result: "ok", deckName: "Magus", cards: [] });
     const { mounted, sentMessages, errors } = await mountWith(listDeckCards);
 
     await draw(mounted);
