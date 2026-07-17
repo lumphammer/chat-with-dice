@@ -648,10 +648,13 @@ export class UserDataRepository {
     if (nodeIds.length === 0) {
       return [];
     }
+    // `UNION` (not `UNION ALL`) so a node reached from two roots — `nodeIds` can
+    // hold both a folder and a separately-binned descendant of it, which the
+    // purge reaps together — is walked once, and each share yields one row.
     const result = this.db.run(sql`
       WITH RECURSIVE subtree (node_id) AS (
         SELECT id FROM nodes WHERE id IN ${nodeIds}
-        UNION ALL
+        UNION
         SELECT n.id
         FROM subtree s
         JOIN nodes n ON n.parent_folder_id = s.node_id

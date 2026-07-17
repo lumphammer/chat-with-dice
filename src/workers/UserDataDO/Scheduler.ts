@@ -46,14 +46,19 @@ export class Scheduler extends AbstractScheduler {
       acc[acc.length - 1].push(nodeId);
       return acc;
     }, [] as string[][]);
-    // and delete the assets in batches
-    await Promise.all(
-      batches.map(async (batch) => {
-        await cfEnv.PRIVATE_R2?.delete(batch);
-      }),
-    );
-    // Best-effort: after the rows are gone, tell the rooms that held them.
-    await this.notifyRoomsOfShareRemoval(shareRows);
+    try {
+      // and delete the assets in batches
+      await Promise.all(
+        batches.map(async (batch) => {
+          await cfEnv.PRIVATE_R2?.delete(batch);
+        }),
+      );
+    } finally {
+      // The share rows have already cascaded away, so a retry can't rebuild this
+      // payload — notify even if the R2 cleanup threw, then let that error
+      // propagate. Best-effort per room, so this never throws on its own.
+      await this.notifyRoomsOfShareRemoval(shareRows);
+    }
     const remainingDeletedNodeCount = await this.repo.getDeletedNodeCount();
     if (remainingDeletedNodeCount > 0) {
       await this.schedulePurge();

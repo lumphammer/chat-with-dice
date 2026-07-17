@@ -321,14 +321,20 @@ export class UserDataDO extends DurableObject {
     // cascades, so once the nodes are gone the rows we need to route on are too.
     const shareRows = this.repo.findSharesAtOrBelowNodes(nodeIds);
     await this.repo.hardDeleteNodes(nodeIds);
-    // this isn't batched, but this path is only used by user-initiated actions
-    // and upload cleanup, so there will never be more than a few.
-    // we're doing the db operation and the r2 operation sequentially to avoid
-    // the possibility of nuking r2 blobs while the db operation fails and
-    // leaves records in the db.
-    await cfEnv.PRIVATE_R2?.delete(r2Keys);
-    if (this.userId) {
-      await notifyRoomsOfShareRemoval(this.userId, shareRows);
+    try {
+      // this isn't batched, but this path is only used by user-initiated actions
+      // and upload cleanup, so there will never be more than a few.
+      // we're doing the db operation and the r2 operation sequentially to avoid
+      // the possibility of nuking r2 blobs while the db operation fails and
+      // leaves records in the db.
+      await cfEnv.PRIVATE_R2?.delete(r2Keys);
+    } finally {
+      // The share rows have already cascaded away, so a retry can't rebuild this
+      // payload — notify even if the R2 delete threw, then let that error
+      // propagate. Best-effort per room, so this never throws on its own.
+      if (this.userId) {
+        await notifyRoomsOfShareRemoval(this.userId, shareRows);
+      }
     }
   }
 
