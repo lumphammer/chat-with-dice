@@ -8,9 +8,48 @@ import { describe, expect, test } from "vitest";
 type Overrides = Record<string, unknown>;
 
 // The current on-disk version `filesStateValidator` upgrades everything to.
-const CURRENT_VERSION = 5;
+const CURRENT_VERSION = 6;
 
-// --- V5 (current) -----------------------------------------------------------
+// --- V6 (current) ------------------------------------------------------------
+
+const v6FileNode = (overrides: Overrides = {}) => ({
+  version: 2,
+  id: "file-1",
+  name: "report.pdf",
+  parentFolderId: "",
+  createdTime: 1000,
+  deletedTime: null,
+  sizeBytes: 42,
+  kind: "file",
+  contentType: "application/pdf",
+  thumbnailContentType: null,
+  thumbnailSizeBytes: null,
+  ...overrides,
+});
+
+const v6FolderNode = (overrides: Overrides = {}) => ({
+  version: 2,
+  id: "folder-1",
+  name: "Docs",
+  parentFolderId: "",
+  createdTime: 2000,
+  deletedTime: null,
+  sizeBytes: 0,
+  kind: "folder",
+  isDeck: false,
+  ...overrides,
+});
+
+const v6Share = (overrides: Overrides = {}) => ({
+  userId: "u1",
+  userDisplayName: "User One",
+  dateShared: 1234,
+  node: v6FileNode(),
+  unavailable: false,
+  ...overrides,
+});
+
+// --- V5 (no `isDeck` on folder nodes) ----------------------------------------
 
 const v5Share = (overrides: Overrides = {}) => ({
   userId: "u1",
@@ -21,7 +60,7 @@ const v5Share = (overrides: Overrides = {}) => ({
   ...overrides,
 });
 
-// --- V4 (no `unavailable`) --------------------------------------------------
+// --- V4 (no `unavailable`, no `isDeck`) --------------------------------------
 
 const v4FileNode = (overrides: Overrides = {}) => ({
   version: 1,
@@ -133,13 +172,13 @@ const v1FolderShare = (overrides: Overrides = {}) => ({
 });
 
 describe("filesStateValidator", () => {
-  describe("V5 (current shape)", () => {
+  describe("V6 (current shape)", () => {
     test("parses a state and preserves availability", () => {
       const state = filesStateValidator.parse({
-        version: 5,
+        version: 6,
         shares: [
-          v5Share(),
-          v5Share({ node: v4FolderNode(), unavailable: true }),
+          v6Share(),
+          v6Share({ node: v6FolderNode(), unavailable: true }),
         ],
       });
 
@@ -150,26 +189,87 @@ describe("filesStateValidator", () => {
       ]);
     });
 
+    test("parses a Deck folder node", () => {
+      const state = filesStateValidator.parse({
+        version: 6,
+        shares: [v6Share({ node: v6FolderNode({ isDeck: true }) })],
+      });
+
+      expect(state.shares[0].node).toMatchObject({
+        kind: "folder",
+        isDeck: true,
+      });
+    });
+
     test("rejects a share with no availability", () => {
-      const { unavailable: _omitted, ...shareWithoutAvailability } = v5Share();
+      const { unavailable: _omitted, ...shareWithoutAvailability } = v6Share();
 
       expect(
         filesStateValidator.safeParse({
-          version: 5,
+          version: 6,
           shares: [shareWithoutAvailability],
         }).success,
       ).toBe(false);
     });
 
     test("parses empty shares (matches getInitialState)", () => {
-      expect(filesStateValidator.parse({ version: 5, shares: [] })).toEqual({
-        version: 5,
+      expect(filesStateValidator.parse({ version: 6, shares: [] })).toEqual({
+        version: 6,
         shares: [],
       });
     });
   });
 
-  describe("V4 → V5 migration", () => {
+  describe("V5 → V6 migration", () => {
+    test("adds isDeck: false to a folder node", () => {
+      const state = filesStateValidator.parse({
+        version: 5,
+        shares: [v5Share({ node: v4FolderNode(), unavailable: true })],
+      });
+
+      expect(state.version).toBe(CURRENT_VERSION);
+      expect(state.shares[0]).toEqual({
+        userId: "u1",
+        userDisplayName: "User One",
+        dateShared: 1234,
+        unavailable: true,
+        node: {
+          kind: "folder",
+          version: 2,
+          id: "folder-1",
+          name: "Docs",
+          parentFolderId: "",
+          createdTime: 2000,
+          deletedTime: null,
+          sizeBytes: 0,
+          isDeck: false,
+        },
+      });
+    });
+
+    test("bumps a file node's version without adding isDeck", () => {
+      const state = filesStateValidator.parse({
+        version: 5,
+        shares: [v5Share()],
+      });
+
+      expect(state.shares[0].node).toEqual({
+        kind: "file",
+        version: 2,
+        id: "file-1",
+        name: "report.pdf",
+        parentFolderId: "",
+        createdTime: 1000,
+        deletedTime: null,
+        sizeBytes: 42,
+        contentType: "application/pdf",
+        thumbnailContentType: null,
+        thumbnailSizeBytes: null,
+      });
+    });
+  });
+
+  describe("V4 → V6 migration", () => {
     test("assumes a share cached before availability tracking is available", () => {
       const state = filesStateValidator.parse({
         version: 4,
@@ -203,7 +303,7 @@ describe("filesStateValidator", () => {
       });
       expect(state.shares[1]).toMatchObject({
         userId: "u2",
-        node: { kind: "folder", id: "folder-1", sizeBytes: 0 },
+        node: { kind: "folder", id: "folder-1", sizeBytes: 0, isDeck: false },
       });
     });
 
@@ -244,8 +344,8 @@ describe("filesStateValidator", () => {
     });
   });
 
-  describe("V3 → V5 migration", () => {
-    test("migrates a file share into a V5 share", () => {
+  describe("V3 → V6 migration", () => {
+    test("migrates a file share into a current-shape share", () => {
       const state = filesStateValidator.parse({
         version: 3,
         shares: [v3FileShare()],
@@ -262,7 +362,7 @@ describe("filesStateValidator", () => {
         unavailable: false,
         node: {
           kind: "file",
-          version: 1,
+          version: 2,
           id: "file-1",
           name: "report.pdf",
           parentFolderId: "",
@@ -307,7 +407,7 @@ describe("filesStateValidator", () => {
       });
     });
 
-    test("migrates a folder share with sizeBytes 0", () => {
+    test("migrates a folder share with sizeBytes 0 and isDeck false", () => {
       const state = filesStateValidator.parse({
         version: 3,
         shares: [v3FolderShare()],
@@ -315,18 +415,19 @@ describe("filesStateValidator", () => {
 
       expect(state.shares[0].node).toEqual({
         kind: "folder",
-        version: 1,
+        version: 2,
         id: "folder-1",
         name: "Docs",
         parentFolderId: "",
         createdTime: 1,
         deletedTime: null,
         sizeBytes: 0,
+        isDeck: false,
       });
     });
   });
 
-  describe("V2 → V5 migration", () => {
+  describe("V2 → V6 migration", () => {
     test("defaults a missing sizeBytes to 0 and builds the full node", () => {
       const state = filesStateValidator.parse({
         version: 2,
@@ -336,7 +437,7 @@ describe("filesStateValidator", () => {
       expect(state.version).toBe(CURRENT_VERSION);
       expect(state.shares[0].node).toEqual({
         kind: "file",
-        version: 1,
+        version: 2,
         id: "file-2",
         name: "song.mp3",
         parentFolderId: "",
@@ -357,18 +458,19 @@ describe("filesStateValidator", () => {
 
       expect(state.shares[0].node).toEqual({
         kind: "folder",
-        version: 1,
+        version: 2,
         id: "folder-2",
         name: "Music",
         parentFolderId: "",
         createdTime: 1,
         deletedTime: null,
         sizeBytes: 0,
+        isDeck: false,
       });
     });
   });
 
-  describe("V1 → V5 migration", () => {
+  describe("V1 → V6 migration", () => {
     test("parses a state with no version field and defaults dateShared to 0", () => {
       const state = filesStateValidator.parse({
         shares: [v1FileShare(), v1FolderShare()],
@@ -380,7 +482,7 @@ describe("filesStateValidator", () => {
       expect(state.shares[0].dateShared).toBe(0);
       expect(state.shares[0].node).toEqual({
         kind: "file",
-        version: 1,
+        version: 2,
         id: "file-3",
         name: "old.txt",
         parentFolderId: "",
@@ -395,13 +497,14 @@ describe("filesStateValidator", () => {
       expect(state.shares[1].dateShared).toBe(0);
       expect(state.shares[1].node).toEqual({
         kind: "folder",
-        version: 1,
+        version: 2,
         id: "folder-3",
         name: "Old Folder",
         parentFolderId: "",
         createdTime: 1,
         deletedTime: null,
         sizeBytes: 0,
+        isDeck: false,
       });
     });
   });
@@ -420,13 +523,13 @@ describe("filesStateValidator", () => {
       ).toBe(false);
     });
 
-    test("rejects a V5 file node missing contentType (no silent fallback)", () => {
+    test("rejects a V6 file node missing contentType (no silent fallback)", () => {
       const result = filesStateValidator.safeParse({
-        version: 4,
+        version: 6,
         shares: [
-          v4Share({
+          v6Share({
             node: {
-              version: 1,
+              version: 2,
               id: "file-x",
               name: "x",
               parentFolderId: "",
@@ -437,6 +540,29 @@ describe("filesStateValidator", () => {
               // contentType intentionally omitted
               thumbnailContentType: null,
               thumbnailSizeBytes: null,
+            },
+          }),
+        ],
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    test("rejects a V6 folder node missing isDeck (no silent fallback)", () => {
+      const result = filesStateValidator.safeParse({
+        version: 6,
+        shares: [
+          v6Share({
+            node: {
+              version: 2,
+              id: "folder-x",
+              name: "x",
+              parentFolderId: "",
+              createdTime: 1,
+              deletedTime: null,
+              sizeBytes: 0,
+              kind: "folder",
+              // isDeck intentionally omitted
             },
           }),
         ],

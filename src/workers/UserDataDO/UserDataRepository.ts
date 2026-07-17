@@ -259,7 +259,7 @@ export class UserDataRepository {
       },
       with: {
         file: true,
-        folder: true,
+        folder: { with: { deck: true } },
       },
     });
   }
@@ -280,7 +280,7 @@ export class UserDataRepository {
       },
       with: {
         file: true,
-        folder: true,
+        folder: { with: { deck: true } },
       },
     });
   }
@@ -323,7 +323,7 @@ export class UserDataRepository {
       },
       with: {
         file: true,
-        folder: true,
+        folder: { with: { deck: true } },
       },
     });
   }
@@ -426,6 +426,19 @@ export class UserDataRepository {
       .where(
         and(eq(dbSchema.nodes.id, nodeId), isNull(dbSchema.nodes.deletedTime)),
       );
+  }
+
+  markFolderAsDeck(folderId: string) {
+    return this.db
+      .insert(dbSchema.decks)
+      .values({ id: folderId })
+      .onConflictDoNothing();
+  }
+
+  unmarkFolderAsDeck(folderId: string) {
+    return this.db
+      .delete(dbSchema.decks)
+      .where(eq(dbSchema.decks.id, folderId));
   }
 
   markFileReady(id: string, sizeBytes: number) {
@@ -548,7 +561,7 @@ export class UserDataRepository {
       where: { nodeId, roomDurableObjectId },
       with: {
         node: {
-          with: { file: true, folder: true },
+          with: { file: true, folder: { with: { deck: true } } },
         },
       },
     });

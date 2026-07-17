@@ -82,6 +82,14 @@ export const nodes = snakeCase.table(
   ],
 );
 
+export const decks = snakeCase.table("decks", {
+  id: text()
+    .primaryKey()
+    .references((): AnySQLiteColumn => folders.id, {
+      onDelete: "cascade",
+    }),
+});
+
 export const roomResourceShares = snakeCase.table(
   "room_resource_shares",
   {
@@ -104,7 +112,7 @@ export const roomResourceShares = snakeCase.table(
 );
 
 export const relations = defineRelations(
-  { nodes, files, folders, roomResourceShares },
+  { nodes, files, folders, decks, roomResourceShares },
   (r) => ({
     nodes: {
       file: r.one.files({
@@ -134,6 +142,16 @@ export const relations = defineRelations(
       node: r.one.nodes({
         from: r.folders.id,
         to: r.nodes.id,
+      }),
+      deck: r.one.decks({
+        from: r.folders.id,
+        to: r.decks.id,
+      }),
+    },
+    decks: {
+      folder: r.one.folders({
+        from: r.decks.id,
+        to: r.folders.id,
       }),
     },
     roomResourceShares: {

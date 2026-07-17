@@ -2,7 +2,7 @@ import { fixStringTimestampThatShouldBeEpochMs } from "#/utils/fixStringTimestam
 import * as z from "zod";
 
 const coreFields = z.object({
-  version: z.literal(1),
+  version: z.literal(2),
   id: z.string(),
   name: z.string(),
   parentFolderId: z.string().nullable(),
@@ -14,6 +14,7 @@ const coreFields = z.object({
 export const storageNodeValidator = z.discriminatedUnion("kind", [
   coreFields.extend({
     kind: z.literal("folder"),
+    isDeck: z.boolean(),
   }),
   coreFields.extend({
     kind: z.literal("file"),
