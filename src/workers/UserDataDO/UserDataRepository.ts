@@ -31,6 +31,16 @@ export type ShareAvailabilityRow = {
 };
 
 /**
+ * A share reduced to what routing a *removal* notification needs: which node
+ * went, and which room DO to tell. No availability, because a hard delete is
+ * unconditional — the share is gone, not merely hidden.
+ */
+export type ShareRemovalRow = {
+  node_id: string;
+  room_durable_object_id: string;
+};
+
+/**
  * Owns the per-user durable SQLite database: migrations, the Drizzle adapter,
  * and every individual query the UserDataDO needs.
  *
@@ -623,6 +633,37 @@ export class UserDataRepository {
     `);
 
     return result.toArray() as ShareAvailabilityRow[];
+  }
+
+  /**
+   * Every share whose node is one of `nodeIds` or a descendant of one, reduced
+   * to the columns needed to tell its room the share is gone.
+   *
+   * The removal counterpart to {@link findSharesAtOrBelow}: call it *before* the
+   * hard delete, because `roomResourceShares.nodeId` cascades and the rows are
+   * about to vanish. There is no availability to compute — a hard delete leaves
+   * nothing to restore, so every match is dropped unconditionally.
+   */
+  findSharesAtOrBelowNodes(nodeIds: string[]): ShareRemovalRow[] {
+    if (nodeIds.length === 0) {
+      return [];
+    }
+    const result = this.db.run(sql`
+      WITH RECURSIVE subtree (node_id) AS (
+        SELECT id FROM nodes WHERE id IN ${nodeIds}
+        UNION ALL
+        SELECT n.id
+        FROM subtree s
+        JOIN nodes n ON n.parent_folder_id = s.node_id
+      )
+      SELECT
+        rrs.node_id AS node_id,
+        rrs.room_durable_object_id AS room_durable_object_id
+      FROM room_resource_shares rrs
+      JOIN subtree s ON s.node_id = rrs.node_id
+    `);
+
+    return result.toArray() as ShareRemovalRow[];
   }
 
   deleteShare(nodeId: string, roomId: string, roomDurableObjectId: string) {

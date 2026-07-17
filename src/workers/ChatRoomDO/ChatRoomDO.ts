@@ -364,6 +364,28 @@ export class ChatRoomDO extends DurableObject {
     await this.capabilityService.hooks.onShareAvailabilityChange({ changes });
   }
 
+  /**
+   * Called by an owner's `UserDataDO` when nodes shared with this room have been
+   * hard-deleted — by the 24h purge or a direct hard delete — and are gone for
+   * good. Unlike binning (see `onShareAvailabilityChange`), there is nothing to
+   * restore, so the share is dropped rather than marked unavailable.
+   *
+   * Fired as `files:onShareRemoved`, the same hook an in-room unshare fires, so
+   * `files` forgets the share and anything deriving state from it (a Pile) tears
+   * down once, whatever the removal's origin.
+   */
+  async onSharesRemoved(
+    removals: { ownerUserId: string; nodeId: string }[],
+  ): Promise<void> {
+    for (const removal of removals) {
+      // Serial: two removals can land on the same capability, whose `runHook`
+      // reads and reassigns its state around an immer draft — running them
+      // together would race those drafts and lose one.
+      // oxlint-disable-next-line no-await-in-loop
+      await this.capabilityService.hooks["files:onShareRemoved"](removal);
+    }
+  }
+
   async destroy() {
     log(`Destroying ChatRoomDO ${this.ctx.id.toString()}`);
     await this.ctx.storage.deleteAll();

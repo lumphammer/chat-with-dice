@@ -127,4 +127,42 @@ describe("files onShareAvailabilityChange hook", () => {
 
     expect(readShares()).toEqual([{ id: "magus", unavailable: false }]);
   });
+
+  describe("files:onShareRemoved hook", () => {
+    it("drops a share whose node was hard-deleted, leaving the rest", async () => {
+      await mountWith([share("magus"), share("wandering-monsters")]);
+
+      await mounted.runHook("files:onShareRemoved", {
+        ownerUserId: OWNER,
+        nodeId: "magus",
+      });
+
+      // Gone for good, not hidden: a hard delete has nothing to restore.
+      expect(readShares()).toEqual([
+        { id: "wandering-monsters", unavailable: false },
+      ]);
+    });
+
+    it("ignores a removal for a node this room never cached", async () => {
+      await mountWith([share("magus")]);
+
+      await mounted.runHook("files:onShareRemoved", {
+        ownerUserId: OWNER,
+        nodeId: "not-here",
+      });
+
+      expect(readShares()).toEqual([{ id: "magus", unavailable: false }]);
+    });
+
+    it("does not drop an identically-named node owned by someone else", async () => {
+      await mountWith([share("magus")]);
+
+      await mounted.runHook("files:onShareRemoved", {
+        ownerUserId: "somebody-else",
+        nodeId: "magus",
+      });
+
+      expect(readShares()).toEqual([{ id: "magus", unavailable: false }]);
+    });
+  });
 });

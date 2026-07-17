@@ -1,4 +1,5 @@
 import { AbstractScheduler, type Event } from "../utils/AbstractScheduler";
+import type { ShareRemovalRow } from "./UserDataRepository";
 import type { UserDataRepository } from "./UserDataRepository";
 import { env as cfEnv } from "cloudflare:workers";
 
@@ -9,6 +10,14 @@ export class Scheduler extends AbstractScheduler {
   constructor(
     ctx: DurableObjectState,
     private repo: UserDataRepository,
+    /**
+     * Best-effort notify of every room whose share sat on a reaped node. Owned
+     * by the DO because only it knows this user's id; the purge just hands over
+     * the rows it gathered before deleting.
+     */
+    private notifyRoomsOfShareRemoval: (
+      rows: ShareRemovalRow[],
+    ) => Promise<void>,
   ) {
     super(ctx);
   }
@@ -26,6 +35,9 @@ export class Scheduler extends AbstractScheduler {
     const nodeIds = await this.repo.findDeletedNodeIdsOlderThan(cutoffTime);
     // ...and their r2 keys
     const r2Keys = this.repo.recursivelyGetDescendantR2Keys(nodeIds);
+    // ...and the shares about to cascade away with them, gathered before the
+    // delete so we can still route the "your share is gone" notification.
+    const shareRows = this.repo.findSharesAtOrBelowNodes(nodeIds);
     // nuke the nodes in the db
     await this.repo.hardDeleteNodes(nodeIds);
     // slice r2Keys up into batches of 1000
@@ -40,6 +52,8 @@ export class Scheduler extends AbstractScheduler {
         await cfEnv.PRIVATE_R2?.delete(batch);
       }),
     );
+    // Best-effort: after the rows are gone, tell the rooms that held them.
+    await this.notifyRoomsOfShareRemoval(shareRows);
     const remainingDeletedNodeCount = await this.repo.getDeletedNodeCount();
     if (remainingDeletedNodeCount > 0) {
       await this.schedulePurge();

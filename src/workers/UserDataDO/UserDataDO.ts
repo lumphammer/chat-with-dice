@@ -17,6 +17,7 @@ import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
 import type { DbShare } from "./DbNodeType";
 import { Scheduler } from "./Scheduler";
 import { UserDataRepository } from "./UserDataRepository";
+import { notifyRoomsOfShareRemoval } from "./notifyRoomsOfShareRemoval";
 import type {
   FolderSizeReport,
   FolderSizeRepairResult,
@@ -53,7 +54,14 @@ export class UserDataDO extends DurableObject {
     void this.ctx.blockConcurrencyWhile(async () => {
       this.userId = await this.resolveUserId();
       this.repo = new UserDataRepository(ctx);
-      this.scheduler = new Scheduler(this.ctx, this.repo);
+      // The purge reaps nodes inside this DO, so it is the only thing that can
+      // tell rooms their shares are gone. Reads `this.userId` at call time, so
+      // constructing the Scheduler before the id resolves would still be fine.
+      this.scheduler = new Scheduler(this.ctx, this.repo, async (rows) => {
+        if (this.userId) {
+          await notifyRoomsOfShareRemoval(this.userId, rows);
+        }
+      });
     });
   }
 
@@ -309,6 +317,9 @@ export class UserDataDO extends DurableObject {
    */
   async dangerouslyHardDeleteNodes(nodeIds: string[]) {
     const r2Keys = this.repo.recursivelyGetDescendantR2Keys(nodeIds);
+    // Gather affected shares before the delete: `roomResourceShares.nodeId`
+    // cascades, so once the nodes are gone the rows we need to route on are too.
+    const shareRows = this.repo.findSharesAtOrBelowNodes(nodeIds);
     await this.repo.hardDeleteNodes(nodeIds);
     // this isn't batched, but this path is only used by user-initiated actions
     // and upload cleanup, so there will never be more than a few.
@@ -316,6 +327,9 @@ export class UserDataDO extends DurableObject {
     // the possibility of nuking r2 blobs while the db operation fails and
     // leaves records in the db.
     await cfEnv.PRIVATE_R2?.delete(r2Keys);
+    if (this.userId) {
+      await notifyRoomsOfShareRemoval(this.userId, shareRows);
+    }
   }
 
   /**

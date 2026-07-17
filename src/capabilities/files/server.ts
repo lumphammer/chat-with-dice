@@ -81,5 +81,21 @@ export const filesServer = createServerCapability(filesCommon, {
         }
       }
     },
+    // The node behind a share is gone for good — hard-deleted or purged by the
+    // owner's store — so forget it rather than hiding it; there is nothing left
+    // to restore. Same removal the `unshareFile` action does, driven instead by
+    // the owner's DO. Idempotent: an in-room unshare fires this too, after its
+    // own pureFn has already dropped the share, and finding nothing is fine.
+    "files:onShareRemoved": ({
+      stateDraft,
+      event: { ownerUserId, nodeId },
+    }) => {
+      const index = stateDraft.shares.findIndex(
+        (share) => share.userId === ownerUserId && share.node.id === nodeId,
+      );
+      if (index !== -1) {
+        stateDraft.shares.splice(index, 1);
+      }
+    },
   },
 });
