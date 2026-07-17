@@ -1,5 +1,6 @@
 import { adversariesServer } from "./adversaries/server";
 import type { CapabilityName } from "./capabilityNames";
+import { cardsServer } from "./cards/server";
 import { counterServer } from "./counter/server";
 import type { ServerCapability } from "./createServerCapability";
 import { feedbackServer } from "./feedback/server";
@@ -24,6 +25,7 @@ export const serverCapabilityRegistry: Record<
   roll: rollServer,
   laserfeelings: laserfeelingsServer,
   files: filesServer,
+  cards: cardsServer,
   feedback: feedbackServer,
   users: usersServer,
 };

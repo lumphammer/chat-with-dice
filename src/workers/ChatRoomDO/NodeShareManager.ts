@@ -74,6 +74,56 @@ export class NodeShareManager {
     return shareResult;
   }
 
+  /**
+   * List the Cards of a Deck for a draw. A Card is a direct image child of the
+   * Deck folder; images nested in subfolders are source art, not Cards.
+   *
+   * Access is authorised against the owner's DO via `isNodeAccessibleFromRoom`
+   * — the room-side share cache is never trusted for this (see ADR-0001). Cards
+   * are read live from the owner's file store on every draw, never stored or
+   * snapshotted, so an image added to the Deck is drawable at once and a
+   * deleted one simply stops being drawn.
+   */
+  async listDeckCards({
+    ownerUserId,
+    deckNodeId,
+  }: {
+    ownerUserId: string;
+    deckNodeId: string;
+  }): Promise<
+    | { result: "ok"; cards: { nodeId: string; name: string }[] }
+    | { result: "error"; reason: string }
+  > {
+    const userDataDOResult = await this.getUserDataDO(ownerUserId);
+    if (userDataDOResult.result === "error") {
+      return userDataDOResult;
+    }
+
+    const accessible =
+      await userDataDOResult.userDataDO.isNodeAccessibleFromRoom({
+        nodeId: deckNodeId,
+        roomId: this.roomId,
+      });
+    if (!accessible) {
+      return {
+        result: "error",
+        reason: "You do not have access to this deck",
+      };
+    }
+
+    const children = await userDataDOResult.userDataDO.getNodes(
+      deckNodeId,
+      false,
+    );
+    const cards = children
+      .filter(
+        (node) => node.kind === "file" && node.contentType.startsWith("image/"),
+      )
+      .map((node) => ({ nodeId: node.id, name: node.name }));
+
+    return { result: "ok", cards };
+  }
+
   async unshareUserNodeId({
     requestingUserId,
     ownerUserId,

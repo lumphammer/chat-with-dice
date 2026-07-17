@@ -11,6 +11,7 @@ export const capabilityNames = [
   "roll",
   "laserfeelings",
   "files",
+  "cards",
   "feedback",
   "users",
 ] as const;
