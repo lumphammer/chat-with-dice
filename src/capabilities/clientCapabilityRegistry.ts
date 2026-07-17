@@ -1,5 +1,6 @@
 import { adversariesClient } from "./adversaries/client";
 import type { CapabilityName } from "./capabilityNames";
+import { cardsClient } from "./cards/client";
 import { counterClient } from "./counter/client";
 import type { ClientCapability } from "./createClientCapability";
 import { feedbackClient } from "./feedback/client";
@@ -30,6 +31,7 @@ export const clientCapabilityRegistry = {
   roll: rollClient,
   laserfeelings: laserfeelingsClient,
   files: filesClient,
+  cards: cardsClient,
   feedback: feedbackClient,
   users: usersClient,
 } satisfies Record<CapabilityName, ClientCapability<any, any, any>>;

@@ -509,6 +509,56 @@ export class UserDataDO extends DurableObject {
     return this.repo.isNodeReachableFromShare(nodeId, roomId);
   }
 
+  /**
+   * The Cards of a Deck as this store sees them, for a draw from `roomId`.
+   *
+   * The Deck lives in the file store, so this is the layer that gets to say
+   * what a Card is and whether the node is even a Deck. It:
+   *  - authorises the node against the room's shares (never the room's own
+   *    cache — see ADR-0001);
+   *  - rejects a node that is not a folder marked as a Deck, so a draw cannot be
+   *    aimed at an ordinary shared folder by bypassing the sidebar's filter;
+   *  - derives Cards live from the Deck folder's direct, ready image children.
+   *
+   * `deckName` is returned so callers can label a Card Draw Message from an
+   * authoritative source rather than trusting a caller-supplied name.
+   */
+  async getDeckCards({
+    nodeId,
+    roomId,
+  }: {
+    nodeId: string;
+    roomId: string;
+  }): Promise<
+    | {
+        result: "ok";
+        deckName: string;
+        cards: { nodeId: string; name: string }[];
+      }
+    | { result: "no-access" }
+    | { result: "not-a-deck" }
+  > {
+    if (!this.repo.isNodeReachableFromShare(nodeId, roomId)) {
+      return { result: "no-access" };
+    }
+
+    const node = await this.repo.getNode(nodeId);
+    if (!node || !node.folder || node.folder.deck === null) {
+      return { result: "not-a-deck" };
+    }
+
+    const children = await this.repo.getChildNodes(nodeId, false);
+    const cards = children
+      .filter(
+        (child) =>
+          child.file?.contentType.startsWith("image/") &&
+          child.file.isReady === 1,
+      )
+      .map((child) => ({ nodeId: child.id, name: child.name }));
+
+    return { result: "ok", deckName: node.name, cards };
+  }
+
   async shareNodeWithRoom({
     nodeId,
     roomId,

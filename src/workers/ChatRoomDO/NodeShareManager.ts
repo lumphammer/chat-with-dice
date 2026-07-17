@@ -74,6 +74,56 @@ export class NodeShareManager {
     return shareResult;
   }
 
+  /**
+   * List the Cards of a Deck for a draw, plus the Deck's authoritative name.
+   *
+   * The owner's file store does the real work (authorisation against the room's
+   * shares, Deck validation, deriving Cards from the folder's direct image
+   * children — see `UserDataDO.getDeckCards`). This just resolves the owner's DO
+   * and maps its result into the shape the `cards` capability wants, with a
+   * user-facing reason on the failure paths.
+   */
+  async listDeckCards({
+    ownerUserId,
+    deckNodeId,
+  }: {
+    ownerUserId: string;
+    deckNodeId: string;
+  }): Promise<
+    | {
+        result: "ok";
+        deckName: string;
+        cards: { nodeId: string; name: string }[];
+      }
+    | { result: "error"; reason: string }
+  > {
+    const userDataDOResult = await this.getUserDataDO(ownerUserId);
+    if (userDataDOResult.result === "error") {
+      return userDataDOResult;
+    }
+
+    const deckResult = await userDataDOResult.userDataDO.getDeckCards({
+      nodeId: deckNodeId,
+      roomId: this.roomId,
+    });
+
+    if (deckResult.result === "no-access") {
+      return {
+        result: "error",
+        reason: "You do not have access to this deck",
+      };
+    }
+    if (deckResult.result === "not-a-deck") {
+      return { result: "error", reason: "That folder is not a deck" };
+    }
+
+    return {
+      result: "ok",
+      deckName: deckResult.deckName,
+      cards: deckResult.cards,
+    };
+  }
+
   async unshareUserNodeId({
     requestingUserId,
     ownerUserId,
