@@ -715,8 +715,18 @@ export class UserDataDO extends DurableObject {
       nodeIdsToDelete.add(issue.nodeId);
       deletedNodeIds.add(issue.nodeId);
     }
-    await this.repo.hardDeleteNodes([...nodeIdsToDelete]);
+    const nodeIdsToDeleteList = [...nodeIdsToDelete];
+    // Same gap the purge and direct hard delete close: reaping a *shared* ready
+    // file whose blob went missing cascades its share row, so capture the
+    // affected shares before the delete and tell those rooms right after. No
+    // R2 delete is coupled here (keys are returned for the caller), so a plain
+    // post-delete notify suffices — no `finally` needed.
+    const shareRows = this.repo.findSharesAtOrBelowNodes(nodeIdsToDeleteList);
+    await this.repo.hardDeleteNodes(nodeIdsToDeleteList);
     deletedFileRecords = nodeIdsToDelete.size;
+    if (this.userId) {
+      await notifyRoomsOfShareRemoval(this.userId, shareRows);
+    }
 
     const thumbnailIssuesToCheck: MissingBlobCleanupInput[] = [];
     for (const issue of thumbnailIssues) {
