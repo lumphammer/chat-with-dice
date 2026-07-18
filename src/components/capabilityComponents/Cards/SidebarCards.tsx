@@ -1,6 +1,8 @@
 import { cardsClient } from "#/capabilities/cards/client";
+import { findPile } from "#/capabilities/cards/common";
 import { filesClient } from "#/capabilities/files/client";
 import type { RoomShare } from "#/capabilities/files/common";
+import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { DeckRow } from "./DeckRow";
 import { memo, useMemo } from "react";
@@ -13,6 +15,7 @@ const isDrawableDeck = (share: RoomShare) =>
   !share.unavailable && share.node.kind === "folder" && share.node.isDeck;
 
 export const SidebarCards = memo(() => {
+  const { roomId } = useRoomInfoContext();
   const filesCap = filesClient.useMount();
   const cardsCap = cardsClient.useMount();
 
@@ -55,8 +58,23 @@ export const SidebarCards = memo(() => {
             <DeckRow
               key={deck.node.id}
               deck={deck}
+              pile={findPile(cardsCap.state, deck.userId, deck.node.id)}
+              roomId={roomId}
               onDraw={() =>
                 cardsCap.actions.draw({
+                  ownerUserId: deck.userId,
+                  deckNodeId: deck.node.id,
+                })
+              }
+              onSetReturnCards={(returnCards) =>
+                cardsCap.actions.setReturnCards({
+                  ownerUserId: deck.userId,
+                  deckNodeId: deck.node.id,
+                  returnCards,
+                })
+              }
+              onReset={() =>
+                cardsCap.actions.reset({
                   ownerUserId: deck.userId,
                   deckNodeId: deck.node.id,
                 })

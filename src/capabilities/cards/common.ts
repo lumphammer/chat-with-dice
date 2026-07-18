@@ -28,26 +28,135 @@ export const cardDrawMessageDataValidator = z.object({
 export type CardDrawMessageData = z.infer<typeof cardDrawMessageDataValidator>;
 
 /**
- * The `cards` capability holds Piles in later slices; for now it is stateless.
- * Every Card returns to the Pile after drawing, so there is no Discard to
- * store and a draw is a pure server-side effect — pick uniformly at random
- * from the Deck's live Cards and broadcast a Card Draw Message.
+ * A Pile: one Room's draw state for one Deck, keyed by the Deck's owner and
+ * folder node id (ADR-0001 decision 5). It holds only room-side truth:
+ *
+ * - `returnCards` — the table rule for whether a drawn Card goes back into the
+ *   Pile. This is Pile configuration, not Deck configuration, so it stays
+ *   room-side and does not travel with the Deck (decision 6). `true` is the
+ *   non-dwindling default; `false` makes the Pile dwindle.
+ * - `discard` — the Cards drawn and kept out while dwindling, by node id. The
+ *   remaining Cards are derived as liveCards − discard at draw time and never
+ *   stored (decision 4), so an added Card is instantly drawable and a deleted
+ *   one just goes inert. Empty whenever `returnCards` is `true`.
+ *
+ * A Deck with no entry here behaves as a fresh, non-dwindling Pile.
+ */
+const pileValidator = z.object({
+  ownerUserId: z.string(),
+  deckNodeId: z.string(),
+  returnCards: z.boolean(),
+  discard: z.array(z.string()),
+});
+
+export type Pile = z.infer<typeof pileValidator>;
+
+export const cardsStateValidator = z.object({
+  piles: z.array(pileValidator),
+});
+
+export type CardsState = z.infer<typeof cardsStateValidator>;
+
+/**
+ * Find the Pile for `(ownerUserId, deckNodeId)` in `stateDraft`. Returns
+ * `undefined` for a Deck that has never been configured or drawn from — such a
+ * Deck is a fresh, non-dwindling Pile and needs no stored entry.
+ */
+export function findPile(
+  state: { piles: Pile[] },
+  ownerUserId: string,
+  deckNodeId: string,
+): Pile | undefined {
+  return state.piles.find(
+    (pile) =>
+      pile.ownerUserId === ownerUserId && pile.deckNodeId === deckNodeId,
+  );
+}
+
+/**
+ * The `cards` capability holds Piles: per-room draw state for each shared Deck.
+ * A draw picks uniformly at random from the Deck's live Cards, honouring the
+ * Pile's dwindle rule, and broadcasts a Card Draw Message. Reset empties a
+ * Pile's Discard so every Card is drawable again.
  */
 export const cardsCommon = createCapabilityCommon({
   name: "cards",
   displayName: "Cards",
   visibility: "public",
   messageDataValidator: cardDrawMessageDataValidator,
+  state: {
+    validator: cardsStateValidator,
+    getInitialState: () => ({ piles: [] }),
+  },
   buildActions: ({ createAction }) => ({
     draw: createAction({
       // The Deck is identified by its owner and folder node id — the only two
       // things the server needs to authorise, validate deck-ness, and list
       // Cards. The Deck's name is not accepted from the caller; the server reads
       // it from the owner's file store so a drawer cannot mislabel the Deck.
+      //
+      // No `pureFn`: the drawn Card depends on server-side randomness and the
+      // live Card list, so there is no optimistic transition to predict.
       payloadValidator: z.object({
         ownerUserId: z.string(),
         deckNodeId: z.string(),
       }),
+    }),
+    // Set a Pile's dwindle rule.
+    //
+    // Non-dwindling (Cards return) is the default, so it needs no stored Pile:
+    // turning Cards back on drops any entry entirely rather than leaving one
+    // that merely restates the default. That keeps state minimal — a client
+    // toggling decks it will never dwindle cannot accumulate no-op Piles — and
+    // means toggling back to dwindling later starts from the whole Deck rather
+    // than resurfacing an old Discard. A dwindling Pile (returnCards `false`),
+    // by contrast, is genuinely non-default and gets an entry.
+    setReturnCards: createAction({
+      payloadValidator: z.object({
+        ownerUserId: z.string(),
+        deckNodeId: z.string(),
+        returnCards: z.boolean(),
+      }),
+      pureFn: ({ stateDraft, payload }) => {
+        const index = stateDraft.piles.findIndex(
+          (p) =>
+            p.ownerUserId === payload.ownerUserId &&
+            p.deckNodeId === payload.deckNodeId,
+        );
+        if (payload.returnCards) {
+          if (index !== -1) {
+            stateDraft.piles.splice(index, 1);
+          }
+          return;
+        }
+        if (index === -1) {
+          stateDraft.piles.push({
+            ownerUserId: payload.ownerUserId,
+            deckNodeId: payload.deckNodeId,
+            returnCards: false,
+            discard: [],
+          });
+        } else {
+          stateDraft.piles[index].returnCards = false;
+        }
+      },
+    }),
+    // Reset: return every Card in the Discard to the Pile.
+    reset: createAction({
+      payloadValidator: z.object({
+        ownerUserId: z.string(),
+        deckNodeId: z.string(),
+      }),
+      pureFn: ({ stateDraft, payload }) => {
+        const pile = stateDraft.piles.find(
+          (p) =>
+            p.ownerUserId === payload.ownerUserId &&
+            p.deckNodeId === payload.deckNodeId,
+        );
+        if (pile) {
+          pile.discard = [];
+        }
+      },
     }),
   }),
 });

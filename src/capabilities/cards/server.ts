@@ -1,5 +1,5 @@
 import { createServerCapability } from "#/capabilities/createServerCapability";
-import { cardsCommon } from "./common";
+import { cardsCommon, findPile } from "./common";
 
 // The uniform draw: an index into the live Card list. Kept tiny and separate so
 // the effect below reads as authorise → list → pick → announce.
@@ -15,6 +15,7 @@ export const cardsServer = createServerCapability(cardsCommon, {
       nodeShareManager,
       broadcaster,
       sendChatMessage,
+      stateDraft,
     }) => {
       // Every draw is authorised against the owner's DO and the Card list is
       // derived live from the Deck folder's direct image children — the room's
@@ -39,7 +40,38 @@ export const cardsServer = createServerCapability(cardsCommon, {
         return;
       }
 
-      const card = pickUniform(result.cards);
+      // The Pile's dwindle rule and Discard are room-side state. A Deck with no
+      // Pile entry yet is a fresh, non-dwindling Pile.
+      const pile = findPile(
+        stateDraft,
+        payload.ownerUserId,
+        payload.deckNodeId,
+      );
+      const dwindling = pile !== undefined && !pile.returnCards;
+
+      // Remaining is derived here, never stored: the live Cards minus the ones
+      // already in the Discard. A discarded Card the owner has since deleted is
+      // simply absent from `result.cards`, so it drops out on its own.
+      let drawable = result.cards;
+      if (dwindling && pile) {
+        const discarded = new Set(pile.discard);
+        drawable = result.cards.filter((card) => !discarded.has(card.nodeId));
+        if (drawable.length === 0) {
+          broadcaster.sendErrorToUserId(
+            userId,
+            "Every card has been drawn. Reset the pile to draw again.",
+          );
+          return;
+        }
+      }
+
+      const card = pickUniform(drawable);
+
+      // A dwindling Pile keeps the drawn Card out by recording it in the
+      // Discard; a non-dwindling Pile leaves state untouched.
+      if (dwindling && pile) {
+        pile.discard.push(card.nodeId);
+      }
 
       sendChatMessage({
         ownerUserId: payload.ownerUserId,

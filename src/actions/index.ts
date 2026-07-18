@@ -5,6 +5,7 @@ import { adminSetRoomDeleted } from "./admin/adminSetRoomDeleted";
 import { adminStorageReport } from "./admin/adminStorageReport";
 import { adminUpdateRoom } from "./admin/adminUpdateRoom";
 import { adminUpdateUserQuota } from "./admin/adminUpdateUserQuota";
+import { getDeckCards } from "./cards/getDeckCards";
 import { createFolder } from "./files/createFolder";
 import { deleteNode } from "./files/deleteNode";
 import { getNodes } from "./files/getNodes";
@@ -21,6 +22,9 @@ export const server = {
     createChatWithDiceRoom,
     deleteRoom,
     getMyRooms,
+  },
+  cards: {
+    getDeckCards,
   },
   files: {
     createFolder,
