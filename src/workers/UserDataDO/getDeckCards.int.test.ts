@@ -115,6 +115,131 @@ describe("getDeckCards", () => {
     expect(result.cards[0].back).toEqual({ nodeId: foolId, name: "fool.jpg" });
   });
 
+  it("pairs a front with an individual back, dropping the back from the cards", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+
+    // Pair the magician (front) with the fool (its own back). No Common Back.
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    // The fool is now the magician's Individual Back, so it stops being a Card —
+    // even though the Deck has no Common Back at all.
+    expect(result.cards.map((card) => card.nodeId)).toEqual([magicianId]);
+    expect(result.cards[0].back).toEqual({ nodeId: foolId, name: "fool.jpg" });
+  });
+
+  it("prefers an individual back over the common back, and mixes with common-backed cards", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+    const priestessId = await addReadyFile(
+      userDataDO,
+      deck.id,
+      "priestess.png",
+      "image/png",
+    );
+    const towerId = await addReadyFile(
+      userDataDO,
+      deck.id,
+      "tower.png",
+      "image/png",
+    );
+
+    // Common Back = fool; the magician gets its own Individual Back (priestess).
+    await userDataDO.setDeckCommonBack(deck.id, foolId);
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, priestessId);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    // fool (common back) and priestess (individual back) both drop out; magician
+    // and tower remain as Cards.
+    const byId = new Map(result.cards.map((card) => [card.nodeId, card.back]));
+    expect(new Set(byId.keys())).toEqual(new Set([magicianId, towerId]));
+    // The magician's Individual Back wins over the Common Back...
+    expect(byId.get(magicianId)).toEqual({
+      nodeId: priestessId,
+      name: "priestess.png",
+    });
+    // ...while the tower, with no Individual Back, falls back to the Common Back.
+    expect(byId.get(towerId)).toEqual({ nodeId: foolId, name: "fool.jpg" });
+  });
+
+  it("mixes cards that have a back with cards that have none", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+    const priestessId = await addReadyFile(
+      userDataDO,
+      deck.id,
+      "priestess.png",
+      "image/png",
+    );
+
+    // magician gets fool as its Individual Back; priestess is left with none, and
+    // there is no Common Back to fall back on.
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    const byId = new Map(result.cards.map((card) => [card.nodeId, card.back]));
+    expect(new Set(byId.keys())).toEqual(new Set([magicianId, priestessId]));
+    expect(byId.get(magicianId)).toEqual({ nodeId: foolId, name: "fool.jpg" });
+    expect(byId.get(priestessId)).toBeNull();
+  });
+
+  it("returns the back to being a card when its pairing is removed", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, null);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    // With the pairing gone, the fool is a Card again and nothing has a back.
+    expect(new Set(result.cards.map((card) => card.nodeId))).toEqual(
+      new Set([foolId, magicianId]),
+    );
+    expect(result.cards.every((card) => card.back === null)).toBe(true);
+  });
+
+  it("treats a pairing as inert once its back image is deleted", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+    // Hard-delete the back image: the stored pairing is not a foreign key, so it
+    // goes inert rather than dangling.
+    await userDataDO.dangerouslyHardDeleteNodes([foolId]);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    // The magician is a Card again, with no back — the inert pairing attaches
+    // nothing.
+    expect(result.cards.map((card) => card.nodeId)).toEqual([magicianId]);
+    expect(result.cards[0].back).toBeNull();
+  });
+
   it("gives every card no back when the deck has no common back", async () => {
     const { userDataDO, deck } = await setUp();
 

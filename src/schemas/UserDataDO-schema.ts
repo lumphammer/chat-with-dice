@@ -6,6 +6,7 @@ import {
   uniqueIndex,
   snakeCase,
   unique,
+  primaryKey,
   type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 
@@ -102,6 +103,35 @@ export const decks = snakeCase.table("decks", {
   allowFaceDown: int().notNull().default(0),
 });
 
+export const deckIndividualBacks = snakeCase.table(
+  "deck_individual_backs",
+  {
+    // The Deck the pairing belongs to. This one *is* a foreign key with cascade:
+    // when the Deck folder is hard-deleted its `decks` row goes (folders → decks
+    // cascade) and its pairings should go with it — there is no reason to keep a
+    // pairing for a Deck that no longer exists.
+    deckId: text()
+      .notNull()
+      .references((): AnySQLiteColumn => decks.id, { onDelete: "cascade" }),
+    // The front Card Image and the image serving as its Individual Back. Stored
+    // as plain ids, deliberately *not* foreign keys to `nodes` — exactly like the
+    // Deck's Common Back (see the `decks` table). A pairing is resolved against
+    // the Deck's live image children at read time (ADR-0001 decision 3: only the
+    // pairings are stored, Cards stay derived). If either image is later deleted
+    // the row simply goes inert and resolves to "no pairing", rather than
+    // dangling — and node ids are `nanoid`s, never reused, so an inert row can
+    // never match a different image.
+    frontId: text().notNull(),
+    backId: text().notNull(),
+  },
+  (table) => [
+    // One Individual Back per front. A given front is either unpaired or points
+    // at exactly one back. (A back serving exactly one front is enforced in the
+    // DO write path, which clears any prior pairing using the same back image.)
+    primaryKey({ columns: [table.deckId, table.frontId] }),
+  ],
+);
+
 export const roomResourceShares = snakeCase.table(
   "room_resource_shares",
   {
@@ -124,7 +154,7 @@ export const roomResourceShares = snakeCase.table(
 );
 
 export const relations = defineRelations(
-  { nodes, files, folders, decks, roomResourceShares },
+  { nodes, files, folders, decks, deckIndividualBacks, roomResourceShares },
   (r) => ({
     nodes: {
       file: r.one.files({
@@ -164,6 +194,17 @@ export const relations = defineRelations(
       folder: r.one.folders({
         from: r.decks.id,
         to: r.folders.id,
+      }),
+      individualBacks: r.many.deckIndividualBacks({
+        from: r.decks.id,
+        to: r.deckIndividualBacks.deckId,
+      }),
+    },
+    deckIndividualBacks: {
+      deck: r.one.decks({
+        from: r.deckIndividualBacks.deckId,
+        to: r.decks.id,
+        optional: false,
       }),
     },
     roomResourceShares: {

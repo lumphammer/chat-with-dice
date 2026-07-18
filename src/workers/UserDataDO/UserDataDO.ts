@@ -493,15 +493,28 @@ export class UserDataDO extends DurableObject {
   }
 
   /**
-   * The Deck's live image children plus its resolved Common Back. A Card Image
-   * is a direct, ready image child (ADR-0001 decision 3); the Common Back is
-   * whichever of those the Deck points at, or `null` if it points at nothing —
-   * or at an image that has since been deleted, since the stored id is not a
-   * foreign key and is deliberately allowed to go inert.
+   * The Deck's live image children, its resolved Common Back, and its resolved
+   * Individual Back pairings. A Card Image is a direct, ready image child
+   * (ADR-0001 decision 3); the Common Back is whichever of those the Deck points
+   * at, or `null` if it points at nothing — or at an image that has since been
+   * deleted, since the stored id is not a foreign key and is deliberately allowed
+   * to go inert.
+   *
+   * Individual Backs are resolved the same way: a stored pairing counts only
+   * when *both* its front and its back are still live image children of the Deck.
+   * A pairing referencing a deleted image (front or back) resolves to nothing,
+   * so it neither attaches a back nor removes an image from the Cards — it is
+   * inert, exactly like a stale Common Back id.
+   *
+   * `individualBackByFront` maps a front's node id to the image serving as its
+   * Individual Back. `individualBackImageIds` is every image currently serving as
+   * an Individual Back — those "stop being a Card in their own right".
    */
   private async deriveDeckImages(node: DbNode): Promise<{
     images: { nodeId: string; name: string }[];
     commonBack: { nodeId: string; name: string } | null;
+    individualBackByFront: Map<string, { nodeId: string; name: string }>;
+    individualBackImageIds: Set<string>;
   }> {
     const children = await this.repo.getChildNodes(node.id, false);
     const images = children
@@ -511,12 +524,73 @@ export class UserDataDO extends DurableObject {
           child.file.isReady === 1,
       )
       .map((child) => ({ nodeId: child.id, name: child.name }));
+    const imageById = new Map(images.map((image) => [image.nodeId, image]));
+
     const commonBackId = node.folder?.deck?.commonBackId ?? null;
     const commonBack =
-      commonBackId === null
-        ? null
-        : (images.find((image) => image.nodeId === commonBackId) ?? null);
-    return { images, commonBack };
+      commonBackId === null ? null : (imageById.get(commonBackId) ?? null);
+
+    const pairings = await this.repo.getDeckIndividualBacks(node.id);
+    const individualBackByFront = new Map<
+      string,
+      { nodeId: string; name: string }
+    >();
+    const individualBackImageIds = new Set<string>();
+    for (const pairing of pairings) {
+      const front = imageById.get(pairing.frontId);
+      const back = imageById.get(pairing.backId);
+      // Both ends must be live for the pairing to take effect; a pairing to a
+      // deleted image just goes inert (see the doc comment above).
+      if (front && back) {
+        individualBackByFront.set(front.nodeId, back);
+        individualBackImageIds.add(back.nodeId);
+      }
+    }
+
+    return {
+      images,
+      commonBack,
+      individualBackByFront,
+      individualBackImageIds,
+    };
+  }
+
+  /**
+   * The Deck's Cards paired with their resolved backs, shared by the draw path
+   * and the owner's settings editor so both agree on what a Card is.
+   *
+   * A Card is a live image child that is neither the Common Back nor serving as
+   * an Individual Back (both "stop being a Card in their own right"). Each Card's
+   * back resolves as its Individual Back if it has one, else the Deck's Common
+   * Back if there is one, else `null` (CONTEXT.md).
+   */
+  private deriveDeckCards(derived: {
+    images: { nodeId: string; name: string }[];
+    commonBack: { nodeId: string; name: string } | null;
+    individualBackByFront: Map<string, { nodeId: string; name: string }>;
+    individualBackImageIds: Set<string>;
+  }): {
+    nodeId: string;
+    name: string;
+    back: { nodeId: string; name: string } | null;
+  }[] {
+    const {
+      images,
+      commonBack,
+      individualBackByFront,
+      individualBackImageIds,
+    } = derived;
+    return images
+      .filter(
+        (image) =>
+          image.nodeId !== commonBack?.nodeId &&
+          !individualBackImageIds.has(image.nodeId),
+      )
+      .map((image) => ({
+        nodeId: image.nodeId,
+        name: image.name,
+        back: individualBackByFront.get(image.nodeId) ?? commonBack ?? null,
+      }));
   }
 
   /**
@@ -565,8 +639,15 @@ export class UserDataDO extends DurableObject {
 
   /**
    * A Deck's configuration for its owner to edit: whether Face Down draws are
-   * permitted, the current Common Back, and the Deck's image children to pick a
-   * back from. Owner-scoped — called against the owner's own DO.
+   * permitted, the current Common Back, the Deck's image children to pick a
+   * Common Back from, and its Cards each with their current Individual Back.
+   * Owner-scoped — called against the owner's own DO.
+   *
+   * `cards` is the same derived Card list the draw path sees, so the editor and
+   * a draw agree on what a Card is and what each Card's back resolves to. A Card
+   * whose `back` came from the Common Back rather than a pairing is reported with
+   * `individualBack: null`, so the editor shows only genuine per-Card pairings as
+   * removable.
    */
   async getDeckSettings(nodeId: string): Promise<
     | {
@@ -574,6 +655,11 @@ export class UserDataDO extends DurableObject {
         allowFaceDown: boolean;
         commonBack: { nodeId: string; name: string } | null;
         images: { nodeId: string; name: string }[];
+        cards: {
+          nodeId: string;
+          name: string;
+          individualBack: { nodeId: string; name: string } | null;
+        }[];
       }
     | { result: "not-a-deck" }
   > {
@@ -581,13 +667,75 @@ export class UserDataDO extends DurableObject {
     if (!node || !node.folder || node.folder.deck === null) {
       return { result: "not-a-deck" };
     }
-    const { images, commonBack } = await this.deriveDeckImages(node);
+    const derived = await this.deriveDeckImages(node);
+    const cards = derived.images
+      .filter(
+        (image) =>
+          image.nodeId !== derived.commonBack?.nodeId &&
+          !derived.individualBackImageIds.has(image.nodeId),
+      )
+      .map((image) => ({
+        nodeId: image.nodeId,
+        name: image.name,
+        individualBack: derived.individualBackByFront.get(image.nodeId) ?? null,
+      }));
     return {
       result: "ok",
       allowFaceDown: node.folder.deck.allowFaceDown === 1,
-      commonBack,
-      images,
+      commonBack: derived.commonBack,
+      images: derived.images,
+      cards,
     };
+  }
+
+  /**
+   * Pair a front Card Image with an Individual Back (or clear the pairing with
+   * `backNodeId: null`). Owner-scoped. Both ids must be live, ready image
+   * children of the Deck, and must differ; a back may serve only one front, so
+   * setting one moves it off any front that already used it (see the repository).
+   *
+   * Rejections come back as typed results, not throws, so the caller can map
+   * them to client errors while an unexpected store failure still surfaces as a
+   * server error.
+   */
+  async setDeckIndividualBack(
+    nodeId: string,
+    frontNodeId: string,
+    backNodeId: string | null,
+  ): Promise<{
+    result: "ok" | "not-a-deck" | "invalid-front" | "invalid-back";
+  }> {
+    const node = await this.getDeckNode(nodeId);
+    if (!node) {
+      return { result: "not-a-deck" };
+    }
+
+    const isDeckReadyImage = async (id: string) => {
+      const child = await this.repo.getNode(id);
+      return (
+        child?.parentFolderId === nodeId &&
+        child.file?.contentType.startsWith("image/") === true &&
+        child.file.isReady === 1
+      );
+    };
+
+    if (!(await isDeckReadyImage(frontNodeId))) {
+      return { result: "invalid-front" };
+    }
+
+    if (backNodeId === null) {
+      await this.repo.removeDeckIndividualBack(nodeId, frontNodeId);
+      return { result: "ok" };
+    }
+
+    // A back must be a live image in the Deck, and cannot be the front's own
+    // image — a Card cannot be its own back.
+    if (frontNodeId === backNodeId || !(await isDeckReadyImage(backNodeId))) {
+      return { result: "invalid-back" };
+    }
+
+    await this.repo.setDeckIndividualBack(nodeId, frontNodeId, backNodeId);
+    return { result: "ok" };
   }
 
   async getFile(
@@ -638,12 +786,12 @@ export class UserDataDO extends DurableObject {
    * `deckName` is returned so callers can label a Card Draw Message from an
    * authoritative source rather than trusting a caller-supplied name.
    *
-   * The Common Back is excluded from the Cards (it "stops being a Card in its
-   * own right") and instead attached as each Card's `back`. In this slice every
-   * Card either shares the Deck's Common Back or has no back at all — a Card
-   * without a back can never come up Face Down. `allowFaceDown` is Deck
-   * configuration and travels with the Deck, so it is reported here for the
-   * draw to honour.
+   * Backs are attached per Card by {@link deriveDeckCards}: a Card's back is its
+   * Individual Back if it has one, else the Deck's Common Back, else `null`. Any
+   * image serving as a back (Common or Individual) "stops being a Card in its own
+   * right" and is excluded from the Cards. A Card without a back can never come
+   * up Face Down. `allowFaceDown` is Deck configuration and travels with the
+   * Deck, so it is reported here for the draw to honour.
    */
   async getDeckCards({
     nodeId,
@@ -674,10 +822,8 @@ export class UserDataDO extends DurableObject {
       return { result: "not-a-deck" };
     }
 
-    const { images, commonBack } = await this.deriveDeckImages(node);
-    const cards = images
-      .filter((image) => image.nodeId !== commonBack?.nodeId)
-      .map((image) => ({ ...image, back: commonBack }));
+    const derived = await this.deriveDeckImages(node);
+    const cards = this.deriveDeckCards(derived);
 
     return {
       result: "ok",

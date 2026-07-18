@@ -2,6 +2,7 @@ import { createFolder } from "#/actions/files/createFolder";
 import { getDeckSettings } from "#/actions/files/getDeckSettings";
 import { setDeckAllowFaceDown } from "#/actions/files/setDeckAllowFaceDown";
 import { setDeckCommonBack } from "#/actions/files/setDeckCommonBack";
+import { setDeckIndividualBack } from "#/actions/files/setDeckIndividualBack";
 import { setFolderIsDeck } from "#/actions/files/setFolderIsDeck";
 import {
   callAction,
@@ -103,6 +104,80 @@ describe("deck settings actions", () => {
     );
     const cleared = await callAction(getDeckSettings, { nodeId: deck.id }, ctx);
     expect(cleared.commonBack).toBeNull();
+  });
+
+  it("pairs a front with an individual back and reads it back as a card", async () => {
+    const { ctx, deck, foolId, backId } = await setUpDeck();
+
+    await callAction(
+      setDeckIndividualBack,
+      { nodeId: deck.id, frontNodeId: foolId, backNodeId: backId },
+      ctx,
+    );
+
+    const settings = await callAction(
+      getDeckSettings,
+      { nodeId: deck.id },
+      ctx,
+    );
+    // back.png now backs the fool, so it stops being a Card; the fool remains,
+    // carrying its Individual Back.
+    expect(settings.cards.map((card) => card.nodeId)).toEqual([foolId]);
+    expect(settings.cards[0].individualBack).toEqual({
+      nodeId: backId,
+      name: "back.png",
+    });
+  });
+
+  it("removes an individual-back pairing", async () => {
+    const { ctx, deck, foolId, backId } = await setUpDeck();
+
+    await callAction(
+      setDeckIndividualBack,
+      { nodeId: deck.id, frontNodeId: foolId, backNodeId: backId },
+      ctx,
+    );
+    await callAction(
+      setDeckIndividualBack,
+      { nodeId: deck.id, frontNodeId: foolId, backNodeId: null },
+      ctx,
+    );
+
+    const settings = await callAction(
+      getDeckSettings,
+      { nodeId: deck.id },
+      ctx,
+    );
+    expect(new Set(settings.cards.map((card) => card.nodeId))).toEqual(
+      new Set([foolId, backId]),
+    );
+    expect(settings.cards.every((card) => card.individualBack === null)).toBe(
+      true,
+    );
+  });
+
+  it("rejects an individual back that is not an image in the deck", async () => {
+    const { ctx, deck, foolId, notesId } = await setUpDeck();
+
+    await expect(
+      callAction(
+        setDeckIndividualBack,
+        { nodeId: deck.id, frontNodeId: foolId, backNodeId: notesId },
+        ctx,
+      ),
+    ).rejects.toThrow(/ready image in this deck/i);
+  });
+
+  it("rejects pairing a card as its own back", async () => {
+    const { ctx, deck, foolId } = await setUpDeck();
+
+    await expect(
+      callAction(
+        setDeckIndividualBack,
+        { nodeId: deck.id, frontNodeId: foolId, backNodeId: foolId },
+        ctx,
+      ),
+    ).rejects.toThrow(/different ready image/i);
   });
 
   it("rejects a back that is not an image in the deck", async () => {

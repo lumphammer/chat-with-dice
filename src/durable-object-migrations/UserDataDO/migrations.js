@@ -7,6 +7,7 @@ import m0005 from './20260604133830_previous_ozymandias/migration.sql';
 import m0006 from './20260604143119_natural_nick_fury/migration.sql';
 import m0007 from './20260716152933_gigantic_human_fly/migration.sql';
 import m0008 from './20260718143758_magenta_manta/migration.sql';
+import m0009 from './20260718204615_lame_james_howlett/migration.sql';
 
   export default {
     migrations: {
@@ -18,7 +19,8 @@ import m0008 from './20260718143758_magenta_manta/migration.sql';
 "20260604133830_previous_ozymandias": m0005,
 "20260604143119_natural_nick_fury": m0006,
 "20260716152933_gigantic_human_fly": m0007,
-"20260718143758_magenta_manta": m0008
+"20260718143758_magenta_manta": m0008,
+"20260718204615_lame_james_howlett": m0009
 }
   }
   

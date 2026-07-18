@@ -463,6 +463,56 @@ export class UserDataRepository {
       .where(eq(dbSchema.decks.id, folderId));
   }
 
+  /** The stored front→Individual Back pairings for a Deck. */
+  getDeckIndividualBacks(deckId: string) {
+    return this.db.query.deckIndividualBacks.findMany({
+      where: { deckId },
+    });
+  }
+
+  /**
+   * Pair a Deck's front Card Image with an Individual Back, replacing any
+   * existing back for that front. The caller has already confirmed the folder is
+   * a Deck and that both ids are live image children of it.
+   *
+   * A back image serves exactly one Card (CONTEXT.md), so any prior pairing that
+   * used `backId` — for this or another front, live or gone inert — is cleared
+   * first. The upsert then makes `frontId` point at `backId`, overwriting the
+   * front's previous back if it had one.
+   */
+  async setDeckIndividualBack(deckId: string, frontId: string, backId: string) {
+    await this.db
+      .delete(dbSchema.deckIndividualBacks)
+      .where(
+        and(
+          eq(dbSchema.deckIndividualBacks.deckId, deckId),
+          eq(dbSchema.deckIndividualBacks.backId, backId),
+        ),
+      );
+    await this.db
+      .insert(dbSchema.deckIndividualBacks)
+      .values({ deckId, frontId, backId })
+      .onConflictDoUpdate({
+        target: [
+          dbSchema.deckIndividualBacks.deckId,
+          dbSchema.deckIndividualBacks.frontId,
+        ],
+        set: { backId },
+      });
+  }
+
+  /** Remove a front's Individual Back pairing, if it has one. */
+  removeDeckIndividualBack(deckId: string, frontId: string) {
+    return this.db
+      .delete(dbSchema.deckIndividualBacks)
+      .where(
+        and(
+          eq(dbSchema.deckIndividualBacks.deckId, deckId),
+          eq(dbSchema.deckIndividualBacks.frontId, frontId),
+        ),
+      );
+  }
+
   /** Set whether a Deck permits Face Down draws. */
   setDeckAllowFaceDown(folderId: string, allowFaceDown: boolean) {
     return this.db
