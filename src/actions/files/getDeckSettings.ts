@@ -37,6 +37,7 @@ export const getDeckSettings = defineAction({
       allowFaceDown: result.allowFaceDown,
       commonBack: result.commonBack,
       images: result.images,
+      cards: result.cards,
     };
   },
 });

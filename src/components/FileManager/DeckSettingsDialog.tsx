@@ -1,6 +1,10 @@
 import { logger } from "#/utils/logger.ts";
 import { DeckCommonBackPicker, type DeckImage } from "./DeckCommonBackPicker";
 import { DeckFaceDownToggle } from "./DeckFaceDownToggle";
+import {
+  DeckIndividualBacksEditor,
+  type DeckCard,
+} from "./DeckIndividualBacksEditor";
 import { actions } from "astro:actions";
 import { Settings2 } from "lucide-react";
 import { memo, useId, useRef, useState } from "react";
@@ -23,14 +27,19 @@ export const DeckSettingsDialog = memo(
     const [allowFaceDown, setAllowFaceDown] = useState(false);
     const [commonBackId, setCommonBackId] = useState<string | null>(null);
     const [images, setImages] = useState<DeckImage[]>([]);
+    const [cards, setCards] = useState<DeckCard[]>([]);
     // One mutation at a time. The controls save on change, so without this a
     // rapid toggle could fire a second request that resolves before the first
     // and persist the older choice while the UI shows the newer one. Disabling
     // every control while a save is in flight makes the writes strictly ordered.
     const [saving, setSaving] = useState(false);
 
-    const load = async () => {
-      setLoading(true);
+    // `showSkeleton` is only for the first open; a reload after a pairing change
+    // refreshes the derived Card list in place without flashing the skeleton.
+    const load = async (showSkeleton: boolean) => {
+      if (showSkeleton) {
+        setLoading(true);
+      }
       setError(null);
       const result = await actions.files.getDeckSettings({ nodeId });
       setLoading(false);
@@ -41,11 +50,12 @@ export const DeckSettingsDialog = memo(
       setAllowFaceDown(result.data.allowFaceDown);
       setCommonBackId(result.data.commonBack?.nodeId ?? null);
       setImages(result.data.images);
+      setCards(result.data.cards);
     };
 
     const handleOpen = () => {
       dialogRef.current?.showModal();
-      void load();
+      void load(true);
     };
 
     const handleToggleFaceDown = async (next: boolean) => {
@@ -81,7 +91,34 @@ export const DeckSettingsDialog = memo(
         logger.error("Failed to set common back", result.error);
         setCommonBackId(previous);
         setError(result.error.message);
+        return;
       }
+      // The Common Back image stops being a Card, so the derived Card list
+      // shifts: reload it in place so the Individual Backs editor stays in sync.
+      await load(false);
+    };
+
+    // Pairing changes touch the derived Card list in ways that are awkward to
+    // mirror optimistically (an image assigned as a back leaves the Card list and
+    // every other Card's choices), so each change saves then reloads the
+    // authoritative list. Hand-pairing is click-paced, so the extra read is fine.
+    const handleAssignIndividualBack = async (
+      frontNodeId: string,
+      backNodeId: string | null,
+    ) => {
+      setError(null);
+      setSaving(true);
+      const result = await actions.files.setDeckIndividualBack({
+        nodeId,
+        frontNodeId,
+        backNodeId,
+      });
+      setSaving(false);
+      if (result.error) {
+        logger.error("Failed to set individual back", result.error);
+        setError(result.error.message);
+      }
+      await load(false);
     };
 
     return (
@@ -120,6 +157,16 @@ export const DeckSettingsDialog = memo(
                     commonBackId={commonBackId}
                     disabled={saving}
                     onSelect={(backNodeId) => void handleSelectBack(backNodeId)}
+                  />
+                  <DeckIndividualBacksEditor
+                    cards={cards}
+                    disabled={saving}
+                    onAssign={(frontNodeId, backNodeId) =>
+                      void handleAssignIndividualBack(frontNodeId, backNodeId)
+                    }
+                    onRemove={(frontNodeId) =>
+                      void handleAssignIndividualBack(frontNodeId, null)
+                    }
                   />
                 </>
               )}

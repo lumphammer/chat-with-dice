@@ -15,6 +15,7 @@ import { renameNode } from "./files/renameNode";
 import { restoreNode } from "./files/restoreNode";
 import { setDeckAllowFaceDown } from "./files/setDeckAllowFaceDown";
 import { setDeckCommonBack } from "./files/setDeckCommonBack";
+import { setDeckIndividualBack } from "./files/setDeckIndividualBack";
 import { setFolderIsDeck } from "./files/setFolderIsDeck";
 import { createChatWithDiceRoom } from "./rooms/createChatWithDiceRoom";
 import { deleteRoom } from "./rooms/deleteRoom";
@@ -39,6 +40,7 @@ export const server = {
     setFolderIsDeck,
     setDeckAllowFaceDown,
     setDeckCommonBack,
+    setDeckIndividualBack,
     getDeckSettings,
   },
   admin: {

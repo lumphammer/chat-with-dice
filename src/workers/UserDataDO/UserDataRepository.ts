@@ -3,7 +3,7 @@ import * as dbSchema from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
 import type { DbNode } from "./DbNodeType";
 import { logError } from "./utils";
-import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, count, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 type DBHandle = DrizzleSqliteDODatabase<
@@ -461,6 +461,63 @@ export class UserDataRepository {
       .update(dbSchema.decks)
       .set({ commonBackId: backNodeId })
       .where(eq(dbSchema.decks.id, folderId));
+  }
+
+  /** The stored front→Individual Back pairings for a Deck. */
+  getDeckIndividualBacks(deckId: string) {
+    return this.db.query.deckIndividualBacks.findMany({
+      where: { deckId },
+    });
+  }
+
+  /**
+   * Pair a Deck's front Card Image with an Individual Back, replacing any
+   * existing back for that front. The caller (`UserDataDO.setDeckIndividualBack`)
+   * has already validated both ids against the Deck's derived Card state.
+   *
+   * A back image serves exactly one Card (CONTEXT.md), so any prior pairing that
+   * used `backId` for a *different* front is cleared first, then the upsert makes
+   * `frontId` point at `backId`. The front's own row is left to the upsert, so an
+   * idempotent re-set of an existing `frontId → backId` pairing never deletes the
+   * live row it is re-affirming. Because the caller also rejects a `backId` still
+   * in use by another *live* front, that delete only ever clears an *inert* row
+   * (one whose front image was since deleted) — so although the delete and upsert
+   * are two statements (this DO's Drizzle build cannot wrap them in a
+   * transaction), a failure between them cannot lose a live pairing: the only row
+   * the delete can remove was already resolving to nothing.
+   */
+  async setDeckIndividualBack(deckId: string, frontId: string, backId: string) {
+    await this.db
+      .delete(dbSchema.deckIndividualBacks)
+      .where(
+        and(
+          eq(dbSchema.deckIndividualBacks.deckId, deckId),
+          eq(dbSchema.deckIndividualBacks.backId, backId),
+          ne(dbSchema.deckIndividualBacks.frontId, frontId),
+        ),
+      );
+    await this.db
+      .insert(dbSchema.deckIndividualBacks)
+      .values({ deckId, frontId, backId })
+      .onConflictDoUpdate({
+        target: [
+          dbSchema.deckIndividualBacks.deckId,
+          dbSchema.deckIndividualBacks.frontId,
+        ],
+        set: { backId },
+      });
+  }
+
+  /** Remove a front's Individual Back pairing, if it has one. */
+  removeDeckIndividualBack(deckId: string, frontId: string) {
+    return this.db
+      .delete(dbSchema.deckIndividualBacks)
+      .where(
+        and(
+          eq(dbSchema.deckIndividualBacks.deckId, deckId),
+          eq(dbSchema.deckIndividualBacks.frontId, frontId),
+        ),
+      );
   }
 
   /** Set whether a Deck permits Face Down draws. */
