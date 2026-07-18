@@ -12,11 +12,13 @@ export const DeckBackOption = memo(
     nodeId,
     name,
     checked,
+    disabled,
     onSelect,
   }: {
     nodeId: string;
     name: string;
     checked: boolean;
+    disabled?: boolean;
     onSelect: () => void;
   }) => {
     const [thumbnailFailed, setThumbnailFailed] = useState(false);
@@ -34,6 +36,7 @@ export const DeckBackOption = memo(
           name="deck-common-back"
           className="radio radio-primary shrink-0"
           checked={checked}
+          disabled={disabled}
           onChange={onSelect}
         />
         <span

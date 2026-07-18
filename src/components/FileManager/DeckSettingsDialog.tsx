@@ -2,7 +2,7 @@ import { logger } from "#/utils/logger.ts";
 import { DeckBackOption } from "./DeckBackOption";
 import { actions } from "astro:actions";
 import { Settings2 } from "lucide-react";
-import { memo, useRef, useState } from "react";
+import { memo, useId, useRef, useState } from "react";
 
 type DeckImage = { nodeId: string; name: string };
 
@@ -18,11 +18,17 @@ type DeckImage = { nodeId: string; name: string };
 export const DeckSettingsDialog = memo(
   ({ nodeId, name }: { nodeId: string; name: string }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
+    const titleId = useId();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [allowFaceDown, setAllowFaceDown] = useState(false);
     const [commonBackId, setCommonBackId] = useState<string | null>(null);
     const [images, setImages] = useState<DeckImage[]>([]);
+    // One mutation at a time. The controls save on change, so without this a
+    // rapid toggle could fire a second request that resolves before the first
+    // and persist the older choice while the UI shows the newer one. Disabling
+    // every control while a save is in flight makes the writes strictly ordered.
+    const [saving, setSaving] = useState(false);
 
     const load = async () => {
       setLoading(true);
@@ -46,10 +52,12 @@ export const DeckSettingsDialog = memo(
     const handleToggleFaceDown = async (next: boolean) => {
       const previous = allowFaceDown;
       setAllowFaceDown(next);
+      setSaving(true);
       const result = await actions.files.setDeckAllowFaceDown({
         nodeId,
         allowFaceDown: next,
       });
+      setSaving(false);
       if (result.error) {
         logger.error("Failed to set allowFaceDown", result.error);
         setAllowFaceDown(previous);
@@ -60,10 +68,12 @@ export const DeckSettingsDialog = memo(
     const handleSelectBack = async (backNodeId: string | null) => {
       const previous = commonBackId;
       setCommonBackId(backNodeId);
+      setSaving(true);
       const result = await actions.files.setDeckCommonBack({
         nodeId,
         backNodeId,
       });
+      setSaving(false);
       if (result.error) {
         logger.error("Failed to set common back", result.error);
         setCommonBackId(previous);
@@ -79,9 +89,16 @@ export const DeckSettingsDialog = memo(
         </button>
         {/* escape the menu's immediate-child styling, as HardDeleteDialog does */}
         <div className="contents">
-          <dialog ref={dialogRef} closedby="any" className="modal">
+          <dialog
+            ref={dialogRef}
+            closedby="any"
+            className="modal"
+            aria-labelledby={titleId}
+          >
             <div className="modal-box flex flex-col gap-4">
-              <h3 className="text-lg font-bold">Deck settings: {name}</h3>
+              <h3 id={titleId} className="text-lg font-bold">
+                Deck settings: {name}
+              </h3>
 
               {loading ? (
                 <div className="flex flex-col gap-2">
@@ -96,6 +113,7 @@ export const DeckSettingsDialog = memo(
                         type="checkbox"
                         className="toggle toggle-primary"
                         checked={allowFaceDown}
+                        disabled={saving}
                         onChange={(e) =>
                           void handleToggleFaceDown(e.currentTarget.checked)
                         }
@@ -126,6 +144,7 @@ export const DeckSettingsDialog = memo(
                           name="deck-common-back"
                           className="radio radio-primary shrink-0"
                           checked={commonBackId === null}
+                          disabled={saving}
                           onChange={() => void handleSelectBack(null)}
                         />
                         <span className="min-w-0 flex-1">No common back</span>
@@ -136,6 +155,7 @@ export const DeckSettingsDialog = memo(
                           nodeId={image.nodeId}
                           name={image.name}
                           checked={commonBackId === image.nodeId}
+                          disabled={saving}
                           onSelect={() => void handleSelectBack(image.nodeId)}
                         />
                       ))}

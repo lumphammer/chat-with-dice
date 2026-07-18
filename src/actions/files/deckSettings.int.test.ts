@@ -123,14 +123,16 @@ describe("deck settings actions", () => {
 
     await expect(
       callAction(getDeckSettings, { nodeId: plain.id }, ctx),
-    ).rejects.toThrow(/not a deck/i);
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    // A non-deck target is a client mistake: it comes back as BAD_REQUEST, the
+    // same normalisation setDeckCommonBack uses, not a generic 500.
     await expect(
       callAction(
         setDeckAllowFaceDown,
         { nodeId: plain.id, allowFaceDown: true },
         ctx,
       ),
-    ).rejects.toThrow(/not a deck/i);
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
   it("rejects an anonymous caller", async () => {

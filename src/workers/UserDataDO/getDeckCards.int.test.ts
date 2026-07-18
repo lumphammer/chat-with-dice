@@ -123,6 +123,9 @@ describe("getDeckCards", () => {
       roomId: ROOM_ID,
     });
 
+    // Assert success first, so a mistaken no-access/not-a-deck fails the test
+    // rather than skipping the real assertion.
+    expect(result.result).toBe("ok");
     if (result.result !== "ok") return;
     expect(result.cards.every((card) => card.back === null)).toBe(true);
   });
@@ -134,7 +137,9 @@ describe("getDeckCards", () => {
       nodeId: deck.id,
       roomId: ROOM_ID,
     });
-    expect(before.result === "ok" && before.allowFaceDown).toBe(false);
+    expect(before.result).toBe("ok");
+    if (before.result !== "ok") return;
+    expect(before.allowFaceDown).toBe(false);
 
     await userDataDO.setDeckAllowFaceDown(deck.id, true);
 
@@ -142,7 +147,9 @@ describe("getDeckCards", () => {
       nodeId: deck.id,
       roomId: ROOM_ID,
     });
-    expect(after.result === "ok" && after.allowFaceDown).toBe(true);
+    expect(after.result).toBe("ok");
+    if (after.result !== "ok") return;
+    expect(after.allowFaceDown).toBe(true);
   });
 
   it("rejects a shared folder that is not a deck", async () => {

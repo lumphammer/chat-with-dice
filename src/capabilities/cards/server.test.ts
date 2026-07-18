@@ -1,3 +1,4 @@
+import { cardDrawMessageDataValidator } from "#/capabilities/cards/common";
 import { cardsServer } from "#/capabilities/cards/server";
 import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
@@ -111,9 +112,12 @@ const twoCardDeck = () =>
 
 const BACK = { nodeId: "common-back", name: "Card back" };
 
-// A random roll that lands the face-down coin face up (>= 0.5) and, for a
-// two-card deck, floors the uniform pick to the second card.
-const FACE_UP_ROLL = 0.9;
+// Distinct rolls for the two independent decisions a draw makes: the uniform
+// card pick, then the face-down coin. Kept apart so a test can prove the coin
+// does not reuse the pick's roll.
+const PICK_FIRST_CARD = 0; // floors the uniform index to 0 (card-a)
+const FACE_DOWN_ROLL = 0.2; // < 0.5 → face down
+const FACE_UP_ROLL = 0.9; // >= 0.5 → face up
 
 // A Deck that permits Face Down draws and whose Cards all share a Common Back.
 const faceDownDeck = () =>
@@ -194,13 +198,19 @@ describe("cards draw action", () => {
 
 describe("face down draws", () => {
   const drawnFaceDown = (sentMessages: unknown[]) =>
-    sentMessages.map((data) => (data as { faceDown: boolean }).faceDown);
+    sentMessages.map(
+      (data) => cardDrawMessageDataValidator.parse(data).faceDown,
+    );
 
   it("comes up face down and records the back when the deck permits it", async () => {
-    // Two random draws per draw: the uniform pick (index 0) then the face-down
-    // coin (0 < 0.5 → face down). The back is recorded so the message can render
-    // it, and the front is still carried for the record.
-    vi.spyOn(Math, "random").mockReturnValue(0);
+    // Two independent rolls: the uniform pick (0 → card-a), then the face-down
+    // coin (0.2 < 0.5 → face down). Sequencing them proves the coin is its own
+    // roll, not a reuse of the pick's. The back is recorded so the message can
+    // render it, and the front is still carried for the record.
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(PICK_FIRST_CARD)
+      .mockReturnValueOnce(FACE_DOWN_ROLL)
+      .mockReturnValue(0);
     const { mounted, sentMessages, errors } = await mountWith(faceDownDeck());
 
     await draw(mounted);
@@ -218,10 +228,13 @@ describe("face down draws", () => {
   });
 
   it("comes up face up when the face-down coin lands the other way", async () => {
-    // random 0.9 → the uniform pick floors to index 1 (card-b), and the
-    // face-down coin (0.9, not < 0.5) lands face up on a deck that would
-    // otherwise permit face down.
-    vi.spyOn(Math, "random").mockReturnValue(FACE_UP_ROLL);
+    // Same pick (0 → card-a), but the face-down coin lands face up (0.9). The
+    // pick and the coin are distinct values, so a card-a face-up result can only
+    // come from two independent rolls — not from the coin echoing the pick.
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(PICK_FIRST_CARD)
+      .mockReturnValueOnce(FACE_UP_ROLL)
+      .mockReturnValue(0);
     const { mounted, sentMessages } = await mountWith(faceDownDeck());
 
     await draw(mounted);
@@ -230,7 +243,7 @@ describe("face down draws", () => {
       {
         ownerUserId: OWNER,
         deck: { nodeId: DECK, name: "Magus" },
-        card: { nodeId: "card-b", name: "The Magician" },
+        card: { nodeId: "card-a", name: "The Fool" },
         faceDown: false,
       },
     ]);

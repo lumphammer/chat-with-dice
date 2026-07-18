@@ -19,24 +19,37 @@ import { z } from "zod/v4";
  * not secrecy (decision 7): the front is still carried in `card`, snoopable by
  * anyone determined, so nothing here is withheld.
  */
-export const cardDrawMessageDataValidator = z.object({
-  ownerUserId: z.string(),
-  deck: z.object({
-    nodeId: z.string(),
-    name: z.string(),
-  }),
-  card: z.object({
-    nodeId: z.string(),
-    name: z.string(),
-  }),
-  faceDown: z.boolean().default(false),
-  back: z
-    .object({
+export const cardDrawMessageDataValidator = z
+  .object({
+    ownerUserId: z.string(),
+    deck: z.object({
       nodeId: z.string(),
       name: z.string(),
-    })
-    .optional(),
-});
+    }),
+    card: z.object({
+      nodeId: z.string(),
+      name: z.string(),
+    }),
+    faceDown: z.boolean().default(false),
+    back: z
+      .object({
+        nodeId: z.string(),
+        name: z.string(),
+      })
+      .optional(),
+  })
+  // The two are paired: a Face Down draw carries the back it renders, and a
+  // face-up draw carries none. Enforcing it here keeps the only two valid shapes
+  // the server ever emits from drifting apart, and rejects a malformed message
+  // (e.g. `faceDown` with no back to show) rather than rendering it half-formed.
+  .refine(
+    (data) =>
+      data.faceDown ? data.back !== undefined : data.back === undefined,
+    {
+      message:
+        "A face-down draw must carry a back, and a face-up draw must not",
+    },
+  );
 
 export type CardDrawMessageData = z.infer<typeof cardDrawMessageDataValidator>;
 
