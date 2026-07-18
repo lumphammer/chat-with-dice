@@ -36,6 +36,7 @@ export const CardImagePreview = memo(
         </button>
         <ChatBubbleDialog
           id={dialogId}
+          ariaLabel={alt}
           className="h-[90vh] max-h-[90vh] w-[90vw] max-w-[90vw]"
         >
           <ImagePreview src={src} alt={alt} />

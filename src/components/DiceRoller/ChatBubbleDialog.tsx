@@ -7,6 +7,8 @@ type ChatBubbleDialogProps = {
    * `<button command="show-modal" commandfor={id}>`.
    */
   id: string;
+  /** Accessible name for the dialog, announced by screen readers. */
+  ariaLabel: string;
   /** Extra classes appended to the dialog (e.g. to give it a size). */
   className?: string;
   children: ReactNode;
@@ -18,11 +20,12 @@ type ChatBubbleDialogProps = {
  * The caller owns the trigger and passes its shared id in.
  */
 export const ChatBubbleDialog = memo(
-  ({ id, className, children }: ChatBubbleDialogProps) => {
+  ({ id, ariaLabel, className, children }: ChatBubbleDialogProps) => {
     return (
       <dialog
         id={id}
         closedby="any"
+        aria-label={ariaLabel}
         className={`chat-bubble animate-fadeout open:animate-fadein
           backdrop:animate-fadeout open:backdrop:animate-fadein absolute m-auto
           flex-col text-left
@@ -33,6 +36,8 @@ export const ChatBubbleDialog = memo(
       >
         <nav className="flex flex-row justify-end">
           <button
+            type="button"
+            aria-label="Close"
             className="btn btn-ghost"
             // @ts-expect-error invoker api not in react types yet
             commandfor={id}
