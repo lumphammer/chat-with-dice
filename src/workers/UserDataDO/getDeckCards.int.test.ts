@@ -240,6 +240,130 @@ describe("getDeckCards", () => {
     expect(result.cards[0].back).toBeNull();
   });
 
+  it("rejects using an image that is already a back as a front", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+    const priestessId = await addReadyFile(
+      userDataDO,
+      deck.id,
+      "priestess.png",
+      "image/png",
+    );
+
+    // fool is now the magician's back, so it is no longer a Card — it cannot be
+    // given a back of its own.
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+
+    const result = await userDataDO.setDeckIndividualBack(
+      deck.id,
+      foolId,
+      priestessId,
+    );
+    expect(result.result).toBe("invalid-front");
+  });
+
+  it("rejects a back that already has its own back, preventing chains", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+    const priestessId = await addReadyFile(
+      userDataDO,
+      deck.id,
+      "priestess.png",
+      "image/png",
+    );
+
+    // magician already has fool as its back. Pairing priestess → magician would
+    // chain (priestess → magician → fool), hiding magician; reject it.
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+
+    const result = await userDataDO.setDeckIndividualBack(
+      deck.id,
+      priestessId,
+      magicianId,
+    );
+    expect(result.result).toBe("invalid-back");
+  });
+
+  it("rejects a back already assigned to another front", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+    const priestessId = await addReadyFile(
+      userDataDO,
+      deck.id,
+      "priestess.png",
+      "image/png",
+    );
+
+    // fool already backs the magician, so it cannot also back the priestess — a
+    // back serves exactly one Card.
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+
+    const result = await userDataDO.setDeckIndividualBack(
+      deck.id,
+      priestessId,
+      foolId,
+    );
+    expect(result.result).toBe("invalid-back");
+  });
+
+  it("rejects the common back as an individual back or front", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+    const priestessId = await addReadyFile(
+      userDataDO,
+      deck.id,
+      "priestess.png",
+      "image/png",
+    );
+
+    await userDataDO.setDeckCommonBack(deck.id, foolId);
+
+    // The Common Back is not a Card, so it can be neither a front...
+    const asFront = await userDataDO.setDeckIndividualBack(
+      deck.id,
+      foolId,
+      priestessId,
+    );
+    expect(asFront.result).toBe("invalid-front");
+    // ...nor an Individual Back.
+    const asBack = await userDataDO.setDeckIndividualBack(
+      deck.id,
+      magicianId,
+      foolId,
+    );
+    expect(asBack.result).toBe("invalid-back");
+  });
+
+  it("allows re-pointing a front that already has a back", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+    const priestessId = await addReadyFile(
+      userDataDO,
+      deck.id,
+      "priestess.png",
+      "image/png",
+    );
+
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+    // Re-pointing the magician at a new back is fine: it is still a Card. The old
+    // back (fool) returns to being a Card.
+    const result = await userDataDO.setDeckIndividualBack(
+      deck.id,
+      magicianId,
+      priestessId,
+    );
+    expect(result.result).toBe("ok");
+
+    const cards = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(cards.result).toBe("ok");
+    if (cards.result !== "ok") return;
+    const byId = new Map(cards.cards.map((card) => [card.nodeId, card.back]));
+    expect(new Set(byId.keys())).toEqual(new Set([magicianId, foolId]));
+    expect(byId.get(magicianId)).toEqual({
+      nodeId: priestessId,
+      name: "priestess.png",
+    });
+    expect(byId.get(foolId)).toBeNull();
+  });
+
   it("gives every card no back when the deck has no common back", async () => {
     const { userDataDO, deck } = await setUp();
 

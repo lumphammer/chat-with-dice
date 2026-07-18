@@ -472,13 +472,17 @@ export class UserDataRepository {
 
   /**
    * Pair a Deck's front Card Image with an Individual Back, replacing any
-   * existing back for that front. The caller has already confirmed the folder is
-   * a Deck and that both ids are live image children of it.
+   * existing back for that front. The caller (`UserDataDO.setDeckIndividualBack`)
+   * has already validated both ids against the Deck's derived Card state.
    *
    * A back image serves exactly one Card (CONTEXT.md), so any prior pairing that
-   * used `backId` — for this or another front, live or gone inert — is cleared
-   * first. The upsert then makes `frontId` point at `backId`, overwriting the
-   * front's previous back if it had one.
+   * used `backId` is cleared first, then the upsert makes `frontId` point at
+   * `backId`. Because the caller rejects a `backId` still in use by a *live*
+   * front, that delete only ever clears an *inert* row (one whose front image was
+   * since deleted) — so although the delete and upsert are two statements (this
+   * DO's Drizzle build cannot wrap them in a transaction), a failure between them
+   * cannot lose a live pairing: the only row the delete can remove was already
+   * resolving to nothing.
    */
   async setDeckIndividualBack(deckId: string, frontId: string, backId: string) {
     await this.db

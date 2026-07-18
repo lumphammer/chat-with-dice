@@ -690,13 +690,24 @@ export class UserDataDO extends DurableObject {
 
   /**
    * Pair a front Card Image with an Individual Back (or clear the pairing with
-   * `backNodeId: null`). Owner-scoped. Both ids must be live, ready image
-   * children of the Deck, and must differ; a back may serve only one front, so
-   * setting one moves it off any front that already used it (see the repository).
+   * `backNodeId: null`). Owner-scoped.
    *
-   * Rejections come back as typed results, not throws, so the caller can map
-   * them to client errors while an unexpected store failure still surfaces as a
-   * server error.
+   * Roles are validated against the Deck's *derived* state, not just image
+   * membership, so the store — not the picker UI — is the authority on what may
+   * be paired. This keeps the pairing graph a set of disjoint front→back pairs
+   * and blocks chains or cycles (e.g. `A→B` then `B→C`) that a direct or stale
+   * request could otherwise create, hiding images at draw time:
+   *
+   *  - the **front** must be a current Card: a live, ready image child that is
+   *    neither the Common Back nor already serving as an Individual Back;
+   *  - the **back** must be an eligible image: a live, ready image child that is
+   *    neither the Common Back, nor another front's Individual Back, nor a front
+   *    that already has its own Individual Back — and not the front itself.
+   *
+   * Re-pairing a front that already has a back is fine (the front is still a
+   * Card), as is re-affirming a front's existing back (idempotent). Rejections
+   * come back as typed results, not throws, so the caller can map them to client
+   * errors while an unexpected store failure still surfaces as a server error.
    */
   async setDeckIndividualBack(
     nodeId: string,
@@ -710,16 +721,17 @@ export class UserDataDO extends DurableObject {
       return { result: "not-a-deck" };
     }
 
-    const isDeckReadyImage = async (id: string) => {
-      const child = await this.repo.getNode(id);
-      return (
-        child?.parentFolderId === nodeId &&
-        child.file?.contentType.startsWith("image/") === true &&
-        child.file.isReady === 1
-      );
-    };
+    const derived = await this.deriveDeckImages(node);
+    const imageIds = new Set(derived.images.map((image) => image.nodeId));
+    const commonBackId = derived.commonBack?.nodeId ?? null;
 
-    if (!(await isDeckReadyImage(frontNodeId))) {
+    // The front must be a current Card: a live image that is neither the Common
+    // Back nor itself serving as a back.
+    const frontIsCard =
+      imageIds.has(frontNodeId) &&
+      frontNodeId !== commonBackId &&
+      !derived.individualBackImageIds.has(frontNodeId);
+    if (!frontIsCard) {
       return { result: "invalid-front" };
     }
 
@@ -728,9 +740,20 @@ export class UserDataDO extends DurableObject {
       return { result: "ok" };
     }
 
-    // A back must be a live image in the Deck, and cannot be the front's own
-    // image — a Card cannot be its own back.
-    if (frontNodeId === backNodeId || !(await isDeckReadyImage(backNodeId))) {
+    // The back must be an eligible image: live, not the Common Back, not already
+    // backing a *different* front, not a front with its own back (no chains), and
+    // not the front's own image.
+    const backUsedByAnotherFront = [...derived.individualBackByFront].some(
+      ([front, back]) => back.nodeId === backNodeId && front !== frontNodeId,
+    );
+    const backHasOwnBack = derived.individualBackByFront.has(backNodeId);
+    const backIsEligible =
+      backNodeId !== frontNodeId &&
+      imageIds.has(backNodeId) &&
+      backNodeId !== commonBackId &&
+      !backUsedByAnotherFront &&
+      !backHasOwnBack;
+    if (!backIsEligible) {
       return { result: "invalid-back" };
     }
 
