@@ -93,7 +93,12 @@ export class NodeShareManager {
     | {
         result: "ok";
         deckName: string;
-        cards: { nodeId: string; name: string }[];
+        allowFaceDown: boolean;
+        cards: {
+          nodeId: string;
+          name: string;
+          back: { nodeId: string; name: string } | null;
+        }[];
       }
     | { result: "error"; reason: string }
   > {
@@ -120,6 +125,7 @@ export class NodeShareManager {
     return {
       result: "ok",
       deckName: deckResult.deckName,
+      allowFaceDown: deckResult.allowFaceDown,
       cards: deckResult.cards,
     };
   }

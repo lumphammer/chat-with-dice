@@ -2,6 +2,7 @@ import { logger } from "#/utils/logger.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { useFeedback } from "../FeedbackContext";
 import { GenericMenu, useGenericMenu } from "../GenericMenu";
+import { DeckSettingsDialog } from "./DeckSettingsDialog";
 import { HardDeleteDialog } from "./HardDeleteDialog";
 import { buildFileUrl } from "./fileUrl";
 import { useShareWithRoom } from "./useShareWithRoom";
@@ -128,6 +129,11 @@ export const NodeActionsMenu = memo(
               <Layers size={14} />
               {node.isDeck ? "Unmark as Deck" : "Mark as Deck"}
             </button>
+          </li>
+        )}
+        {isLive && !readOnly && node.kind === "folder" && node.isDeck && (
+          <li>
+            <DeckSettingsDialog nodeId={node.id} name={node.name} />
           </li>
         )}
         {isLive && !readOnly && (

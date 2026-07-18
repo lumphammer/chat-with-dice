@@ -88,6 +88,18 @@ export const decks = snakeCase.table("decks", {
     .references((): AnySQLiteColumn => folders.id, {
       onDelete: "cascade",
     }),
+  // The Deck's Common Back: the node id of one image child used as the back of
+  // every Card that has no back of its own (Individual Backs are a later slice).
+  // Nullable — a Deck need not have one. Stored as a plain id, deliberately not a
+  // foreign key: like the Pile's Discard (ADR-0001 decision 4), a Card Image the
+  // owner has since deleted just goes inert. The Common Back is resolved against
+  // the Deck's live image children at read time, so a stale id simply reads back
+  // as "no Common Back" rather than dangling — and node ids are never reused.
+  commonBackId: text(),
+  // Deck configuration (ADR-0001 decision 6): whether Face Down draws are
+  // permitted. Travels with the Deck into any Room because it lives here, not
+  // room-side. `0` (not permitted) is the default.
+  allowFaceDown: int().notNull().default(0),
 });
 
 export const roomResourceShares = snakeCase.table(

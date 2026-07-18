@@ -8,10 +8,13 @@ import { adminUpdateUserQuota } from "./admin/adminUpdateUserQuota";
 import { getDeckCards } from "./cards/getDeckCards";
 import { createFolder } from "./files/createFolder";
 import { deleteNode } from "./files/deleteNode";
+import { getDeckSettings } from "./files/getDeckSettings";
 import { getNodes } from "./files/getNodes";
 import { hardDeleteNode } from "./files/hardDeleteNode";
 import { renameNode } from "./files/renameNode";
 import { restoreNode } from "./files/restoreNode";
+import { setDeckAllowFaceDown } from "./files/setDeckAllowFaceDown";
+import { setDeckCommonBack } from "./files/setDeckCommonBack";
 import { setFolderIsDeck } from "./files/setFolderIsDeck";
 import { createChatWithDiceRoom } from "./rooms/createChatWithDiceRoom";
 import { deleteRoom } from "./rooms/deleteRoom";
@@ -34,6 +37,9 @@ export const server = {
     hardDeleteNode,
     restoreNode,
     setFolderIsDeck,
+    setDeckAllowFaceDown,
+    setDeckCommonBack,
+    getDeckSettings,
   },
   admin: {
     updateRoom: adminUpdateRoom,

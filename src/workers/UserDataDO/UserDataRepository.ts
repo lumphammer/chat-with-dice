@@ -451,6 +451,26 @@ export class UserDataRepository {
       .where(eq(dbSchema.decks.id, folderId));
   }
 
+  /**
+   * Set (or clear, with `null`) a Deck's Common Back. The caller has already
+   * confirmed the folder is a Deck and that `backNodeId` is one of its live
+   * image children, so this only touches the stored id.
+   */
+  setDeckCommonBack(folderId: string, backNodeId: string | null) {
+    return this.db
+      .update(dbSchema.decks)
+      .set({ commonBackId: backNodeId })
+      .where(eq(dbSchema.decks.id, folderId));
+  }
+
+  /** Set whether a Deck permits Face Down draws. */
+  setDeckAllowFaceDown(folderId: string, allowFaceDown: boolean) {
+    return this.db
+      .update(dbSchema.decks)
+      .set({ allowFaceDown: allowFaceDown ? 1 : 0 })
+      .where(eq(dbSchema.decks.id, folderId));
+  }
+
   markFileReady(id: string, sizeBytes: number) {
     return this.db
       .update(dbSchema.files)

@@ -2,16 +2,22 @@ import { createCapabilityCommon } from "#/capabilities/createCapabilityCommon";
 import { z } from "zod/v4";
 
 /**
- * A Card Draw Message: the record of one draw from a Pile. For this first
- * slice it names the drawn Card (front only) and the Deck it came from. Backs,
- * Inversion and Face Down draws are later slices, so nothing about the Card's
- * orientation is recorded yet.
+ * A Card Draw Message: the record of one draw from a Pile. It names the drawn
+ * Card (its front) and the Deck it came from, and records whether the Card came
+ * up Face Down (ADR-0001 decision 6 — how a draw came up is a property of that
+ * draw).
  *
  * `ownerUserId` + `card.nodeId` are the trust-bearing pair: the image is served
  * (and re-authorised) through the `/api/files/[ownerUserId]/[nodeId]` route.
  * The Deck and Card names are snapshot display metadata — a draw is a record of
- * one moment, not a live view — but both are filled in server-side from the
+ * one moment, not a live view — but all of it is filled in server-side from the
  * owner's file store, never from anything the drawer supplied.
+ *
+ * `faceDown` defaults to `false` so Card Draw Messages recorded before Face Down
+ * existed keep parsing. `back` is the Card's back image, present only on a Face
+ * Down draw — that is the image the message renders. Face Down is presentation,
+ * not secrecy (decision 7): the front is still carried in `card`, snoopable by
+ * anyone determined, so nothing here is withheld.
  */
 export const cardDrawMessageDataValidator = z.object({
   ownerUserId: z.string(),
@@ -23,6 +29,13 @@ export const cardDrawMessageDataValidator = z.object({
     nodeId: z.string(),
     name: z.string(),
   }),
+  faceDown: z.boolean().default(false),
+  back: z
+    .object({
+      nodeId: z.string(),
+      name: z.string(),
+    })
+    .optional(),
 });
 
 export type CardDrawMessageData = z.infer<typeof cardDrawMessageDataValidator>;
