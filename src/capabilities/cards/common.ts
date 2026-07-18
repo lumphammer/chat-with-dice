@@ -1,5 +1,4 @@
 import { createCapabilityCommon } from "#/capabilities/createCapabilityCommon";
-import type { Draft } from "immer";
 import { z } from "zod/v4";
 
 /**
@@ -75,32 +74,6 @@ export function findPile(
 }
 
 /**
- * Get the Pile for `(ownerUserId, deckNodeId)`, creating a default
- * (non-dwindling, empty Discard) entry in the draft if there isn't one yet.
- */
-function getOrCreatePile(
-  stateDraft: Draft<CardsState>,
-  ownerUserId: string,
-  deckNodeId: string,
-): Draft<Pile> {
-  const existing = stateDraft.piles.find(
-    (pile) =>
-      pile.ownerUserId === ownerUserId && pile.deckNodeId === deckNodeId,
-  );
-  if (existing) {
-    return existing;
-  }
-  const pile: Pile = {
-    ownerUserId,
-    deckNodeId,
-    returnCards: true,
-    discard: [],
-  };
-  stateDraft.piles.push(pile);
-  return stateDraft.piles[stateDraft.piles.length - 1];
-}
-
-/**
  * The `cards` capability holds Piles: per-room draw state for each shared Deck.
  * A draw picks uniformly at random from the Deck's live Cards, honouring the
  * Pile's dwindle rule, and broadcasts a Card Draw Message. Reset empties a
@@ -129,9 +102,15 @@ export const cardsCommon = createCapabilityCommon({
         deckNodeId: z.string(),
       }),
     }),
-    // Set a Pile's dwindle rule. Turning Cards back on empties the Discard —
-    // a non-dwindling Pile has none, and toggling back to dwindling should
-    // start from the whole Deck rather than resurface an old Discard.
+    // Set a Pile's dwindle rule.
+    //
+    // Non-dwindling (Cards return) is the default, so it needs no stored Pile:
+    // turning Cards back on drops any entry entirely rather than leaving one
+    // that merely restates the default. That keeps state minimal — a client
+    // toggling decks it will never dwindle cannot accumulate no-op Piles — and
+    // means toggling back to dwindling later starts from the whole Deck rather
+    // than resurfacing an old Discard. A dwindling Pile (returnCards `false`),
+    // by contrast, is genuinely non-default and gets an entry.
     setReturnCards: createAction({
       payloadValidator: z.object({
         ownerUserId: z.string(),
@@ -139,14 +118,26 @@ export const cardsCommon = createCapabilityCommon({
         returnCards: z.boolean(),
       }),
       pureFn: ({ stateDraft, payload }) => {
-        const pile = getOrCreatePile(
-          stateDraft,
-          payload.ownerUserId,
-          payload.deckNodeId,
+        const index = stateDraft.piles.findIndex(
+          (p) =>
+            p.ownerUserId === payload.ownerUserId &&
+            p.deckNodeId === payload.deckNodeId,
         );
-        pile.returnCards = payload.returnCards;
         if (payload.returnCards) {
-          pile.discard = [];
+          if (index !== -1) {
+            stateDraft.piles.splice(index, 1);
+          }
+          return;
+        }
+        if (index === -1) {
+          stateDraft.piles.push({
+            ownerUserId: payload.ownerUserId,
+            deckNodeId: payload.deckNodeId,
+            returnCards: false,
+            discard: [],
+          });
+        } else {
+          stateDraft.piles[index].returnCards = false;
         }
       },
     }),

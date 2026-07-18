@@ -17,13 +17,19 @@ const DRAWER = "drawer-user";
 
 type ListDeckCards = NodeShareManager["listDeckCards"];
 
-// A Map-backed KV so the stateful capability can read and write its Pile state.
+// A Map-backed SyncKvStorage so the stateful capability can read and write its
+// Pile state. The `as unknown` bridge is only because SyncKvStorage's methods
+// are generic over the stored value, which a plain Map can't reproduce; the
+// object below implements the interface's full surface so the shape is honest.
 const makeStateRepository = () => {
   const kv = new Map<string, unknown>();
-  return new CapabilityStateRepository({
-    put: (key: string, value: unknown) => kv.set(key, value),
+  const storage = {
     get: (key: string) => kv.get(key),
-  } as unknown as ConstructorParameters<typeof CapabilityStateRepository>[0]);
+    put: (key: string, value: unknown) => kv.set(key, value),
+    delete: (key: string) => kv.delete(key),
+    list: () => kv.entries(),
+  };
+  return new CapabilityStateRepository(storage as unknown as SyncKvStorage);
 };
 
 const mountWith = async (
@@ -191,8 +197,12 @@ describe("dwindling pile", () => {
     await draw(mounted);
 
     expect(sentMessages).toHaveLength(2);
-    expect(errors).toHaveLength(1);
-    expect(errors[0].userId).toBe(DRAWER);
+    expect(errors).toEqual([
+      {
+        userId: DRAWER,
+        error: "Every card has been drawn. Reset the pile to draw again.",
+      },
+    ]);
   });
 
   it("reset returns every discarded card to the pile", async () => {
