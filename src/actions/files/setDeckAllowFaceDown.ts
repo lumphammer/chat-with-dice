@@ -27,16 +27,14 @@ export const setDeckAllowFaceDown = defineAction({
     const userDataDO = env.USER_DATA_DO.get(
       env.USER_DATA_DO.idFromString(user.userDataDOId),
     );
-    try {
-      await userDataDO.setDeckAllowFaceDown(nodeId, allowFaceDown);
-    } catch (cause) {
-      // Aiming this at a folder that is not a Deck is a client mistake, not a
-      // server fault — normalise it to BAD_REQUEST, as setDeckCommonBack does,
-      // rather than letting it surface as a generic INTERNAL_SERVER_ERROR.
+    // Only the known "not a Deck" outcome becomes a client error; an unexpected
+    // store failure throws out of the DO and surfaces as a generic
+    // INTERNAL_SERVER_ERROR rather than being mislabelled as the caller's fault.
+    const result = await userDataDO.setDeckAllowFaceDown(nodeId, allowFaceDown);
+    if (result.result === "not-a-deck") {
       throw new ActionError({
         code: "BAD_REQUEST",
-        message:
-          cause instanceof Error ? cause.message : "Could not update deck",
+        message: "That folder is not a deck",
       });
     }
   },

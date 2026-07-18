@@ -1,10 +1,9 @@
 import { logger } from "#/utils/logger.ts";
-import { DeckBackOption } from "./DeckBackOption";
+import { DeckCommonBackPicker, type DeckImage } from "./DeckCommonBackPicker";
+import { DeckFaceDownToggle } from "./DeckFaceDownToggle";
 import { actions } from "astro:actions";
 import { Settings2 } from "lucide-react";
 import { memo, useId, useRef, useState } from "react";
-
-type DeckImage = { nodeId: string; name: string };
 
 /**
  * The owner's editor for a Deck's configuration: whether Face Down draws are
@@ -51,6 +50,9 @@ export const DeckSettingsDialog = memo(
 
     const handleToggleFaceDown = async (next: boolean) => {
       const previous = allowFaceDown;
+      // Clear any error from an earlier failed save so a fresh attempt does not
+      // show a stale message while it is in flight.
+      setError(null);
       setAllowFaceDown(next);
       setSaving(true);
       const result = await actions.files.setDeckAllowFaceDown({
@@ -67,6 +69,7 @@ export const DeckSettingsDialog = memo(
 
     const handleSelectBack = async (backNodeId: string | null) => {
       const previous = commonBackId;
+      setError(null);
       setCommonBackId(backNodeId);
       setSaving(true);
       const result = await actions.files.setDeckCommonBack({
@@ -107,65 +110,17 @@ export const DeckSettingsDialog = memo(
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-col gap-1">
-                    <label className="flex cursor-pointer items-center gap-3">
-                      <input
-                        type="checkbox"
-                        className="toggle toggle-primary"
-                        checked={allowFaceDown}
-                        disabled={saving}
-                        onChange={(e) =>
-                          void handleToggleFaceDown(e.currentTarget.checked)
-                        }
-                      />
-                      <span className="font-medium">Allow face-down draws</span>
-                    </label>
-                    <span className="text-base-content/60">
-                      Cards with a back can come up face down at random.
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium">Common back</span>
-                    <span className="text-base-content/60">
-                      The back shown for every card. The chosen image stops
-                      being a card in its own right.
-                    </span>
-                    <div
-                      className="mt-2 flex max-h-64 flex-col gap-1
-                        overflow-y-auto"
-                    >
-                      <label
-                        className="hover:bg-base-200 flex cursor-pointer
-                          items-center gap-3 rounded-lg p-2"
-                      >
-                        <input
-                          type="radio"
-                          name="deck-common-back"
-                          className="radio radio-primary shrink-0"
-                          checked={commonBackId === null}
-                          disabled={saving}
-                          onChange={() => void handleSelectBack(null)}
-                        />
-                        <span className="min-w-0 flex-1">No common back</span>
-                      </label>
-                      {images.map((image) => (
-                        <DeckBackOption
-                          key={image.nodeId}
-                          nodeId={image.nodeId}
-                          name={image.name}
-                          checked={commonBackId === image.nodeId}
-                          disabled={saving}
-                          onSelect={() => void handleSelectBack(image.nodeId)}
-                        />
-                      ))}
-                      {images.length === 0 && (
-                        <span className="text-base-content/60 p-2">
-                          This deck has no images to use as a back yet.
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  <DeckFaceDownToggle
+                    allowFaceDown={allowFaceDown}
+                    disabled={saving}
+                    onChange={(next) => void handleToggleFaceDown(next)}
+                  />
+                  <DeckCommonBackPicker
+                    images={images}
+                    commonBackId={commonBackId}
+                    disabled={saving}
+                    onSelect={(backNodeId) => void handleSelectBack(backNodeId)}
+                  />
                 </>
               )}
 

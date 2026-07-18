@@ -476,17 +476,18 @@ export class UserDataDO extends DurableObject {
   }
 
   /**
-   * Resolve a Deck node for a configuration change, rejecting anything that is
-   * not a folder marked as a Deck. Owner-scoped: these methods run against the
+   * Resolve a node as a Deck for a configuration change, or `null` if it is not
+   * a folder marked as a Deck. Owner-scoped: these methods run against the
    * owner's own DO, so authorisation is ownership of the DO itself.
+   *
+   * Returns `null` for the expected "not a Deck" case rather than throwing, so
+   * callers can map it to a client error while a genuine store failure (a throw
+   * from `getNode`) still propagates and surfaces as a server error.
    */
-  private async requireDeckNode(nodeId: string): Promise<DbNode> {
+  private async getDeckNode(nodeId: string): Promise<DbNode | null> {
     const node = await this.repo.getNode(nodeId);
-    if (!node) {
-      throw new Error("File or folder not found");
-    }
-    if (!node.folder || node.folder.deck === null) {
-      throw new Error("That folder is not a Deck");
+    if (!node || !node.folder || node.folder.deck === null) {
+      return null;
     }
     return node;
   }
@@ -522,9 +523,19 @@ export class UserDataDO extends DurableObject {
    * Set (or clear, with `null`) a Deck's Common Back. Rejects a `backNodeId`
    * that is not a live, ready image directly inside the Deck, so the back can
    * only ever be one of the Deck's own Card Images.
+   *
+   * Both rejections are returned as typed results, not thrown, so the caller
+   * can turn them into client errors while unexpected store failures still
+   * surface as server errors.
    */
-  async setDeckCommonBack(nodeId: string, backNodeId: string | null) {
-    await this.requireDeckNode(nodeId);
+  async setDeckCommonBack(
+    nodeId: string,
+    backNodeId: string | null,
+  ): Promise<{ result: "ok" | "not-a-deck" | "invalid-back" }> {
+    const node = await this.getDeckNode(nodeId);
+    if (!node) {
+      return { result: "not-a-deck" };
+    }
     if (backNodeId !== null) {
       const back = await this.repo.getNode(backNodeId);
       const isDeckImageChild =
@@ -532,16 +543,24 @@ export class UserDataDO extends DurableObject {
         back.file?.contentType.startsWith("image/") === true &&
         back.file.isReady === 1;
       if (!isDeckImageChild) {
-        throw new Error("The Common Back must be a ready image in this Deck");
+        return { result: "invalid-back" };
       }
     }
     await this.repo.setDeckCommonBack(nodeId, backNodeId);
+    return { result: "ok" };
   }
 
   /** Set whether a Deck permits Face Down draws (Deck configuration). */
-  async setDeckAllowFaceDown(nodeId: string, allowFaceDown: boolean) {
-    await this.requireDeckNode(nodeId);
+  async setDeckAllowFaceDown(
+    nodeId: string,
+    allowFaceDown: boolean,
+  ): Promise<{ result: "ok" | "not-a-deck" }> {
+    const node = await this.getDeckNode(nodeId);
+    if (!node) {
+      return { result: "not-a-deck" };
+    }
     await this.repo.setDeckAllowFaceDown(nodeId, allowFaceDown);
+    return { result: "ok" };
   }
 
   /**

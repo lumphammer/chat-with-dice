@@ -27,12 +27,20 @@ export const setDeckCommonBack = defineAction({
     const userDataDO = env.USER_DATA_DO.get(
       env.USER_DATA_DO.idFromString(user.userDataDOId),
     );
-    try {
-      await userDataDO.setDeckCommonBack(nodeId, backNodeId);
-    } catch (cause) {
+    // Both validation outcomes map to BAD_REQUEST with a fixed, safe message;
+    // an unexpected store failure throws out of the DO and surfaces as a generic
+    // INTERNAL_SERVER_ERROR instead of being reported back as the caller's fault.
+    const result = await userDataDO.setDeckCommonBack(nodeId, backNodeId);
+    if (result.result === "not-a-deck") {
       throw new ActionError({
         code: "BAD_REQUEST",
-        message: cause instanceof Error ? cause.message : "Could not set back",
+        message: "That folder is not a deck",
+      });
+    }
+    if (result.result === "invalid-back") {
+      throw new ActionError({
+        code: "BAD_REQUEST",
+        message: "The common back must be a ready image in this deck",
       });
     }
   },
