@@ -3,6 +3,7 @@ import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoCon
 import { buildFileUrl } from "#/components/FileManager/fileUrl";
 import { logger } from "#/utils/logger.ts";
 import type { JsonData } from "#/validators/jsonObjectValidator.ts";
+import { CardImagePreview } from "./CardImagePreview";
 import { memo, useMemo, useState } from "react";
 
 export const CardDrawMessageDisplay = memo(
@@ -39,11 +40,10 @@ export const CardDrawMessageDisplay = memo(
         {failed ? (
           <span className="italic">Card unavailable</span>
         ) : (
-          <img
+          <CardImagePreview
             src={imageUrl}
             alt={showingBack ? "Face down card" : card.name}
             onError={() => setFailed(true)}
-            className="max-h-64 max-w-full self-start rounded-md object-contain"
           />
         )}
         <span className="font-medium wrap-anywhere">
