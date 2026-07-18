@@ -1,6 +1,7 @@
 import type { Pile } from "#/capabilities/cards/common";
 import type { RoomShare } from "#/capabilities/files/common";
 import { DwindleStatus } from "./DwindleStatus";
+import { useRemainingCards } from "./useRemainingCards";
 import { Layers } from "lucide-react";
 import { memo, useMemo } from "react";
 
@@ -28,9 +29,24 @@ export const DeckRow = memo(
     onSetReturnCards: (returnCards: boolean) => void;
     onReset: () => void;
   }) => {
-    const returnCards = pile?.returnCards ?? true;
+    const dwindling = pile ? !pile.returnCards : false;
     const discard = useMemo(() => pile?.discard ?? [], [pile]);
     const discardKey = discard.join(",");
+
+    const { remaining, total } = useRemainingCards({
+      ownerUserId: deck.userId,
+      deckNodeId: deck.node.id,
+      roomId,
+      discard,
+      discardKey,
+      enabled: dwindling,
+    });
+
+    // A fully-drawn dwindling Pile can't be drawn from until Reset, so the Draw
+    // button is disabled rather than letting the click surface an error. While
+    // the count is still loading (`remaining` null) the button stays enabled and
+    // the server-side guard remains the backstop for the race.
+    const drawDisabled = dwindling && remaining === 0;
 
     return (
       <li
@@ -47,7 +63,12 @@ export const DeckRow = memo(
           <span className="min-w-0 flex-1 truncate font-medium">
             {deck.node.name}
           </span>
-          <button type="button" className="btn btn-primary" onClick={onDraw}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onDraw}
+            disabled={drawDisabled}
+          >
             Draw
           </button>
         </div>
@@ -56,18 +77,15 @@ export const DeckRow = memo(
             <input
               type="checkbox"
               className="toggle toggle-primary toggle-sm"
-              checked={!returnCards}
+              checked={dwindling}
               onChange={(event) => onSetReturnCards(!event.target.checked)}
             />
             <span>Keep drawn cards out</span>
           </label>
-          {!returnCards && (
+          {dwindling && (
             <DwindleStatus
-              ownerUserId={deck.userId}
-              deckNodeId={deck.node.id}
-              roomId={roomId}
-              discard={discard}
-              discardKey={discardKey}
+              remaining={remaining}
+              total={total}
               onReset={onReset}
             />
           )}
