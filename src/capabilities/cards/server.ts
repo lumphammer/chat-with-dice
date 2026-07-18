@@ -7,6 +7,10 @@ function pickUniform<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+// A drawn Card that has a back comes up Face Down on a fair coin, independent of
+// which Card was picked.
+const FACE_DOWN_PROBABILITY = 0.5;
+
 export const cardsServer = createServerCapability(cardsCommon, {
   actionEffects: {
     draw: async ({
@@ -67,6 +71,16 @@ export const cardsServer = createServerCapability(cardsCommon, {
 
       const card = pickUniform(drawable);
 
+      // Face Down is decided *after* the uniform pick and with a second, separate
+      // random draw, so it cannot bias which Card comes up (ADR-0001 acceptance:
+      // the Card is picked uniformly regardless). A Card only comes up Face Down
+      // if it actually has a back and the Deck permits it — a Card with no back
+      // always comes up face up, even in a Deck that permits Face Down.
+      const faceDown =
+        result.allowFaceDown &&
+        card.back !== null &&
+        Math.random() < FACE_DOWN_PROBABILITY;
+
       // A dwindling Pile keeps the drawn Card out by recording it in the
       // Discard; a non-dwindling Pile leaves state untouched.
       if (dwindling && pile) {
@@ -77,6 +91,10 @@ export const cardsServer = createServerCapability(cardsCommon, {
         ownerUserId: payload.ownerUserId,
         deck: { nodeId: payload.deckNodeId, name: result.deckName },
         card: { nodeId: card.nodeId, name: card.name },
+        faceDown,
+        // The back is carried only on a Face Down draw — it is the image the
+        // message renders. A face-up draw records no back.
+        back: faceDown && card.back !== null ? card.back : undefined,
       });
     },
   },

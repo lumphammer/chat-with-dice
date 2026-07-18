@@ -97,6 +97,61 @@ describe("getDeckCards", () => {
     );
   });
 
+  it("excludes the common back and attaches it as each card's back", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+
+    await userDataDO.setDeckCommonBack(deck.id, foolId);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    // The back stops being a Card in its own right, so only the magician
+    // remains — carrying the fool as its back.
+    expect(result.cards.map((card) => card.nodeId)).toEqual([magicianId]);
+    expect(result.cards[0].back).toEqual({ nodeId: foolId, name: "fool.jpg" });
+  });
+
+  it("gives every card no back when the deck has no common back", async () => {
+    const { userDataDO, deck } = await setUp();
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    // Assert success first, so a mistaken no-access/not-a-deck fails the test
+    // rather than skipping the real assertion.
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    expect(result.cards.every((card) => card.back === null)).toBe(true);
+  });
+
+  it("reports allowFaceDown, defaulting to false and travelling once set", async () => {
+    const { userDataDO, deck } = await setUp();
+
+    const before = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(before.result).toBe("ok");
+    if (before.result !== "ok") return;
+    expect(before.allowFaceDown).toBe(false);
+
+    await userDataDO.setDeckAllowFaceDown(deck.id, true);
+
+    const after = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(after.result).toBe("ok");
+    if (after.result !== "ok") return;
+    expect(after.allowFaceDown).toBe(true);
+  });
+
   it("rejects a shared folder that is not a deck", async () => {
     const { userDataDO, plainFolder } = await setUp();
 

@@ -1,3 +1,4 @@
+import { cardDrawMessageDataValidator } from "#/capabilities/cards/common";
 import { cardsServer } from "#/capabilities/cards/server";
 import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
@@ -102,9 +103,31 @@ const twoCardDeck = () =>
   vi.fn<ListDeckCards>().mockResolvedValue({
     result: "ok",
     deckName: "Magus",
+    allowFaceDown: false,
     cards: [
-      { nodeId: "card-a", name: "The Fool" },
-      { nodeId: "card-b", name: "The Magician" },
+      { nodeId: "card-a", name: "The Fool", back: null },
+      { nodeId: "card-b", name: "The Magician", back: null },
+    ],
+  });
+
+const BACK = { nodeId: "common-back", name: "Card back" };
+
+// Distinct rolls for the two independent decisions a draw makes: the uniform
+// card pick, then the face-down coin. Kept apart so a test can prove the coin
+// does not reuse the pick's roll.
+const PICK_FIRST_CARD = 0; // floors the uniform index to 0 (card-a)
+const FACE_DOWN_ROLL = 0.2; // < 0.5 → face down
+const FACE_UP_ROLL = 0.9; // >= 0.5 → face up
+
+// A Deck that permits Face Down draws and whose Cards all share a Common Back.
+const faceDownDeck = () =>
+  vi.fn<ListDeckCards>().mockResolvedValue({
+    result: "ok",
+    deckName: "Magus",
+    allowFaceDown: true,
+    cards: [
+      { nodeId: "card-a", name: "The Fool", back: BACK },
+      { nodeId: "card-b", name: "The Magician", back: BACK },
     ],
   });
 
@@ -135,15 +158,19 @@ describe("cards draw action", () => {
         ownerUserId: OWNER,
         deck: { nodeId: DECK, name: "Magus" },
         card: { nodeId: "card-a", name: "The Fool" },
+        faceDown: false,
       },
     ]);
     expect(errors).toEqual([]);
   });
 
   it("fails gracefully drawing from a deck with no cards", async () => {
-    const listDeckCards = vi
-      .fn<ListDeckCards>()
-      .mockResolvedValue({ result: "ok", deckName: "Magus", cards: [] });
+    const listDeckCards = vi.fn<ListDeckCards>().mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: false,
+      cards: [],
+    });
     const { mounted, sentMessages, errors } = await mountWith(listDeckCards);
 
     await draw(mounted);
@@ -166,6 +193,93 @@ describe("cards draw action", () => {
     expect(errors).toEqual([
       { userId: DRAWER, error: "You do not have access to this deck" },
     ]);
+  });
+});
+
+describe("face down draws", () => {
+  const drawnFaceDown = (sentMessages: unknown[]) =>
+    sentMessages.map(
+      (data) => cardDrawMessageDataValidator.parse(data).faceDown,
+    );
+
+  it("comes up face down and records the back when the deck permits it", async () => {
+    // Two independent rolls: the uniform pick (0 → card-a), then the face-down
+    // coin (0.2 < 0.5 → face down). Sequencing them proves the coin is its own
+    // roll, not a reuse of the pick's. The back is recorded so the message can
+    // render it, and the front is still carried for the record.
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(PICK_FIRST_CARD)
+      .mockReturnValueOnce(FACE_DOWN_ROLL)
+      .mockReturnValue(0);
+    const { mounted, sentMessages, errors } = await mountWith(faceDownDeck());
+
+    await draw(mounted);
+
+    expect(sentMessages).toEqual([
+      {
+        ownerUserId: OWNER,
+        deck: { nodeId: DECK, name: "Magus" },
+        card: { nodeId: "card-a", name: "The Fool" },
+        faceDown: true,
+        back: BACK,
+      },
+    ]);
+    expect(errors).toEqual([]);
+  });
+
+  it("comes up face up when the face-down coin lands the other way", async () => {
+    // Same pick (0 → card-a), but the face-down coin lands face up (0.9). The
+    // pick and the coin are distinct values, so a card-a face-up result can only
+    // come from two independent rolls — not from the coin echoing the pick.
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(PICK_FIRST_CARD)
+      .mockReturnValueOnce(FACE_UP_ROLL)
+      .mockReturnValue(0);
+    const { mounted, sentMessages } = await mountWith(faceDownDeck());
+
+    await draw(mounted);
+
+    expect(sentMessages).toEqual([
+      {
+        ownerUserId: OWNER,
+        deck: { nodeId: DECK, name: "Magus" },
+        card: { nodeId: "card-a", name: "The Fool" },
+        faceDown: false,
+      },
+    ]);
+  });
+
+  it("never comes up face down for a card with no back", async () => {
+    // Deck permits face down, but this card has no back — a Card with no back
+    // always comes up face up, even where other cards in the deck have one.
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const listDeckCards = vi.fn<ListDeckCards>().mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: true,
+      cards: [{ nodeId: "card-a", name: "The Fool", back: null }],
+    });
+    const { mounted, sentMessages } = await mountWith(listDeckCards);
+
+    await draw(mounted);
+
+    expect(drawnFaceDown(sentMessages)).toEqual([false]);
+    expect((sentMessages[0] as { back?: unknown }).back).toBeUndefined();
+  });
+
+  it("never comes up face down when the deck forbids it, back or not", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const listDeckCards = vi.fn<ListDeckCards>().mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: false,
+      cards: [{ nodeId: "card-a", name: "The Fool", back: BACK }],
+    });
+    const { mounted, sentMessages } = await mountWith(listDeckCards);
+
+    await draw(mounted);
+
+    expect(drawnFaceDown(sentMessages)).toEqual([false]);
   });
 });
 

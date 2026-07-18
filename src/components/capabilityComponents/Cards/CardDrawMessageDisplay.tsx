@@ -22,8 +22,16 @@ export const CardDrawMessageDisplay = memo(
       return null;
     }
 
-    const { ownerUserId, deck, card } = parsed.data;
-    const imageUrl = buildFileUrl(ownerUserId, card.nodeId, { roomId });
+    const { ownerUserId, deck, card, faceDown, back } = parsed.data;
+
+    // A Face Down draw shows the back, not the front — that is the whole point.
+    // The front is still in the message data (Face Down is presentation, not
+    // secrecy) but we do not surface it here, so the draw reads as face down to
+    // everyone looking at the log. If the back image is somehow missing we fall
+    // back to the front rather than showing nothing.
+    const showingBack = faceDown && back !== undefined;
+    const shown = showingBack ? back : card;
+    const imageUrl = buildFileUrl(ownerUserId, shown.nodeId, { roomId });
 
     return (
       <div className="mt-1 flex flex-col gap-1">
@@ -33,12 +41,14 @@ export const CardDrawMessageDisplay = memo(
         ) : (
           <img
             src={imageUrl}
-            alt={card.name}
+            alt={showingBack ? "Face down card" : card.name}
             onError={() => setFailed(true)}
             className="max-h-64 max-w-full self-start rounded-md object-contain"
           />
         )}
-        <span className="font-medium wrap-anywhere">{card.name}</span>
+        <span className="font-medium wrap-anywhere">
+          {showingBack ? "Face down" : card.name}
+        </span>
       </div>
     );
   },

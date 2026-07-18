@@ -14,7 +14,7 @@ import {
 } from "#/utils/r2RepairLimits";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import type { NodeShareResult, NodeUnshareResult } from "../ChatRoomDO/types";
-import type { DbShare } from "./DbNodeType";
+import type { DbNode, DbShare } from "./DbNodeType";
 import { Scheduler } from "./Scheduler";
 import { UserDataRepository } from "./UserDataRepository";
 import { notifyRoomsOfShareRemoval } from "./notifyRoomsOfShareRemoval";
@@ -475,6 +475,121 @@ export class UserDataDO extends DurableObject {
     }
   }
 
+  /**
+   * Resolve a node as a Deck for a configuration change, or `null` if it is not
+   * a folder marked as a Deck. Owner-scoped: these methods run against the
+   * owner's own DO, so authorisation is ownership of the DO itself.
+   *
+   * Returns `null` for the expected "not a Deck" case rather than throwing, so
+   * callers can map it to a client error while a genuine store failure (a throw
+   * from `getNode`) still propagates and surfaces as a server error.
+   */
+  private async getDeckNode(nodeId: string): Promise<DbNode | null> {
+    const node = await this.repo.getNode(nodeId);
+    if (!node || !node.folder || node.folder.deck === null) {
+      return null;
+    }
+    return node;
+  }
+
+  /**
+   * The Deck's live image children plus its resolved Common Back. A Card Image
+   * is a direct, ready image child (ADR-0001 decision 3); the Common Back is
+   * whichever of those the Deck points at, or `null` if it points at nothing —
+   * or at an image that has since been deleted, since the stored id is not a
+   * foreign key and is deliberately allowed to go inert.
+   */
+  private async deriveDeckImages(node: DbNode): Promise<{
+    images: { nodeId: string; name: string }[];
+    commonBack: { nodeId: string; name: string } | null;
+  }> {
+    const children = await this.repo.getChildNodes(node.id, false);
+    const images = children
+      .filter(
+        (child) =>
+          child.file?.contentType.startsWith("image/") &&
+          child.file.isReady === 1,
+      )
+      .map((child) => ({ nodeId: child.id, name: child.name }));
+    const commonBackId = node.folder?.deck?.commonBackId ?? null;
+    const commonBack =
+      commonBackId === null
+        ? null
+        : (images.find((image) => image.nodeId === commonBackId) ?? null);
+    return { images, commonBack };
+  }
+
+  /**
+   * Set (or clear, with `null`) a Deck's Common Back. Rejects a `backNodeId`
+   * that is not a live, ready image directly inside the Deck, so the back can
+   * only ever be one of the Deck's own Card Images.
+   *
+   * Both rejections are returned as typed results, not thrown, so the caller
+   * can turn them into client errors while unexpected store failures still
+   * surface as server errors.
+   */
+  async setDeckCommonBack(
+    nodeId: string,
+    backNodeId: string | null,
+  ): Promise<{ result: "ok" | "not-a-deck" | "invalid-back" }> {
+    const node = await this.getDeckNode(nodeId);
+    if (!node) {
+      return { result: "not-a-deck" };
+    }
+    if (backNodeId !== null) {
+      const back = await this.repo.getNode(backNodeId);
+      const isDeckImageChild =
+        back?.parentFolderId === nodeId &&
+        back.file?.contentType.startsWith("image/") === true &&
+        back.file.isReady === 1;
+      if (!isDeckImageChild) {
+        return { result: "invalid-back" };
+      }
+    }
+    await this.repo.setDeckCommonBack(nodeId, backNodeId);
+    return { result: "ok" };
+  }
+
+  /** Set whether a Deck permits Face Down draws (Deck configuration). */
+  async setDeckAllowFaceDown(
+    nodeId: string,
+    allowFaceDown: boolean,
+  ): Promise<{ result: "ok" | "not-a-deck" }> {
+    const node = await this.getDeckNode(nodeId);
+    if (!node) {
+      return { result: "not-a-deck" };
+    }
+    await this.repo.setDeckAllowFaceDown(nodeId, allowFaceDown);
+    return { result: "ok" };
+  }
+
+  /**
+   * A Deck's configuration for its owner to edit: whether Face Down draws are
+   * permitted, the current Common Back, and the Deck's image children to pick a
+   * back from. Owner-scoped — called against the owner's own DO.
+   */
+  async getDeckSettings(nodeId: string): Promise<
+    | {
+        result: "ok";
+        allowFaceDown: boolean;
+        commonBack: { nodeId: string; name: string } | null;
+        images: { nodeId: string; name: string }[];
+      }
+    | { result: "not-a-deck" }
+  > {
+    const node = await this.repo.getNode(nodeId);
+    if (!node || !node.folder || node.folder.deck === null) {
+      return { result: "not-a-deck" };
+    }
+    const { images, commonBack } = await this.deriveDeckImages(node);
+    return {
+      result: "ok",
+      allowFaceDown: node.folder.deck.allowFaceDown === 1,
+      commonBack,
+      images,
+    };
+  }
+
   async getFile(
     nodeId: string,
     { include = "live" }: { include?: "deleted" | "live" | "all" } = {},
@@ -522,6 +637,13 @@ export class UserDataDO extends DurableObject {
    *
    * `deckName` is returned so callers can label a Card Draw Message from an
    * authoritative source rather than trusting a caller-supplied name.
+   *
+   * The Common Back is excluded from the Cards (it "stops being a Card in its
+   * own right") and instead attached as each Card's `back`. In this slice every
+   * Card either shares the Deck's Common Back or has no back at all — a Card
+   * without a back can never come up Face Down. `allowFaceDown` is Deck
+   * configuration and travels with the Deck, so it is reported here for the
+   * draw to honour.
    */
   async getDeckCards({
     nodeId,
@@ -533,7 +655,12 @@ export class UserDataDO extends DurableObject {
     | {
         result: "ok";
         deckName: string;
-        cards: { nodeId: string; name: string }[];
+        allowFaceDown: boolean;
+        cards: {
+          nodeId: string;
+          name: string;
+          back: { nodeId: string; name: string } | null;
+        }[];
       }
     | { result: "no-access" }
     | { result: "not-a-deck" }
@@ -547,16 +674,17 @@ export class UserDataDO extends DurableObject {
       return { result: "not-a-deck" };
     }
 
-    const children = await this.repo.getChildNodes(nodeId, false);
-    const cards = children
-      .filter(
-        (child) =>
-          child.file?.contentType.startsWith("image/") &&
-          child.file.isReady === 1,
-      )
-      .map((child) => ({ nodeId: child.id, name: child.name }));
+    const { images, commonBack } = await this.deriveDeckImages(node);
+    const cards = images
+      .filter((image) => image.nodeId !== commonBack?.nodeId)
+      .map((image) => ({ ...image, back: commonBack }));
 
-    return { result: "ok", deckName: node.name, cards };
+    return {
+      result: "ok",
+      deckName: node.name,
+      allowFaceDown: node.folder.deck.allowFaceDown === 1,
+      cards,
+    };
   }
 
   async shareNodeWithRoom({
