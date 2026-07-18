@@ -3,7 +3,7 @@ import * as dbSchema from "#/schemas/UserDataDO-schema";
 import { setupDB } from "../utils/setupDB";
 import type { DbNode } from "./DbNodeType";
 import { logError } from "./utils";
-import { and, count, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, count, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 type DBHandle = DrizzleSqliteDODatabase<
@@ -476,13 +476,15 @@ export class UserDataRepository {
    * has already validated both ids against the Deck's derived Card state.
    *
    * A back image serves exactly one Card (CONTEXT.md), so any prior pairing that
-   * used `backId` is cleared first, then the upsert makes `frontId` point at
-   * `backId`. Because the caller rejects a `backId` still in use by a *live*
-   * front, that delete only ever clears an *inert* row (one whose front image was
-   * since deleted) — so although the delete and upsert are two statements (this
-   * DO's Drizzle build cannot wrap them in a transaction), a failure between them
-   * cannot lose a live pairing: the only row the delete can remove was already
-   * resolving to nothing.
+   * used `backId` for a *different* front is cleared first, then the upsert makes
+   * `frontId` point at `backId`. The front's own row is left to the upsert, so an
+   * idempotent re-set of an existing `frontId → backId` pairing never deletes the
+   * live row it is re-affirming. Because the caller also rejects a `backId` still
+   * in use by another *live* front, that delete only ever clears an *inert* row
+   * (one whose front image was since deleted) — so although the delete and upsert
+   * are two statements (this DO's Drizzle build cannot wrap them in a
+   * transaction), a failure between them cannot lose a live pairing: the only row
+   * the delete can remove was already resolving to nothing.
    */
   async setDeckIndividualBack(deckId: string, frontId: string, backId: string) {
     await this.db
@@ -491,6 +493,7 @@ export class UserDataRepository {
         and(
           eq(dbSchema.deckIndividualBacks.deckId, deckId),
           eq(dbSchema.deckIndividualBacks.backId, backId),
+          ne(dbSchema.deckIndividualBacks.frontId, frontId),
         ),
       );
     await this.db

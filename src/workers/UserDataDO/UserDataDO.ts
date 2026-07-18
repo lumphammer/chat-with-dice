@@ -501,10 +501,13 @@ export class UserDataDO extends DurableObject {
    * to go inert.
    *
    * Individual Backs are resolved the same way: a stored pairing counts only
-   * when *both* its front and its back are still live image children of the Deck.
-   * A pairing referencing a deleted image (front or back) resolves to nothing,
-   * so it neither attaches a back nor removes an image from the Cards — it is
-   * inert, exactly like a stale Common Back id.
+   * when *both* its front and its back are still live image children of the Deck,
+   * and neither of them is currently the Common Back. A pairing referencing a
+   * deleted image (front or back) resolves to nothing, and so does one whose
+   * front or back has since been made the Common Back — the front then falls back
+   * to the Common Back and the back returns to being a Card, rather than both
+   * images vanishing. Such a pairing is inert, exactly like a stale Common Back
+   * id, and revives if the Common Back moves off either image.
    *
    * `individualBackByFront` maps a front's node id to the image serving as its
    * Individual Back. `individualBackImageIds` is every image currently serving as
@@ -536,12 +539,20 @@ export class UserDataDO extends DurableObject {
       { nodeId: string; name: string }
     >();
     const individualBackImageIds = new Set<string>();
+    const effectiveCommonBackId = commonBack?.nodeId ?? null;
     for (const pairing of pairings) {
       const front = imageById.get(pairing.frontId);
       const back = imageById.get(pairing.backId);
-      // Both ends must be live for the pairing to take effect; a pairing to a
-      // deleted image just goes inert (see the doc comment above).
-      if (front && back) {
+      // Both ends must be live and neither may currently be the Common Back for
+      // the pairing to take effect; a pairing to a deleted image, or one whose
+      // front or back is now the Common Back, just goes inert (see the doc
+      // comment above).
+      if (
+        front &&
+        back &&
+        front.nodeId !== effectiveCommonBackId &&
+        back.nodeId !== effectiveCommonBackId
+      ) {
         individualBackByFront.set(front.nodeId, back);
         individualBackImageIds.add(back.nodeId);
       }

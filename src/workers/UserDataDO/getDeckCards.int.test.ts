@@ -240,6 +240,50 @@ describe("getDeckCards", () => {
     expect(result.cards[0].back).toBeNull();
   });
 
+  it("makes a pairing inert when its front is later made the common back", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+
+    // Pair magician → fool, then make the magician the common back. The pairing's
+    // front is now the common back, so it must go inert: fool returns to being a
+    // Card rather than vanishing alongside the magician.
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+    await userDataDO.setDeckCommonBack(deck.id, magicianId);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    expect(result.cards.map((card) => card.nodeId)).toEqual([foolId]);
+    // With the pairing inert, fool falls back to the common back (the magician).
+    expect(result.cards[0].back).toEqual({
+      nodeId: magicianId,
+      name: "magician.png",
+    });
+  });
+
+  it("revives an individual-back pairing when the common back moves off its front", async () => {
+    const { userDataDO, deck, foolId, magicianId } = await setUp();
+
+    await userDataDO.setDeckIndividualBack(deck.id, magicianId, foolId);
+    await userDataDO.setDeckCommonBack(deck.id, magicianId);
+    // Move the common back away from the magician: the stored pairing revives, so
+    // the magician is a Card backed by fool again and fool drops out.
+    await userDataDO.setDeckCommonBack(deck.id, null);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    expect(result.cards.map((card) => card.nodeId)).toEqual([magicianId]);
+    expect(result.cards[0].back).toEqual({ nodeId: foolId, name: "fool.jpg" });
+  });
+
   it("rejects using an image that is already a back as a front", async () => {
     const { userDataDO, deck, foolId, magicianId } = await setUp();
     const priestessId = await addReadyFile(
