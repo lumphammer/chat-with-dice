@@ -104,6 +104,7 @@ const twoCardDeck = () =>
     result: "ok",
     deckName: "Magus",
     allowFaceDown: false,
+    invertedDraws: "none",
     cards: [
       { nodeId: "card-a", name: "The Fool", back: null },
       { nodeId: "card-b", name: "The Magician", back: null },
@@ -112,12 +113,14 @@ const twoCardDeck = () =>
 
 const BACK = { nodeId: "common-back", name: "Card back" };
 
-// Distinct rolls for the two independent decisions a draw makes: the uniform
-// card pick, then the face-down coin. Kept apart so a test can prove the coin
-// does not reuse the pick's roll.
+// Distinct rolls for the independent decisions a draw makes: the uniform card
+// pick, then the face-down coin, then the inverted coin. Kept apart so a test can
+// prove each coin does not reuse an earlier roll.
 const PICK_FIRST_CARD = 0; // floors the uniform index to 0 (card-a)
 const FACE_DOWN_ROLL = 0.2; // < 0.5 → face down
 const FACE_UP_ROLL = 0.9; // >= 0.5 → face up
+const INVERTED_ROLL = 0.2; // < 0.5 → inverted
+const UPRIGHT_ROLL = 0.9; // >= 0.5 → upright
 
 // A Deck that permits Face Down draws and whose Cards all share a Common Back.
 const faceDownDeck = () =>
@@ -125,6 +128,7 @@ const faceDownDeck = () =>
     result: "ok",
     deckName: "Magus",
     allowFaceDown: true,
+    invertedDraws: "none",
     cards: [
       { nodeId: "card-a", name: "The Fool", back: BACK },
       { nodeId: "card-b", name: "The Magician", back: BACK },
@@ -159,6 +163,7 @@ describe("cards draw action", () => {
         deck: { nodeId: DECK, name: "Magus" },
         card: { nodeId: "card-a", name: "The Fool" },
         faceDown: false,
+        inverted: false,
       },
     ]);
     expect(errors).toEqual([]);
@@ -169,6 +174,7 @@ describe("cards draw action", () => {
       result: "ok",
       deckName: "Magus",
       allowFaceDown: false,
+      invertedDraws: "none",
       cards: [],
     });
     const { mounted, sentMessages, errors } = await mountWith(listDeckCards);
@@ -221,6 +227,7 @@ describe("face down draws", () => {
         deck: { nodeId: DECK, name: "Magus" },
         card: { nodeId: "card-a", name: "The Fool" },
         faceDown: true,
+        inverted: false,
         back: BACK,
       },
     ]);
@@ -245,6 +252,7 @@ describe("face down draws", () => {
         deck: { nodeId: DECK, name: "Magus" },
         card: { nodeId: "card-a", name: "The Fool" },
         faceDown: false,
+        inverted: false,
       },
     ]);
   });
@@ -257,6 +265,7 @@ describe("face down draws", () => {
       result: "ok",
       deckName: "Magus",
       allowFaceDown: true,
+      invertedDraws: "none",
       cards: [{ nodeId: "card-a", name: "The Fool", back: null }],
     });
     const { mounted, sentMessages } = await mountWith(listDeckCards);
@@ -273,6 +282,7 @@ describe("face down draws", () => {
       result: "ok",
       deckName: "Magus",
       allowFaceDown: false,
+      invertedDraws: "none",
       cards: [{ nodeId: "card-a", name: "The Fool", back: BACK }],
     });
     const { mounted, sentMessages } = await mountWith(listDeckCards);
@@ -280,6 +290,141 @@ describe("face down draws", () => {
     await draw(mounted);
 
     expect(drawnFaceDown(sentMessages)).toEqual([false]);
+  });
+});
+
+describe("inverted draws", () => {
+  const drawnInverted = (sentMessages: unknown[]) =>
+    sentMessages.map(
+      (data) => cardDrawMessageDataValidator.parse(data).inverted,
+    );
+
+  // A Deck permitting Inverted "fronts" draws. Its Cards have no back, so every
+  // draw shows its front — enough to prove Inverted needs no back (unlike Face
+  // Down) and that the front rotates.
+  const frontsInvertedDeck = () =>
+    vi.fn<ListDeckCards>().mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: false,
+      invertedDraws: "fronts",
+      cards: [
+        { nodeId: "card-a", name: "The Fool", back: null },
+        { nodeId: "card-b", name: "The Magician", back: null },
+      ],
+    });
+
+  it("comes up inverted and records it when the deck permits it", async () => {
+    // Two rolls: the uniform pick (0 → card-a), then the inverted coin (0.2 →
+    // inverted). The deck forbids Face Down, so the face-down coin is never rolled
+    // and the inverted coin is the second value.
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(PICK_FIRST_CARD)
+      .mockReturnValueOnce(INVERTED_ROLL)
+      .mockReturnValue(0);
+    const { mounted, sentMessages, errors } =
+      await mountWith(frontsInvertedDeck());
+
+    await draw(mounted);
+
+    expect(sentMessages).toEqual([
+      {
+        ownerUserId: OWNER,
+        deck: { nodeId: DECK, name: "Magus" },
+        card: { nodeId: "card-a", name: "The Fool" },
+        faceDown: false,
+        inverted: true,
+      },
+    ]);
+    expect(errors).toEqual([]);
+  });
+
+  it("comes up upright when the inverted coin lands the other way", async () => {
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(PICK_FIRST_CARD)
+      .mockReturnValueOnce(UPRIGHT_ROLL)
+      .mockReturnValue(0);
+    const { mounted, sentMessages } = await mountWith(frontsInvertedDeck());
+
+    await draw(mounted);
+
+    expect(drawnInverted(sentMessages)).toEqual([false]);
+  });
+
+  it("never comes up inverted when the deck forbids it", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const { mounted, sentMessages } = await mountWith(twoCardDeck());
+
+    await draw(mounted);
+
+    expect(drawnInverted(sentMessages)).toEqual([false]);
+  });
+
+  it("leaves a face-down draw upright in fronts-only mode", async () => {
+    // "fronts" permits inverting a face-up draw but not a face-down one. Here the
+    // face-down coin lands down (0.2), so inversion is not even offered — the
+    // inverted coin is never tossed, even though the deck permits Inverted for
+    // fronts. The card comes up face down and upright.
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(PICK_FIRST_CARD)
+      .mockReturnValueOnce(FACE_DOWN_ROLL)
+      .mockReturnValue(0);
+    const listDeckCards = vi.fn<ListDeckCards>().mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: true,
+      invertedDraws: "fronts",
+      cards: [{ nodeId: "card-a", name: "The Fool", back: BACK }],
+    });
+    const { mounted, sentMessages, errors } = await mountWith(listDeckCards);
+
+    await draw(mounted);
+
+    expect(sentMessages).toEqual([
+      {
+        ownerUserId: OWNER,
+        deck: { nodeId: DECK, name: "Magus" },
+        card: { nodeId: "card-a", name: "The Fool" },
+        faceDown: true,
+        inverted: false,
+        back: BACK,
+      },
+    ]);
+    expect(errors).toEqual([]);
+  });
+
+  it("can come up both face down and inverted in fronts-and-backs mode", async () => {
+    // "fronts-and-backs" lets a Face Down draw rotate too, so the back is shown
+    // rotated (CONTEXT.md). Three independent rolls in order — pick (0 → card-a),
+    // face-down coin (0.2 → down), inverted coin (0.2 → inverted). The message
+    // carries both flags and the back it renders.
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(PICK_FIRST_CARD)
+      .mockReturnValueOnce(FACE_DOWN_ROLL)
+      .mockReturnValueOnce(INVERTED_ROLL)
+      .mockReturnValue(0);
+    const listDeckCards = vi.fn<ListDeckCards>().mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: true,
+      invertedDraws: "fronts-and-backs",
+      cards: [{ nodeId: "card-a", name: "The Fool", back: BACK }],
+    });
+    const { mounted, sentMessages, errors } = await mountWith(listDeckCards);
+
+    await draw(mounted);
+
+    expect(sentMessages).toEqual([
+      {
+        ownerUserId: OWNER,
+        deck: { nodeId: DECK, name: "Magus" },
+        card: { nodeId: "card-a", name: "The Fool" },
+        faceDown: true,
+        inverted: true,
+        back: BACK,
+      },
+    ]);
+    expect(errors).toEqual([]);
   });
 });
 

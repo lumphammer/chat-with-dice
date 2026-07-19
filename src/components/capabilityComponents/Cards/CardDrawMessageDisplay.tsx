@@ -23,7 +23,7 @@ export const CardDrawMessageDisplay = memo(
       return null;
     }
 
-    const { ownerUserId, deck, card, faceDown, back } = parsed.data;
+    const { ownerUserId, deck, card, faceDown, inverted, back } = parsed.data;
 
     // A Face Down draw shows the back, not the front — that is the whole point.
     // The front is still in the message data (Face Down is presentation, not
@@ -34,6 +34,15 @@ export const CardDrawMessageDisplay = memo(
     const shown = showingBack ? back : card;
     const imageUrl = buildFileUrl(ownerUserId, shown.nodeId, { roomId });
 
+    // Inverted rotates whichever face shows, independent of Face Down, so a draw
+    // can be both (CONTEXT.md). The base label is the Card's name, or "Face down"
+    // when the back is showing; " (inverted)" is appended when the draw came up
+    // rotated. The alt text mirrors the same combination.
+    const baseLabel = showingBack ? "Face down" : card.name;
+    const label = inverted ? `${baseLabel} (inverted)` : baseLabel;
+    const baseAlt = showingBack ? "Face down card" : card.name;
+    const alt = inverted ? `${baseAlt}, inverted` : baseAlt;
+
     return (
       <div className="mt-1 flex flex-col gap-1">
         <span className="text-base-content/60">Drew from {deck.name}</span>
@@ -42,13 +51,12 @@ export const CardDrawMessageDisplay = memo(
         ) : (
           <CardImagePreview
             src={imageUrl}
-            alt={showingBack ? "Face down card" : card.name}
+            alt={alt}
+            inverted={inverted}
             onError={() => setFailed(true)}
           />
         )}
-        <span className="font-medium wrap-anywhere">
-          {showingBack ? "Face down" : card.name}
-        </span>
+        <span className="font-medium wrap-anywhere">{label}</span>
       </div>
     );
   },

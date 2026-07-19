@@ -445,6 +445,44 @@ describe("getDeckCards", () => {
     expect(after.allowFaceDown).toBe(true);
   });
 
+  it("reports invertedDraws, defaulting to none and travelling once set", async () => {
+    const { userDataDO, deck } = await setUp();
+
+    const before = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(before.result).toBe("ok");
+    if (before.result !== "ok") return;
+    expect(before.invertedDraws).toBe("none");
+
+    await userDataDO.setDeckInvertedDraws(deck.id, "fronts-and-backs");
+
+    const after = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(after.result).toBe("ok");
+    if (after.result !== "ok") return;
+    expect(after.invertedDraws).toBe("fronts-and-backs");
+  });
+
+  it("keeps allowFaceDown and invertedDraws independent", async () => {
+    const { userDataDO, deck } = await setUp();
+
+    // Setting one leaves the other alone: the two are orthogonal Deck settings.
+    await userDataDO.setDeckInvertedDraws(deck.id, "fronts");
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    expect(result.invertedDraws).toBe("fronts");
+    expect(result.allowFaceDown).toBe(false);
+  });
+
   it("rejects a shared folder that is not a deck", async () => {
     const { userDataDO, plainFolder } = await setUp();
 

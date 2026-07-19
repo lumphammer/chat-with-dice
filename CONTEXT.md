@@ -31,7 +31,7 @@ _Avoid_: Flipped, hidden
 A **Card Image** used as the back of exactly one **Card**. It takes precedence over a **Common Back**, but does not need one to exist — plenty of sets give every **Card** its own back and have no **Common Back** at all.
 
 **Inverted**:
-A **Card** drawn rotated 180° while still showing its front, as if turned around flat on the table. Distinct from **Face Down**.
+A **Card** drawn rotated 180°, as if turned around flat on the table — showing its front when face up, or its back when also **Face Down**. Distinct from **Face Down**, which is about which face shows rather than orientation.
 _Avoid_: Flipped, reversed, upside-down
 
 **Pile**:
@@ -83,6 +83,8 @@ _Avoid_: Room file, shared file
 - **Deck** configuration is owned by the **Deck** and travels with it into any **Room**
 - **Pile** configuration, such as whether drawn **Cards** return to the **Pile**, is room-level and does not travel
 - Whether a **Deck** permits **Inverted** or **Face Down** draws is **Deck** configuration; whether a given draw came up **Inverted** or **Face Down** is a property of that draw
+- **Inverted** is a three-state **Deck** setting: not permitted, permitted for **fronts** only (a face-up draw can come up rotated, a **Face Down** one is left upright), or permitted for **fronts and backs** (a **Face Down** draw can come up rotated too, showing its back rotated 180°). A rotated back is meaningful — turning a **Card** around on the table rotates it whichever way it lands — even where the back art happens to look symmetric, which is why permitting it is a deliberate choice separate from permitting front rotation
+- A **Card** with no back can still be drawn **Inverted** wherever the **Deck** permits front rotation; otherwise **Inverted** and **Face Down** are independent, so a single draw can come up neither, either, or both
 - Any **Room Participant**, including an anonymous one, can draw from a **Pile**
 - Only a signed-in, non-anonymous **Room Participant** can own a **Deck** or share one with a **Room**
 - A **Room Share** belongs to exactly one **Room**

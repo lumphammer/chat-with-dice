@@ -4,8 +4,8 @@ import { z } from "zod/v4";
 /**
  * A Card Draw Message: the record of one draw from a Pile. It names the drawn
  * Card (its front) and the Deck it came from, and records whether the Card came
- * up Face Down (ADR-0001 decision 6 — how a draw came up is a property of that
- * draw).
+ * up Face Down and/or Inverted (ADR-0001 decision 6 — how a draw came up is a
+ * property of that draw).
  *
  * `ownerUserId` + `card.nodeId` are the trust-bearing pair: the image is served
  * (and re-authorised) through the `/api/files/[ownerUserId]/[nodeId]` route.
@@ -18,6 +18,12 @@ import { z } from "zod/v4";
  * Down draw — that is the image the message renders. Face Down is presentation,
  * not secrecy (decision 7): the front is still carried in `card`, snoopable by
  * anyone determined, so nothing here is withheld.
+ *
+ * `inverted` — whether the Card came up rotated 180° while still showing its
+ * front (a tarot "reversed"). It defaults to `false` so messages recorded before
+ * Inverted existed keep parsing, and it is orthogonal to `faceDown`: a draw can
+ * be both, in which case the message renders the *back* rotated 180° (CONTEXT.md
+ * — turning a Card around on the table rotates it whichever way it lands).
  */
 export const cardDrawMessageDataValidator = z
   .object({
@@ -31,6 +37,7 @@ export const cardDrawMessageDataValidator = z
       name: z.string(),
     }),
     faceDown: z.boolean().default(false),
+    inverted: z.boolean().default(false),
     back: z
       .object({
         nodeId: z.string(),

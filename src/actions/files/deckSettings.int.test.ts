@@ -3,6 +3,7 @@ import { getDeckSettings } from "#/actions/files/getDeckSettings";
 import { setDeckAllowFaceDown } from "#/actions/files/setDeckAllowFaceDown";
 import { setDeckCommonBack } from "#/actions/files/setDeckCommonBack";
 import { setDeckIndividualBack } from "#/actions/files/setDeckIndividualBack";
+import { setDeckInvertedDraws } from "#/actions/files/setDeckInvertedDraws";
 import { setFolderIsDeck } from "#/actions/files/setFolderIsDeck";
 import {
   callAction,
@@ -78,6 +79,24 @@ describe("deck settings actions", () => {
 
     const after = await callAction(getDeckSettings, { nodeId: deck.id }, ctx);
     expect(after.allowFaceDown).toBe(true);
+  });
+
+  it("sets inverted-draws independently and reads it back", async () => {
+    const { ctx, deck } = await setUpDeck();
+
+    const initial = await callAction(getDeckSettings, { nodeId: deck.id }, ctx);
+    expect(initial.invertedDraws).toBe("none");
+
+    await callAction(
+      setDeckInvertedDraws,
+      { nodeId: deck.id, invertedDraws: "fronts-and-backs" },
+      ctx,
+    );
+
+    const after = await callAction(getDeckSettings, { nodeId: deck.id }, ctx);
+    // Inverted moves off "none"; Face Down is untouched — the two are orthogonal.
+    expect(after.invertedDraws).toBe("fronts-and-backs");
+    expect(after.allowFaceDown).toBe(false);
   });
 
   it("sets and clears the common back, listing every image to pick from", async () => {
@@ -208,6 +227,13 @@ describe("deck settings actions", () => {
         ctx,
       ),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      callAction(
+        setDeckInvertedDraws,
+        { nodeId: plain.id, invertedDraws: "fronts" },
+        ctx,
+      ),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
   it("rejects an anonymous caller", async () => {
@@ -217,6 +243,13 @@ describe("deck settings actions", () => {
       callAction(
         setDeckAllowFaceDown,
         { nodeId: "irrelevant", allowFaceDown: true },
+        makeActionContext(anon),
+      ),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(
+      callAction(
+        setDeckInvertedDraws,
+        { nodeId: "irrelevant", invertedDraws: "fronts" },
         makeActionContext(anon),
       ),
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
