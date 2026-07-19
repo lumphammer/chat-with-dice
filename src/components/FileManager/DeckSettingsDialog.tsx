@@ -145,6 +145,35 @@ export const DeckSettingsDialog = memo(
       await load(false);
     };
 
+    // Apply a batch of proposed pairings (from the filename scan) in one go.
+    // Each is written through the same server action as a hand pairing, so the
+    // store re-validates every one; the proposals are disjoint (no image is used
+    // twice), so they stay valid applied in sequence without re-deriving between
+    // writes. We stop on the first rejection and reload once at the end.
+    const handleApplyProposals = async (
+      pairings: { frontNodeId: string; backNodeId: string }[],
+    ) => {
+      setError(null);
+      setSaving(true);
+      for (const { frontNodeId, backNodeId } of pairings) {
+        // Sequential on purpose: writes stay ordered (as elsewhere in this
+        // dialog) and a rejection stops the batch rather than racing the rest.
+        // oxlint-disable-next-line no-await-in-loop
+        const result = await actions.files.setDeckIndividualBack({
+          nodeId,
+          frontNodeId,
+          backNodeId,
+        });
+        if (result.error) {
+          logger.error("Failed to apply proposed pairing", result.error);
+          setError(result.error.message);
+          break;
+        }
+      }
+      setSaving(false);
+      await load(false);
+    };
+
     return (
       <>
         <button type="button" onClick={handleOpen}>
@@ -195,6 +224,9 @@ export const DeckSettingsDialog = memo(
                     }
                     onRemove={(frontNodeId) =>
                       void handleAssignIndividualBack(frontNodeId, null)
+                    }
+                    onApplyProposals={(pairings) =>
+                      void handleApplyProposals(pairings)
                     }
                   />
                 </>
