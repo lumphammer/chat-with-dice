@@ -1,0 +1,1 @@
+ALTER TABLE `decks` ADD `inverted_draws` text DEFAULT 'none' NOT NULL;

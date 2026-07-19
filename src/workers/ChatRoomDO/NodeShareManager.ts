@@ -1,4 +1,5 @@
 import { db as d1 } from "#/db";
+import type { InvertedDraws } from "#/schemas/invertedDraws";
 import { logger } from "#/utils/logger.ts";
 import type { NodeShareResult, NodeUnshareResult } from "./types";
 import { logError } from "./utils";
@@ -94,7 +95,7 @@ export class NodeShareManager {
         result: "ok";
         deckName: string;
         allowFaceDown: boolean;
-        allowInverted: boolean;
+        invertedDraws: InvertedDraws;
         cards: {
           nodeId: string;
           name: string;
@@ -127,7 +128,7 @@ export class NodeShareManager {
       result: "ok",
       deckName: deckResult.deckName,
       allowFaceDown: deckResult.allowFaceDown,
-      allowInverted: deckResult.allowInverted,
+      invertedDraws: deckResult.invertedDraws,
       cards: deckResult.cards,
     };
   }

@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "1953afd2-362f-4445-90a5-c165083cffd9",
+  "id": "64099cb6-2cb4-483a-903b-3252bd72b15c",
   "prevIds": [
     "f51a8dff-c71f-488d-94d5-b103c7afb030"
   ],
@@ -91,12 +91,12 @@
       "table": "decks"
     },
     {
-      "type": "integer",
+      "type": "text",
       "notNull": true,
       "autoincrement": false,
-      "default": "0",
+      "default": "'none'",
       "generated": null,
-      "name": "allow_inverted",
+      "name": "inverted_draws",
       "entityType": "columns",
       "table": "decks"
     },

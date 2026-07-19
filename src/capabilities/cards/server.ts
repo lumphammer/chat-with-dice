@@ -85,13 +85,17 @@ export const cardsServer = createServerCapability(cardsCommon, {
         card.back !== null &&
         Math.random() < FACE_DOWN_PROBABILITY;
 
-      // Inverted is a third, separate random draw and is orthogonal to Face Down:
-      // it rotates whichever face shows, so it needs no back and does not depend
-      // on the Face Down coin (CONTEXT.md — a Card turned around on the table
-      // rotates whether it lands face up or face down). A Deck that forbids
-      // Inverted never rotates, exactly as one that forbids Face Down never flips.
-      const inverted =
-        result.allowInverted && Math.random() < INVERTED_PROBABILITY;
+      // Inverted is a third, separate random draw that rotates whichever face
+      // shows (CONTEXT.md). The Deck's three-state `invertedDraws` setting gates
+      // when it can happen: "none" never rotates; "fronts" rotates only a face-up
+      // draw, leaving a Face Down one upright; "fronts-and-backs" can rotate any
+      // draw, so a Face Down one shows its back rotated. The coin is only tossed
+      // when a rotation is actually possible, so it can never bias the pick or the
+      // Face Down coin that ran before it.
+      const invertedAllowed =
+        result.invertedDraws === "fronts-and-backs" ||
+        (result.invertedDraws === "fronts" && !faceDown);
+      const inverted = invertedAllowed && Math.random() < INVERTED_PROBABILITY;
 
       // A dwindling Pile keeps the drawn Card out by recording it in the
       // Discard; a non-dwindling Pile leaves state untouched.

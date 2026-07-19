@@ -1,18 +1,20 @@
+import { invertedDrawsValues } from "#/schemas/invertedDraws";
 import { z } from "astro/zod";
 import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 
 /**
- * Set whether a Deck permits Inverted draws. Owner-only: Deck configuration
- * lives in the owner's file store and travels with the Deck, so only the owner
- * (a signed-in, non-anonymous user acting on their own DO) may change it.
+ * Set whether — and how — a Deck permits Inverted draws (none, fronts only, or
+ * fronts and backs). Owner-only: Deck configuration lives in the owner's file
+ * store and travels with the Deck, so only the owner (a signed-in, non-anonymous
+ * user acting on their own DO) may change it.
  */
-export const setDeckAllowInverted = defineAction({
+export const setDeckInvertedDraws = defineAction({
   input: z.object({
     nodeId: z.string(),
-    allowInverted: z.boolean(),
+    invertedDraws: z.enum(invertedDrawsValues),
   }),
-  handler: async ({ nodeId, allowInverted }, context) => {
+  handler: async ({ nodeId, invertedDraws }, context) => {
     const user = context.locals.user;
     if (!user || user.isAnonymous) {
       throw new ActionError({ code: "UNAUTHORIZED", message: "Unauthorized" });
@@ -30,7 +32,7 @@ export const setDeckAllowInverted = defineAction({
     // Only the known "not a Deck" outcome becomes a client error; an unexpected
     // store failure throws out of the DO and surfaces as a generic
     // INTERNAL_SERVER_ERROR rather than being mislabelled as the caller's fault.
-    const result = await userDataDO.setDeckAllowInverted(nodeId, allowInverted);
+    const result = await userDataDO.setDeckInvertedDraws(nodeId, invertedDraws);
     if (result.result === "not-a-deck") {
       throw new ActionError({
         code: "BAD_REQUEST",

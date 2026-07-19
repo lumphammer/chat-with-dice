@@ -14,9 +14,9 @@ import { hardDeleteNode } from "./files/hardDeleteNode";
 import { renameNode } from "./files/renameNode";
 import { restoreNode } from "./files/restoreNode";
 import { setDeckAllowFaceDown } from "./files/setDeckAllowFaceDown";
-import { setDeckAllowInverted } from "./files/setDeckAllowInverted";
 import { setDeckCommonBack } from "./files/setDeckCommonBack";
 import { setDeckIndividualBack } from "./files/setDeckIndividualBack";
+import { setDeckInvertedDraws } from "./files/setDeckInvertedDraws";
 import { setFolderIsDeck } from "./files/setFolderIsDeck";
 import { createChatWithDiceRoom } from "./rooms/createChatWithDiceRoom";
 import { deleteRoom } from "./rooms/deleteRoom";
@@ -40,9 +40,9 @@ export const server = {
     restoreNode,
     setFolderIsDeck,
     setDeckAllowFaceDown,
-    setDeckAllowInverted,
     setDeckCommonBack,
     setDeckIndividualBack,
+    setDeckInvertedDraws,
     getDeckSettings,
   },
   admin: {

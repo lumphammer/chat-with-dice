@@ -1,3 +1,4 @@
+import { invertedDrawsValues } from "./invertedDraws";
 import { defineRelations, sql } from "drizzle-orm";
 import {
   int,
@@ -101,12 +102,13 @@ export const decks = snakeCase.table("decks", {
   // permitted. Travels with the Deck into any Room because it lives here, not
   // room-side. `0` (not permitted) is the default.
   allowFaceDown: int().notNull().default(0),
-  // Deck configuration (ADR-0001 decision 6): whether Inverted draws — a Card
-  // rotated 180° while still showing its front — are permitted. Like
-  // `allowFaceDown` this travels with the Deck, and `0` (not permitted) is the
-  // default. Independent of `allowFaceDown`: the two are orthogonal draw
-  // properties (see CONTEXT.md).
-  allowInverted: int().notNull().default(0),
+  // Deck configuration (ADR-0001 decision 6): whether — and how — Inverted draws
+  // are permitted. A three-state setting because rotating a Card's back is a
+  // separate choice from rotating its front: "none", "fronts" (only face-up
+  // draws rotate), or "fronts-and-backs" (a Face Down draw can rotate too). Like
+  // `allowFaceDown` this travels with the Deck; "none" is the default. See
+  // `invertedDraws.ts` and CONTEXT.md.
+  invertedDraws: text({ enum: invertedDrawsValues }).notNull().default("none"),
 });
 
 export const deckIndividualBacks = snakeCase.table(

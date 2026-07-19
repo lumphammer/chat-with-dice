@@ -1,9 +1,9 @@
 import { createFolder } from "#/actions/files/createFolder";
 import { getDeckSettings } from "#/actions/files/getDeckSettings";
 import { setDeckAllowFaceDown } from "#/actions/files/setDeckAllowFaceDown";
-import { setDeckAllowInverted } from "#/actions/files/setDeckAllowInverted";
 import { setDeckCommonBack } from "#/actions/files/setDeckCommonBack";
 import { setDeckIndividualBack } from "#/actions/files/setDeckIndividualBack";
+import { setDeckInvertedDraws } from "#/actions/files/setDeckInvertedDraws";
 import { setFolderIsDeck } from "#/actions/files/setFolderIsDeck";
 import {
   callAction,
@@ -81,21 +81,21 @@ describe("deck settings actions", () => {
     expect(after.allowFaceDown).toBe(true);
   });
 
-  it("toggles allow-inverted independently and reads it back", async () => {
+  it("sets inverted-draws independently and reads it back", async () => {
     const { ctx, deck } = await setUpDeck();
 
     const initial = await callAction(getDeckSettings, { nodeId: deck.id }, ctx);
-    expect(initial.allowInverted).toBe(false);
+    expect(initial.invertedDraws).toBe("none");
 
     await callAction(
-      setDeckAllowInverted,
-      { nodeId: deck.id, allowInverted: true },
+      setDeckInvertedDraws,
+      { nodeId: deck.id, invertedDraws: "fronts-and-backs" },
       ctx,
     );
 
     const after = await callAction(getDeckSettings, { nodeId: deck.id }, ctx);
-    // Inverted flips on; Face Down is untouched — the two are orthogonal.
-    expect(after.allowInverted).toBe(true);
+    // Inverted moves off "none"; Face Down is untouched — the two are orthogonal.
+    expect(after.invertedDraws).toBe("fronts-and-backs");
     expect(after.allowFaceDown).toBe(false);
   });
 
@@ -229,8 +229,8 @@ describe("deck settings actions", () => {
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
       callAction(
-        setDeckAllowInverted,
-        { nodeId: plain.id, allowInverted: true },
+        setDeckInvertedDraws,
+        { nodeId: plain.id, invertedDraws: "fronts" },
         ctx,
       ),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
@@ -248,8 +248,8 @@ describe("deck settings actions", () => {
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     await expect(
       callAction(
-        setDeckAllowInverted,
-        { nodeId: "irrelevant", allowInverted: true },
+        setDeckInvertedDraws,
+        { nodeId: "irrelevant", invertedDraws: "fronts" },
         makeActionContext(anon),
       ),
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });

@@ -1,5 +1,6 @@
 import migrations from "#/durable-object-migrations/UserDataDO/migrations.js";
 import * as dbSchema from "#/schemas/UserDataDO-schema";
+import type { InvertedDraws } from "#/schemas/invertedDraws";
 import { setupDB } from "../utils/setupDB";
 import type { DbNode } from "./DbNodeType";
 import { logError } from "./utils";
@@ -528,11 +529,11 @@ export class UserDataRepository {
       .where(eq(dbSchema.decks.id, folderId));
   }
 
-  /** Set whether a Deck permits Inverted draws. */
-  setDeckAllowInverted(folderId: string, allowInverted: boolean) {
+  /** Set whether — and how — a Deck permits Inverted draws. */
+  setDeckInvertedDraws(folderId: string, invertedDraws: InvertedDraws) {
     return this.db
       .update(dbSchema.decks)
-      .set({ allowInverted: allowInverted ? 1 : 0 })
+      .set({ invertedDraws })
       .where(eq(dbSchema.decks.id, folderId));
   }
 
