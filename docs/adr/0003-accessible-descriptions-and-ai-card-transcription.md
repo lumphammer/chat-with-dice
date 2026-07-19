@@ -81,11 +81,11 @@ like Cards — a photo needs a name far more than a paragraph. We do not force i
 
 ### 3. Phase 2 — an AI opt-out in user preferences
 
-A per-user **AI kill switch** lands before any model-calling code. Default is a
-product decision (see Consequences), but the switch must be honoured everywhere
-we would otherwise call a model: with it off, no Card Image of that user's ever
-leaves for — or is processed by — a model, and the transcription affordances
-from phase 3 are hidden, not merely disabled.
+A per-user **AI kill switch** lands before any model-calling code. It defaults
+**on** — users are opted in to AI features, and the switch is an **opt-out** for
+those who don't want AI touching their account. With it off, no Card Image of
+that user's ever leaves for — or is processed by — a model, and the
+transcription affordances from phase 3 are hidden, not merely disabled.
 
 This is deliberately its own phase so that the opt-out exists and is testable
 before phase 3 gives it something to gate.
@@ -103,10 +103,16 @@ Design constraints, carried from the earlier investigation:
   derived, not stored"), a transcription is expensive to compute, so it is
   stored. This is a deliberate exception to the derive-don't-store rule, recorded
   here so it is not mistaken for drift.
-- **Async, off the upload path.** Extraction runs deferred, mirroring the
-  existing alarm/`AbstractScheduler` pattern in `UserDataDO/Scheduler.ts` (or
-  Cloudflare Queues for folder-wide fan-out), so uploads stay fast and retries
-  are free. Trigger point is image-ready (`files.isReady`), not upload.
+- **User-initiated only.** Extraction fires **only** on an explicit user signal
+  — a per-Card or per-Deck button — never as a side effect of uploading a file,
+  marking a folder as a Deck, or an image becoming ready. Automatic extraction
+  would spend money and (for external providers) exfiltrate content the user
+  never asked us to process, and it defeats the phase-2 opt-out's intent even
+  when the switch is on. The signal is the trigger; nothing else is.
+- **Async, off the request path.** Once triggered, extraction runs deferred,
+  mirroring the existing alarm/`AbstractScheduler` pattern in
+  `UserDataDO/Scheduler.ts` (or Cloudflare Queues for a "transcribe this Deck"
+  fan-out), so the click returns immediately and retries are free.
 - **Full image, not the thumbnail.** The 256px WebP thumbnail from
   `useUpload.ts` is for display and is too small for fine rules text; extraction
   reads the full Card Image from `PRIVATE_R2`.
@@ -132,13 +138,15 @@ conscious decision, not an accident of whichever SDK we reached for.
 
 ### 6. Provider choice is deferred, but costed
 
-We do not hard-commit a provider in this ADR. The extractor interface lets us
-run Cloudflare Workers AI (on-CF, cheapest, lower quality on wild Cards) or a
-frontier vision model via Cloudflare AI Gateway (Claude Haiku 4.5 or Sonnet 5,
-higher quality, content leaves CF). Because transcription is **cache-once**, the
-total spend for a Deck is bounded and small regardless — so quality, not
-per-token price, should drive the choice. The estimator below exists to confirm
-that claim for a given Deck before committing.
+We do **not** commit a provider in this ADR — a provider strategy is pending
+experiments (quality on real Decks, the privacy fork in Decision 5, the cost
+picture below). The extractor interface exists precisely so those experiments
+can swap providers without touching callers: Cloudflare Workers AI (on-CF,
+cheapest, lower quality on wild Cards) or a frontier vision model via Cloudflare
+AI Gateway (Claude Haiku 4.5 or Sonnet 5, higher quality, content leaves CF).
+Because transcription is **cache-once**, the total spend for a Deck is bounded
+and small regardless — so quality, not per-token price, is expected to drive the
+choice. The estimator below is an input to that decision, not the decision.
 
 ## Cost estimator
 
@@ -191,9 +199,10 @@ model as the cost/privacy floor.
   meaningful `alt` today.
 - Wiring `altText` into Card `<img>` alts is the cheapest, highest-value
   accessibility step and should land first within phase 1.
-- The kill-switch default (opt-in vs opt-out) is left open here; it interacts
-  with the privacy fork (Decision 5) and wants a product call, not an
-  architectural one.
+- The kill switch defaults on (opt-out). Combined with the user-initiated-only
+  trigger (Decision 4), a default-on user still never has a Card processed until
+  they click; the switch is the standing "never, don't even offer it" control,
+  the per-action signal is the per-use consent.
 - Storing a transcription is a deliberate departure from ADR-0001 decision 3.
   If a Card Image is later replaced, the cached transcription for the old
   content is stale; `extractionVersion` plus re-run on image change handles this,
