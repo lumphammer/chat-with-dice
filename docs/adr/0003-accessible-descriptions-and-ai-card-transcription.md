@@ -17,10 +17,10 @@ corners:
 1. Every **User File** — not just Card Images — should be able to carry
    human-authored accessibility text. Card Images are just the first consumer.
 2. Some users will not want AI involved in their account at all. That preference
-   has to exist and be respected *before* we ship anything that calls a model on
+   has to exist and be respected _before_ we ship anything that calls a model on
    their content.
 3. Only then does AI Card transcription make sense: it becomes a way to
-   *populate* the fields from (1), gated by the switch from (2).
+   _populate_ the fields from (1), gated by the switch from (2).
 
 This ADR records the shape of all three phases and the decisions that bind them,
 so each phase can be built and reviewed on its own without foreclosing the next.
@@ -31,7 +31,7 @@ Two accessibility facts drive the data model (see Decision 1):
   `aria-labelledby`) and is **plain text** — markup in `alt` renders as literal
   characters.
 - An image's accessible **description** is separate, supplied via
-  `aria-describedby` referencing other DOM, and *can* be long and structured.
+  `aria-describedby` referencing other DOM, and _can_ be long and structured.
 
 These are different ARIA roles, not two names for one thing.
 
@@ -56,7 +56,7 @@ roles with different constraints:
   DOM in the zoom view, with the inline/thumbnail `<img>` pointing at it via
   `aria-describedby`.
 
-`description` is deliberately *not* crammed into a hidden `aria-describedby`
+`description` is deliberately _not_ crammed into a hidden `aria-describedby`
 target: screen readers flatten a referenced description into a single text run,
 which destroys the very structure that makes a transcription useful. Rendering
 it as visible content keeps its headings and lists navigable.
@@ -173,15 +173,15 @@ Prices are $/1M tokens: Workers AI Llama 3.2 11B Vision ≈ $0.049 in / $0.68 ou
 Claude Haiku 4.5 = $1 / $5; Claude Sonnet 5 = $3 / $15 (intro $2 / $10 through
 2026-08-31). `image_tokens` shown per row.
 
-| Card resolution | image_tokens | Workers AI Llama Vision | Haiku 4.5 | Sonnet 5 (intro) |
-|---|---:|---:|---:|---:|
-| 512×768 (small)   | ~525  | ~$0.0003 → **$0.28/1k** | ~$0.0022 → **$2.2/1k** | ~$0.0045 → **$4.5/1k** |
-| 768×1024 (medium) | ~1050 | ~$0.0003 → **$0.31/1k** | ~$0.0028 → **$2.8/1k** | ~$0.0055 → **$5.5/1k** |
-| 1024×1536 (large) | ~2100 | ~$0.0004 → **$0.42/1k** | ~$0.0038 → **$3.8/1k** | ~$0.0075 → **$7.5/1k** |
+| Card resolution   | image_tokens | Workers AI Llama Vision |              Haiku 4.5 |       Sonnet 5 (intro) |
+| ----------------- | -----------: | ----------------------: | ---------------------: | ---------------------: |
+| 512×768 (small)   |         ~525 | ~$0.0003 → **$0.28/1k** | ~$0.0022 → **$2.2/1k** | ~$0.0045 → **$4.5/1k** |
+| 768×1024 (medium) |        ~1050 | ~$0.0003 → **$0.31/1k** | ~$0.0028 → **$2.8/1k** | ~$0.0055 → **$5.5/1k** |
+| 1024×1536 (large) |        ~2100 | ~$0.0004 → **$0.42/1k** | ~$0.0038 → **$3.8/1k** | ~$0.0075 → **$7.5/1k** |
 
 **Workers AI wall-time caveat:** Workers AI also bills ~$0.0005/second of
 model wall-time. A vision request of a few seconds adds ~$0.0015–0.0025 per
-Card — which *exceeds* its token cost and narrows the gap to Haiku
+Card — which _exceeds_ its token cost and narrows the gap to Haiku
 considerably. Fold it in as `+ wall_seconds × $0.0005` per Card when comparing.
 
 **Reading the table:** a typical Deck (say 78 Cards of a tarot-sized set at
