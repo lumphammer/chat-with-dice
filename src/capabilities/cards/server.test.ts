@@ -303,7 +303,7 @@ describe("inverted draws", () => {
   // needs none — it rotates the front (unlike Face Down, which needs a back).
   const invertedDeck = () =>
     vi.fn<ListDeckCards>().mockResolvedValue({
-      result: "ok" as const,
+      result: "ok",
       deckName: "Magus",
       allowFaceDown: false,
       allowInverted: true,
@@ -368,7 +368,7 @@ describe("inverted draws", () => {
       .mockReturnValueOnce(INVERTED_ROLL)
       .mockReturnValue(0);
     const listDeckCards = vi.fn<ListDeckCards>().mockResolvedValue({
-      result: "ok" as const,
+      result: "ok",
       deckName: "Magus",
       allowFaceDown: true,
       allowInverted: true,
