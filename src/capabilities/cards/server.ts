@@ -11,6 +11,10 @@ function pickUniform<T>(items: T[]): T {
 // which Card was picked.
 const FACE_DOWN_PROBABILITY = 0.5;
 
+// A drawn Card comes up Inverted on a fair coin, independent of the Card picked
+// and of the Face Down coin — Inverted and Face Down are orthogonal (CONTEXT.md).
+const INVERTED_PROBABILITY = 0.5;
+
 export const cardsServer = createServerCapability(cardsCommon, {
   actionEffects: {
     draw: async ({
@@ -81,6 +85,14 @@ export const cardsServer = createServerCapability(cardsCommon, {
         card.back !== null &&
         Math.random() < FACE_DOWN_PROBABILITY;
 
+      // Inverted is a third, separate random draw and is orthogonal to Face Down:
+      // it rotates whichever face shows, so it needs no back and does not depend
+      // on the Face Down coin (CONTEXT.md — a Card turned around on the table
+      // rotates whether it lands face up or face down). A Deck that forbids
+      // Inverted never rotates, exactly as one that forbids Face Down never flips.
+      const inverted =
+        result.allowInverted && Math.random() < INVERTED_PROBABILITY;
+
       // A dwindling Pile keeps the drawn Card out by recording it in the
       // Discard; a non-dwindling Pile leaves state untouched.
       if (dwindling && pile) {
@@ -92,6 +104,7 @@ export const cardsServer = createServerCapability(cardsCommon, {
         deck: { nodeId: payload.deckNodeId, name: result.deckName },
         card: { nodeId: card.nodeId, name: card.name },
         faceDown,
+        inverted,
         // The back is carried only on a Face Down draw — it is the image the
         // message renders. A face-up draw records no back.
         back: faceDown && card.back !== null ? card.back : undefined,

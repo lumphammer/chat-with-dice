@@ -445,6 +445,44 @@ describe("getDeckCards", () => {
     expect(after.allowFaceDown).toBe(true);
   });
 
+  it("reports allowInverted, defaulting to false and travelling once set", async () => {
+    const { userDataDO, deck } = await setUp();
+
+    const before = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(before.result).toBe("ok");
+    if (before.result !== "ok") return;
+    expect(before.allowInverted).toBe(false);
+
+    await userDataDO.setDeckAllowInverted(deck.id, true);
+
+    const after = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(after.result).toBe("ok");
+    if (after.result !== "ok") return;
+    expect(after.allowInverted).toBe(true);
+  });
+
+  it("keeps allowFaceDown and allowInverted independent", async () => {
+    const { userDataDO, deck } = await setUp();
+
+    // Setting one leaves the other alone: the two are orthogonal Deck settings.
+    await userDataDO.setDeckAllowInverted(deck.id, true);
+
+    const result = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(result.result).toBe("ok");
+    if (result.result !== "ok") return;
+    expect(result.allowInverted).toBe(true);
+    expect(result.allowFaceDown).toBe(false);
+  });
+
   it("rejects a shared folder that is not a deck", async () => {
     const { userDataDO, plainFolder } = await setUp();
 

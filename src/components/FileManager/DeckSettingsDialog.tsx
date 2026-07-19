@@ -5,14 +5,15 @@ import {
   DeckIndividualBacksEditor,
   type DeckCard,
 } from "./DeckIndividualBacksEditor";
+import { DeckInvertedToggle } from "./DeckInvertedToggle";
 import { actions } from "astro:actions";
 import { Settings2 } from "lucide-react";
 import { memo, useId, useRef, useState } from "react";
 
 /**
- * The owner's editor for a Deck's configuration: whether Face Down draws are
- * permitted, and which of the Deck's images is the Common Back. Both are Deck
- * configuration, so they travel with the Deck into any Room (ADR-0001).
+ * The owner's editor for a Deck's configuration: whether Face Down and Inverted
+ * draws are permitted, and which of the Deck's images is the Common Back. All are
+ * Deck configuration, so they travel with the Deck into any Room (ADR-0001).
  *
  * Rendered as a menu item plus its own dialog (mirroring HardDeleteDialog) so it
  * can live inside the folder's actions menu. Each change is saved immediately;
@@ -25,6 +26,7 @@ export const DeckSettingsDialog = memo(
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [allowFaceDown, setAllowFaceDown] = useState(false);
+    const [allowInverted, setAllowInverted] = useState(false);
     const [commonBackId, setCommonBackId] = useState<string | null>(null);
     const [images, setImages] = useState<DeckImage[]>([]);
     const [cards, setCards] = useState<DeckCard[]>([]);
@@ -48,6 +50,7 @@ export const DeckSettingsDialog = memo(
         return;
       }
       setAllowFaceDown(result.data.allowFaceDown);
+      setAllowInverted(result.data.allowInverted);
       setCommonBackId(result.data.commonBack?.nodeId ?? null);
       setImages(result.data.images);
       setCards(result.data.cards);
@@ -73,6 +76,25 @@ export const DeckSettingsDialog = memo(
       if (result.error) {
         logger.error("Failed to set allowFaceDown", result.error);
         setAllowFaceDown(previous);
+        setError(result.error.message);
+      }
+    };
+
+    const handleToggleInverted = async (next: boolean) => {
+      const previous = allowInverted;
+      // Clear any error from an earlier failed save so a fresh attempt does not
+      // show a stale message while it is in flight.
+      setError(null);
+      setAllowInverted(next);
+      setSaving(true);
+      const result = await actions.files.setDeckAllowInverted({
+        nodeId,
+        allowInverted: next,
+      });
+      setSaving(false);
+      if (result.error) {
+        logger.error("Failed to set allowInverted", result.error);
+        setAllowInverted(previous);
         setError(result.error.message);
       }
     };
@@ -151,6 +173,11 @@ export const DeckSettingsDialog = memo(
                     allowFaceDown={allowFaceDown}
                     disabled={saving}
                     onChange={(next) => void handleToggleFaceDown(next)}
+                  />
+                  <DeckInvertedToggle
+                    allowInverted={allowInverted}
+                    disabled={saving}
+                    onChange={(next) => void handleToggleInverted(next)}
                   />
                   <DeckCommonBackPicker
                     images={images}

@@ -83,6 +83,7 @@ _Avoid_: Room file, shared file
 - **Deck** configuration is owned by the **Deck** and travels with it into any **Room**
 - **Pile** configuration, such as whether drawn **Cards** return to the **Pile**, is room-level and does not travel
 - Whether a **Deck** permits **Inverted** or **Face Down** draws is **Deck** configuration; whether a given draw came up **Inverted** or **Face Down** is a property of that draw
+- **Inverted** and **Face Down** are orthogonal: a single draw can be neither, either, or both. A **Card** with no back can still be drawn **Inverted** (its front is rotated), and a draw that is both shows the **Card**'s back rotated 180° — turning a **Card** around on the table rotates it whichever way it lands, so a rotated back is meaningful even where the back art happens to look symmetric
 - Any **Room Participant**, including an anonymous one, can draw from a **Pile**
 - Only a signed-in, non-anonymous **Room Participant** can own a **Deck** or share one with a **Room**
 - A **Room Share** belongs to exactly one **Room**

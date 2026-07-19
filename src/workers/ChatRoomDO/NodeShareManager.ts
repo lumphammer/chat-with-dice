@@ -94,6 +94,7 @@ export class NodeShareManager {
         result: "ok";
         deckName: string;
         allowFaceDown: boolean;
+        allowInverted: boolean;
         cards: {
           nodeId: string;
           name: string;
@@ -126,6 +127,7 @@ export class NodeShareManager {
       result: "ok",
       deckName: deckResult.deckName,
       allowFaceDown: deckResult.allowFaceDown,
+      allowInverted: deckResult.allowInverted,
       cards: deckResult.cards,
     };
   }

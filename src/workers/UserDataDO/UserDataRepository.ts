@@ -528,6 +528,14 @@ export class UserDataRepository {
       .where(eq(dbSchema.decks.id, folderId));
   }
 
+  /** Set whether a Deck permits Inverted draws. */
+  setDeckAllowInverted(folderId: string, allowInverted: boolean) {
+    return this.db
+      .update(dbSchema.decks)
+      .set({ allowInverted: allowInverted ? 1 : 0 })
+      .where(eq(dbSchema.decks.id, folderId));
+  }
+
   markFileReady(id: string, sizeBytes: number) {
     return this.db
       .update(dbSchema.files)

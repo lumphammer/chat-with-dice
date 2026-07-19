@@ -1,0 +1,1 @@
+ALTER TABLE `decks` ADD `allow_inverted` integer DEFAULT 0 NOT NULL;

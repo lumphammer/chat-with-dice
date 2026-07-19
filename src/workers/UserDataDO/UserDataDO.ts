@@ -648,6 +648,19 @@ export class UserDataDO extends DurableObject {
     return { result: "ok" };
   }
 
+  /** Set whether a Deck permits Inverted draws (Deck configuration). */
+  async setDeckAllowInverted(
+    nodeId: string,
+    allowInverted: boolean,
+  ): Promise<{ result: "ok" | "not-a-deck" }> {
+    const node = await this.getDeckNode(nodeId);
+    if (!node) {
+      return { result: "not-a-deck" };
+    }
+    await this.repo.setDeckAllowInverted(nodeId, allowInverted);
+    return { result: "ok" };
+  }
+
   /**
    * A Deck's configuration for its owner to edit: whether Face Down draws are
    * permitted, the current Common Back, the Deck's image children to pick a
@@ -664,6 +677,7 @@ export class UserDataDO extends DurableObject {
     | {
         result: "ok";
         allowFaceDown: boolean;
+        allowInverted: boolean;
         commonBack: { nodeId: string; name: string } | null;
         images: { nodeId: string; name: string }[];
         cards: {
@@ -693,6 +707,7 @@ export class UserDataDO extends DurableObject {
     return {
       result: "ok",
       allowFaceDown: node.folder.deck.allowFaceDown === 1,
+      allowInverted: node.folder.deck.allowInverted === 1,
       commonBack: derived.commonBack,
       images: derived.images,
       cards,
@@ -824,8 +839,8 @@ export class UserDataDO extends DurableObject {
    * Individual Back if it has one, else the Deck's Common Back, else `null`. Any
    * image serving as a back (Common or Individual) "stops being a Card in its own
    * right" and is excluded from the Cards. A Card without a back can never come
-   * up Face Down. `allowFaceDown` is Deck configuration and travels with the
-   * Deck, so it is reported here for the draw to honour.
+   * up Face Down. `allowFaceDown` and `allowInverted` are Deck configuration and
+   * travel with the Deck, so both are reported here for the draw to honour.
    */
   async getDeckCards({
     nodeId,
@@ -838,6 +853,7 @@ export class UserDataDO extends DurableObject {
         result: "ok";
         deckName: string;
         allowFaceDown: boolean;
+        allowInverted: boolean;
         cards: {
           nodeId: string;
           name: string;
@@ -863,6 +879,7 @@ export class UserDataDO extends DurableObject {
       result: "ok",
       deckName: node.name,
       allowFaceDown: node.folder.deck.allowFaceDown === 1,
+      allowInverted: node.folder.deck.allowInverted === 1,
       cards,
     };
   }

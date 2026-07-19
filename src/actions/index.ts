@@ -14,6 +14,7 @@ import { hardDeleteNode } from "./files/hardDeleteNode";
 import { renameNode } from "./files/renameNode";
 import { restoreNode } from "./files/restoreNode";
 import { setDeckAllowFaceDown } from "./files/setDeckAllowFaceDown";
+import { setDeckAllowInverted } from "./files/setDeckAllowInverted";
 import { setDeckCommonBack } from "./files/setDeckCommonBack";
 import { setDeckIndividualBack } from "./files/setDeckIndividualBack";
 import { setFolderIsDeck } from "./files/setFolderIsDeck";
@@ -39,6 +40,7 @@ export const server = {
     restoreNode,
     setFolderIsDeck,
     setDeckAllowFaceDown,
+    setDeckAllowInverted,
     setDeckCommonBack,
     setDeckIndividualBack,
     getDeckSettings,
