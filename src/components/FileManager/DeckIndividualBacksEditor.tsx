@@ -1,4 +1,5 @@
 import { DeckIndividualBackRow } from "./DeckIndividualBackRow";
+import { DeckPairingProposals } from "./DeckPairingProposals";
 import { memo, useMemo, useState } from "react";
 
 export type DeckCard = {
@@ -13,9 +14,10 @@ export type DeckCard = {
  * that takes precedence over any Common Back (CONTEXT.md). Broken out so
  * {@link DeckSettingsDialog} stays focused on load/mutation state.
  *
- * Pairing by hand is inherently tedious for a large Deck; this is the foundation
- * a later heuristic (issue #46) proposes pairings on top of, so a Deck whose
- * filenames defeat any heuristic is still fully pairable here.
+ * Pairing by hand is inherently tedious for a large Deck, so a "scan names for
+ * pairings" panel ({@link DeckPairingProposals}) proposes pairings from Card
+ * Image names for review on top of these rows — and a Deck whose filenames
+ * defeat the heuristic is still fully pairable here.
  *
  * A given image can back only one Card, so the images offered as a back for a
  * Card are the Deck's *other Cards that have no back of their own*. Assigning one
@@ -29,11 +31,15 @@ export const DeckIndividualBacksEditor = memo(
     disabled,
     onAssign,
     onRemove,
+    onApplyProposals,
   }: {
     cards: DeckCard[];
     disabled: boolean;
     onAssign: (frontNodeId: string, backNodeId: string) => void;
     onRemove: (frontNodeId: string) => void;
+    onApplyProposals: (
+      pairings: { frontNodeId: string; backNodeId: string }[],
+    ) => void;
   }) => {
     const [openFrontId, setOpenFrontId] = useState<string | null>(null);
 
@@ -53,6 +59,13 @@ export const DeckIndividualBacksEditor = memo(
           Give a card its own back, shown instead of the common back. The chosen
           image stops being a card in its own right.
         </span>
+        {cards.length > 0 && (
+          <DeckPairingProposals
+            cards={cards}
+            disabled={disabled}
+            onApply={onApplyProposals}
+          />
+        )}
         <div className="mt-2 flex max-h-80 flex-col gap-1 overflow-y-auto">
           {cards.map((card) => (
             <DeckIndividualBackRow
