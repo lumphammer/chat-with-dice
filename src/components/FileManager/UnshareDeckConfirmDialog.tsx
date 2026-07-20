@@ -1,5 +1,5 @@
 import { Unlink2 } from "lucide-react";
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 
 /**
  * Confirmation shown before unsharing a Deck whose Pile has a non-empty Discard.
@@ -17,13 +17,18 @@ export const UnshareDeckConfirmDialog = forwardRef<
   HTMLDialogElement,
   { name: string; onConfirm: () => void }
 >(({ name, onConfirm }, ref) => {
+  // Ties the dialog to its visible heading so assistive tech announces the
+  // dialog's purpose rather than a bare "dialog".
+  const titleId = useId();
   return (
     // The wrapping div lets the dialog escape a menu's immediate-child styling
     // when it is rendered alongside one.
     <div className="contents">
-      <dialog ref={ref} className="modal">
+      <dialog ref={ref} className="modal" aria-labelledby={titleId}>
         <div className="modal-box">
-          <h3 className="text-lg font-bold">Unshare "{name}"?</h3>
+          <h3 id={titleId} className="text-lg font-bold">
+            Unshare "{name}"?
+          </h3>
           <p className="text-base-content/70 py-2">
             This deck's pile has cards in its discard. Unsharing removes the
             deck from the room and clears the pile — this cannot be undone. To

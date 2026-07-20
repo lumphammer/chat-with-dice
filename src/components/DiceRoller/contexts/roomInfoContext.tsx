@@ -31,3 +31,13 @@ export const useRoomInfoContext = () => {
   }
   return context;
 };
+
+/**
+ * Like `useRoomInfoContext`, but returns `null` outside a room rather than
+ * throwing. For components that also mount standalone (e.g. the file manager,
+ * which renders both inside a Room and on its own) and need to behave
+ * differently when room info happens to be present.
+ */
+export const useOptionalRoomInfoContext = () => {
+  return useContext(RoomInfoContext);
+};

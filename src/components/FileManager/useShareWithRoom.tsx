@@ -2,6 +2,7 @@ import { authClient } from "#/auth/authClient.ts";
 import { cardsClient } from "#/capabilities/cards/client";
 import { findPile } from "#/capabilities/cards/common";
 import { filesClient } from "#/capabilities/files/client";
+import { useOptionalRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { UnshareDeckConfirmDialog } from "./UnshareDeckConfirmDialog";
 import { useCallback, useRef } from "react";
 
@@ -12,6 +13,7 @@ export const useShareWithRoom = (
 ) => {
   const filesCap = filesClient.useMount();
   const cardsCap = cardsClient.useMount();
+  const roomInfo = useOptionalRoomInfoContext();
   const { data: sessionData } = authClient.useSession();
   const confirmDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -53,7 +55,20 @@ export const useShareWithRoom = (
     cardsCap.initialised && userId != null && nodeId != null
       ? findPile(cardsCap.state, userId, nodeId)
       : undefined;
-  const unshareNeedsConfirmation = (pile?.discard.length ?? 0) > 0;
+
+  // `cards` state arrives as its own message, so it can still be loading while
+  // `files` (and this unshare control) is already live. If the room has `cards`
+  // but its Piles haven't arrived, a Deck with a Discard would slip through the
+  // check above unconfirmed, so err on the side of confirming until it loads.
+  // A room without `cards` has no Piles at all — and standalone file managers
+  // (no room context) never do — so those unshare freely, as before.
+  const cardsEnabledInRoom =
+    roomInfo?.roomConfig.capabilities.some(
+      (capability) => capability.name === "cards",
+    ) ?? false;
+  const unshareNeedsConfirmation = cardsEnabledInRoom
+    ? !cardsCap.initialised || (pile?.discard.length ?? 0) > 0
+    : false;
 
   const unshareFromRoom = useCallback(() => {
     if (unshareNeedsConfirmation) {
