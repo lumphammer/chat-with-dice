@@ -172,13 +172,19 @@ export const ImagePreview = memo(
       );
     }, [fitScale, maxZoom, naturalSize, viewportSize]);
 
-    const handleLoad = () => {
-      const img = imgRef.current;
-      if (!img?.naturalWidth) return;
+    // Capture the image's natural geometry and reset the view. Shared by the
+    // onLoad handler and the cached-image path below so both initialise it.
+    const initGeometry = useCallback((img: HTMLImageElement) => {
       const size = { width: img.naturalWidth, height: img.naturalHeight };
       setNaturalSize(size);
       setCenter({ x: size.width / 2, y: size.height / 2 });
       setZoom(MIN_ZOOM);
+    }, []);
+
+    const handleLoad = () => {
+      const img = imgRef.current;
+      if (!img?.naturalWidth) return;
+      initGeometry(img);
       setImageLoadState("loaded");
     };
 
@@ -186,14 +192,18 @@ export const ImagePreview = memo(
 
     // Reset load tracking when the source changes. If the browser already has
     // the image cached it may finish (or fail) before React attaches the
-    // onLoad/onError handlers, so derive the initial state from the ref: a
-    // `complete` image with no natural width failed, otherwise it loaded.
+    // onLoad/onError handlers, so derive the state from the ref. A cached image
+    // won't fire onLoad, so initialise its geometry here too — otherwise
+    // naturalSize/center/zoom would stay stale for cached loads.
     useEffect(() => {
       const img = imgRef.current;
-      setImageLoadState(
-        img?.complete ? (img.naturalWidth > 0 ? "loaded" : "error") : "loading",
-      );
-    }, [src]);
+      if (img?.complete && img.naturalWidth > 0) {
+        initGeometry(img);
+        setImageLoadState("loaded");
+      } else {
+        setImageLoadState(img?.complete ? "error" : "loading");
+      }
+    }, [src, initGeometry]);
 
     // Only reveal the spinner after a brief pause, then let it fade in. Keying
     // on `src` too restarts the pause for each new image and clears any spinner
