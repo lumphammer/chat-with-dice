@@ -1,3 +1,4 @@
+import { LoaderCircle } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Point = { x: number; y: number };
@@ -8,6 +9,8 @@ const MIN_MAX_ZOOM = 4;
 const NATURAL_SIZE_ZOOM_MULTIPLIER = 4;
 const WHEEL_ZOOM_SPEED = 0.0015;
 const PINCH_ZOOM_SPEED = 1;
+// Wait this long before showing the spinner so quick loads don't flash it.
+const SPINNER_DELAY_MS = 400;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -89,6 +92,8 @@ export const ImagePreview = memo(
     const [center, setCenter] = useState<Point>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(MIN_ZOOM);
     const [isDragging, setIsDragging] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [showSpinner, setShowSpinner] = useState(false);
 
     const fitScale = useMemo(
       () => getFitScale(naturalSize, viewportSize),
@@ -172,7 +177,26 @@ export const ImagePreview = memo(
       setNaturalSize(size);
       setCenter({ x: size.width / 2, y: size.height / 2 });
       setZoom(MIN_ZOOM);
+      setIsLoaded(true);
     };
+
+    // Reset load tracking when the source changes. If the browser already has
+    // the image cached it may finish loading before React attaches onLoad, so
+    // check the ref's `complete` flag to avoid a spinner that never clears.
+    useEffect(() => {
+      const alreadyLoaded = !!imgRef.current?.complete;
+      setIsLoaded(alreadyLoaded);
+    }, [src]);
+
+    // Only reveal the spinner after a brief pause, then let it fade in.
+    useEffect(() => {
+      if (isLoaded) {
+        setShowSpinner(false);
+        return;
+      }
+      const timer = setTimeout(() => setShowSpinner(true), SPINNER_DELAY_MS);
+      return () => clearTimeout(timer);
+    }, [isLoaded]);
 
     useEffect(() => {
       const container = containerRef.current;
@@ -379,6 +403,18 @@ export const ImagePreview = memo(
           alt={alt}
           onLoad={handleLoad}
         />
+        {showSpinner && !isLoaded && (
+          <div
+            className="animate-fadein pointer-events-none absolute inset-0 flex
+              items-center justify-center"
+          >
+            <LoaderCircle
+              size={48}
+              className="text-primary animate-spin"
+              aria-label="Loading image"
+            />
+          </div>
+        )}
       </div>
     );
   },
