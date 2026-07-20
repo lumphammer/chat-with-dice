@@ -34,7 +34,7 @@ export const EditNameSection = memo(({ room, onRoomUpdated }: Props) => {
         message: error?.message ?? "Failed to update room.",
       });
     } else {
-      onRoomUpdated(data.room as Room);
+      onRoomUpdated(data.room);
       setFeedback({ type: "success", message: "Saved." });
     }
   };

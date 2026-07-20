@@ -25,7 +25,7 @@ export const RoomList = () => {
       const data = result.data;
       if (!Array.isArray(data))
         throw new Error("Unexpected response from server");
-      return data as Room[];
+      return data;
     },
   });
 

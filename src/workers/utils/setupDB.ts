@@ -1,5 +1,5 @@
 // import * as dbSchema from "#/schemas/ChatRoomDO-schema";
-import { sql, type TablesRelationalConfig } from "drizzle-orm";
+import { sql, type AnyRelations, type EmptyRelations } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/durable-sqlite";
 import { migrate } from "drizzle-orm/durable-sqlite/migrator";
 
@@ -15,16 +15,13 @@ const logError = console.error.bind(console, "[setupDB]");
  * @param ctx the Durable Object ctx object
  * @returns
  */
-export function setupDB<
-  TSchema extends Record<string, unknown>,
-  TRelations extends TablesRelationalConfig,
->(
+export function setupDB<TRelations extends AnyRelations = EmptyRelations>(
   ctx: DurableObjectState,
   migrations: MigrationConfig,
-  schema: TSchema,
+  schema: Record<string, unknown>,
   relations?: TRelations,
 ) {
-  const db = drizzle(ctx.storage, { schema, relations });
+  const db = drizzle<TRelations>(ctx.storage, { relations });
 
   const before = printSchema(ctx, schema);
 

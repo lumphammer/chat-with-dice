@@ -32,7 +32,7 @@ class VersionedBuilder<Out> {
   ): VersionedBuilder<z.output<Next>> {
     return new VersionedBuilder(
       [...this.validators, next],
-      [...this.migrations, migrate as (data: never) => unknown],
+      [...this.migrations, migrate],
     );
   }
 

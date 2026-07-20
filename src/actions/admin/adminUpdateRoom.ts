@@ -34,7 +34,7 @@ export const adminUpdateRoom = defineAction({
     if (input.config !== undefined) {
       const parsed = JSON.parse(input.config);
       const validated = roomConfigValidator.parse(parsed);
-      updates.config = validated as unknown;
+      updates.config = validated;
     }
 
     await db.update(rooms).set(updates).where(eq(rooms.id, input.roomId));

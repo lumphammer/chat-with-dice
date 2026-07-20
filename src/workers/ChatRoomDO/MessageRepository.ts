@@ -11,7 +11,7 @@ import * as z from "zod";
 const MESSAGE_CATCHUP_LENGTH = 100;
 
 export class MessageRepository {
-  constructor(private db: DrizzleSqliteDODatabase<typeof dbSchema>) {}
+  constructor(private db: DrizzleSqliteDODatabase) {}
 
   async getById(id: string): Promise<ChatMessage> {
     const dbRow = (
