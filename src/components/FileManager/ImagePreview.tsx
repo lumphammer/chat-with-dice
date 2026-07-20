@@ -1,8 +1,9 @@
-import { LoaderCircle } from "lucide-react";
+import { ImageLoadingOverlay } from "./ImageLoadingOverlay";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Point = { x: number; y: number };
 type Size = { width: number; height: number };
+type ImageLoadState = "loading" | "loaded" | "error";
 
 const MIN_ZOOM = 1;
 const MIN_MAX_ZOOM = 4;
@@ -92,7 +93,8 @@ export const ImagePreview = memo(
     const [center, setCenter] = useState<Point>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(MIN_ZOOM);
     const [isDragging, setIsDragging] = useState(false);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [imageLoadState, setImageLoadState] =
+      useState<ImageLoadState>("loading");
     const [showSpinner, setShowSpinner] = useState(false);
 
     const fitScale = useMemo(
@@ -177,26 +179,31 @@ export const ImagePreview = memo(
       setNaturalSize(size);
       setCenter({ x: size.width / 2, y: size.height / 2 });
       setZoom(MIN_ZOOM);
-      setIsLoaded(true);
+      setImageLoadState("loaded");
     };
 
+    const handleError = () => setImageLoadState("error");
+
     // Reset load tracking when the source changes. If the browser already has
-    // the image cached it may finish loading before React attaches onLoad, so
-    // check the ref's `complete` flag to avoid a spinner that never clears.
+    // the image cached it may finish (or fail) before React attaches the
+    // onLoad/onError handlers, so derive the initial state from the ref: a
+    // `complete` image with no natural width failed, otherwise it loaded.
     useEffect(() => {
-      const alreadyLoaded = !!imgRef.current?.complete;
-      setIsLoaded(alreadyLoaded);
+      const img = imgRef.current;
+      setImageLoadState(
+        img?.complete ? (img.naturalWidth > 0 ? "loaded" : "error") : "loading",
+      );
     }, [src]);
 
-    // Only reveal the spinner after a brief pause, then let it fade in.
+    // Only reveal the spinner after a brief pause, then let it fade in. Keying
+    // on `src` too restarts the pause for each new image and clears any spinner
+    // left over from the previous one.
     useEffect(() => {
-      if (isLoaded) {
-        setShowSpinner(false);
-        return;
-      }
+      setShowSpinner(false);
+      if (imageLoadState !== "loading") return;
       const timer = setTimeout(() => setShowSpinner(true), SPINNER_DELAY_MS);
       return () => clearTimeout(timer);
-    }, [isLoaded]);
+    }, [src, imageLoadState]);
 
     useEffect(() => {
       const container = containerRef.current;
@@ -402,19 +409,9 @@ export const ImagePreview = memo(
           draggable={false}
           alt={alt}
           onLoad={handleLoad}
+          onError={handleError}
         />
-        {showSpinner && !isLoaded && (
-          <div
-            className="animate-fadein pointer-events-none absolute inset-0 flex
-              items-center justify-center"
-          >
-            <LoaderCircle
-              size={48}
-              className="text-primary animate-spin"
-              aria-label="Loading image"
-            />
-          </div>
-        )}
+        {showSpinner && imageLoadState === "loading" && <ImageLoadingOverlay />}
       </div>
     );
   },

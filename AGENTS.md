@@ -34,7 +34,7 @@ When you've finished your changes, run `pnpm run check`. This will check types, 
 
 In a sandbox or Claude Code web session without real secrets, the `build` step fails during prerender because `envOrDie` throws on missing OAuth/API secrets (`GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_SECRET`, `RESEND_API_KEY`). These aren't exercised by a static prerender, so run the check with `CI=true` — `envOrDie` skips the missing-var throw under CI — and it passes cleanly with no secrets:
 
-```
+```sh
 CI=true pnpm run check
 ```
 
