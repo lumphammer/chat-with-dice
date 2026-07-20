@@ -1,13 +1,17 @@
+import { ImageLoadingOverlay } from "./ImageLoadingOverlay";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Point = { x: number; y: number };
 type Size = { width: number; height: number };
+type ImageLoadState = "loading" | "loaded" | "error";
 
 const MIN_ZOOM = 1;
 const MIN_MAX_ZOOM = 4;
 const NATURAL_SIZE_ZOOM_MULTIPLIER = 4;
 const WHEEL_ZOOM_SPEED = 0.0015;
 const PINCH_ZOOM_SPEED = 1;
+// Wait this long before showing the spinner so quick loads don't flash it.
+const SPINNER_DELAY_MS = 400;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -89,6 +93,9 @@ export const ImagePreview = memo(
     const [center, setCenter] = useState<Point>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(MIN_ZOOM);
     const [isDragging, setIsDragging] = useState(false);
+    const [imageLoadState, setImageLoadState] =
+      useState<ImageLoadState>("loading");
+    const [showSpinner, setShowSpinner] = useState(false);
 
     const fitScale = useMemo(
       () => getFitScale(naturalSize, viewportSize),
@@ -172,7 +179,31 @@ export const ImagePreview = memo(
       setNaturalSize(size);
       setCenter({ x: size.width / 2, y: size.height / 2 });
       setZoom(MIN_ZOOM);
+      setImageLoadState("loaded");
     };
+
+    const handleError = () => setImageLoadState("error");
+
+    // Reset load tracking when the source changes. If the browser already has
+    // the image cached it may finish (or fail) before React attaches the
+    // onLoad/onError handlers, so derive the initial state from the ref: a
+    // `complete` image with no natural width failed, otherwise it loaded.
+    useEffect(() => {
+      const img = imgRef.current;
+      setImageLoadState(
+        img?.complete ? (img.naturalWidth > 0 ? "loaded" : "error") : "loading",
+      );
+    }, [src]);
+
+    // Only reveal the spinner after a brief pause, then let it fade in. Keying
+    // on `src` too restarts the pause for each new image and clears any spinner
+    // left over from the previous one.
+    useEffect(() => {
+      setShowSpinner(false);
+      if (imageLoadState !== "loading") return;
+      const timer = setTimeout(() => setShowSpinner(true), SPINNER_DELAY_MS);
+      return () => clearTimeout(timer);
+    }, [src, imageLoadState]);
 
     useEffect(() => {
       const container = containerRef.current;
@@ -378,7 +409,9 @@ export const ImagePreview = memo(
           draggable={false}
           alt={alt}
           onLoad={handleLoad}
+          onError={handleError}
         />
+        {showSpinner && imageLoadState === "loading" && <ImageLoadingOverlay />}
       </div>
     );
   },
