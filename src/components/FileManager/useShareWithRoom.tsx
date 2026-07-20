@@ -20,13 +20,13 @@ export const useShareWithRoom = (
   const userId = sessionData?.user.id ?? null;
   const canShareWithRoom =
     !readOnly && filesCap.initialised && nodeId !== null && userId !== null;
-  const isSharedWithRoom =
-    filesCap.initialised &&
-    nodeId !== null &&
-    userId !== null &&
-    filesCap.state.shares.some(
-      (share) => share.userId === userId && share.node.id === nodeId,
-    );
+  const sharedNode =
+    filesCap.initialised && nodeId != null && userId != null
+      ? filesCap.state.shares.find(
+          (share) => share.userId === userId && share.node.id === nodeId,
+        )?.node
+      : undefined;
+  const isSharedWithRoom = sharedNode !== undefined;
   const canUnshareFromRoom = canShareWithRoom && isSharedWithRoom;
 
   const shareFile = filesCap.initialised ? filesCap.actions.shareFile : null;
@@ -47,10 +47,14 @@ export const useShareWithRoom = (
   }, [nodeId, userId, unshareFile]);
 
   // Unsharing a plain file is harmless, but unsharing a Deck drops the room's
-  // Pile — a half-drawn session's Discard — for good (ADR-0001). Only a Pile
-  // with something in its Discard has state worth losing, so that is the sole
-  // trigger for the confirmation; a Deck that returns its Cards (no Pile, or an
-  // empty Discard) unshares straight away, like any other folder.
+  // Pile — a half-drawn session's Discard — for good (ADR-0001). Only a Deck
+  // whose Pile has something in its Discard has state worth losing, so a Deck is
+  // the only kind of node this ever confirms; a Deck that returns its Cards (no
+  // Pile, or an empty Discard) unshares straight away, like any other folder.
+  const isDeckShare =
+    sharedNode !== undefined &&
+    sharedNode.kind === "folder" &&
+    sharedNode.isDeck;
   const pile =
     cardsCap.initialised && userId != null && nodeId != null
       ? findPile(cardsCap.state, userId, nodeId)
@@ -59,16 +63,19 @@ export const useShareWithRoom = (
   // `cards` state arrives as its own message, so it can still be loading while
   // `files` (and this unshare control) is already live. If the room has `cards`
   // but its Piles haven't arrived, a Deck with a Discard would slip through the
-  // check above unconfirmed, so err on the side of confirming until it loads.
-  // A room without `cards` has no Piles at all — and standalone file managers
-  // (no room context) never do — so those unshare freely, as before.
+  // Discard check unconfirmed, so err on the side of confirming until it loads.
+  // Gated on the node actually being a Deck, so plain files and folders never
+  // raise the deck-specific dialog during that window. A room without `cards`
+  // has no Piles at all — and standalone file managers (no room context) never
+  // do — so those unshare freely, as before.
   const cardsEnabledInRoom =
     roomInfo?.roomConfig.capabilities.some(
       (capability) => capability.name === "cards",
     ) ?? false;
-  const unshareNeedsConfirmation = cardsEnabledInRoom
-    ? !cardsCap.initialised || (pile?.discard.length ?? 0) > 0
-    : false;
+  const unshareNeedsConfirmation =
+    isDeckShare && cardsEnabledInRoom
+      ? !cardsCap.initialised || (pile?.discard.length ?? 0) > 0
+      : false;
 
   const unshareFromRoom = useCallback(() => {
     if (unshareNeedsConfirmation) {
