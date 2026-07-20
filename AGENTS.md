@@ -32,6 +32,12 @@ If you find yourself reaching for an `as`, think about whether it's needed at al
 
 When you've finished your changes, run `pnpm run check`. This will check types, linter, formatting, and build the project.
 
+In a sandbox or Claude Code web session without real secrets, the `build` step fails during prerender because `envOrDie` throws on missing OAuth/API secrets (`GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_SECRET`, `RESEND_API_KEY`). These aren't exercised by a static prerender, so run the check with `CI=true` — `envOrDie` skips the missing-var throw under CI — and it passes cleanly with no secrets:
+
+```
+CI=true pnpm run check
+```
+
 ## Database schema migration
 
 Database schema migrations are creating by editing the Drizzle schema definition in `src/schemas/*` and then running `pnpm run db:generate:...` (where ... corresponds to the schema you udated.)
