@@ -72,6 +72,13 @@ export type CardDrawMessageData = z.infer<typeof cardDrawMessageDataValidator>;
  *   remaining Cards are derived as liveCards − discard at draw time and never
  *   stored (decision 4), so an added Card is instantly drawable and a deleted
  *   one just goes inert. Empty whenever `returnCards` is `true`.
+ * - `hidden` — whether the Deck is currently binned (or shadowed by a binned
+ *   ancestor) in the owner's store. Binning is reversible, so the Pile is
+ *   hidden rather than destroyed and its Discard survives to be restored inside
+ *   the purge window (ADR-0001 decision 12). Set from `onShareAvailability
+ *   Change` and cleared on restore, mirroring the `unavailable` flag `files`
+ *   keeps on a binned share. Defaults `false` so Piles stored before this field
+ *   existed keep parsing, and a live dwindling Pile is visible.
  *
  * A Deck with no entry here behaves as a fresh, non-dwindling Pile.
  */
@@ -80,6 +87,7 @@ const pileValidator = z.object({
   deckNodeId: z.string(),
   returnCards: z.boolean(),
   discard: z.array(z.string()),
+  hidden: z.boolean().default(false),
 });
 
 export type Pile = z.infer<typeof pileValidator>;
@@ -168,6 +176,7 @@ export const cardsCommon = createCapabilityCommon({
             deckNodeId: payload.deckNodeId,
             returnCards: false,
             discard: [],
+            hidden: false,
           });
         } else {
           stateDraft.piles[index].returnCards = false;

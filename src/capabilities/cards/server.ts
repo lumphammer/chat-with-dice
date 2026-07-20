@@ -115,4 +115,43 @@ export const cardsServer = createServerCapability(cardsCommon, {
       });
     },
   },
+  hooks: {
+    // The Deck's availability changed in the owner's store: it was binned, or
+    // restored, or an ancestor of it was. Binning is reversible (soft delete),
+    // so — unlike an unshare — the Pile is *hidden*, not dropped: its Discard
+    // must survive so a restore inside the purge window brings the room's state
+    // back intact (ADR-0001 decision 12).
+    //
+    // The change carries the *shared* Deck node's id, computed per share from
+    // the owner's database, so a Deck shadowed by a binned ancestor arrives as a
+    // change against the Deck's own id — no ancestor walk here, and the same
+    // match covers it. A change for a Deck this room has no Pile for is normal,
+    // not an error: a non-dwindling Deck has no stored entry and nothing to
+    // preserve, exactly as `files` skips a share it never cached.
+    onShareAvailabilityChange: ({ stateDraft, event: { changes } }) => {
+      for (const change of changes) {
+        const pile = findPile(stateDraft, change.ownerUserId, change.nodeId);
+        if (pile) {
+          pile.hidden = change.unavailable;
+        }
+      }
+    },
+    // The grant is gone for good — the Deck was unshared in-room, or the owner's
+    // node was hard-deleted or purged. Unlike binning there is nothing left to
+    // restore, so drop the Pile and its Discard rather than hiding it. Same
+    // removal the `unshareFile` action drives, but from the owner's DO.
+    // Idempotent: an in-room unshare fires this too, and finding no Pile is fine.
+    "files:onShareRemoved": ({
+      stateDraft,
+      event: { ownerUserId, nodeId },
+    }) => {
+      const index = stateDraft.piles.findIndex(
+        (pile) =>
+          pile.ownerUserId === ownerUserId && pile.deckNodeId === nodeId,
+      );
+      if (index !== -1) {
+        stateDraft.piles.splice(index, 1);
+      }
+    },
+  },
 });

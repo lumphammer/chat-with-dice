@@ -46,6 +46,7 @@ export const FolderToolbar = memo(
       canUnshareFromRoom,
       unshareFromRoom,
       isSharedWithRoom,
+      unshareConfirmation,
     } = useShareWithRoom(readOnly ? null : currentFolderId, readOnly);
 
     const handleUploadClick = () => {
@@ -58,6 +59,7 @@ export const FolderToolbar = memo(
 
     return (
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        {unshareConfirmation}
         {!compact && !readOnly && (
           <>
             <button
