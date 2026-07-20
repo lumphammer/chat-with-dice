@@ -61,7 +61,7 @@
     "drizzle-orm": "1.0.0-rc.4-de6c356",
     "immer": "^11.1.15",
     "lucide-react": "^1.25.0",
-    "nanoid": "^5.1.16",
+    "nanoid": "^6.0.0",
     "nanostores": "^1.4.0",
     "oxlint": "^1.74.0",
     "oxlint-tsgolint": "^0.25.0",
