@@ -6,9 +6,20 @@ export const log = console.log.bind(console, "[UserDataDO]");
 export const logError = console.error.bind(console, "[UserDataDO]");
 
 export function isUniqueConstraintError(error: unknown): error is Error {
-  return (
-    error instanceof Error && error.message.includes("UNIQUE constraint failed")
-  );
+  // Drizzle now wraps query failures in a `DrizzleQueryError` whose own message
+  // is just "Failed query: ..."; the underlying SQLite error (which carries the
+  // "UNIQUE constraint failed" text) hangs off `.cause`. Walk the cause chain so
+  // we catch it whether it's on the top-level error or nested.
+  for (
+    let current: unknown = error;
+    current instanceof Error;
+    current = current.cause
+  ) {
+    if (current.message.includes("UNIQUE constraint failed")) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /** List every object under `prefix`, following R2's truncation cursor. */

@@ -31,7 +31,7 @@ export const DeleteRestoreSection = memo(({ room, onRoomUpdated }: Props) => {
         message: error?.message ?? "Action failed.",
       });
     } else {
-      onRoomUpdated(data.room as Room);
+      onRoomUpdated(data.room);
       setFeedback({
         type: "success",
         message: isDeleted ? "Room restored." : "Room soft-deleted.",

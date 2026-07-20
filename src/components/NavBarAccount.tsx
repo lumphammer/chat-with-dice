@@ -80,7 +80,7 @@ export function NavBarAccount({
       <button
         className="btn btn-ghost btn-circle"
         popoverTarget="nav-user-menu"
-        style={{ anchorName: "--nav-user-menu" } as React.CSSProperties}
+        style={{ anchorName: "--nav-user-menu" }}
         aria-label={user ? "Open account menu" : "Open site menu"}
       >
         {user && initials ? (
@@ -99,7 +99,7 @@ export function NavBarAccount({
         popover="auto"
         className="dropdown dropdown-end rounded-box bg-base-100 ring-base-200
           w-fit shadow-lg ring-1"
-        style={{ positionAnchor: "--nav-user-menu" } as React.CSSProperties}
+        style={{ positionAnchor: "--nav-user-menu" }}
       >
         {user && (
           <div className="border-base-200 border-b px-4 py-3">

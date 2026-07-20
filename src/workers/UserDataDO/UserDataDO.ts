@@ -804,11 +804,7 @@ export class UserDataDO extends DurableObject {
     }
     return {
       result: "found",
-      data: node as RecursiveExpand<
-        Omit<typeof node, "file"> & {
-          file: Exclude<(typeof node)["file"], null>;
-        }
-      >,
+      data: node,
     };
   }
 

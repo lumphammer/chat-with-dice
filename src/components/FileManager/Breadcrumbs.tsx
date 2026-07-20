@@ -74,7 +74,7 @@ const HiddenSegmentMenu = memo(
           className="btn btn-ghost btn-sm shrink-0 px-1"
           aria-label="Show parent folders"
           popoverTarget={menuId}
-          style={{ anchorName } as React.CSSProperties}
+          style={{ anchorName }}
         >
           ...
         </button>
@@ -84,7 +84,7 @@ const HiddenSegmentMenu = memo(
           popover="auto"
           className="dropdown rounded-box bg-base-100 ring-base-200 w-56
             shadow-lg ring-1"
-          style={{ positionAnchor: anchorName } as React.CSSProperties}
+          style={{ positionAnchor: anchorName }}
         >
           <ul className="menu p-1">
             {segments.map((segment) => (

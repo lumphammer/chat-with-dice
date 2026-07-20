@@ -44,7 +44,7 @@ const STALE_SWEEP_FACTOR = 3;
 const STALE_THRESHOLD_MS = SWEEP_INTERVAL_MS * STALE_SWEEP_FACTOR;
 
 export class ChatRoomDO extends DurableObject {
-  private db!: DrizzleSqliteDODatabase<typeof dbSchema>;
+  private db!: DrizzleSqliteDODatabase;
   private messageRepository!: MessageRepository;
   private broadcaster!: Broadcaster;
   private capabilityService!: CapabilityService;

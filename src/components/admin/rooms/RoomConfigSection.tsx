@@ -54,9 +54,9 @@ export const RoomConfigSection = memo(({ room, onRoomUpdated }: Props) => {
         message: error?.message ?? "Failed to update config.",
       });
     } else {
-      onRoomUpdated(data.room as Room);
+      onRoomUpdated(data.room);
       // Reformat the saved config
-      setConfigText(toConfigText((data.room as Room).config));
+      setConfigText(toConfigText(data.room.config));
       setFeedback({ type: "success", message: "Config saved." });
     }
   };

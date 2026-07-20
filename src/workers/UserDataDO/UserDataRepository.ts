@@ -7,10 +7,7 @@ import { logError } from "./utils";
 import { and, count, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
-type DBHandle = DrizzleSqliteDODatabase<
-  typeof dbSchema,
-  typeof dbSchema.relations
->;
+type DBHandle = DrizzleSqliteDODatabase<typeof dbSchema.relations>;
 
 export type PathWalkRow = { folder_id: string; depth: number };
 
