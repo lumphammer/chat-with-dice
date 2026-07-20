@@ -1,4 +1,7 @@
-import { cardDrawMessageDataValidator } from "#/capabilities/cards/common";
+import {
+  type CardsState,
+  cardDrawMessageDataValidator,
+} from "#/capabilities/cards/common";
 import { cardsServer } from "#/capabilities/cards/server";
 import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
@@ -139,6 +142,9 @@ const drawnCardIds = (sentMessages: unknown[]) =>
   sentMessages.map(
     (data) => (data as { card: { nodeId: string } }).card.nodeId,
   );
+
+const pilesOf = (mounted: ServerMountedCapability) =>
+  (mounted.getInitPayload().state as CardsState).piles;
 
 describe("cards draw action", () => {
   beforeEach(() => {
@@ -492,5 +498,88 @@ describe("dwindling pile", () => {
 
     expect(drawnCardIds(sentMessages)).toEqual(["card-a", "card-a"]);
     expect(errors).toEqual([]);
+  });
+});
+
+describe("pile lifecycle", () => {
+  beforeEach(() => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+  });
+
+  // Build a dwindling Pile with one Card already in its Discard, so the lifecycle
+  // hooks have real room state to preserve or destroy.
+  const withDiscardedCard = async () => {
+    const result = await mountWith(twoCardDeck());
+    await setReturnCards(result.mounted, false);
+    await draw(result.mounted);
+    expect(pilesOf(result.mounted)[0].discard).toHaveLength(1);
+    return result;
+  };
+
+  it("hides a Pile on binning and keeps its Discard intact", async () => {
+    const { mounted } = await withDiscardedCard();
+
+    // Binning the Deck (or an ancestor) reports the shared node as unavailable.
+    await mounted.runHook("onShareAvailabilityChange", {
+      changes: [{ ownerUserId: OWNER, nodeId: DECK, unavailable: true }],
+    });
+
+    const [pile] = pilesOf(mounted);
+    expect(pile.hidden).toBe(true);
+    // The Discard survives the bin, so a restore inside the purge window brings
+    // the half-drawn session back.
+    expect(pile.discard).toHaveLength(1);
+  });
+
+  it("unhides a Pile when its Deck is restored", async () => {
+    const { mounted } = await withDiscardedCard();
+
+    await mounted.runHook("onShareAvailabilityChange", {
+      changes: [{ ownerUserId: OWNER, nodeId: DECK, unavailable: true }],
+    });
+    await mounted.runHook("onShareAvailabilityChange", {
+      changes: [{ ownerUserId: OWNER, nodeId: DECK, unavailable: false }],
+    });
+
+    const [pile] = pilesOf(mounted);
+    expect(pile.hidden).toBe(false);
+    expect(pile.discard).toHaveLength(1);
+  });
+
+  it("leaves a Deck with no Pile untouched on an availability change", async () => {
+    // A non-dwindling Deck has no stored entry and no Discard to preserve, so an
+    // availability change for it creates nothing — as the files handler skips a
+    // share it never cached. This is also the shadowed-ancestor path: the change
+    // carries the Deck's own shared node id regardless of which node was binned.
+    const { mounted } = await mountWith(twoCardDeck());
+
+    await mounted.runHook("onShareAvailabilityChange", {
+      changes: [{ ownerUserId: OWNER, nodeId: DECK, unavailable: true }],
+    });
+
+    expect(pilesOf(mounted)).toEqual([]);
+  });
+
+  it("drops the Pile and its Discard when the share is removed", async () => {
+    const { mounted } = await withDiscardedCard();
+
+    // Unsharing revokes the grant for good, so — unlike binning — the Pile goes.
+    await mounted.runHook("files:onShareRemoved", {
+      ownerUserId: OWNER,
+      nodeId: DECK,
+    });
+
+    expect(pilesOf(mounted)).toEqual([]);
+  });
+
+  it("is a no-op to remove a share with no Pile", async () => {
+    const { mounted } = await mountWith(twoCardDeck());
+
+    await mounted.runHook("files:onShareRemoved", {
+      ownerUserId: OWNER,
+      nodeId: DECK,
+    });
+
+    expect(pilesOf(mounted)).toEqual([]);
   });
 });
