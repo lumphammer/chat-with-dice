@@ -176,6 +176,7 @@ export const DiceRoller = memo(
 
     const {
       scrollContainerRef,
+      contentRef,
       handleScroll,
       scrollToBottom,
       hasNewMessages,
@@ -285,7 +286,7 @@ export const DiceRoller = memo(
                         onScroll={handleScroll}
                         className="absolute inset-0 overflow-auto px-4"
                       >
-                        <div className={styles.chatMessages}>
+                        <div ref={contentRef} className={styles.chatMessages}>
                           {messages.map((message) => (
                             <ChatBubble
                               key={message.id}
