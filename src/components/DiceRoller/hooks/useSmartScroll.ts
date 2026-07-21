@@ -13,7 +13,13 @@ export function useSmartScroll({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const isNearBottomRef = useRef(true);
+  // Whether the view should stay pinned to the bottom as content changes. This
+  // is *intent*, not a position snapshot: it survives content growth and our
+  // own programmatic scrolling, and is cleared only when the user themselves
+  // scrolls up away from the bottom.
+  const stickToBottomRef = useRef(true);
+  const lastScrollTopRef = useRef(0);
+
   // Check if user is near the bottom of the scroll container
   const checkIfNearBottom = useCallback(() => {
     const container = scrollContainerRef.current;
@@ -24,14 +30,24 @@ export function useSmartScroll({
     return distanceFromBottom <= SCROLL_THRESHOLD;
   }, []);
 
-  // Track scroll position to update isNearBottomRef
+  // Track scroll position to update the stick-to-bottom intent
   const handleScroll = useCallback(() => {
-    onScroll?.(
-      scrollContainerRef.current?.scrollLeft ?? 0,
-      scrollContainerRef.current?.scrollTop ?? 0,
-    );
+    const container = scrollContainerRef.current;
+    const scrollTop = container?.scrollTop ?? 0;
+    onScroll?.(container?.scrollLeft ?? 0, scrollTop);
+
     const nearBottom = checkIfNearBottom();
-    isNearBottomRef.current = nearBottom;
+    // Only a genuine upward scroll by the user breaks the pin. Content growing
+    // below the viewport leaves scrollTop unchanged, and our own scroll-to-
+    // bottom moves it downward, so neither is mistaken for the user leaving.
+    const scrolledUp = scrollTop < lastScrollTopRef.current - 1;
+    lastScrollTopRef.current = scrollTop;
+
+    if (nearBottom) {
+      stickToBottomRef.current = true;
+    } else if (scrolledUp) {
+      stickToBottomRef.current = false;
+    }
 
     // Clear new messages indicator when user scrolls to bottom
     if (nearBottom && hasNewMessages) {
@@ -41,6 +57,7 @@ export function useSmartScroll({
 
   // Scroll to bottom and clear indicator
   const scrollToBottom = useCallback(() => {
+    stickToBottomRef.current = true;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     setHasNewMessages(false);
   }, []);
@@ -52,8 +69,8 @@ export function useSmartScroll({
       scrollContainerRef.current?.scrollTop ?? 0,
     );
 
-    if (isNearBottomRef.current) {
-      // User was near bottom, auto-scroll to show new messages
+    if (stickToBottomRef.current) {
+      // User wants to stay at the bottom, auto-scroll to show new messages
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     } else if (messages.length > 0) {
       // User is scrolled up, show new messages indicator
@@ -67,31 +84,20 @@ export function useSmartScroll({
   // run. Observing the content lets us re-pin once the image expands the bubble,
   // rather than stopping at the pre-load height.
   //
-  // We deliberately do NOT read isNearBottomRef here. The growth that triggers
-  // this observer also fires a scroll event, and that scroll handler runs first
-  // and flips isNearBottomRef to false (the user is now, momentarily, far from
-  // the bottom because the content jumped down under them). Instead we decide
-  // from geometry: was the user near the bottom *before* this growth? We answer
-  // that with the previous scroll height, so a late-loading image re-pins while
-  // someone scrolled up reading history is left undisturbed.
-  //
-  // scrollTo (position-based) rather than bottomRef.scrollIntoView: the
-  // message-change effect above may still be running a smooth scroll, and asking
-  // to scroll the same bottomRef into view again is a no-op while that animation
-  // is in flight. Scrolling the container to a fresh position retargets it.
+  // We key off the stick-to-bottom intent rather than the live distance from the
+  // bottom: while the message-change smooth scroll is still animating, scrollTop
+  // lags its target, so a distance measurement could wrongly read as "scrolled
+  // up" and skip the re-pin. scrollTo (position-based) rather than
+  // bottomRef.scrollIntoView, because asking to scroll the same bottomRef into
+  // view again is a no-op while that animation is in flight; scrolling the
+  // container to a fresh position retargets it to the real, post-image bottom.
   useLayoutEffect(() => {
     const content = contentRef.current;
     const container = scrollContainerRef.current;
     if (!content || !container) return;
 
-    let prevScrollHeight = container.scrollHeight;
-
     const observer = new ResizeObserver(() => {
-      const distanceFromBottomBefore =
-        prevScrollHeight - container.scrollTop - container.clientHeight;
-      prevScrollHeight = container.scrollHeight;
-
-      if (distanceFromBottomBefore <= SCROLL_THRESHOLD) {
+      if (stickToBottomRef.current) {
         container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
       }
     });
