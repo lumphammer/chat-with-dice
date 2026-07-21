@@ -1,5 +1,7 @@
 import { formatBytes } from "#/utils/formatBytes";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { GenericMenu, useGenericMenu } from "../GenericMenu";
+import { DeckMenuItems } from "./DeckMenuItems";
 import { QuotaBar } from "./QuotaBar";
 import type { ViewMode } from "./viewModeStore";
 import {
@@ -19,6 +21,7 @@ export const FolderActionsMenu = memo(
   ({
     canShareWithRoom,
     canUnshareFromRoom,
+    currentFolder,
     includePrimaryActions,
     isSharedWithRoom,
     onNewFolder,
@@ -36,6 +39,7 @@ export const FolderActionsMenu = memo(
   }: {
     canShareWithRoom: boolean;
     canUnshareFromRoom: boolean;
+    currentFolder: StorageNode | null;
     includePrimaryActions: boolean;
     isSharedWithRoom: boolean;
     onNewFolder: () => void;
@@ -124,6 +128,15 @@ export const FolderActionsMenu = memo(
               Unshare folder
             </button>
           </li>
+        )}
+        {!readOnly && currentFolder?.kind === "folder" && (
+          <DeckMenuItems
+            nodeId={currentFolder.id}
+            name={currentFolder.name}
+            isDeck={currentFolder.isDeck}
+            onRefresh={onRefresh}
+            wrapMenuAction={wrapMenuAction}
+          />
         )}
         {!readOnly && (
           <li>

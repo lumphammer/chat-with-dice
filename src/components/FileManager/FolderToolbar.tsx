@@ -1,4 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
+import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { FolderActionsMenu } from "./FolderActionsMenu";
 import { NewFolderDialog, type NewFolderDialogHandle } from "./NewFolderDialog";
 import { useShareWithRoom } from "./useShareWithRoom";
@@ -14,6 +15,7 @@ type CreatedFolder = {
 export const FolderToolbar = memo(
   ({
     currentFolderId,
+    currentFolder,
     compact,
     onFolderCreated,
     onFilesSelected,
@@ -25,6 +27,7 @@ export const FolderToolbar = memo(
     onShowDeletedChange,
   }: {
     currentFolderId: string | null;
+    currentFolder: StorageNode | null;
     compact: boolean;
     onFolderCreated: (folder: CreatedFolder) => void;
     onFilesSelected: (files: FileList) => void;
@@ -84,6 +87,7 @@ export const FolderToolbar = memo(
         <FolderActionsMenu
           canShareWithRoom={canShareWithRoom}
           canUnshareFromRoom={canUnshareFromRoom}
+          currentFolder={currentFolder}
           includePrimaryActions={compact && !readOnly}
           isSharedWithRoom={isSharedWithRoom}
           onNewFolder={handleNewFolderClick}

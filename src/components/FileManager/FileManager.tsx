@@ -55,6 +55,7 @@ const useElementWidth = <T extends HTMLElement>(
 export const FileManager = memo(
   ({
     initialNodes,
+    initialFolder,
     location,
     onLocationChange,
     ownerUserId,
@@ -63,6 +64,7 @@ export const FileManager = memo(
     rootLabel,
   }: {
     initialNodes?: StorageNode[];
+    initialFolder?: StorageNode | null;
     location: FileManagerLocation;
     onLocationChange: (location: FileManagerLocation) => void;
     rootIcon?: LucideIcon;
@@ -77,6 +79,11 @@ export const FileManager = memo(
 
     const readOnly = ownerUserId !== undefined;
     const [nodes, setNodes] = useState<StorageNode[]>(() => initialNodes ?? []);
+    // The folder we're currently inside (null at the root). Carries its own
+    // metadata (e.g. isDeck) so the folder-level actions menu can act on it.
+    const [currentFolder, setCurrentFolder] = useState<StorageNode | null>(
+      () => initialFolder ?? null,
+    );
 
     const viewMode = useStore(viewModeStore);
 
@@ -123,7 +130,7 @@ export const FileManager = memo(
       navigationIdRef.current += 1;
       const requestId = navigationIdRef.current;
       setIsLoading(true);
-      const result = await actions.files.getNodes({
+      const result = await actions.files.getFolderWithChildren({
         folderId,
         ownerUserId,
         roomId,
@@ -136,11 +143,12 @@ export const FileManager = memo(
         logger.error("Failed to fetch nodes:", result.error);
         return;
       }
-      setNodes(result.data);
+      setNodes(result.data.nodes);
+      setCurrentFolder(result.data.folder);
 
       if (
         locationRef.current.previewFileId &&
-        !result.data.some(
+        !result.data.nodes.some(
           (n) => n.id === locationRef.current.previewFileId && !n.deletedTime,
         )
       ) {
@@ -341,6 +349,7 @@ export const FileManager = memo(
             <FolderToolbar
               compact={isToolbarCompact}
               currentFolderId={location.folderId}
+              currentFolder={currentFolder}
               onFolderCreated={handleFolderCreated}
               onFilesSelected={uploadFiles}
               viewMode={viewMode}

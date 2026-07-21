@@ -1,5 +1,5 @@
 import { createFolder } from "#/actions/files/createFolder";
-import { getNodes } from "#/actions/files/getNodes";
+import { getFolderWithChildren } from "#/actions/files/getFolderWithChildren";
 import { setFolderIsDeck } from "#/actions/files/setFolderIsDeck";
 import {
   callAction,
@@ -23,7 +23,11 @@ describe("setFolderIsDeck", () => {
 
     await callAction(setFolderIsDeck, { nodeId: folder.id, isDeck: true }, ctx);
 
-    const nodes = await callAction(getNodes, { folderId: null }, ctx);
+    const { nodes } = await callAction(
+      getFolderWithChildren,
+      { folderId: null },
+      ctx,
+    );
     expect(nodes.find((n) => n.id === folder.id)).toMatchObject({
       kind: "folder",
       isDeck: true,
@@ -42,7 +46,11 @@ describe("setFolderIsDeck", () => {
       ctx,
     );
 
-    const nodes = await callAction(getNodes, { folderId: null }, ctx);
+    const { nodes } = await callAction(
+      getFolderWithChildren,
+      { folderId: null },
+      ctx,
+    );
     expect(nodes.find((n) => n.id === folder.id)).toMatchObject({
       kind: "folder",
       isDeck: false,

@@ -44,13 +44,19 @@ if (resolution.kind === "not-found") {
 
 const folderId = resolution.folderId;
 const breadcrumbs = resolution.breadcrumbs;
-let initialNodes: Awaited<ReturnType<typeof userDataDO.getNodes>>;
+let initialData: Awaited<ReturnType<typeof userDataDO.getFolderWithChildren>>;
 
 try {
-  initialNodes = await userDataDO.getNodes(folderId ?? undefined, false);
+  initialData = await userDataDO.getFolderWithChildren(
+    folderId ?? undefined,
+    false,
+  );
 } catch (e) {
   return new Response("Not found", { status: 404 });
 }
+
+const initialNodes = initialData.nodes;
+const initialFolder = initialData.folder;
 
 // if the path resolved to a file, we need to find the file node in the list
 // so the client can immediately open the preview
@@ -65,6 +71,7 @@ const previewFileName =
   <StandaloneFileManager
     client:only="react"
     initialNodes={initialNodes}
+    initialFolder={initialFolder}
     initialLocation={{
       folderId,
       breadcrumbs,

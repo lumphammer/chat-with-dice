@@ -11,8 +11,8 @@ import { env } from "cloudflare:workers";
  * This reuses the one authoritative definition of "what a Card is"
  * (`UserDataDO.getDeckCards`) rather than re-deriving it client-side, so the
  * count matches exactly what a draw would see. Authorisation mirrors the
- * cross-user path in `files/getNodes`: the owner's store checks the node is
- * reachable from a share the Room holds.
+ * cross-user path in `files/getFolderWithChildren`: the owner's store checks
+ * the node is reachable from a share the Room holds.
  */
 export const getDeckCards = defineAction({
   input: z.object({

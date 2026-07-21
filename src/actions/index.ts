@@ -9,7 +9,7 @@ import { getDeckCards } from "./cards/getDeckCards";
 import { createFolder } from "./files/createFolder";
 import { deleteNode } from "./files/deleteNode";
 import { getDeckSettings } from "./files/getDeckSettings";
-import { getNodes } from "./files/getNodes";
+import { getFolderWithChildren } from "./files/getFolderWithChildren";
 import { hardDeleteNode } from "./files/hardDeleteNode";
 import { renameNode } from "./files/renameNode";
 import { restoreNode } from "./files/restoreNode";
@@ -34,7 +34,7 @@ export const server = {
   files: {
     createFolder,
     deleteNode,
-    getNodes,
+    getFolderWithChildren,
     renameNode,
     hardDeleteNode,
     restoreNode,
