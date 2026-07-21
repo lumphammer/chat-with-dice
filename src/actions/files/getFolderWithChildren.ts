@@ -3,7 +3,7 @@ import { z } from "astro/zod";
 import { ActionError, defineAction } from "astro:actions";
 import { env } from "cloudflare:workers";
 
-export const getNodes = defineAction({
+export const getFolderWithChildren = defineAction({
   input: z.object({
     folderId: z.string().nullable().optional(),
     ownerUserId: z.string().optional(),
@@ -33,7 +33,7 @@ export const getNodes = defineAction({
       const userDataDO = env.USER_DATA_DO.get(
         env.USER_DATA_DO.idFromString(loggedInUser.userDataDOId),
       );
-      return await userDataDO.getNodes(folderId, includeDeleted);
+      return await userDataDO.getFolderWithChildren(folderId, includeDeleted);
     }
 
     // cross-user read — must specify a room and a concrete folder; we never
@@ -73,6 +73,6 @@ export const getNodes = defineAction({
     }
 
     // cross-user requests never show deleted nodes
-    return await ownerDO.getNodes(folderId, false);
+    return await ownerDO.getFolderWithChildren(folderId, false);
   },
 });

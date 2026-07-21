@@ -2,14 +2,13 @@ import { logger } from "#/utils/logger.ts";
 import type { StorageNode } from "#/validators/storageNodeValidator.ts";
 import { useFeedback } from "../FeedbackContext";
 import { GenericMenu, useGenericMenu } from "../GenericMenu";
-import { DeckSettingsDialog } from "./DeckSettingsDialog";
+import { DeckMenuItems } from "./DeckMenuItems";
 import { HardDeleteDialog } from "./HardDeleteDialog";
 import { buildFileUrl } from "./fileUrl";
 import { useShareWithRoom } from "./useShareWithRoom";
 import { actions } from "astro:actions";
 import {
   Download,
-  Layers,
   Pencil,
   Share2,
   Trash2,
@@ -65,18 +64,6 @@ export const NodeActionsMenu = memo(
       }
       onRefresh?.();
     };
-    const handleToggleDeck = async () => {
-      const result = await actions.files.setFolderIsDeck({
-        nodeId: node.id,
-        isDeck: node.kind === "folder" ? !node.isDeck : true,
-      });
-      if (result.error) {
-        onError(`Failed to update ${node.name}: ${result.error.message}`);
-        return;
-      }
-      onRefresh?.();
-    };
-
     const isDeleted = node.deletedTime !== null;
     const isLive = !isDeleted;
     const downloadUrl =
@@ -127,17 +114,13 @@ export const NodeActionsMenu = memo(
             </li>
           )}
           {isLive && !readOnly && node.kind === "folder" && (
-            <li>
-              <button type="button" onClick={wrapMenuAction(handleToggleDeck)}>
-                <Layers size={14} />
-                {node.isDeck ? "Unmark as Deck" : "Mark as Deck"}
-              </button>
-            </li>
-          )}
-          {isLive && !readOnly && node.kind === "folder" && node.isDeck && (
-            <li>
-              <DeckSettingsDialog nodeId={node.id} name={node.name} />
-            </li>
+            <DeckMenuItems
+              nodeId={node.id}
+              name={node.name}
+              isDeck={node.isDeck}
+              onRefresh={onRefresh}
+              wrapMenuAction={wrapMenuAction}
+            />
           )}
           {isLive && !readOnly && (
             <li>

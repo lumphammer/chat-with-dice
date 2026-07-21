@@ -55,6 +55,7 @@ const useElementWidth = <T extends HTMLElement>(
 export const FileManager = memo(
   ({
     initialNodes,
+    initialFolder,
     location,
     onLocationChange,
     ownerUserId,
@@ -63,6 +64,7 @@ export const FileManager = memo(
     rootLabel,
   }: {
     initialNodes?: StorageNode[];
+    initialFolder?: StorageNode | null;
     location: FileManagerLocation;
     onLocationChange: (location: FileManagerLocation) => void;
     rootIcon?: LucideIcon;
@@ -77,6 +79,11 @@ export const FileManager = memo(
 
     const readOnly = ownerUserId !== undefined;
     const [nodes, setNodes] = useState<StorageNode[]>(() => initialNodes ?? []);
+    // The folder we're currently inside (null at the root). Carries its own
+    // metadata (e.g. isDeck) so the folder-level actions menu can act on it.
+    const [currentFolder, setCurrentFolder] = useState<StorageNode | null>(
+      () => initialFolder ?? null,
+    );
 
     const viewMode = useStore(viewModeStore);
 
@@ -123,24 +130,29 @@ export const FileManager = memo(
       navigationIdRef.current += 1;
       const requestId = navigationIdRef.current;
       setIsLoading(true);
-      const result = await actions.files.getNodes({
+      const result = await actions.files.getFolderWithChildren({
         folderId,
         ownerUserId,
         roomId,
         includeDeleted: showDeletedRef.current,
       });
-      if (navigationIdRef.current === requestId) {
-        setIsLoading(false);
+      // A later navigation has superseded this request: discard its response
+      // entirely so stale contents or folder metadata can't overwrite the
+      // current folder's (a deck action would otherwise target the wrong one).
+      if (navigationIdRef.current !== requestId) {
+        return;
       }
+      setIsLoading(false);
       if (result.error) {
         logger.error("Failed to fetch nodes:", result.error);
         return;
       }
-      setNodes(result.data);
+      setNodes(result.data.nodes);
+      setCurrentFolder(result.data.folder);
 
       if (
         locationRef.current.previewFileId &&
-        !result.data.some(
+        !result.data.nodes.some(
           (n) => n.id === locationRef.current.previewFileId && !n.deletedTime,
         )
       ) {
@@ -341,6 +353,9 @@ export const FileManager = memo(
             <FolderToolbar
               compact={isToolbarCompact}
               currentFolderId={location.folderId}
+              currentFolder={
+                currentFolder?.id === location.folderId ? currentFolder : null
+              }
               onFolderCreated={handleFolderCreated}
               onFilesSelected={uploadFiles}
               viewMode={viewMode}

@@ -9,6 +9,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 type StandaloneFileManagerProps = {
   initialNodes?: StorageNode[];
+  initialFolder?: StorageNode | null;
   initialLocation: FileManagerLocation;
 };
 
@@ -47,7 +48,11 @@ const toFileManagerPath = (location: FileManagerLocation) => {
 };
 
 export const StandaloneFileManager = memo(
-  ({ initialNodes, initialLocation }: StandaloneFileManagerProps) => {
+  ({
+    initialNodes,
+    initialFolder,
+    initialLocation,
+  }: StandaloneFileManagerProps) => {
     const [location, setLocation] = useState(initialLocation);
     const hasSetInitialState = useRef(false);
 
@@ -93,6 +98,7 @@ export const StandaloneFileManager = memo(
       <FeedbackToasterProvider feedbackToasterValue={feedbackToasterValue}>
         <FileManager
           initialNodes={initialNodes}
+          initialFolder={initialFolder}
           location={location}
           onLocationChange={handleLocationChange}
         />

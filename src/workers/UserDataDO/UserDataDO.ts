@@ -146,24 +146,31 @@ export class UserDataDO extends DurableObject {
   }
 
   /**
-   * Get the contents of a folder. By design, this only works for live folders;
-   * We do not allow navigation of soft-deleted folders.
+   * Get a folder together with its contents. `folder` is the folder node itself
+   * (null at the root), so callers know its own metadata (e.g. isDeck) without a
+   * second read; `nodes` are its children. By design, this only works for live
+   * folders; we do not allow navigation of soft-deleted folders.
    */
-  async getNodes(
+  async getFolderWithChildren(
     folderId: string | null | undefined,
     includeDeleted: boolean,
-  ): Promise<StorageNode[]> {
+  ): Promise<{ folder: StorageNode | null; nodes: StorageNode[] }> {
+    let folder: StorageNode | null = null;
     if (folderId) {
       const folderNode = await this.repo.getNode(folderId);
-      if (!folderNode) {
+      // `getNode` also returns files; a file id would otherwise be mapped and
+      // returned as `folder` with an empty child list, breaking the folder-only
+      // contract. Treat a missing node or a file as "not found".
+      if (!folderNode?.folder) {
         throw new Error("Folder not found");
       }
+      folder = dbNodeToStorageNode(folderNode);
     }
     const dbNodes = await this.repo.getChildNodes(folderId, includeDeleted);
-    const storageNodes = dbNodes.map<StorageNode>((dbNode) => {
+    const nodes = dbNodes.map<StorageNode>((dbNode) => {
       return dbNodeToStorageNode(dbNode);
     });
-    return storageNodes;
+    return { folder, nodes };
   }
 
   async createFolder(name: string, parentFolderId?: string | null) {
