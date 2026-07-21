@@ -367,6 +367,24 @@ export type SharedItem = z.infer<typeof sharedItemValidator>;
 /** A share as the room caches it: a {@link SharedItem} plus its availability. */
 export type RoomShare = z.infer<typeof roomShareValidatorV6>;
 
+/**
+ * Drop a room's cached share for `nodeId` owned by `ownerUserId`, if present.
+ * Shared by the `unshareFile` and `removeShare` actions, which differ only in
+ * their server-side effect, not in how the room's own record goes away.
+ */
+const removeCachedShare = (
+  shares: { userId: string; node: { id: string } }[],
+  ownerUserId: string,
+  nodeId: string,
+) => {
+  const index = shares.findIndex(
+    (share) => share.userId === ownerUserId && share.node.id === nodeId,
+  );
+  if (index !== -1) {
+    shares.splice(index, 1);
+  }
+};
+
 export const filesCommon = createCapabilityCommon({
   name: "files",
   displayName: "Files",
@@ -406,14 +424,28 @@ export const filesCommon = createCapabilityCommon({
           ownerUserId: z.string(),
         }),
         pureFn: ({ stateDraft, payload }) => {
-          const index = stateDraft.shares.findIndex(
-            (share) =>
-              share.userId === payload.ownerUserId &&
-              share.node.id === payload.nodeId,
+          removeCachedShare(
+            stateDraft.shares,
+            payload.ownerUserId,
+            payload.nodeId,
           );
-          if (index !== -1) {
-            stateDraft.shares.splice(index, 1);
-          }
+        },
+      }),
+      // Room-side removal driven from the shared-items list: a room owner
+      // clearing any share, or a user clearing their own, without drilling in.
+      // Same room-record removal as `unshareFile`, but its effect informs the
+      // owner's store best-effort rather than requiring an ack — see server.ts.
+      removeShare: createAction({
+        payloadValidator: z.object({
+          nodeId: z.string(),
+          ownerUserId: z.string(),
+        }),
+        pureFn: ({ stateDraft, payload }) => {
+          removeCachedShare(
+            stateDraft.shares,
+            payload.ownerUserId,
+            payload.nodeId,
+          );
         },
       }),
     };

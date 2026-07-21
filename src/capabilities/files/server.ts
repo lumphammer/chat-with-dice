@@ -64,6 +64,37 @@ export const filesServer = createServerCapability(filesCommon, {
         nodeId: payload.nodeId,
       });
     },
+    removeShare: async ({
+      stateDraft,
+      payload,
+      userId,
+      nodeShareManager,
+      broadcaster,
+      pureFn,
+      fireHook,
+    }) => {
+      const result = await nodeShareManager.removeShareFromRoom({
+        requestingUserId: userId,
+        ownerUserId: payload.ownerUserId,
+        nodeId: payload.nodeId,
+      });
+
+      // Only an authorisation failure stops the removal. A best-effort owner
+      // notification that couldn't be delivered still returns "ok": dropping a
+      // stale record whose owner or node is already gone is exactly what this
+      // path is for, so the room's own record always goes.
+      if (result.result === "error") {
+        broadcaster.sendErrorToUserId(userId, result.reason);
+        return;
+      }
+
+      pureFn({ stateDraft, payload });
+
+      fireHook("files:onShareRemoved", {
+        ownerUserId: payload.ownerUserId,
+        nodeId: payload.nodeId,
+      });
+    },
   },
   hooks: {
     onShareAvailabilityChange: ({ stateDraft, event: { changes } }) => {
