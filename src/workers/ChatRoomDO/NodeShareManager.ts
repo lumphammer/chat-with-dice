@@ -196,21 +196,25 @@ export class NodeShareManager {
       };
     }
 
-    const userDataDOResult = await this.getUserDataDO(ownerUserId);
-    if (userDataDOResult.result === "ok") {
-      try {
+    // Resolving the owner DO can itself reject — the D1 lookup, or
+    // `idFromString` on a malformed stored id — so it lives inside the try too.
+    // Anything short of authorisation must still let the room drop its record;
+    // that is the whole point of the stale-record path.
+    try {
+      const userDataDOResult = await this.getUserDataDO(ownerUserId);
+      if (userDataDOResult.result === "ok") {
         await userDataDOResult.userDataDO.unshareNodeFromRoom({
           nodeId,
           roomId: this.roomId,
           roomDurableObjectId: this.ctx.id.toString(),
         });
-      } catch (cause) {
-        logError(
-          `Best-effort unshare notification to owner ${ownerUserId} failed ` +
-            `for node ${nodeId}`,
-          cause,
-        );
       }
+    } catch (cause) {
+      logError(
+        `Best-effort unshare notification to owner ${ownerUserId} failed ` +
+          `for node ${nodeId}`,
+        cause,
+      );
     }
 
     return { result: "ok" };
