@@ -7,6 +7,7 @@ import {
   makeActionContext,
 } from "#/test-utils/integration/actions";
 import { createUserWithDO } from "#/test-utils/integration/users";
+import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 
 describe("getFolderWithChildren (self-read path)", () => {
@@ -73,6 +74,29 @@ describe("getFolderWithChildren (self-read path)", () => {
       isDeck: true,
     });
     expect(nodes.map((n) => n.id)).toEqual([child.id]);
+  });
+
+  it("throws when the id is a file, not a folder", async () => {
+    const user = await createUserWithDO();
+    const userDataDO = env.USER_DATA_DO.get(
+      env.USER_DATA_DO.idFromString(user.userDataDOId),
+    );
+    const fileResult = await userDataDO.createFile(
+      "cover.jpg",
+      "image/jpeg",
+      null,
+    );
+    if (fileResult.kind !== "success") {
+      throw new Error("test setup: file creation failed");
+    }
+
+    await expect(
+      callAction(
+        getFolderWithChildren,
+        { folderId: fileResult.data.id },
+        makeActionContext(user),
+      ),
+    ).rejects.toThrow(/not found/i);
   });
 
   it("throws UNAUTHORIZED when there is no logged-in user", async () => {

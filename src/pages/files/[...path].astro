@@ -52,7 +52,13 @@ try {
     false,
   );
 } catch (e) {
-  return new Response("Not found", { status: 404 });
+  // Only a genuinely missing folder is a 404 (e.g. deleted between resolving
+  // the path and this read). Let unexpected DO/database failures propagate as a
+  // 5xx rather than masquerading as "Not found".
+  if (e instanceof Error && e.message === "Folder not found") {
+    return new Response("Not found", { status: 404 });
+  }
+  throw e;
 }
 
 const initialNodes = initialData.nodes;

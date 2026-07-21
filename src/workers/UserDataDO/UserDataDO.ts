@@ -158,7 +158,10 @@ export class UserDataDO extends DurableObject {
     let folder: StorageNode | null = null;
     if (folderId) {
       const folderNode = await this.repo.getNode(folderId);
-      if (!folderNode) {
+      // `getNode` also returns files; a file id would otherwise be mapped and
+      // returned as `folder` with an empty child list, breaking the folder-only
+      // contract. Treat a missing node or a file as "not found".
+      if (!folderNode?.folder) {
         throw new Error("Folder not found");
       }
       folder = dbNodeToStorageNode(folderNode);

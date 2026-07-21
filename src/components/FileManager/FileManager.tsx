@@ -136,9 +136,13 @@ export const FileManager = memo(
         roomId,
         includeDeleted: showDeletedRef.current,
       });
-      if (navigationIdRef.current === requestId) {
-        setIsLoading(false);
+      // A later navigation has superseded this request: discard its response
+      // entirely so stale contents or folder metadata can't overwrite the
+      // current folder's (a deck action would otherwise target the wrong one).
+      if (navigationIdRef.current !== requestId) {
+        return;
       }
+      setIsLoading(false);
       if (result.error) {
         logger.error("Failed to fetch nodes:", result.error);
         return;
@@ -349,7 +353,9 @@ export const FileManager = memo(
             <FolderToolbar
               compact={isToolbarCompact}
               currentFolderId={location.folderId}
-              currentFolder={currentFolder}
+              currentFolder={
+                currentFolder?.id === location.folderId ? currentFolder : null
+              }
               onFolderCreated={handleFolderCreated}
               onFilesSelected={uploadFiles}
               viewMode={viewMode}
