@@ -4,7 +4,7 @@ import type { InvertedDraws } from "#/schemas/invertedDraws";
 import { setupDB } from "../utils/setupDB";
 import type { DbNode } from "./DbNodeType";
 import { logError } from "./utils";
-import { and, count, eq, inArray, isNull, ne, sql } from "drizzle-orm";
+import { and, count, EmptyFilter, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import type { DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 
 type DBHandle = DrizzleSqliteDODatabase<typeof dbSchema.relations>;
@@ -260,7 +260,7 @@ export class UserDataRepository {
         id: nodeId,
         deletedTime:
           include === "all"
-            ? undefined
+            ? EmptyFilter
             : include === "deleted"
               ? { isNotNull: true }
               : { isNull: true },
@@ -284,7 +284,7 @@ export class UserDataRepository {
             ? { isNull: true }
             : include === "deleted"
               ? { isNotNull: true }
-              : undefined,
+              : EmptyFilter,
       },
       with: {
         file: true,
@@ -310,7 +310,7 @@ export class UserDataRepository {
             ? { isNull: true }
             : include === "deleted"
               ? { isNotNull: true }
-              : undefined,
+              : EmptyFilter,
       },
       with: {
         file: {
