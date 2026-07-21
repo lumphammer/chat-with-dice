@@ -110,8 +110,14 @@ export const auth = betterAuth({
         const loggedInUser = await getLoggedInUser(ctx.request?.headers);
         if (isSuperAdmin(loggedInUser?.role)) return; // superadmins ban anyone
 
+        // better-auth validates the request body (and that the caller is
+        // logged in) before its own handler runs; if there's no target userId
+        // there's nothing for us to guard, so let better-auth handle it.
+        const userId = ctx.body?.userId;
+        if (!userId) return;
+
         const target = await db.query.users.findFirst({
-          where: { id: ctx.body?.userId },
+          where: { id: userId },
         });
 
         if (isAdminOrBetter(target?.role)) {
@@ -122,8 +128,11 @@ export const auth = betterAuth({
       }
       // enforce that anonymous users cannot be set to a role other than 'user'
       if (ctx.path === "/admin/set-role") {
+        const userId = ctx.body?.userId;
+        if (!userId) return;
+
         const target = await db.query.users.findFirst({
-          where: { id: ctx.body?.userId },
+          where: { id: userId },
         });
         if (target?.isAnonymous && ctx.body?.role !== "user") {
           throw new APIError("FORBIDDEN", {
