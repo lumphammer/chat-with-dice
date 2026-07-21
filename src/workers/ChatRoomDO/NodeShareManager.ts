@@ -164,4 +164,55 @@ export class NodeShareManager {
       roomDurableObjectId: this.ctx.id.toString(),
     });
   }
+
+  /**
+   * Remove a share from the room, driven from the shared-items list. Allowed
+   * for the room owner (clearing anything, including a stale record) or the
+   * share's own owner (clearing their own without drilling into it).
+   *
+   * The room's own record is dropped by the caller regardless; here we only
+   * authorise and then *attempt* to tell the owner's store to revoke its grant.
+   * That notification is best-effort and non-fatal: a share whose owner or node
+   * is already gone is exactly what this path exists to clear, so an
+   * unreachable owner DO is logged, not surfaced, and never blocks removal.
+   */
+  async removeShareFromRoom({
+    requestingUserId,
+    ownerUserId,
+    nodeId,
+  }: {
+    requestingUserId: string;
+    ownerUserId: string;
+    nodeId: string;
+  }): Promise<{ result: "ok" } | { result: "error"; reason: string }> {
+    const isAllowed =
+      requestingUserId === ownerUserId ||
+      requestingUserId === (await this.getUserId());
+
+    if (!isAllowed) {
+      return {
+        result: "error",
+        reason: "You are not allowed to remove this shared item",
+      };
+    }
+
+    const userDataDOResult = await this.getUserDataDO(ownerUserId);
+    if (userDataDOResult.result === "ok") {
+      try {
+        await userDataDOResult.userDataDO.unshareNodeFromRoom({
+          nodeId,
+          roomId: this.roomId,
+          roomDurableObjectId: this.ctx.id.toString(),
+        });
+      } catch (cause) {
+        logError(
+          `Best-effort unshare notification to owner ${ownerUserId} failed ` +
+            `for node ${nodeId}`,
+          cause,
+        );
+      }
+    }
+
+    return { result: "ok" };
+  }
 }

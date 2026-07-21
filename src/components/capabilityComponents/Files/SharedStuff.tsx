@@ -13,7 +13,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 export const SharedStuff = memo(() => {
   const filesCap = filesClient.useMount();
-  const { roomId } = useRoomInfoContext();
+  const { roomId, roomOwnerId } = useRoomInfoContext();
   const { sharedFolderOpenRequest } = useRoomUiNavigationContext();
   const { data: sessionData } = authClient.useSession();
   const currentUserId = sessionData?.user.id;
@@ -154,6 +154,8 @@ export const SharedStuff = memo(() => {
             key={item.node.id}
             item={item}
             roomId={roomId}
+            currentUserId={currentUserId}
+            roomOwnerId={roomOwnerId}
             onSelect={handleSelect}
           />
         ))}

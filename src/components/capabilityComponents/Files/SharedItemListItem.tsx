@@ -1,6 +1,7 @@
 import type { SharedItem } from "#/capabilities/files/common";
 import { NodeIcon } from "#/components/FileManager/NodeIcon";
 import { getRelativeTimeString } from "#/utils/getRelativeTimeString.ts";
+import { RemoveShareControl } from "./RemoveShareControl";
 import { memo } from "react";
 
 const UNKNOWN_SHARED_TIME_LABEL = "shared earlier";
@@ -16,18 +17,30 @@ export const SharedItemListItem = memo(
   ({
     item,
     roomId,
+    currentUserId,
+    roomOwnerId,
     onSelect,
   }: {
     item: SharedItem;
     roomId: string;
+    currentUserId: string | undefined;
+    roomOwnerId: string;
     onSelect: (item: SharedItem) => void;
   }) => {
+    const isOwnShare =
+      currentUserId !== undefined && item.userId === currentUserId;
+    // The room owner can clear any share; anyone can clear their own without
+    // drilling into it. Authorisation is re-checked server-side either way.
+    const canRemove =
+      currentUserId !== undefined &&
+      (currentUserId === roomOwnerId || isOwnShare);
+
     return (
-      <li>
+      <li className="flex min-w-0 items-center gap-1">
         <button
           type="button"
           onClick={() => onSelect(item)}
-          className="hover:bg-base-200 flex w-full min-w-0 cursor-pointer
+          className="hover:bg-base-200 flex min-w-0 flex-1 cursor-pointer
             items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors"
         >
           <span
@@ -52,10 +65,11 @@ export const SharedItemListItem = memo(
               >
                 {getSharedTimeLabel(item.dateShared)}
               </time>{" "}
-              by {item.userDisplayName}
+              by {isOwnShare ? "you" : item.userDisplayName}
             </span>
           </div>
         </button>
+        {canRemove && <RemoveShareControl item={item} />}
       </li>
     );
   },
