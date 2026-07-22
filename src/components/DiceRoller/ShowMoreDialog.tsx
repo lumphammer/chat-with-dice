@@ -23,7 +23,7 @@ export const ShowMoreDialog = memo(({ html }: ShowMoreDialogProps) => {
       </div>
       <ChatBubbleDialog id={dialogId} ariaLabel="Expanded message">
         <article
-          className="prose flex-1 overflow-auto"
+          className="prose min-w-sm overflow-auto"
           dangerouslySetInnerHTML={{ __html: html }}
         ></article>
       </ChatBubbleDialog>
