@@ -15,7 +15,12 @@ const capabilityNames = Object.entries(clientCapabilityRegistry)
       value.visibility !== "always" &&
       (value.visibility === "public" || process.env.NODE_ENV === "development"),
   )
-  .map(([name]) => name as CapabilityName);
+  .map(([name]) => name as CapabilityName)
+  .sort((a, b) =>
+    clientCapabilityRegistry[a].displayName.localeCompare(
+      clientCapabilityRegistry[b].displayName,
+    ),
+  );
 
 function getCapabilityDefaultConfig(name: CapabilityName) {
   return clientCapabilityRegistry[name].defaultConfig;
