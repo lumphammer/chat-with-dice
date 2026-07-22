@@ -1,4 +1,7 @@
-import { type CapabilityName } from "#/capabilities/capabilityNames";
+import {
+  type CapabilityName,
+  capabilityNames,
+} from "#/capabilities/capabilityNames";
 import { clientCapabilityRegistry } from "#/capabilities/clientCapabilityRegistry";
 import { DeleteButton } from "#/components/capabilityComponents/shared/DeleteButton";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
@@ -7,15 +10,21 @@ import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const capabilityNames = Object.entries(clientCapabilityRegistry)
-  .filter(
-    ([_name, value]) =>
-      // `"always"` capabilities have no opt-in/out, so they never appear in the
-      // config toggle UI.
+const visibleCapabilityNames = capabilityNames
+  .filter((name) => {
+    const value = clientCapabilityRegistry[name];
+    // `"always"` capabilities have no opt-in/out, so they never appear in the
+    // config toggle UI.
+    return (
       value.visibility !== "always" &&
-      (value.visibility === "public" || process.env.NODE_ENV === "development"),
-  )
-  .map(([name]) => name as CapabilityName);
+      (value.visibility === "public" || process.env.NODE_ENV === "development")
+    );
+  })
+  .sort((a, b) =>
+    clientCapabilityRegistry[a].displayName.localeCompare(
+      clientCapabilityRegistry[b].displayName,
+    ),
+  );
 
 function getCapabilityDefaultConfig(name: CapabilityName) {
   return clientCapabilityRegistry[name].defaultConfig;
@@ -159,7 +168,7 @@ export const Config = memo(() => {
       <section className="mt-6">
         <h3 className="text-xl">Capabilities</h3>
         <ul className="mt-4 space-y-3">
-          {capabilityNames.map((capabilityName) => {
+          {visibleCapabilityNames.map((capabilityName) => {
             const isEnabled = enabledCapabilities.has(capabilityName);
 
             return (

@@ -88,9 +88,13 @@ export const Sidebar = memo(
           clientCapabilityRegistry[name].visibility === "always" &&
           !configCapabilityNames.includes(name),
       );
-      return [...configCapabilityNames, ...alwaysCapabilityNames].map(
-        (name) => [name, clientCapabilityRegistry[name]] as const,
-      );
+      return [...configCapabilityNames, ...alwaysCapabilityNames]
+        .sort((a, b) =>
+          clientCapabilityRegistry[a].displayName.localeCompare(
+            clientCapabilityRegistry[b].displayName,
+          ),
+        )
+        .map((name) => [name, clientCapabilityRegistry[name]] as const);
     }, [roomConfig.capabilities]);
 
     const defaultValue = useMemo(() => {
