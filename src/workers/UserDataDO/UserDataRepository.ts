@@ -761,6 +761,26 @@ export class UserDataRepository {
     return result.toArray() as ShareRemovalRow[];
   }
 
+  /**
+   * The distinct room DOs holding a share that points directly at `nodeId`.
+   *
+   * Used to route Deck-status-change notifications: a Deck shows in the Cards
+   * sidebar only when the Deck folder itself is shared, so — unlike
+   * {@link findSharesAtOrBelow} — only shares *on* the node matter, never ones
+   * on an ancestor or descendant. `DISTINCT` because one folder can be shared
+   * with the same room more than once historically; the room hears once.
+   */
+  findRoomsSharingNode(nodeId: string): string[] {
+    const result = this.db.run(sql`
+      SELECT DISTINCT rrs.room_durable_object_id AS room_durable_object_id
+      FROM room_resource_shares rrs
+      WHERE rrs.node_id = ${nodeId}
+    `);
+    return (result.toArray() as { room_durable_object_id: string }[]).map(
+      (row) => row.room_durable_object_id,
+    );
+  }
+
   deleteShare(nodeId: string, roomId: string, roomDurableObjectId: string) {
     return this.db
       .delete(dbSchema.roomResourceShares)

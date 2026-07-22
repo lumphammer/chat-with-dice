@@ -582,4 +582,43 @@ describe("pile lifecycle", () => {
 
     expect(pilesOf(mounted)).toEqual([]);
   });
+
+  it("abandons the Pile when the folder stops being a Deck", async () => {
+    const { mounted } = await withDiscardedCard();
+
+    // Unmarking the folder means it can no longer be drawn from, so the Pile and
+    // its Discard are dropped outright (issue #71) rather than hidden.
+    await mounted.runHook("onShareDeckStatusChange", {
+      ownerUserId: OWNER,
+      nodeId: DECK,
+      isDeck: false,
+    });
+
+    expect(pilesOf(mounted)).toEqual([]);
+  });
+
+  it("leaves the Pile alone when the folder is marked as a Deck", async () => {
+    const { mounted } = await withDiscardedCard();
+
+    await mounted.runHook("onShareDeckStatusChange", {
+      ownerUserId: OWNER,
+      nodeId: DECK,
+      isDeck: true,
+    });
+
+    const [pile] = pilesOf(mounted);
+    expect(pile.discard).toHaveLength(1);
+  });
+
+  it("is a no-op to un-Deck a folder with no Pile", async () => {
+    const { mounted } = await mountWith(twoCardDeck());
+
+    await mounted.runHook("onShareDeckStatusChange", {
+      ownerUserId: OWNER,
+      nodeId: DECK,
+      isDeck: false,
+    });
+
+    expect(pilesOf(mounted)).toEqual([]);
+  });
 });

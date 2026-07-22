@@ -165,4 +165,68 @@ describe("files onShareAvailabilityChange hook", () => {
       expect(readShares()).toEqual([{ id: "magus", unavailable: false }]);
     });
   });
+
+  describe("onShareDeckStatusChange hook", () => {
+    const deckFlags = () =>
+      (stateRepository.get("files") as FilesState).shares.map((s) => ({
+        id: s.node.id,
+        isDeck: s.node.kind === "folder" ? s.node.isDeck : undefined,
+      }));
+
+    it("marks the cached share as a Deck, driving the Cards sidebar", async () => {
+      await mountWith([share("magus"), share("wandering-monsters")]);
+
+      await mounted.runHook("onShareDeckStatusChange", {
+        ownerUserId: OWNER,
+        nodeId: "magus",
+        isDeck: true,
+      });
+
+      expect(deckFlags()).toEqual([
+        { id: "magus", isDeck: true },
+        { id: "wandering-monsters", isDeck: false },
+      ]);
+    });
+
+    it("unmarks the cached share when the folder stops being a Deck", async () => {
+      await mountWith([share("magus")]);
+      await mounted.runHook("onShareDeckStatusChange", {
+        ownerUserId: OWNER,
+        nodeId: "magus",
+        isDeck: true,
+      });
+
+      await mounted.runHook("onShareDeckStatusChange", {
+        ownerUserId: OWNER,
+        nodeId: "magus",
+        isDeck: false,
+      });
+
+      expect(deckFlags()).toEqual([{ id: "magus", isDeck: false }]);
+    });
+
+    it("ignores a change for a node this room never cached", async () => {
+      await mountWith([share("magus")]);
+
+      await mounted.runHook("onShareDeckStatusChange", {
+        ownerUserId: OWNER,
+        nodeId: "not-here",
+        isDeck: true,
+      });
+
+      expect(deckFlags()).toEqual([{ id: "magus", isDeck: false }]);
+    });
+
+    it("does not touch an identically-named node owned by someone else", async () => {
+      await mountWith([share("magus")]);
+
+      await mounted.runHook("onShareDeckStatusChange", {
+        ownerUserId: "somebody-else",
+        nodeId: "magus",
+        isDeck: true,
+      });
+
+      expect(deckFlags()).toEqual([{ id: "magus", isDeck: false }]);
+    });
+  });
 });

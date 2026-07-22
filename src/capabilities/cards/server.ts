@@ -136,6 +136,27 @@ export const cardsServer = createServerCapability(cardsCommon, {
         }
       }
     },
+    // The shared folder was marked or unmarked as a Deck in the owner's store.
+    // Marking needs nothing here — the Pile is created lazily on first draw.
+    // Unmarking abandons the Pile outright (issue #71): a non-deck folder has
+    // nothing to draw from, and keeping the Discard would only let a stale Pile
+    // revive if the folder were re-marked. Re-sharing already starts a fresh
+    // Pile, so re-marking should too.
+    onShareDeckStatusChange: ({
+      stateDraft,
+      event: { ownerUserId, nodeId, isDeck },
+    }) => {
+      if (isDeck) {
+        return;
+      }
+      const index = stateDraft.piles.findIndex(
+        (pile) =>
+          pile.ownerUserId === ownerUserId && pile.deckNodeId === nodeId,
+      );
+      if (index !== -1) {
+        stateDraft.piles.splice(index, 1);
+      }
+    },
     // The grant is gone for good — the Deck was unshared in-room, or the owner's
     // node was hard-deleted or purged. Unlike binning there is nothing left to
     // restore, so drop the Pile and its Discard rather than hiding it. Same

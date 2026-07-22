@@ -29,6 +29,21 @@ type RoomHookEvents = {
   onShareAvailabilityChange: {
     changes: { ownerUserId: string; nodeId: string; unavailable: boolean }[];
   };
+  /**
+   * Fired when an owner's file store reports that a shared folder was marked or
+   * unmarked as a Deck. A Deck appears in the Cards sidebar only when the Deck
+   * folder itself is shared, so this targets exactly the share on that node —
+   * never an ancestor or descendant.
+   *
+   * Lets a room reflect the change without a re-share: `files` updates the
+   * cached share's `isDeck`, and `cards` abandons the Pile when the folder stops
+   * being a Deck (issue #71). Edge-triggered — it carries one node's change.
+   */
+  onShareDeckStatusChange: {
+    ownerUserId: string;
+    nodeId: string;
+    isDeck: boolean;
+  };
 };
 
 /**
@@ -65,6 +80,7 @@ export type CapabilityHookEvents = RoomHookEvents & FilesHookEvents;
 const hookRegistry: Record<keyof CapabilityHookEvents, true> = {
   onPresenceChange: true,
   onShareAvailabilityChange: true,
+  onShareDeckStatusChange: true,
   "files:onShareRemoved": true,
 };
 
