@@ -1,12 +1,9 @@
+import { Router } from "#/lib/minirouter";
 import type { InvertedDraws } from "#/schemas/invertedDraws";
 import { logger } from "#/utils/logger.ts";
-import { DeckCommonBackPicker, type DeckImage } from "./DeckCommonBackPicker";
-import { DeckFaceDownToggle } from "./DeckFaceDownToggle";
-import {
-  DeckIndividualBacksEditor,
-  type DeckCard,
-} from "./DeckIndividualBacksEditor";
-import { DeckInvertedPicker } from "./DeckInvertedPicker";
+import type { DeckImage } from "./DeckCommonBackPicker";
+import type { DeckCard } from "./DeckIndividualBacksEditor";
+import { DeckSettingsStage } from "./deckSettings/DeckSettingsStage";
 import { actions } from "astro:actions";
 import { Settings2 } from "lucide-react";
 import { memo, useId, useRef, useState } from "react";
@@ -188,7 +185,10 @@ export const DeckSettingsDialog = memo(
             className="modal"
             aria-labelledby={titleId}
           >
-            <div className="modal-box flex flex-col gap-4">
+            <div
+              className="modal-box flex h-[36rem] max-h-[calc(100dvh-5rem)]
+                flex-col overflow-hidden"
+            >
               <h3 id={titleId} className="text-lg font-bold">
                 Deck settings: {name}
               </h3>
@@ -199,37 +199,32 @@ export const DeckSettingsDialog = memo(
                   <div className="skeleton h-24 w-full rounded-lg" />
                 </div>
               ) : (
-                <>
-                  <DeckFaceDownToggle
+                <Router>
+                  <DeckSettingsStage
                     allowFaceDown={allowFaceDown}
-                    disabled={saving}
-                    onChange={(next) => void handleToggleFaceDown(next)}
-                  />
-                  <DeckInvertedPicker
-                    invertedDraws={invertedDraws}
-                    disabled={saving}
-                    onChange={(next) => void handleSelectInvertedDraws(next)}
-                  />
-                  <DeckCommonBackPicker
-                    images={images}
+                    invertedDrawsValue={invertedDraws}
                     commonBackId={commonBackId}
-                    disabled={saving}
-                    onSelect={(backNodeId) => void handleSelectBack(backNodeId)}
-                  />
-                  <DeckIndividualBacksEditor
+                    images={images}
                     cards={cards}
-                    disabled={saving}
-                    onAssign={(frontNodeId, backNodeId) =>
+                    saving={saving}
+                    onToggleFaceDown={(next) => void handleToggleFaceDown(next)}
+                    onSelectInvertedDraws={(next) =>
+                      void handleSelectInvertedDraws(next)
+                    }
+                    onSelectBack={(backNodeId) =>
+                      void handleSelectBack(backNodeId)
+                    }
+                    onAssignIndividualBack={(frontNodeId, backNodeId) =>
                       void handleAssignIndividualBack(frontNodeId, backNodeId)
                     }
-                    onRemove={(frontNodeId) =>
+                    onRemoveIndividualBack={(frontNodeId) =>
                       void handleAssignIndividualBack(frontNodeId, null)
                     }
                     onApplyProposals={(pairings) =>
                       void handleApplyProposals(pairings)
                     }
                   />
-                </>
+                </Router>
               )}
 
               {error && <p className="text-error">{error}</p>}

@@ -57,10 +57,10 @@ export const DeckInvertedPicker = memo(
                 key={option.value}
                 className="hover:bg-base-200 rounded-lg p-2"
               >
-                {/* The description sits outside the label — as in
-                    DeckFaceDownToggle — so the label's accessible text stays at a
-                    depth assistive tech and the linter recognise, and is tied
-                    back with aria-describedby. */}
+                {/* The description sits outside the label — as elsewhere in
+                    this dialog — so the label's accessible text stays at a depth
+                    assistive tech and the linter recognise, and is tied back
+                    with aria-describedby. */}
                 <label className="flex cursor-pointer items-center gap-3">
                   <input
                     type="radio"
