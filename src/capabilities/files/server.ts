@@ -112,6 +112,22 @@ export const filesServer = createServerCapability(filesCommon, {
         }
       }
     },
+    // The owner marked or unmarked the shared folder as a Deck. Update the
+    // cached share so the Cards sidebar (which reads `node.isDeck` off these
+    // shares) reflects it without a re-share. A change for a share this room
+    // never cached, or one that somehow lands on a file, is a normal no-op.
+    onShareDeckStatusChange: ({
+      stateDraft,
+      event: { ownerUserId, nodeId, isDeck },
+    }) => {
+      const share = stateDraft.shares.find(
+        (candidate) =>
+          candidate.userId === ownerUserId && candidate.node.id === nodeId,
+      );
+      if (share && share.node.kind === "folder") {
+        share.node.isDeck = isDeck;
+      }
+    },
     // The node behind a share is gone for good — hard-deleted or purged by the
     // owner's store — so forget it rather than hiding it; there is nothing left
     // to restore. Same removal the `unshareFile` action does, driven instead by

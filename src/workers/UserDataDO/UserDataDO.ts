@@ -481,6 +481,43 @@ export class UserDataDO extends DurableObject {
     } else {
       await this.repo.unmarkFolderAsDeck(nodeId);
     }
+    await this.notifyRoomsOfDeckStatus(nodeId, isDeck);
+  }
+
+  /**
+   * Tell every room holding a Room Share on `nodeId` that the folder's Deck
+   * status changed, so the room's cached share and its Cards sidebar update
+   * without a re-share. Call *after* the change lands.
+   *
+   * Best-effort and non-fatal, like {@link notifyRoomsOfShareAvailability}: a
+   * room that cannot be reached keeps a stale sidebar entry until the next
+   * change, which is a better trade than failing the owner's Deck toggle.
+   */
+  private async notifyRoomsOfDeckStatus(
+    nodeId: string,
+    isDeck: boolean,
+  ): Promise<void> {
+    if (!this.userId) {
+      return;
+    }
+    const ownerUserId = this.userId;
+    const roomDurableObjectIds = this.repo.findRoomsSharingNode(nodeId);
+
+    await Promise.all(
+      roomDurableObjectIds.map(async (roomDurableObjectId) => {
+        try {
+          const room = cfEnv.CHAT_ROOM_DO.get(
+            cfEnv.CHAT_ROOM_DO.idFromString(roomDurableObjectId),
+          );
+          await room.onShareDeckStatusChange({ ownerUserId, nodeId, isDeck });
+        } catch (cause) {
+          logError(
+            `Failed to notify room ${roomDurableObjectId} of deck status change`,
+            cause,
+          );
+        }
+      }),
+    );
   }
 
   /**

@@ -365,6 +365,20 @@ export class ChatRoomDO extends DurableObject {
   }
 
   /**
+   * Called by an owner's `UserDataDO` when a folder shared with this room is
+   * marked or unmarked as a Deck. Fans it out as a hook — `files` refreshes the
+   * cached share's `isDeck` (driving the Cards sidebar), and `cards` abandons
+   * the Pile when the folder stops being a Deck.
+   */
+  async onShareDeckStatusChange(change: {
+    ownerUserId: string;
+    nodeId: string;
+    isDeck: boolean;
+  }): Promise<void> {
+    await this.capabilityService.hooks.onShareDeckStatusChange(change);
+  }
+
+  /**
    * Called by an owner's `UserDataDO` when nodes shared with this room have been
    * hard-deleted — by the 24h purge or a direct hard delete — and are gone for
    * good. Unlike binning (see `onShareAvailabilityChange`), there is nothing to

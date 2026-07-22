@@ -98,6 +98,7 @@ _Avoid_: Room file, shared file
 - **Room Share** browsing exposes paths relative to the shared root, not the owner's private parent folders
 - **Room Share** cache drift is corrected by retrying idempotent commands, lazy validation on access, and explicit resynchronization from user file stores
 - The owner's file store tells every affected **Room** when a **Room Share** stops being viewable or becomes viewable again, so a **Room** learns a **User File** has been deleted or restored without having to ask
+- The owner's file store tells every **Room** a folder is shared with when that folder is marked or unmarked as a **Deck**, so the room's **Cards** sidebar reflects the change without re-sharing; unmarking abandons the folder's **Pile** in each room rather than preserving it
 - A **Room Share** whose **User File** is deleted becomes unavailable but is not removed: the grant outlives the deletion because deletion is reversible
 - **Room Share** commands are idempotent for grants, while **Shared Item Message** creation is deduplicated by command correlation
 - The room **Files** sidebar contains both room-shared files and the current user's personal file tree
