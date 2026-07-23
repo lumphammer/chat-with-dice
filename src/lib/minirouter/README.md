@@ -28,4 +28,4 @@ This is a **port** of [`@lumphammer/minirouter`], adapted to this repo:
 See the upstream README for the full tour (deep linking via `to={[a(), b()]}`,
 `from="root"`, `to="up"`, rolling your own animated route with `useRoute`).
 
-[`@lumphammer/minirouter`]: https://github.com/lumphammer/investigator-fvtt/tree/main/packages/minirouter
+[`@lumphammer/minirouter`]: https://github.com/lumphammer/gumshoe-fvtt/tree/main/packages/minirouter
