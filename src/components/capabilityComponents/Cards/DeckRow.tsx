@@ -1,9 +1,10 @@
 import type { Pile } from "#/capabilities/cards/common";
 import type { RoomShare } from "#/capabilities/files/common";
+import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
 import { PileControls } from "./PileControls";
 import { useRemainingCards } from "./useRemainingCards";
 import { Layers } from "lucide-react";
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 
 /**
  * One row in the Cards sidebar: a shared Deck, its Draw button, and its Pile
@@ -29,6 +30,7 @@ export const DeckRow = memo(
     onSetReturnCards: (returnCards: boolean) => void;
     onReset: () => void;
   }) => {
+    const { openSharedFolder } = useRoomUiNavigationContext();
     const dwindling = pile ? !pile.returnCards : false;
     const discard = useMemo(() => pile?.discard ?? [], [pile]);
     const discardKey = discard.join(",");
@@ -48,6 +50,14 @@ export const DeckRow = memo(
     // the server-side guard remains the backstop for the race.
     const drawDisabled = dwindling && remaining === 0;
 
+    const handleOpenFolder = useCallback(() => {
+      openSharedFolder({
+        ownerUserId: deck.userId,
+        folderId: deck.node.id,
+        folderName: deck.node.name,
+      });
+    }, [deck.node.id, deck.node.name, deck.userId, openSharedFolder]);
+
     return (
       <li
         className="border-base-300 bg-base-100 rounded-box flex flex-col gap-2
@@ -60,9 +70,15 @@ export const DeckRow = memo(
           >
             <Layers size={20} />
           </span>
-          <span className="min-w-0 flex-1 truncate font-medium">
+          <button
+            type="button"
+            className="link link-hover min-w-0 flex-1 truncate text-left
+              font-medium"
+            title="Browse this deck's cards in the Files sidebar"
+            onClick={handleOpenFolder}
+          >
             {deck.node.name}
-          </span>
+          </button>
           <button
             type="button"
             className="btn btn-primary"
