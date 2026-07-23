@@ -50,7 +50,7 @@ export const CardImagePreview = memo(
           // @ts-expect-error invoker api not in react types
           command="show-modal"
           commandfor={dialogId}
-          className="cursor-zoom-in self-start"
+          className="cursor-zoom-in self-start group-data-is-mine:self-end"
         >
           <img
             src={src}

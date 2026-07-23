@@ -95,7 +95,10 @@ export const CardDrawMessageDisplay = memo(
       ) : null;
 
     return (
-      <div className="text-neutral mt-1 flex flex-col gap-1 text-sm">
+      <div
+        className="text-neutral mt-1 flex flex-col gap-1 text-sm
+          group-data-is-mine:items-end"
+      >
         <span className="">Drew from {deck.name}</span>
         {failed ? (
           <span className="italic">Card unavailable</span>
