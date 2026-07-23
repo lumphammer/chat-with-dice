@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useEffect, useState } from "react";
+import { type PropsWithChildren } from "react";
 
 /**
  * The sliding, absolutely-positioned shell for one panel of the Deck settings
@@ -10,28 +10,21 @@ import { type PropsWithChildren, useEffect, useState } from "react";
  * inside this frame, so the child stays interactive while the body beneath it is
  * made inert.
  *
- * Sub-panels (`slide`) swish in from the right with a Tailwind transform
- * transition, disabled under `prefers-reduced-motion`.
+ * Sub-panels (`slide`) swish in from the right, disabled under
+ * `prefers-reduced-motion`. The off-screen "from" position comes from
+ * `@starting-style` (Tailwind's `starting:` variant), so the enter animation is
+ * pure CSS — no state flip, no rAF timing race. `will-change-transform` nudges
+ * the slide onto the compositor so main-thread jank (e.g. password-manager
+ * extensions scanning the newly mounted DOM) can't easily stutter it.
  */
 export const PanelFrame = ({
   slide = false,
   children,
 }: PropsWithChildren<{ slide?: boolean }>) => {
-  // Slide in on mount: start off to the right, then transition to rest one frame
-  // later so the browser has a "from" position to animate out of.
-  const [shown, setShown] = useState(!slide);
-  useEffect(() => {
-    if (!slide) {
-      return;
-    }
-    const frame = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(frame);
-  }, [slide]);
-
+  // this animation janks when the Bitwarden extension is loaded - seems
+  // impossible to fix.
   const slideClasses = slide
-    ? `transition-transform duration-300 ease-out motion-reduce:transition-none ${
-        shown ? "translate-x-0" : "translate-x-full motion-reduce:translate-x-0"
-      }`
+    ? "translate-x-0 starting:translate-x-full will-change-transform transition-transform duration-300 ease-out motion-reduce:transition-none"
     : "";
 
   return (

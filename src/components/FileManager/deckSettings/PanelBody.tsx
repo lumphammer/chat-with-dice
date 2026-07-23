@@ -1,6 +1,6 @@
 import { Link, useNavigationContext } from "#/lib/minirouter";
 import { ChevronLeft } from "lucide-react";
-import { type PropsWithChildren, useEffect, useRef } from "react";
+import { type PropsWithChildren, useLayoutEffect, useRef } from "react";
 
 /**
  * The content shell for a panel: an optional Back header and a single scrolling
@@ -20,9 +20,11 @@ export const PanelBody = ({
 
   // Move focus onto a sub-panel when it opens, and back onto it when its own
   // child closes, so keyboard users always sit on the panel they can see.
-  // preventScroll avoids a fight with the slide transform.
+  // preventScroll avoids a fight with the slide transform. Layout effect so the
+  // focus work (style recalc, a11y tree) lands before the slide-in's first
+  // frame rather than during it.
   const backRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (back && !covered) {
       backRef.current?.focus({ preventScroll: true });
     }
