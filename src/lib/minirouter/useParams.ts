@@ -14,10 +14,12 @@ export function useParams<TDirection extends AnyDirection>(
 ): ParamsFromDirection<TDirection> {
   const { currentStep, parentSteps } = useNavigationContext();
   const allSteps = [...parentSteps, ...(currentStep ? [currentStep] : [])];
-  const params = allSteps.find((s) => s.direction === direction)?.params;
+  // Check for the step itself, not its params — a parameterless Direction
+  // stores `params: undefined`, which is still a match.
+  const step = allSteps.find((s) => s.direction === direction);
 
-  if (params === undefined) {
+  if (!step) {
     throw new Error(`Could not find step for ${direction.description}`);
   }
-  return params;
+  return step.params;
 }

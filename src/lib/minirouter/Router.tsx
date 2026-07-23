@@ -22,7 +22,14 @@ export const Router = ({ children }: PropsWithChildren) => {
           // Build the new path according to whichever "from" mode we're in.
           let newPath: AnyStep[];
           if (from === "root" || from === "here") {
-            newPath = toArray;
+            if (isUp) {
+              if (path.length === 0) {
+                throw new Error("Cannot navigate up from root (says Router)");
+              }
+              newPath = path.slice(0, -1);
+            } else {
+              newPath = toArray;
+            }
           } else {
             const fromIndex = path.findLastIndex(
               (step) => step.direction === from,
@@ -30,13 +37,10 @@ export const Router = ({ children }: PropsWithChildren) => {
             if (fromIndex === -1) {
               throw new Error(`Cannot navigate from ${from.description}`);
             }
-            return [...path.slice(0, fromIndex + 1), ...toArray];
-          }
-          if (to === "up") {
-            if (newPath.length === 0) {
-              throw new Error("Cannot navigate up from root (says Router)");
-            }
-            newPath = path.slice(0, path.length - 1);
+            // "up" pops the `from` step itself; otherwise `to` goes below it.
+            newPath = isUp
+              ? path.slice(0, fromIndex)
+              : [...path.slice(0, fromIndex + 1), ...toArray];
           }
           // Steps are recreated on every render, so a fresh step can have a
           // different id from the one already in the path. Where a new step

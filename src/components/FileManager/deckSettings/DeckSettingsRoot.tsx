@@ -5,7 +5,7 @@ import { PanelBody } from "./PanelBody";
 import { PanelFrame } from "./PanelFrame";
 import { SettingRow } from "./SettingRow";
 import { commonBack, individualBacks, invertedDraws } from "./directions";
-import { memo } from "react";
+import { memo, useId } from "react";
 
 const INVERTED_SUMMARY: Record<InvertedDraws, string> = {
   none: "Never",
@@ -36,6 +36,8 @@ export const DeckSettingsRoot = memo(
     disabled: boolean;
     onToggleFaceDown: (next: boolean) => void;
   }) => {
+    const faceDownDescriptionId = useId();
+
     const commonBackName =
       commonBackId === null
         ? "Not set"
@@ -65,10 +67,11 @@ export const DeckSettingsRoot = memo(
                 className="toggle shrink-0"
                 checked={allowFaceDown}
                 disabled={disabled}
+                aria-describedby={faceDownDescriptionId}
                 onChange={(e) => onToggleFaceDown(e.currentTarget.checked)}
               />
             </label>
-            <span className="text-base-content/60">
+            <span id={faceDownDescriptionId} className="text-base-content/60">
               Cards with a back can come up face down at random.
             </span>
           </div>

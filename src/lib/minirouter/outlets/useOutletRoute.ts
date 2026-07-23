@@ -1,6 +1,12 @@
 import { useNavigationContext } from "../useNavigationContext";
 import { OutletContext } from "./OutletContext";
-import { type ReactNode, useContext, useEffect, useId, useMemo } from "react";
+import {
+  type ReactNode,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 
 /**
  * Wire a route's rendered content into an enclosing Outlet, if there is one.
@@ -17,7 +23,9 @@ export const useOutletRoute = (content: ReactNode) => {
   // parameterised) steps apart.
   const id = useMemo(() => `${stepId}-${routeId}`, [routeId, stepId]);
 
-  useEffect(() => {
+  // Layout effect so the content is registered before the first paint — with a
+  // passive effect the outlet renders empty for one frame on mount.
+  useLayoutEffect(() => {
     if (outletContext) {
       outletContext.register(id, content);
       return () => {
