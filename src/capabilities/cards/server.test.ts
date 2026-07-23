@@ -521,7 +521,7 @@ describe("manual Card Draw Message status changes", () => {
     const original = drawMessage();
     const { mounted, editedMessages, messages } = await mountWith(
       twoCardDeck(),
-      [original],
+      [structuredClone(original)],
     );
 
     await setDrawStatus(mounted, actionName, params, NON_DRAWER);
@@ -580,7 +580,7 @@ describe("manual Card Draw Message status changes", () => {
     const original = drawMessage({ back: null });
     const { mounted, editedMessages, messages } = await mountWith(
       twoCardDeck(),
-      [original],
+      [structuredClone(original)],
     );
 
     await setDrawStatus(mounted, "setFaceDown", {
