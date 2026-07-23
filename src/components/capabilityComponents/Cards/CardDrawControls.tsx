@@ -16,7 +16,7 @@ export const CardDrawControls = memo(
     onSetFaceDown,
     onSetInverted,
   }: CardDrawControlsProps) => (
-    <div className="mt-1 flex flex-wrap gap-2 text-sm">
+    <div className="mt-1 flex w-max flex-wrap gap-2 text-sm">
       {hasBack && (
         <>
           {/*{faceDown ? "Face down" : "Face up"}*/}

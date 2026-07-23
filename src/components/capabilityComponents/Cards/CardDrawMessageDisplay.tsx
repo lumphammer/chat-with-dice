@@ -95,8 +95,8 @@ export const CardDrawMessageDisplay = memo(
       ) : null;
 
     return (
-      <div className="mt-1 flex flex-col gap-1">
-        <span className="text-base-content/60">Drew from {deck.name}</span>
+      <div className="text-neutral mt-1 flex flex-col gap-1 text-sm">
+        <span className="">Drew from {deck.name}</span>
         {failed ? (
           <span className="italic">Card unavailable</span>
         ) : (
@@ -113,7 +113,7 @@ export const CardDrawMessageDisplay = memo(
           />
         )}
         {controls ??
-          (label && <span className="font-medium wrap-anywhere">{label}</span>)}
+          (label && <span className="w-max wrap-anywhere">{label}</span>)}
       </div>
     );
   },

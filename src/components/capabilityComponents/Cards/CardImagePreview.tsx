@@ -78,9 +78,7 @@ export const CardImagePreview = memo(
               />
             </div>
           ) : (
-            label && (
-              <span className="mt-1 text-center font-medium">{label}</span>
-            )
+            label && <span className="mt-1 text-center text-sm">{label}</span>
           )}
         </ChatBubbleDialog>
       </>
