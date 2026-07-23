@@ -109,9 +109,28 @@ export const cardsServer = createServerCapability(cardsCommon, {
         card: { nodeId: card.nodeId, name: card.name },
         faceDown,
         inverted,
-        // The back is carried only on a Face Down draw — it is the image the
-        // message renders. A face-up draw records no back.
-        back: faceDown && card.back !== null ? card.back : undefined,
+        // Carry the back whenever the Card has one so a face-up draw can be
+        // turned Face Down later without another lookup.
+        back: card.back ?? undefined,
+      });
+    },
+    setFaceDown: async ({ payload, userId, editChatMessage }) => {
+      await editChatMessage(payload.messageId, (data, message) => {
+        if (
+          message.userId !== userId ||
+          (payload.faceDown && data.back === undefined)
+        ) {
+          return undefined;
+        }
+        return { ...data, faceDown: payload.faceDown };
+      });
+    },
+    setInverted: async ({ payload, userId, editChatMessage }) => {
+      await editChatMessage(payload.messageId, (data, message) => {
+        if (message.userId !== userId) {
+          return undefined;
+        }
+        return { ...data, inverted: payload.inverted };
       });
     },
   },

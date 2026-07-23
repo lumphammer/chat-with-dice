@@ -2,6 +2,7 @@ import type { Alphanumeric } from "#/utils/alphanumeric";
 import { logger } from "#/utils/logger";
 import type { JsonValidator } from "#/validators/jsonObjectValidator";
 import type { ActionCall } from "#/validators/webSocketMessageSchemas";
+import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import type { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
@@ -31,6 +32,18 @@ const ARTIFICIAL_LAG_MS = 0;
  */
 type DeferredHook = () => Promise<void>;
 
+type MessageData<TMessageDataValidator extends JsonValidator | undefined> =
+  z.infer<NonNullable<TMessageDataValidator>>;
+
+type EditChatMessage<TMessageDataValidator extends JsonValidator | undefined> =
+  (
+    id: string,
+    update: (
+      data: MessageData<TMessageDataValidator>,
+      message: ChatMessage<MessageData<TMessageDataValidator>>,
+    ) => MessageData<TMessageDataValidator> | undefined,
+  ) => Promise<void>;
+
 export type ServerMountedCapability = {
   name: Alphanumeric;
   onMessage: (tools: {
@@ -57,9 +70,19 @@ export type ServerMountedCapability = {
  * common action — the effect is expected to call it (or not) to apply the
  * shared state transition.
  */
-type EffectfulActionFn<TState, TPayload, TMessageData> = (tools: {
+type EffectfulActionFn<
+  TState,
+  TPayload,
+  TMessageDataValidator extends JsonValidator | undefined,
+> = (tools: {
   doCtx: DurableObjectState;
-  sendChatMessage: (data: TMessageData) => void;
+  sendChatMessage: (data: inferIfZod<TMessageDataValidator>) => void;
+  /**
+   * Edit one of this capability's existing chat messages. The current message
+   * data is validated before the updater runs, and returning `undefined`
+   * aborts without writing or broadcasting.
+   */
+  editChatMessage: EditChatMessage<TMessageDataValidator>;
   broadcaster: Broadcaster;
   pureFn: PureActionFn<TState, TPayload>;
   stateDraft: Draft<TState>;
@@ -108,7 +131,7 @@ export type ServerCapabilityDefinition<
     [K in keyof TActions]?: EffectfulActionFn<
       StateValue<TStateValidator>,
       z.infer<TActions[K]["payloadValidator"]>,
-      inferIfZod<TMessageDataValidator>
+      TMessageDataValidator
     >;
   };
   hooks?: {
@@ -264,7 +287,7 @@ export function createServerCapability<
       | EffectfulActionFn<
           StateValue<TStateValidator>,
           unknown,
-          inferIfZod<TMessageDataValidator>
+          TMessageDataValidator
         >
       | undefined;
     return applyStateChange(
@@ -294,6 +317,28 @@ export function createServerCapability<
                 capabilityData: data ?? {},
                 capabilityName: common.name,
               }),
+            editChatMessage: async (id, update) => {
+              const validator = common.messageDataValidator;
+              if (!validator) {
+                return;
+              }
+              const message = await messageJiggler.getMessage(id, validator);
+              if (
+                message.capabilityName !== common.name ||
+                message.capabilityData === null
+              ) {
+                return;
+              }
+              const updatedData = update(message.capabilityData, message);
+              if (updatedData === undefined) {
+                return;
+              }
+              const capabilityData = validator.parse(updatedData);
+              await messageJiggler.updateMessage({
+                ...message,
+                capabilityData,
+              });
+            },
           });
         } else if (commonAction.pureFn) {
           commonAction.pureFn({ stateDraft, payload });

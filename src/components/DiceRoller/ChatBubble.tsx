@@ -117,6 +117,7 @@ export const ChatBubble = memo(({ message }: ChatBubbleProps) => {
         <ChatDisplayComponent
           capabilityData={message.capabilityData}
           messageId={message.id}
+          messageUserId={message.userId}
         />
       );
     }
