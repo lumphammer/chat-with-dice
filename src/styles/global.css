@@ -87,17 +87,6 @@ body {
   }
 }
 
-@utility link {
-  @variant dark {
-    color: oklch(from var(--color-primary) 80% c h);
-  }
-}
-
-/*@utility btn {
-  color: var(--btn-color-text);
-  border-color: var(--btn-color);
-}*/
-
 @utility btn-primary {
   /*--color-btn-soft: var(--color-primary-text);*/
   --btn-color-text: var(--color-primary-text);

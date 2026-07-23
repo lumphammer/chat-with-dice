@@ -7,7 +7,7 @@ import { memo } from "react";
  * One proposed front→Individual Back pairing in the {@link DeckPairingProposals}
  * review list: the front on the left, the proposed back on the right, and a
  * control to dismiss it. Dismissing drops just this proposal; the rest are still
- * applied. Mirrors {@link DeckIndividualBackRow}'s layout so a proposal reads the
+ * applied. Mirrors the Individual Backs rows' layout so a proposal reads the
  * same as an applied pairing.
  */
 export const DeckPairingProposalRow = memo(

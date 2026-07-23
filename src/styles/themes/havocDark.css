@@ -412,6 +412,10 @@ so the noise would end up blending against transparency. */
       so they don't round the painted box or double up */
       border-radius: 0;
       border: 0;
+      padding: 1em;
+      .modal-action {
+        margin-top: 1em;
+      }
     }
     .label {
       color: inherit;

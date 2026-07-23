@@ -51,35 +51,34 @@ export const DeckInvertedPicker = memo(
         </span>
         <div className="mt-2 flex flex-col gap-1">
           {OPTIONS.map((option) => {
-            const descriptionId = `${groupId}-${option.value}`;
+            const labelId = `${groupId}-${option.value}-label`;
+            const descriptionId = `${groupId}-${option.value}-description`;
             return (
-              <div
+              // The whole row is the label so clicking the description selects
+              // the option too. aria-labelledby keeps the radio's accessible name
+              // to just the option label (not the description), which is tied on
+              // with aria-describedby. The grid keeps both spans direct children
+              // of the label so the linter still recognises the label text.
+              <label
                 key={option.value}
-                className="hover:bg-base-200 rounded-lg p-2"
+                className="hover:bg-base-200 grid cursor-pointer
+                  grid-cols-[auto_1fr] items-start gap-x-3 rounded-lg p-2"
               >
-                {/* The description sits outside the label — as in
-                    DeckFaceDownToggle — so the label's accessible text stays at a
-                    depth assistive tech and the linter recognise, and is tied
-                    back with aria-describedby. */}
-                <label className="flex cursor-pointer items-center gap-3">
-                  <input
-                    type="radio"
-                    name={groupId}
-                    className="radio radio-primary shrink-0"
-                    checked={invertedDraws === option.value}
-                    disabled={disabled}
-                    aria-describedby={descriptionId}
-                    onChange={() => onChange(option.value)}
-                  />
-                  <span>{option.label}</span>
-                </label>
-                <span
-                  id={descriptionId}
-                  className="text-base-content/60 block ps-8"
-                >
+                <input
+                  type="radio"
+                  name={groupId}
+                  className="radio radio-primary row-span-2 mt-1 shrink-0"
+                  checked={invertedDraws === option.value}
+                  disabled={disabled}
+                  aria-labelledby={labelId}
+                  aria-describedby={descriptionId}
+                  onChange={() => onChange(option.value)}
+                />
+                <span id={labelId}>{option.label}</span>
+                <span id={descriptionId} className="text-base-content/60">
                   {option.description}
                 </span>
-              </div>
+              </label>
             );
           })}
         </div>

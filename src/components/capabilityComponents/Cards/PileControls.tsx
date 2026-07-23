@@ -24,7 +24,7 @@ export const PileControls = memo(
       <label className="flex cursor-pointer items-center gap-2">
         <input
           type="checkbox"
-          className="toggle toggle-primary toggle-sm"
+          className="toggle toggle-sm"
           checked={dwindling}
           onChange={(event) => onSetReturnCards(!event.target.checked)}
         />
