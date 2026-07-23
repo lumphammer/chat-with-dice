@@ -34,12 +34,17 @@ export const CardDrawMessageDisplay = memo(
     const shown = showingBack ? back : card;
     const imageUrl = buildFileUrl(ownerUserId, shown.nodeId, { roomId });
 
-    // Inverted rotates whichever face shows, independent of Face Down, so a draw
-    // can be both (CONTEXT.md). The base label is the Card's name, or "Face down"
-    // when the back is showing; " (inverted)" is appended when the draw came up
-    // rotated. The alt text mirrors the same combination.
-    const baseLabel = showingBack ? "Face down" : card.name;
-    const label = inverted ? `${baseLabel} (inverted)` : baseLabel;
+    // The Card's name is its source filename, which is noise in the log, so we
+    // do not surface it. We label only the draw's notable states: "Face down"
+    // when the back is showing and "Inverted" when the draw came up rotated —
+    // both are independent, so a draw can be both (CONTEXT.md). When neither
+    // applies there is nothing worth saying and the label is omitted. The alt
+    // text mirrors the same combination, falling back to the name for a plain
+    // face-up draw so the image is never left unlabelled.
+    const labelParts: string[] = [];
+    if (showingBack) labelParts.push("Face down");
+    if (inverted) labelParts.push("Inverted");
+    const label = labelParts.join(", ");
     const baseAlt = showingBack ? "Face down card" : card.name;
     const alt = inverted ? `${baseAlt}, inverted` : baseAlt;
 
@@ -56,7 +61,7 @@ export const CardDrawMessageDisplay = memo(
             onError={() => setFailed(true)}
           />
         )}
-        <span className="font-medium wrap-anywhere">{label}</span>
+        {label && <span className="font-medium wrap-anywhere">{label}</span>}
       </div>
     );
   },
