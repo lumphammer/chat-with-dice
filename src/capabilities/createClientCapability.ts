@@ -50,6 +50,7 @@ export type ClientCapabilityDefinition = {
   ChatDisplayComponent?: ComponentType<{
     capabilityData: JsonData;
     messageId: string;
+    messageUserId: string;
   }>;
 };
 
@@ -76,6 +77,7 @@ export type ClientCapability<
   ChatDisplayComponent?: ComponentType<{
     capabilityData: JsonData;
     messageId: string;
+    messageUserId: string;
   }>;
 };
 

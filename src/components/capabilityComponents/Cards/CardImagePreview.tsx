@@ -1,5 +1,6 @@
 import { ChatBubbleDialog } from "#/components/DiceRoller/ChatBubbleDialog";
 import { ImagePreview } from "#/components/FileManager/ImagePreview";
+import { CardDrawControls } from "./CardDrawControls";
 import { memo, useId } from "react";
 
 type CardImagePreviewProps = {
@@ -10,6 +11,12 @@ type CardImagePreviewProps = {
   // the enlarged image so the overlay carries the same context as the log entry.
   // Empty for a plain face-up draw, in which case no caption is rendered.
   label?: string;
+  faceDown: boolean;
+  hasBack: boolean;
+  // Present only for the drawer. Other Room Participants continue to see the
+  // read-only label in the enlarged preview.
+  onSetFaceDown?: (faceDown: boolean) => void;
+  onSetInverted?: (inverted: boolean) => void;
   // An Inverted draw shows the Card rotated 180° — the thumbnail is turned around
   // as if flat on the table, and the enlarged view matches so the card reads the
   // same way when opened.
@@ -23,7 +30,17 @@ type CardImagePreviewProps = {
  * images.
  */
 export const CardImagePreview = memo(
-  ({ src, alt, onError, label, inverted = false }: CardImagePreviewProps) => {
+  ({
+    src,
+    alt,
+    onError,
+    label,
+    faceDown,
+    hasBack,
+    onSetFaceDown,
+    onSetInverted,
+    inverted = false,
+  }: CardImagePreviewProps) => {
     const dialogId = useId();
 
     return (
@@ -50,8 +67,20 @@ export const CardImagePreview = memo(
           className="h-[90vh] max-h-[90vh] w-[90vw] max-w-[90vw]"
         >
           <ImagePreview src={src} alt={alt} inverted={inverted} />
-          {label && (
-            <span className="mt-1 text-center font-medium">{label}</span>
+          {onSetFaceDown && onSetInverted ? (
+            <div className="flex justify-center">
+              <CardDrawControls
+                faceDown={faceDown}
+                hasBack={hasBack}
+                inverted={inverted}
+                onSetFaceDown={onSetFaceDown}
+                onSetInverted={onSetInverted}
+              />
+            </div>
+          ) : (
+            label && (
+              <span className="mt-1 text-center font-medium">{label}</span>
+            )
           )}
         </ChatBubbleDialog>
       </>

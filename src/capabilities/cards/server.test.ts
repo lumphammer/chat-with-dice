@@ -4,6 +4,7 @@ import {
 } from "#/capabilities/cards/common";
 import { cardsServer } from "#/capabilities/cards/server";
 import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
+import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
 import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
@@ -38,14 +39,30 @@ const makeStateRepository = () => {
 
 const mountWith = async (
   listDeckCards: ReturnType<typeof vi.fn<ListDeckCards>>,
+  initialMessages: ChatMessage[] = [],
 ) => {
   const sentMessages: unknown[] = [];
+  const editedMessages: ChatMessage[] = [];
   const errors: { userId: string; error: unknown }[] = [];
+  const messages = new Map(
+    initialMessages.map((message) => [message.id, message]),
+  );
 
   const nodeShareManager = { listDeckCards } as unknown as NodeShareManager;
   const messageJiggler = {
-    sendChatMessage: (message: { capabilityData: unknown }) =>
-      sentMessages.push(message.capabilityData),
+    sendChatMessage: (message: ChatMessage) => {
+      messages.set(message.id, message);
+      sentMessages.push(message.capabilityData);
+    },
+    getMessage: async (id: string) => {
+      const message = messages.get(id);
+      if (!message) throw new Error(`Message not found: ${id}`);
+      return message;
+    },
+    updateMessage: async (message: ChatMessage) => {
+      messages.set(message.id, message);
+      editedMessages.push(message);
+    },
   } as unknown as MessageJiggler;
   const broadcaster = {
     sendErrorToUserId: (userId: string, error: unknown) =>
@@ -63,7 +80,7 @@ const mountWith = async (
     dispatchHook: async () => {},
   });
   if (!mounted) throw new Error("cards capability failed to mount");
-  return { mounted, sentMessages, errors };
+  return { mounted, sentMessages, editedMessages, errors, messages };
 };
 
 const draw = (mounted: ServerMountedCapability) =>
@@ -99,6 +116,24 @@ const reset = (mounted: ServerMountedCapability) =>
       params: { ownerUserId: OWNER, deckNodeId: DECK },
     },
     userId: DRAWER,
+    displayName: "Drawer",
+  });
+
+const setDrawStatus = (
+  mounted: ServerMountedCapability,
+  actionName: "setFaceDown" | "setInverted",
+  params:
+    | { messageId: string; faceDown: boolean }
+    | { messageId: string; inverted: boolean },
+  userId = DRAWER,
+) =>
+  mounted.onMessage({
+    actionCall: {
+      correlation: "c-status",
+      actionName,
+      params,
+    },
+    userId,
     displayName: "Drawer",
   });
 
@@ -243,7 +278,8 @@ describe("face down draws", () => {
   it("comes up face up when the face-down coin lands the other way", async () => {
     // Same pick (0 → card-a), but the face-down coin lands face up (0.9). The
     // pick and the coin are distinct values, so a card-a face-up result can only
-    // come from two independent rolls — not from the coin echoing the pick.
+    // come from two independent rolls — not from the coin echoing the pick. The
+    // back is still carried so the drawer can turn the Card Face Down later.
     vi.spyOn(Math, "random")
       .mockReturnValueOnce(PICK_FIRST_CARD)
       .mockReturnValueOnce(FACE_UP_ROLL)
@@ -259,6 +295,7 @@ describe("face down draws", () => {
         card: { nodeId: "card-a", name: "The Fool" },
         faceDown: false,
         inverted: false,
+        back: BACK,
       },
     ]);
   });
@@ -431,6 +468,128 @@ describe("inverted draws", () => {
       },
     ]);
     expect(errors).toEqual([]);
+  });
+});
+
+describe("manual Card Draw Message status changes", () => {
+  const MESSAGE_ID = "draw-message";
+  const NON_DRAWER = "other-user";
+
+  const drawMessage = ({
+    faceDown = false,
+    inverted = false,
+    back = BACK,
+  }: {
+    faceDown?: boolean;
+    inverted?: boolean;
+    back?: typeof BACK | null;
+  } = {}): ChatMessage => ({
+    id: MESSAGE_ID,
+    userId: DRAWER,
+    displayName: "Drawer",
+    createdTime: 1,
+    chat: "",
+    linkPreview: null,
+    capabilityName: "cards",
+    capabilityData: cardDrawMessageDataValidator.parse({
+      ownerUserId: OWNER,
+      deck: { nodeId: DECK, name: "Magus" },
+      card: { nodeId: "card-a", name: "The Fool" },
+      faceDown,
+      inverted,
+      back: back ?? undefined,
+    }),
+  });
+
+  const currentDrawData = (messages: Map<string, ChatMessage>) =>
+    cardDrawMessageDataValidator.parse(
+      messages.get(MESSAGE_ID)?.capabilityData,
+    );
+
+  it.each([
+    [
+      "Face Down",
+      "setFaceDown" as const,
+      { messageId: MESSAGE_ID, faceDown: true },
+    ],
+    [
+      "Inverted",
+      "setInverted" as const,
+      { messageId: MESSAGE_ID, inverted: true },
+    ],
+  ])("does not let a non-drawer change %s", async (_, actionName, params) => {
+    const original = drawMessage();
+    const { mounted, editedMessages, messages } = await mountWith(
+      twoCardDeck(),
+      [original],
+    );
+
+    await setDrawStatus(mounted, actionName, params, NON_DRAWER);
+
+    expect(editedMessages).toEqual([]);
+    expect(messages.get(MESSAGE_ID)).toEqual(original);
+  });
+
+  it("lets the drawer set and clear Inverted", async () => {
+    const { mounted, editedMessages, messages } = await mountWith(
+      twoCardDeck(),
+      [drawMessage({ back: null })],
+    );
+
+    await setDrawStatus(mounted, "setInverted", {
+      messageId: MESSAGE_ID,
+      inverted: true,
+    });
+    expect(currentDrawData(messages).inverted).toBe(true);
+
+    await setDrawStatus(mounted, "setInverted", {
+      messageId: MESSAGE_ID,
+      inverted: false,
+    });
+    expect(currentDrawData(messages).inverted).toBe(false);
+    expect(editedMessages).toHaveLength(2);
+  });
+
+  it("lets the drawer turn a Card with a back Face Down and Face Up", async () => {
+    const { mounted, editedMessages, messages } = await mountWith(
+      twoCardDeck(),
+      [drawMessage()],
+    );
+
+    await setDrawStatus(mounted, "setFaceDown", {
+      messageId: MESSAGE_ID,
+      faceDown: true,
+    });
+    expect(currentDrawData(messages)).toMatchObject({
+      faceDown: true,
+      back: BACK,
+    });
+
+    await setDrawStatus(mounted, "setFaceDown", {
+      messageId: MESSAGE_ID,
+      faceDown: false,
+    });
+    expect(currentDrawData(messages)).toMatchObject({
+      faceDown: false,
+      back: BACK,
+    });
+    expect(editedMessages).toHaveLength(2);
+  });
+
+  it("does not turn a backless Card Face Down", async () => {
+    const original = drawMessage({ back: null });
+    const { mounted, editedMessages, messages } = await mountWith(
+      twoCardDeck(),
+      [original],
+    );
+
+    await setDrawStatus(mounted, "setFaceDown", {
+      messageId: MESSAGE_ID,
+      faceDown: true,
+    });
+
+    expect(editedMessages).toEqual([]);
+    expect(messages.get(MESSAGE_ID)).toEqual(original);
   });
 });
 

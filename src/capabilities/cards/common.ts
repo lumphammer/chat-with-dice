@@ -14,10 +14,12 @@ import { z } from "zod/v4";
  * owner's file store, never from anything the drawer supplied.
  *
  * `faceDown` defaults to `false` so Card Draw Messages recorded before Face Down
- * existed keep parsing. `back` is the Card's back image, present only on a Face
- * Down draw — that is the image the message renders. Face Down is presentation,
- * not secrecy (decision 7): the front is still carried in `card`, snoopable by
- * anyone determined, so nothing here is withheld.
+ * existed keep parsing. `back` is the Card's back image whenever the Card has
+ * one, including on face-up draws, so the drawer can turn it Face Down later
+ * without another lookup. Legacy face-up messages simply have no back and keep
+ * parsing. Face Down is presentation, not secrecy (decision 7): the front is
+ * still carried in `card`, snoopable by anyone determined, so nothing here is
+ * withheld.
  *
  * `inverted` — whether the Card came up rotated 180° while still showing its
  * front (a tarot "reversed"). It defaults to `false` so messages recorded before
@@ -45,18 +47,12 @@ export const cardDrawMessageDataValidator = z
       })
       .optional(),
   })
-  // The two are paired: a Face Down draw carries the back it renders, and a
-  // face-up draw carries none. Enforcing it here keeps the only two valid shapes
-  // the server ever emits from drifting apart, and rejects a malformed message
-  // (e.g. `faceDown` with no back to show) rather than rendering it half-formed.
-  .refine(
-    (data) =>
-      data.faceDown ? data.back !== undefined : data.back === undefined,
-    {
-      message:
-        "A face-down draw must carry a back, and a face-up draw must not",
-    },
-  );
+  // A Face Down draw must have a back to show. A face-up draw may also carry
+  // one so it can be turned over later; legacy face-up messages without one
+  // remain valid.
+  .refine((data) => !data.faceDown || data.back !== undefined, {
+    message: "A face-down draw must carry a back",
+  });
 
 export type CardDrawMessageData = z.infer<typeof cardDrawMessageDataValidator>;
 
@@ -92,8 +88,22 @@ const pileValidator = z.object({
 
 export type Pile = z.infer<typeof pileValidator>;
 
+const pendingDrawStatusValidator = z.object({
+  faceDown: z.boolean().optional(),
+  inverted: z.boolean().optional(),
+});
+
 export const cardsStateValidator = z.object({
   piles: z.array(pileValidator),
+  /**
+   * Client-owned optimistic predictions keyed by Card Draw Message id. The
+   * server never writes this slice, so every authoritative state carries an
+   * empty object and correlated broadcasts naturally clear acknowledged
+   * predictions.
+   */
+  pendingDrawStatuses: z
+    .record(z.string(), pendingDrawStatusValidator)
+    .default({}),
 });
 
 export type CardsState = z.infer<typeof cardsStateValidator>;
@@ -127,7 +137,7 @@ export const cardsCommon = createCapabilityCommon({
   messageDataValidator: cardDrawMessageDataValidator,
   state: {
     validator: cardsStateValidator,
-    getInitialState: () => ({ piles: [] }),
+    getInitialState: () => ({ piles: [], pendingDrawStatuses: {} }),
   },
   buildActions: ({ createAction }) => ({
     draw: createAction({
@@ -198,6 +208,30 @@ export const cardsCommon = createCapabilityCommon({
         if (pile) {
           pile.discard = [];
         }
+      },
+    }),
+    setFaceDown: createAction({
+      payloadValidator: z.object({
+        messageId: z.string(),
+        faceDown: z.boolean(),
+      }),
+      pureFn: ({ stateDraft, payload }) => {
+        stateDraft.pendingDrawStatuses[payload.messageId] = {
+          ...stateDraft.pendingDrawStatuses[payload.messageId],
+          faceDown: payload.faceDown,
+        };
+      },
+    }),
+    setInverted: createAction({
+      payloadValidator: z.object({
+        messageId: z.string(),
+        inverted: z.boolean(),
+      }),
+      pureFn: ({ stateDraft, payload }) => {
+        stateDraft.pendingDrawStatuses[payload.messageId] = {
+          ...stateDraft.pendingDrawStatuses[payload.messageId],
+          inverted: payload.inverted,
+        };
       },
     }),
   }),
