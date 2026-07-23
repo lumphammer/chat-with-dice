@@ -62,7 +62,7 @@ export const DeckSettingsRoot = memo(
               </span>
               <input
                 type="checkbox"
-                className="toggle toggle-primary shrink-0"
+                className="toggle shrink-0"
                 checked={allowFaceDown}
                 disabled={disabled}
                 onChange={(e) => onToggleFaceDown(e.currentTarget.checked)}
