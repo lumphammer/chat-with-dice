@@ -57,6 +57,7 @@ export const CardDrawMessageDisplay = memo(
           <CardImagePreview
             src={imageUrl}
             alt={alt}
+            label={label}
             inverted={inverted}
             onError={() => setFailed(true)}
           />

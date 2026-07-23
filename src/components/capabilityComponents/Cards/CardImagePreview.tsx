@@ -6,10 +6,13 @@ type CardImagePreviewProps = {
   src: string;
   alt: string;
   onError: () => void;
-  // An Inverted draw shows the Card rotated 180° in the chat log — the thumbnail
-  // is turned around as if flat on the table. The enlarged pan/zoom view is left
-  // upright: its transform is driven off pointer coordinates and a rotation there
-  // would fight that maths, so the rotation belongs to the static thumbnail.
+  // The draw's notable states ("Face down", "Inverted", or both), shown beneath
+  // the enlarged image so the overlay carries the same context as the log entry.
+  // Empty for a plain face-up draw, in which case no caption is rendered.
+  label?: string;
+  // An Inverted draw shows the Card rotated 180° — the thumbnail is turned around
+  // as if flat on the table, and the enlarged view matches so the card reads the
+  // same way when opened.
   inverted?: boolean;
 };
 
@@ -20,7 +23,7 @@ type CardImagePreviewProps = {
  * images.
  */
 export const CardImagePreview = memo(
-  ({ src, alt, onError, inverted = false }: CardImagePreviewProps) => {
+  ({ src, alt, onError, label, inverted = false }: CardImagePreviewProps) => {
     const dialogId = useId();
 
     return (
@@ -46,7 +49,10 @@ export const CardImagePreview = memo(
           ariaLabel={alt}
           className="h-[90vh] max-h-[90vh] w-[90vw] max-w-[90vw]"
         >
-          <ImagePreview src={src} alt={alt} />
+          <ImagePreview src={src} alt={alt} inverted={inverted} />
+          {label && (
+            <span className="mt-1 text-center font-medium">{label}</span>
+          )}
         </ChatBubbleDialog>
       </>
     );

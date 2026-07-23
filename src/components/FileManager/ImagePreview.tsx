@@ -72,7 +72,19 @@ function clampCenter(
 }
 
 export const ImagePreview = memo(
-  ({ src, alt }: { src: string; alt: string }) => {
+  ({
+    src,
+    alt,
+    inverted = false,
+  }: {
+    src: string;
+    alt: string;
+    // Show the image rotated 180° (an Inverted card draw). The whole viewport is
+    // turned around in CSS and pointer coordinates are mirrored back into the
+    // upright frame, so pan/zoom maths is untouched — it just runs in a rotated
+    // container.
+    inverted?: boolean;
+  }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
     const pointersRef = useRef(new Map<number, Point>());
@@ -113,12 +125,21 @@ export const ImagePreview = memo(
     const isZoomed = zoom > MIN_ZOOM;
     const scale = fitScale * zoom;
 
-    const getViewportPoint = useCallback((clientX: number, clientY: number) => {
-      const container = containerRef.current;
-      if (!container) return null;
-      const rect = container.getBoundingClientRect();
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    }, []);
+    const getViewportPoint = useCallback(
+      (clientX: number, clientY: number) => {
+        const container = containerRef.current;
+        if (!container) return null;
+        const rect = container.getBoundingClientRect();
+        // When inverted the container is rotated 180°, so its own top-left sits
+        // at the screen's bottom-right. Mirror the screen point back into the
+        // container's upright frame so every downstream calculation is unaware
+        // of the rotation.
+        return inverted
+          ? { x: rect.right - clientX, y: rect.bottom - clientY }
+          : { x: clientX - rect.left, y: clientY - rect.top };
+      },
+      [inverted],
+    );
 
     const zoomAt = useCallback(
       (nextZoom: number, viewportPoint: Point) => {
@@ -373,7 +394,9 @@ export const ImagePreview = memo(
         className={`relative flex-1 touch-none overflow-hidden
           data-draggable:cursor-grab data-dragging:cursor-grabbing
           data-needs-expand:cursor-zoom-in
-          data-needs-expand:data-zoomed:cursor-grab`}
+          data-needs-expand:data-zoomed:cursor-grab ${
+            inverted ? "rotate-180" : ""
+          }`}
         data-needs-expand={needsExpand || undefined}
         data-zoomed={isZoomed || undefined}
         data-draggable={isZoomed || undefined}
