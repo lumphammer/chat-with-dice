@@ -103,14 +103,17 @@ export const havocCommon = createCapabilityCommon({
           (candidate) => candidate.id === payload.id,
         );
         if (adversary) {
-          adversary.resilience = payload.resilience;
+          adversary.resilience = Math.min(
+            payload.resilience,
+            adversary.startingResilience,
+          );
         }
       },
     }),
     createObjective: createAction({
       payloadValidator: z.object({
         name: z.string(),
-        startingResilience: z.int(),
+        startingResilience: z.int().min(1),
         isPrimary: z.boolean(),
         difficulty: z.int().min(0),
       }),
@@ -172,7 +175,10 @@ export const havocCommon = createCapabilityCommon({
           (candidate) => candidate.id === payload.id,
         );
         if (objective) {
-          objective.resilience = payload.resilience;
+          objective.resilience = Math.min(
+            payload.resilience,
+            objective.startingResilience,
+          );
         }
       },
     }),

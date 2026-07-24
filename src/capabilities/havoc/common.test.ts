@@ -6,6 +6,8 @@ import type * as z from "zod";
 
 const ADVERSARY_ID = "adversary123456789012";
 const OBJECTIVE_ID = "objective123456789012";
+const ADVERSARY_STARTING_RESILIENCE = 5;
+const OBJECTIVE_STARTING_RESILIENCE = 4;
 
 function runAction<TPayloadValidator extends z.ZodType>(
   state: HavocState,
@@ -25,7 +27,7 @@ const populatedState = (): HavocState => ({
       name: "The Ash Knight",
       threat: 2,
       difficulty: 1,
-      startingResilience: 5,
+      startingResilience: ADVERSARY_STARTING_RESILIENCE,
       resilience: 3,
     },
   ],
@@ -35,7 +37,7 @@ const populatedState = (): HavocState => ({
       name: "Seal the gate",
       isPrimary: true,
       difficulty: 2,
-      startingResilience: 4,
+      startingResilience: OBJECTIVE_STARTING_RESILIENCE,
       resilience: 3,
     },
   ],
@@ -176,6 +178,33 @@ describe("havocCommon", () => {
     expect(objectiveState.objectives[0].resilience).toBe(0);
   });
 
+  test("clamps resilience changes to each entity's starting resilience", () => {
+    const state = populatedState();
+    const adversaryState = runAction(
+      state,
+      havocCommon.actions.setAdversaryResilience,
+      {
+        id: ADVERSARY_ID,
+        resilience: 6,
+      },
+    );
+    const objectiveState = runAction(
+      adversaryState,
+      havocCommon.actions.setObjectiveResilience,
+      {
+        id: OBJECTIVE_ID,
+        resilience: 5,
+      },
+    );
+
+    expect(objectiveState.adversaries[0].resilience).toBe(
+      ADVERSARY_STARTING_RESILIENCE,
+    );
+    expect(objectiveState.objectives[0].resilience).toBe(
+      OBJECTIVE_STARTING_RESILIENCE,
+    );
+  });
+
   test("retains every action's payload constraints", () => {
     expect(
       havocCommon.actions.createAdversary.payloadValidator.safeParse({
@@ -211,6 +240,14 @@ describe("havocCommon", () => {
         isPrimary: false,
         difficulty: -1,
         startingResilience: 1,
+      }).success,
+    ).toBe(false);
+    expect(
+      havocCommon.actions.createObjective.payloadValidator.safeParse({
+        name: "Invalid",
+        isPrimary: false,
+        difficulty: 0,
+        startingResilience: 0,
       }).success,
     ).toBe(false);
     expect(
