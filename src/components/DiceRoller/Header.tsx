@@ -18,7 +18,7 @@ export const Header = memo(
       <header
         ref={ref}
         className="header relative top-0 left-0 z-10 flex h-auto w-full flex-row
-          flex-wrap items-center justify-between gap-4 px-4 py-1"
+          flex-nowrap items-center justify-between gap-4 px-4 py-1"
       >
         <a href="/" className="text-xl">
           <Logo
@@ -35,8 +35,7 @@ export const Header = memo(
               [&_.stroke]:stroke-8"
           />
         </a>
-        <div className="room-name">{roomName}</div>
-        <div className="flex-1" />
+        <div className="room-name min-w-0 flex-1 truncate">{roomName}</div>
         <div
           className="text-middle inline-flex h-(--size) flex-col justify-center"
         >
