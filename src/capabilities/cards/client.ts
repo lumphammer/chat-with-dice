@@ -8,6 +8,7 @@ export const cardsClient = createClientCapability(cardsCommon, {
   sidebarInfos: [
     {
       key: "cards",
+      label: "Cards",
       SidebarComponent: SidebarCards,
       // Layers is the Deck glyph used for deck folders in the Files tree, so the
       // Cards sidebar reads as the same thing.

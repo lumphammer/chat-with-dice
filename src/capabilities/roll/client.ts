@@ -8,6 +8,7 @@ export const rollClient = createClientCapability(rollCommon, {
   sidebarInfos: [
     {
       key: "roll",
+      label: "Roll dice",
       SidebarComponent: SidebarRoll,
       IconComponent: Dices,
     },

@@ -8,6 +8,7 @@ export const laserfeelingsClient = createClientCapability(laserfeelingsCommon, {
   sidebarInfos: [
     {
       key: "laserfeelings",
+      label: "Lasers & Feelings",
       SidebarComponent: SidebarLaserFeelings,
       IconComponent: Zap,
     },

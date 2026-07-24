@@ -4,6 +4,7 @@ import {
   isCapabilityName,
 } from "#/capabilities/capabilityNames";
 import { clientCapabilityRegistry } from "#/capabilities/clientCapabilityRegistry";
+import type { SidebarVisibilityContext } from "#/capabilities/createClientCapability";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "../DiceRoller/contexts/roomUiNavigationContext";
 import { useRefStash } from "../useRefStash";
@@ -30,14 +31,17 @@ type SidebarStyle = CSSProperties & {
 const SidebarTabTrigger = memo(
   ({
     children,
+    label,
     onTriggerClick,
     value,
   }: {
     children: ReactNode;
+    label: string;
     onTriggerClick: (trigger: HTMLButtonElement, isSelected: boolean) => void;
     value: string;
   }) => (
     <Tabs.Trigger
+      aria-label={label}
       className={styles.tabButton}
       value={value}
       onClick={(event) => {
@@ -97,22 +101,42 @@ export const Sidebar = memo(
         .map((name) => [name, clientCapabilityRegistry[name]] as const);
     }, [roomConfig.capabilities]);
 
+    const sidebarVisibilityContext = useMemo<SidebarVisibilityContext>(
+      () => ({
+        viewer: sessionData
+          ? {
+              id: sessionData.user.id,
+              isAnonymous: sessionData.user.isAnonymous ?? true,
+            }
+          : null,
+        roomOwnerId,
+      }),
+      [roomOwnerId, sessionData],
+    );
+
+    const capabilitySidebars = useMemo(
+      () =>
+        capabilities.flatMap(([capabilityName, capability]) =>
+          (capability.sidebarInfos ?? [])
+            .filter(
+              ({ isVisible }) => isVisible?.(sidebarVisibilityContext) ?? true,
+            )
+            .map((sidebarInfo) => ({
+              ...sidebarInfo,
+              value: `${capabilityName}.${sidebarInfo.key}`,
+            })),
+        ),
+      [capabilities, sidebarVisibilityContext],
+    );
+
     const defaultValue = useMemo(() => {
-      const firstCapWithSidebars = capabilities.find(
-        ([, capInfo]) => (capInfo.sidebarInfos?.length ?? 0) > 0,
-      );
-      const defaultKey =
-        firstCapWithSidebars && firstCapWithSidebars[1].sidebarInfos?.[0]?.key;
-      return defaultKey && `${firstCapWithSidebars?.[0]}.${defaultKey}`;
-    }, [capabilities]);
+      return capabilitySidebars[0]?.value;
+    }, [capabilitySidebars]);
 
     const availableTabValues = useMemo(() => {
-      const capabilityTabs = capabilities.flatMap(
-        ([name, capInfo]) =>
-          capInfo.sidebarInfos?.map(({ key }) => `${name}.${key}`) ?? [],
-      );
+      const capabilityTabs = capabilitySidebars.map(({ value }) => value);
       return [...capabilityTabs, ...(isOwner ? ["config"] : []), "help"];
-    }, [capabilities, isOwner]);
+    }, [capabilitySidebars, isOwner]);
 
     const [selectedTab, setSelectedTab] = useState<string | null>(
       defaultValue ?? null,
@@ -163,9 +187,9 @@ export const Sidebar = memo(
 
     useEffect(() => {
       if (!sharedFolderOpenRequest) return;
-      if (!availableTabValues.includes("files.files")) return;
+      if (!availableTabValues.includes("files.shared")) return;
 
-      setSelectedTab("files.files");
+      setSelectedTab("files.shared");
       setIsDesktopClosed(false);
       if (!isDesktop) {
         setIsMobileOpen(true);
@@ -261,26 +285,19 @@ export const Sidebar = memo(
                     setIsMobileOpen(true);
                   }}
                 >
-                  {capabilities.flatMap(([name, capInfo]) => {
-                    const sidebarInfos = capInfo.sidebarInfos;
-                    if (!sidebarInfos) {
-                      return [];
-                    }
-                    return sidebarInfos.map(({ IconComponent, key }) => {
-                      const value = `${name}.${key}`;
-                      return (
-                        <SidebarTabTrigger
-                          key={value}
-                          value={value}
-                          onTriggerClick={handleTriggerClick}
-                        >
-                          <IconComponent />
-                        </SidebarTabTrigger>
-                      );
-                    });
-                  })}
+                  {capabilitySidebars.map(({ IconComponent, label, value }) => (
+                    <SidebarTabTrigger
+                      key={value}
+                      label={label}
+                      value={value}
+                      onTriggerClick={handleTriggerClick}
+                    >
+                      <IconComponent />
+                    </SidebarTabTrigger>
+                  ))}
                   {isOwner && (
                     <SidebarTabTrigger
+                      label="Configure room"
                       value="config"
                       onTriggerClick={handleTriggerClick}
                     >
@@ -288,6 +305,7 @@ export const Sidebar = memo(
                     </SidebarTabTrigger>
                   )}
                   <SidebarTabTrigger
+                    label="Help"
                     value="help"
                     onTriggerClick={handleTriggerClick}
                   >
@@ -296,26 +314,15 @@ export const Sidebar = memo(
                 </nav>
               </Tabs.List>
               <section className={styles.contentArea}>
-                {capabilities.flatMap(([name, capInfo]) => {
-                  const sidebarInfos = capInfo.sidebarInfos;
-                  if (!sidebarInfos) {
-                    return [];
-                  }
-
-                  return sidebarInfos.map(({ SidebarComponent, key }) => {
-                    return (
-                      SidebarComponent && (
-                        <Tabs.Content
-                          key={`${name}.${key}`}
-                          value={`${name}.${key}`}
-                          className={styles.contentDrawer}
-                        >
-                          <SidebarComponent />
-                        </Tabs.Content>
-                      )
-                    );
-                  });
-                })}
+                {capabilitySidebars.map(({ SidebarComponent, value }) => (
+                  <Tabs.Content
+                    key={value}
+                    value={value}
+                    className={styles.contentDrawer}
+                  >
+                    <SidebarComponent />
+                  </Tabs.Content>
+                ))}
                 {isOwner && (
                   <Tabs.Content value="config" className={styles.contentDrawer}>
                     <Config />

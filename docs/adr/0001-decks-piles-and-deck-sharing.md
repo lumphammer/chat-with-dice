@@ -47,7 +47,7 @@ Specifically:
 
 7. **Face Down is presentation, not secrecy.** The client receives the front's node id regardless. This is a tool for friends playing games; if they snoop, they snoop. Real secrecy would require the server to withhold Card Images until a reveal and to make chat history per-participant, which the broadcast-everything model does not do.
 
-8. **The Files capability remains the sole authority on shares.** Deck folders appear in the Files sidebar as folders, so participants can browse the Card Images. The `cards` capability holds only Piles, and authorizes every draw against the owner's DO via `isNodeAccessibleFromRoom` rather than trusting the room-side cache — as `CONTEXT.md` requires ("cached summaries do not authorize file access").
+8. **The Files capability remains the sole authority on shares.** Deck folders appear in the Shared with room sidebar as folders, so participants can browse the Card Images. The `cards` capability holds only Piles, and authorizes every draw against the owner's DO via `isNodeAccessibleFromRoom` rather than trusting the room-side cache — as `CONTEXT.md` requires ("cached summaries do not authorize file access").
 
 9. **Anonymous Room Participants can draw** from a Pile, but cannot own or share a Deck (this follows from the existing Room Share rules).
 

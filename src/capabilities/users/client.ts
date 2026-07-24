@@ -7,6 +7,7 @@ export const usersClient = createClientCapability(usersCommon, {
   sidebarInfos: [
     {
       key: "users",
+      label: "Users",
       SidebarComponent: SidebarUsers,
       IconComponent: UsersRound,
     },
