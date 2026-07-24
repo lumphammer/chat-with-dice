@@ -23,7 +23,7 @@ export const SidebarCards = memo(() => {
     if (!filesCap.initialised) return [];
     return filesCap.state.shares
       .filter(isDrawableDeck)
-      .sort((a, b) => b.dateShared - a.dateShared);
+      .sort((a, b) => a.node.name.localeCompare(b.node.name));
   }, [filesCap]);
 
   if (!cardsCap.initialised) {
