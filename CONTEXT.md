@@ -70,7 +70,7 @@ _Avoid_: Room file, shared file
 - Pairing a front with an **Individual Back** can be proposed automatically from **Card Image** names, but a **Deck** that defeats the heuristic can be paired by hand
 - A **Card** with no back cannot be drawn **Face Down**, even where other **Cards** in the same **Deck** can be
 - A **Deck** is made available to a **Room** by a **Room Share** pointing at its folder; there is no separate deck-sharing grant
-- A shared **Deck** appears in the room **Files** sidebar as a folder, so participants can browse its **Card Images** directly
+- A shared **Deck** appears in the room's **Shared with room** sidebar as a folder, so participants can browse its **Card Images** directly
 - A **Pile** belongs to exactly one **Room** and draws from exactly one **Deck**
 - A **Deck** can back **Piles** in many **Rooms**, and those **Piles** are independent of each other
 - Drawing from a **Pile** never changes the **Deck**
@@ -101,7 +101,7 @@ _Avoid_: Room file, shared file
 - The owner's file store tells every **Room** a folder is shared with when that folder is marked or unmarked as a **Deck**, so the room's **Cards** sidebar reflects the change without re-sharing; unmarking abandons the folder's **Pile** in each room rather than preserving it
 - A **Room Share** whose **User File** is deleted becomes unavailable but is not removed: the grant outlives the deletion because deletion is reversible
 - **Room Share** commands are idempotent for grants, while **Shared Item Message** creation is deduplicated by command correlation
-- The room **Files** sidebar contains both room-shared files and the current user's personal file tree
+- The **Files** capability provides separate sidebars for room-shared files and the current user's personal file tree
 - A **User File** can be granted to many **Rooms**
 - A **Room** can contain many **Room Shares**
 - A **Room** can have at most one active **Room Share** for a given **User File**

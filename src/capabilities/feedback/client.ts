@@ -7,6 +7,7 @@ export const feedbackClient = createClientCapability(feedbackCommon, {
   sidebarInfos: [
     {
       key: "feedback",
+      label: "Feedback",
       SidebarComponent: SidebarFeedback,
       IconComponent: Speech,
     },

@@ -7,6 +7,7 @@ export const objectivesClient = createClientCapability(objectivesCommon, {
   sidebarInfos: [
     {
       key: "objectives",
+      label: "Objectives",
       SidebarComponent: SidebarObjectives,
       IconComponent: Check,
     },

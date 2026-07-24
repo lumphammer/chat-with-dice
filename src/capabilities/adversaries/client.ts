@@ -7,6 +7,7 @@ export const adversariesClient = createClientCapability(adversariesCommon, {
   sidebarInfos: [
     {
       key: "adversaries",
+      label: "Adversaries",
       SidebarComponent: SidebarAdversaries,
       IconComponent: Swords,
     },

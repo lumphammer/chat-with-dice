@@ -7,6 +7,7 @@ export const counterClient = createClientCapability(counterCommon, {
   sidebarInfos: [
     {
       key: "counter",
+      label: "Counter",
       SidebarComponent: SidebarCounter,
       IconComponent: SquarePlus,
     },

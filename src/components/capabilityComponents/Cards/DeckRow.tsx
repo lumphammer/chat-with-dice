@@ -74,7 +74,7 @@ export const DeckRow = memo(
             type="button"
             className="link link-hover min-w-0 flex-1 truncate text-left
               font-medium"
-            title="Browse this deck's cards in the Files sidebar"
+            title="Browse this deck's cards in Shared with room"
             onClick={handleOpenFolder}
           >
             {deck.node.name}

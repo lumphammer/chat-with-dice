@@ -39,10 +39,25 @@ type ClientMountedCapability<
       };
     };
 
+export type SidebarVisibilityContext = {
+  readonly viewer: {
+    readonly id: string;
+    readonly isAnonymous: boolean;
+  } | null;
+  readonly roomOwnerId: string;
+};
+
 type SidebarInfo = {
   key: string;
+  label: string;
   SidebarComponent: ComponentType;
   IconComponent: ComponentType;
+  /**
+   * A pure visibility check over stable viewer and room facts. Hooks and
+   * capability state do not belong here: the Sidebar evaluates this while
+   * building its navigation entries.
+   */
+  isVisible?: (context: SidebarVisibilityContext) => boolean;
 };
 
 export type ClientCapabilityDefinition = {
