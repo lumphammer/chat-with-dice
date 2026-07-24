@@ -11,6 +11,7 @@ import { useRefStash } from "../useRefStash";
 import { useStateWithRef } from "../useStateWithRef";
 import { Config } from "./Config";
 import { Help } from "./Help";
+import { MobileSidebarControlsProvider } from "./mobileSidebarContext";
 import styles from "./sidebar.module.css";
 import { useContainerMinWidth } from "./useContainerMinWidth";
 import { useModalRegion } from "./useModalRegion";
@@ -313,25 +314,32 @@ export const Sidebar = memo(
                   </SidebarTabTrigger>
                 </nav>
               </Tabs.List>
-              <section className={styles.contentArea}>
-                {capabilitySidebars.map(({ SidebarComponent, value }) => (
-                  <Tabs.Content
-                    key={value}
-                    value={value}
-                    className={styles.contentDrawer}
-                  >
-                    <SidebarComponent />
+              <MobileSidebarControlsProvider
+                closeMobileSidebar={closeMobileSidebar}
+              >
+                <section className={styles.contentArea}>
+                  {capabilitySidebars.map(({ SidebarComponent, value }) => (
+                    <Tabs.Content
+                      key={value}
+                      value={value}
+                      className={styles.contentDrawer}
+                    >
+                      <SidebarComponent />
+                    </Tabs.Content>
+                  ))}
+                  {isOwner && (
+                    <Tabs.Content
+                      value="config"
+                      className={styles.contentDrawer}
+                    >
+                      <Config />
+                    </Tabs.Content>
+                  )}
+                  <Tabs.Content value="help" className={styles.contentDrawer}>
+                    <Help />
                   </Tabs.Content>
-                ))}
-                {isOwner && (
-                  <Tabs.Content value="config" className={styles.contentDrawer}>
-                    <Config />
-                  </Tabs.Content>
-                )}
-                <Tabs.Content value="help" className={styles.contentDrawer}>
-                  <Help />
-                </Tabs.Content>
-              </section>
+                </section>
+              </MobileSidebarControlsProvider>
             </div>
           </aside>
         </Tabs.Root>

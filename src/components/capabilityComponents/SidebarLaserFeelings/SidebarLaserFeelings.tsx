@@ -1,10 +1,12 @@
 import { laserfeelingsClient } from "#/capabilities/laserfeelings/client";
+import { useCloseMobileSidebar } from "#/components/Sidebar/mobileSidebarContext";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { LaserFeelingsForm } from "./LaserFeelingsForm";
 import { memo } from "react";
 
 export const SidebarLaserFeelings = memo(() => {
   const capInfo = laserfeelingsClient.useMount();
+  const closeMobileSidebar = useCloseMobileSidebar();
 
   if (!capInfo.initialised) {
     return "Loading...";
@@ -16,7 +18,10 @@ export const SidebarLaserFeelings = memo(() => {
       isSaving={capInfo.patches.length > 0}
     >
       <LaserFeelingsForm
-        onRoll={(formula) => capInfo.actions.doRoll(formula)}
+        onRoll={(formula) => {
+          capInfo.actions.doRoll(formula);
+          closeMobileSidebar();
+        }}
       />
     </SidebarPanel>
   );
