@@ -6,8 +6,7 @@
  */
 export const capabilityNames = [
   "counter",
-  "objectives",
-  "adversaries",
+  "havoc",
   "roll",
   "laserfeelings",
   "files",

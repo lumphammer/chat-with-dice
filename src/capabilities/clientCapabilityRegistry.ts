@@ -1,12 +1,11 @@
-import { adversariesClient } from "./adversaries/client";
 import type { CapabilityName } from "./capabilityNames";
 import { cardsClient } from "./cards/client";
 import { counterClient } from "./counter/client";
 import type { ClientCapability } from "./createClientCapability";
 import { feedbackClient } from "./feedback/client";
 import { filesClient } from "./files/client";
+import { havocClient } from "./havoc/client";
 import { laserfeelingsClient } from "./laserfeelings/client";
-import { objectivesClient } from "./objectives/client";
 import { rollClient } from "./roll/client";
 import { usersClient } from "./users/client";
 
@@ -26,8 +25,7 @@ import { usersClient } from "./users/client";
  */
 export const clientCapabilityRegistry = {
   counter: counterClient,
-  objectives: objectivesClient,
-  adversaries: adversariesClient,
+  havoc: havocClient,
   roll: rollClient,
   laserfeelings: laserfeelingsClient,
   files: filesClient,

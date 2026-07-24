@@ -1,11 +1,11 @@
-import { adversariesClient } from "#/capabilities/adversaries/client";
+import { havocClient } from "#/capabilities/havoc/client";
 import { ItemCard } from "#/components/capabilityComponents/shared/ItemCard";
 import { ResilienceTracker } from "#/components/capabilityComponents/shared/ResilienceTracker";
 import { AdversaryEditForm } from "./AdversaryEditForm";
 import { useMemo } from "react";
 
 type MountedCapInfo = Extract<
-  ReturnType<typeof adversariesClient.useMount>,
+  ReturnType<typeof havocClient.useMount>,
   { initialised: true }
 >;
 type Adversary = MountedCapInfo["state"]["adversaries"][number];
