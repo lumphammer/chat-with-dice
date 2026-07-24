@@ -3,6 +3,7 @@ import { findPile } from "#/capabilities/cards/common";
 import { filesClient } from "#/capabilities/files/client";
 import type { RoomShare } from "#/capabilities/files/common";
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
+import { useCloseMobileSidebar } from "#/components/Sidebar/mobileSidebarContext";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { DeckRow } from "./DeckRow";
 import { memo, useMemo } from "react";
@@ -16,6 +17,7 @@ const isDrawableDeck = (share: RoomShare) =>
 
 export const SidebarCards = memo(() => {
   const { roomId } = useRoomInfoContext();
+  const closeMobileSidebar = useCloseMobileSidebar();
   const filesCap = filesClient.useMount();
   const cardsCap = cardsClient.useMount();
 
@@ -60,12 +62,13 @@ export const SidebarCards = memo(() => {
               deck={deck}
               pile={findPile(cardsCap.state, deck.userId, deck.node.id)}
               roomId={roomId}
-              onDraw={() =>
+              onDraw={() => {
                 cardsCap.actions.draw({
                   ownerUserId: deck.userId,
                   deckNodeId: deck.node.id,
-                })
-              }
+                });
+                closeMobileSidebar();
+              }}
               onSetReturnCards={(returnCards) =>
                 cardsCap.actions.setReturnCards({
                   ownerUserId: deck.userId,
