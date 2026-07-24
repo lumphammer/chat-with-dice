@@ -1,12 +1,11 @@
-import { adversariesServer } from "./adversaries/server";
 import type { CapabilityName } from "./capabilityNames";
 import { cardsServer } from "./cards/server";
 import { counterServer } from "./counter/server";
 import type { ServerCapability } from "./createServerCapability";
 import { feedbackServer } from "./feedback/server";
 import { filesServer } from "./files/server";
+import { havocServer } from "./havoc/server";
 import { laserfeelingsServer } from "./laserfeelings/server";
-import { objectivesServer } from "./objectives/server";
 import { rollServer } from "./roll/server";
 import { usersServer } from "./users/server";
 
@@ -20,8 +19,7 @@ export const serverCapabilityRegistry: Record<
   ServerCapability
 > = {
   counter: counterServer,
-  objectives: objectivesServer,
-  adversaries: adversariesServer,
+  havoc: havocServer,
   roll: rollServer,
   laserfeelings: laserfeelingsServer,
   files: filesServer,

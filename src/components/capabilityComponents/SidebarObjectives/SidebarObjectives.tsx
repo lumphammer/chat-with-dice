@@ -1,11 +1,11 @@
-import { objectivesClient } from "#/capabilities/objectives/client";
+import { havocClient } from "#/capabilities/havoc/client";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import { CreateObjectiveForm } from "./CreateObjectiveForm";
 import { ObjectiveDisplay } from "./ObjectiveDisplay";
 import { memo } from "react";
 
 export const SidebarObjectives = memo(() => {
-  const capInfo = objectivesClient.useMount();
+  const capInfo = havocClient.useMount();
 
   if (!capInfo.initialised) {
     return "Loading...";
@@ -20,7 +20,10 @@ export const SidebarObjectives = memo(() => {
           objective={objective}
           onDelete={() => capInfo.actions.deleteObjective({ id: objective.id })}
           onSetResilience={(resilience) =>
-            capInfo.actions.setResilience({ id: objective.id, resilience })
+            capInfo.actions.setObjectiveResilience({
+              id: objective.id,
+              resilience,
+            })
           }
           onUpdateObjective={(update) =>
             capInfo.actions.updateObjective({ id: objective.id, ...update })

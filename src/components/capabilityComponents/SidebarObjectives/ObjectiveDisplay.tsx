@@ -1,10 +1,10 @@
-import { objectivesClient } from "#/capabilities/objectives/client";
+import { havocClient } from "#/capabilities/havoc/client";
 import { ItemCard } from "#/components/capabilityComponents/shared/ItemCard";
 import { ResilienceTracker } from "#/components/capabilityComponents/shared/ResilienceTracker";
 import { ObjectiveEditForm } from "./ObjectiveEditForm";
 
 type MountedCapInfo = Extract<
-  ReturnType<typeof objectivesClient.useMount>,
+  ReturnType<typeof havocClient.useMount>,
   { initialised: true }
 >;
 export type Objective = MountedCapInfo["state"]["objectives"][number];

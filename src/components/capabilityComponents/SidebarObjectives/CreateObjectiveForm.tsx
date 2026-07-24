@@ -1,4 +1,4 @@
-import { objectivesClient } from "#/capabilities/objectives/client";
+import { havocClient } from "#/capabilities/havoc/client";
 import { ExpandableForm } from "#/components/capabilityComponents/shared/ExpandableForm";
 import { useRef, useState } from "react";
 
@@ -7,7 +7,7 @@ const DEFAULT_DIFFICULTY = 0;
 
 export const CreateObjectiveForm = () => {
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const capInfo = objectivesClient.useMount();
+  const capInfo = havocClient.useMount();
 
   const [name, setName] = useState("");
   const [isPrimary, setIsPrimary] = useState(false);

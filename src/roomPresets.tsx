@@ -38,10 +38,7 @@ export const roomPresets = {
     Icon: FlameIcon,
     config: {
       version: 1,
-      capabilities: [
-        { name: "objectives", config: {} },
-        { name: "adversaries", config: {} },
-      ],
+      capabilities: [{ name: "havoc", config: {} }],
     },
   },
   [CARDS_ROOM_PRESET_NAME]: {
