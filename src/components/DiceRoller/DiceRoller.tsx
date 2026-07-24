@@ -24,7 +24,15 @@ import { useChatWebSocket } from "./hooks/useChatWebSocket";
 import { useSmartScroll } from "./hooks/useSmartScroll";
 import type { UserHueStyle } from "./types";
 import { enablePatches, produce, type Patch } from "immer";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  StrictMode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const NAG_INTERVAL_MINUTES = 20;
 
@@ -232,102 +240,109 @@ export const DiceRoller = memo(
     }, [sessionData, isPending, feedbackToasterValue, roomOwnerId]);
 
     return (
-      <FeedbackToasterProvider feedbackToasterValue={feedbackToasterValue}>
-        <CapabilityInfoContextProvider value={capabilityInfos}>
-          <SetCapabilityStateContextProvider
-            value={optimisticallySetCapabilityState}
-          >
-            <SendMessageContextProvider value={sendMessage}>
-              <RoomInfoContextProvider
-                value={useMemo(
-                  () => ({
-                    roomConfig,
-                    setRoomConfig: handleSetRoomConfig,
-                    roomName,
-                    setRoomName: handleSetRoomName,
-                    roomId,
-                    roomOwnerId,
-                  }),
-                  [
-                    roomConfig,
-                    handleSetRoomConfig,
-                    handleSetRoomName,
-                    roomName,
-                    roomId,
-                    roomOwnerId,
-                  ],
-                )}
-              >
-                <RoomUiNavigationContextProvider>
-                  <div
-                    ref={outerDivRef}
-                    className={`main-area ${styles.outerDiv}`}
-                    data-theme="unset"
-                    style={
-                      {
-                        "--user-hue": hue,
-                      } satisfies UserHueStyle as UserHueStyle
-                    }
-                  >
-                    {/* grid-area: header — targeted via > header rule in CSS module */}
-                    <Header
-                      ref={headerRef}
-                      connectionStatus={connectionStatus}
-                      roomName={roomName}
-                    />
-                    {/* chat scrolling area — grid-area: chat */}
+      <StrictMode>
+        <FeedbackToasterProvider feedbackToasterValue={feedbackToasterValue}>
+          <CapabilityInfoContextProvider value={capabilityInfos}>
+            <SetCapabilityStateContextProvider
+              value={optimisticallySetCapabilityState}
+            >
+              <SendMessageContextProvider value={sendMessage}>
+                <RoomInfoContextProvider
+                  value={useMemo(
+                    () => ({
+                      roomConfig,
+                      setRoomConfig: handleSetRoomConfig,
+                      roomName,
+                      setRoomName: handleSetRoomName,
+                      roomId,
+                      roomOwnerId,
+                    }),
+                    [
+                      roomConfig,
+                      handleSetRoomConfig,
+                      handleSetRoomName,
+                      roomName,
+                      roomId,
+                      roomOwnerId,
+                    ],
+                  )}
+                >
+                  <RoomUiNavigationContextProvider>
                     <div
-                      ref={chatAreaRef}
-                      data-part="scroller"
-                      className={styles.chatArea}
+                      ref={outerDivRef}
+                      className={`main-area ${styles.outerDiv}`}
+                      data-theme="unset"
+                      style={
+                        {
+                          "--user-hue": hue,
+                        } satisfies UserHueStyle as UserHueStyle
+                      }
                     >
+                      {/* grid-area: header — targeted via > header rule in CSS module */}
+                      <Header
+                        ref={headerRef}
+                        connectionStatus={connectionStatus}
+                        roomName={roomName}
+                      />
+                      {/* chat scrolling area — grid-area: chat */}
                       <div
-                        ref={scrollContainerRef}
-                        onScroll={handleScroll}
-                        className="absolute inset-0 overflow-auto px-4"
+                        ref={chatAreaRef}
+                        data-part="scroller"
+                        className={styles.chatArea}
                       >
-                        <div ref={contentRef} className={styles.chatMessages}>
-                          {messages.map((message) => (
-                            <ChatBubble
-                              key={message.id}
-                              message={message}
-                            ></ChatBubble>
-                          ))}
-                          {messages.length === 0 && (
-                            <div className="font-italic">No messages yet</div>
-                          )}
-                          <div ref={bottomRef} />
-                        </div>
-                      </div>
-                      {hasNewMessages && (
-                        <button
-                          onClick={scrollToBottom}
-                          className="btn btn-primary btn-sm absolute bottom-4
-                            left-1/2 -translate-x-1/2 shadow-lg"
+                        <div
+                          ref={scrollContainerRef}
+                          onScroll={handleScroll}
+                          className="absolute inset-0 overflow-auto px-4"
                         >
-                          ↓ New messages
-                        </button>
-                      )}
+                          <div ref={contentRef} className={styles.chatMessages}>
+                            {messages.map((message) => (
+                              <ChatBubble
+                                key={message.id}
+                                message={message}
+                              ></ChatBubble>
+                            ))}
+                            {messages.length === 0 && (
+                              <div className="font-italic">No messages yet</div>
+                            )}
+                            <div ref={bottomRef} />
+                          </div>
+                        </div>
+                        {hasNewMessages && (
+                          <button
+                            onClick={scrollToBottom}
+                            className="btn btn-primary btn-sm absolute bottom-4
+                              left-1/2 -translate-x-1/2 shadow-lg"
+                          >
+                            ↓ New messages
+                          </button>
+                        )}
+                      </div>
+                      {/* chat entry bar — grid-area: entry */}
+                      <div
+                        ref={entryAreaRef}
+                        data-part="entry"
+                        className={styles.entryArea}
+                      >
+                        <ChatForm onNewMessage={handleNewChatMessage} />
+                      </div>
+                      {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
+                      <div
+                        data-part="sidebar"
+                        className={styles.sidebarWrapper}
+                      >
+                        <Sidebar
+                          backgroundElementRefs={sidebarBackgroundRefs}
+                        />
+                      </div>
                     </div>
-                    {/* chat entry bar — grid-area: entry */}
-                    <div
-                      ref={entryAreaRef}
-                      data-part="entry"
-                      className={styles.entryArea}
-                    >
-                      <ChatForm onNewMessage={handleNewChatMessage} />
-                    </div>
-                    {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
-                    <div data-part="sidebar" className={styles.sidebarWrapper}>
-                      <Sidebar backgroundElementRefs={sidebarBackgroundRefs} />
-                    </div>
-                  </div>
-                </RoomUiNavigationContextProvider>
-              </RoomInfoContextProvider>
-            </SendMessageContextProvider>
-          </SetCapabilityStateContextProvider>
-        </CapabilityInfoContextProvider>
-      </FeedbackToasterProvider>
+                  </RoomUiNavigationContextProvider>
+                </RoomInfoContextProvider>
+              </SendMessageContextProvider>
+            </SetCapabilityStateContextProvider>
+          </CapabilityInfoContextProvider>
+        </FeedbackToasterProvider>
+      </StrictMode>
     );
   },
 );
