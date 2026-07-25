@@ -467,6 +467,30 @@ describe("getDeckCards", () => {
     expect(after.invertedDraws).toBe("fronts-and-backs");
   });
 
+  it("reports drawToDiscardPile, defaulting to true and travelling once set", async () => {
+    const { userDataDO, deck } = await setUp();
+
+    // The default is what a freshly-marked Deck does with no owner input: draw
+    // to a Discard. This assertion is what pins that default.
+    const before = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(before.result).toBe("ok");
+    if (before.result !== "ok") return;
+    expect(before.drawToDiscardPile).toBe(true);
+
+    await userDataDO.setDeckDrawToDiscardPile(deck.id, false);
+
+    const after = await userDataDO.getDeckCards({
+      nodeId: deck.id,
+      roomId: ROOM_ID,
+    });
+    expect(after.result).toBe("ok");
+    if (after.result !== "ok") return;
+    expect(after.drawToDiscardPile).toBe(false);
+  });
+
   it("keeps allowFaceDown and invertedDraws independent", async () => {
     const { userDataDO, deck } = await setUp();
 

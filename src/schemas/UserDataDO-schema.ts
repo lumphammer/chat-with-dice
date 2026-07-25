@@ -109,6 +109,13 @@ export const decks = snakeCase.table("decks", {
   // `allowFaceDown` this travels with the Deck; "none" is the default. See
   // `invertedDraws.ts` and CONTEXT.md.
   invertedDraws: text({ enum: invertedDrawsValues }).notNull().default("none"),
+  // Deck configuration (ADR-0001 decision 6, as amended): what happens to a Card
+  // after it is drawn — `1` sends it to the Discard until the Pile is Reset, `0`
+  // returns it so every Card stays drawable. This started life as the Pile's
+  // room-side `returnCards`; it moved here so one Deck has one rule wherever it
+  // is shared. Like `allowFaceDown` it travels with the Deck. `1` is the
+  // default: a Deck draws to a Discard unless its owner says otherwise.
+  drawToDiscardPile: int().notNull().default(1),
 });
 
 export const deckIndividualBacks = snakeCase.table(
