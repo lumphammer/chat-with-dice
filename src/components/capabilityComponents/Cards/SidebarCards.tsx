@@ -22,7 +22,7 @@ export const SidebarCards = memo(() => {
   const filesCap = filesClient.useMount();
   const cardsCap = cardsClient.useMount();
   // Read the session once here rather than per row: every row needs it only to
-  // decide whether to offer the owner-only Deck settings cog.
+  // decide whether to offer the owner-only Deck settings button.
   const { data: sessionData } = authClient.useSession();
   const currentUserId = sessionData?.user.id;
 

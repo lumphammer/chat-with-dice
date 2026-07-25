@@ -2,15 +2,15 @@ import { Settings2 } from "lucide-react";
 import { memo } from "react";
 
 /**
- * The cog on a deck row in the Cards sidebar, opening the owner's Deck settings
- * without a trip to the File Manager. Only rendered for Decks the current user
- * owns — every setting behind it is owner-only.
+ * The settings button on a deck row in the Cards sidebar, opening the owner's
+ * Deck settings without a trip to the File Manager. Only rendered for Decks the
+ * current user owns — every setting behind it is owner-only.
  *
  * Trigger only: the dialog itself is rendered once by `DeckRow`, because this
  * button changes rows depending on whether the Deck dwindles and a dialog
  * mounted inside it would be destroyed by the move.
  */
-export const DeckSettingsCogButton = memo(
+export const DeckSettingsButton = memo(
   ({ name, onOpen }: { name: string; onOpen: () => void }) => (
     <button
       type="button"
@@ -24,4 +24,4 @@ export const DeckSettingsCogButton = memo(
   ),
 );
 
-DeckSettingsCogButton.displayName = "DeckSettingsCogButton";
+DeckSettingsButton.displayName = "DeckSettingsButton";

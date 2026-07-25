@@ -15,8 +15,8 @@ import { memo, useCallback, useEffect, useId, useRef, useState } from "react";
  *
  * Controlled rather than self-triggering, because it is opened from two places
  * that look nothing alike: a menu item in the File Manager
- * ({@link DeckSettingsMenuItem}) and a cog on the Cards sidebar's deck row
- * (`DeckSettingsCogButton`). Each owns the `open` state and renders this.
+ * ({@link DeckSettingsMenuItem}) and a settings button on the Cards sidebar's
+ * deck row (`DeckSettingsButton`). Each owns the `open` state and renders this.
  *
  * `onClose` fires from the dialog's own `close` event, so it covers Done, Escape
  * and the backdrop alike — callers can rely on it to know the owner is finished.

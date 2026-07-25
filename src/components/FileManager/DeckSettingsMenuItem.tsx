@@ -5,8 +5,8 @@ import { memo, useState } from "react";
 /**
  * The "Deck settings" entry in a folder's actions menu: the menu button plus the
  * dialog it opens. {@link DeckSettingsDialog} is controlled, so the `open` state
- * lives here — the Cards sidebar's cog owns its own copy and renders the same
- * dialog.
+ * lives here — the Cards sidebar's settings button owns its own copy and renders
+ * the same dialog.
  */
 export const DeckSettingsMenuItem = memo(
   ({ nodeId, name }: { nodeId: string; name: string }) => {
