@@ -2,5 +2,12 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>n3dst4/shared-fvtt-bits//dotfiles/renovate-shared/default"
+  ],
+  "packageRules": [
+    {
+      "description": "Drizzle is pre-1.0 and publishes per-branch snapshots (1.0.0-rc.4-<sha>) alongside real releases. Those sort ABOVE the release in semver prerelease ordering, so Renovate picks them: in July 2026 it moved drizzle-kit onto a snapshot a month older than the release, which no longer matched drizzle-orm and broke migration generation. The two are pinned to a hand-checked working pair. Re-enable once drizzle ships a stable 1.0.0.",
+      "matchPackageNames": ["drizzle-kit", "drizzle-orm"],
+      "enabled": false
+    }
   ]
 }
