@@ -45,6 +45,16 @@ Specifically:
 
 6. **Deck configuration and Pile configuration are different things.** Whether a Deck _permits_ Inverted or Face Down draws is Deck configuration and travels. Whether drawn Cards return to the Pile is a table rule, is Pile configuration, and stays room-side. Whether a given draw _came up_ Inverted or Face Down is a property of that draw, recorded in the Card Draw Message.
 
+   **Amended.** The distinction stands, but one setting has moved across it: whether drawn Cards go to the Discard is now Deck configuration (`drawToDiscardPile`) and travels, rather than being a per-Room table rule. A Deck that dwindles is a property of the Deck — a tarot deck read one card at a time behaves that way wherever it is shared, and having to re-set it per Room was busywork that the owner alone was placed to get right anyway.
+
+   What this costs, accepted knowingly:
+
+   - The rule is the same in every Room sharing the Deck. A group wanting one Room to dwindle and another not to cannot have it without a second Deck.
+   - It is owner-only. Deck configuration lives in the owner's file store, so a non-owner participant can no longer change it; previously any participant could.
+   - The default flipped. A Deck draws to a Discard unless its owner says otherwise, where a Pile used to return its Cards unless configured.
+
+   The Discard itself stays exactly where it was: room-side, per-Room, independent. Only the rule travels. Reset is unchanged and remains the affordance for a Pile that has dwindled too far.
+
 7. **Face Down is presentation, not secrecy.** The client receives the front's node id regardless. This is a tool for friends playing games; if they snoop, they snoop. Real secrecy would require the server to withhold Card Images until a reveal and to make chat history per-participant, which the broadcast-everything model does not do.
 
 8. **The Files capability remains the sole authority on shares.** Deck folders appear in the Shared with room sidebar as folders, so participants can browse the Card Images. The `cards` capability holds only Piles, and authorizes every draw against the owner's DO via `isNodeAccessibleFromRoom` rather than trusting the room-side cache — as `CONTEXT.md` requires ("cached summaries do not authorize file access").
