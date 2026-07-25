@@ -1,3 +1,4 @@
+import { authClient } from "#/auth/authClient.ts";
 import { cardsClient } from "#/capabilities/cards/client";
 import { findPile } from "#/capabilities/cards/common";
 import { filesClient } from "#/capabilities/files/client";
@@ -20,6 +21,10 @@ export const SidebarCards = memo(() => {
   const closeMobileSidebar = useCloseMobileSidebar();
   const filesCap = filesClient.useMount();
   const cardsCap = cardsClient.useMount();
+  // Read the session once here rather than per row: every row needs it only to
+  // decide whether to offer the owner-only Deck settings cog.
+  const { data: sessionData } = authClient.useSession();
+  const currentUserId = sessionData?.user.id;
 
   const decks = useMemo(() => {
     if (!filesCap.initialised) return [];
@@ -62,6 +67,9 @@ export const SidebarCards = memo(() => {
               deck={deck}
               pile={findPile(cardsCap.state, deck.userId, deck.node.id)}
               roomId={roomId}
+              isOwner={
+                currentUserId !== undefined && deck.userId === currentUserId
+              }
               onDraw={() => {
                 cardsCap.actions.draw({
                   ownerUserId: deck.userId,
@@ -69,13 +77,6 @@ export const SidebarCards = memo(() => {
                 });
                 closeMobileSidebar();
               }}
-              onSetReturnCards={(returnCards) =>
-                cardsCap.actions.setReturnCards({
-                  ownerUserId: deck.userId,
-                  deckNodeId: deck.node.id,
-                  returnCards,
-                })
-              }
               onReset={() =>
                 cardsCap.actions.reset({
                   ownerUserId: deck.userId,
