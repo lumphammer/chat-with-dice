@@ -4,9 +4,9 @@ import { env } from "cloudflare:workers";
 
 /**
  * Read a Deck's configuration for its owner to edit: whether Face Down draws are
- * permitted and how Inverted draws are permitted, the current Common Back, and
- * the Deck's image children to pick a back from. Owner-only — this reads the
- * owner's own file store.
+ * permitted, how Inverted draws are permitted, what happens to a drawn Card, the
+ * current Common Back, and the Deck's image children to pick a back from.
+ * Owner-only — this reads the owner's own file store.
  */
 export const getDeckSettings = defineAction({
   input: z.object({
@@ -37,6 +37,7 @@ export const getDeckSettings = defineAction({
     return {
       allowFaceDown: result.allowFaceDown,
       invertedDraws: result.invertedDraws,
+      drawToDiscardPile: result.drawToDiscardPile,
       commonBack: result.commonBack,
       images: result.images,
       cards: result.cards,

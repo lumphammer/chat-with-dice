@@ -15,6 +15,7 @@ import { renameNode } from "./files/renameNode";
 import { restoreNode } from "./files/restoreNode";
 import { setDeckAllowFaceDown } from "./files/setDeckAllowFaceDown";
 import { setDeckCommonBack } from "./files/setDeckCommonBack";
+import { setDeckDrawToDiscardPile } from "./files/setDeckDrawToDiscardPile";
 import { setDeckIndividualBack } from "./files/setDeckIndividualBack";
 import { setDeckInvertedDraws } from "./files/setDeckInvertedDraws";
 import { setFolderIsDeck } from "./files/setFolderIsDeck";
@@ -43,6 +44,7 @@ export const server = {
     setDeckCommonBack,
     setDeckIndividualBack,
     setDeckInvertedDraws,
+    setDeckDrawToDiscardPile,
     getDeckSettings,
   },
   admin: {

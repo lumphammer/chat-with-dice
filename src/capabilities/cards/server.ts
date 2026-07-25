@@ -48,14 +48,16 @@ export const cardsServer = createServerCapability(cardsCommon, {
         return;
       }
 
-      // The Pile's dwindle rule and Discard are room-side state. A Deck with no
-      // Pile entry yet is a fresh, non-dwindling Pile.
+      // Whether drawn Cards are kept out is the Deck's rule, read from the
+      // owner's store alongside the Card list, so one Deck behaves the same in
+      // every Room (ADR-0001 decision 6, as amended). Only the Discard is
+      // room-side, and a Deck with no Pile entry has an empty one.
+      const dwindling = result.drawToDiscardPile;
       const pile = findPile(
         stateDraft,
         payload.ownerUserId,
         payload.deckNodeId,
       );
-      const dwindling = pile !== undefined && !pile.returnCards;
 
       // Remaining is derived here, never stored: the live Cards minus the ones
       // already in the Discard. A discarded Card the owner has since deleted is
@@ -97,10 +99,45 @@ export const cardsServer = createServerCapability(cardsCommon, {
         (result.invertedDraws === "fronts" && !faceDown);
       const inverted = invertedAllowed && Math.random() < INVERTED_PROBABILITY;
 
-      // A dwindling Pile keeps the drawn Card out by recording it in the
-      // Discard; a non-dwindling Pile leaves state untouched.
-      if (dwindling && pile) {
-        pile.discard.push(card.nodeId);
+      // A dwindling Deck keeps the drawn Card out by recording it in this
+      // Room's Discard, creating the Pile if this is the first Card to be kept
+      // out. The draw is the only place a Pile is born: the rule that used to
+      // create one lives in the owner's store now.
+      if (dwindling) {
+        if (pile) {
+          pile.discard.push(card.nodeId);
+        } else {
+          stateDraft.piles.push({
+            ownerUserId: payload.ownerUserId,
+            deckNodeId: payload.deckNodeId,
+            discard: [card.nodeId],
+            hidden: false,
+          });
+        }
+      } else if (pile && pile.discard.length > 0) {
+        // The Deck returns its Cards but this Room still holds a Discard from
+        // when it did not. Clear it, so switching the Deck back to a Discard
+        // later starts from the whole Deck rather than resurfacing an old one —
+        // the behaviour the removed `setReturnCards` action used to give. A
+        // visible Pile with an empty Discard only restates the default, so drop
+        // the entry entirely; a hidden one is kept because `hidden` is state
+        // this Room still needs (ADR-0001 decision 12).
+        //
+        // This is a draw-time repair, so the one gap is switching the rule off
+        // and straight back on with no draw in between: the old Discard is
+        // still there.
+        if (pile.hidden) {
+          pile.discard = [];
+        } else {
+          stateDraft.piles.splice(
+            stateDraft.piles.findIndex(
+              (p) =>
+                p.ownerUserId === payload.ownerUserId &&
+                p.deckNodeId === payload.deckNodeId,
+            ),
+            1,
+          );
+        }
       }
 
       sendChatMessage({

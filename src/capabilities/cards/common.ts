@@ -60,14 +60,10 @@ export type CardDrawMessageData = z.infer<typeof cardDrawMessageDataValidator>;
  * A Pile: one Room's draw state for one Deck, keyed by the Deck's owner and
  * folder node id (ADR-0001 decision 5). It holds only room-side truth:
  *
- * - `returnCards` — the table rule for whether a drawn Card goes back into the
- *   Pile. This is Pile configuration, not Deck configuration, so it stays
- *   room-side and does not travel with the Deck (decision 6). `true` is the
- *   non-dwindling default; `false` makes the Pile dwindle.
  * - `discard` — the Cards drawn and kept out while dwindling, by node id. The
  *   remaining Cards are derived as liveCards − discard at draw time and never
  *   stored (decision 4), so an added Card is instantly drawable and a deleted
- *   one just goes inert. Empty whenever `returnCards` is `true`.
+ *   one just goes inert. Empty whenever the Deck returns its Cards.
  * - `hidden` — whether the Deck is currently binned (or shadowed by a binned
  *   ancestor) in the owner's store. Binning is reversible, so the Pile is
  *   hidden rather than destroyed and its Discard survives to be restored inside
@@ -76,12 +72,19 @@ export type CardDrawMessageData = z.infer<typeof cardDrawMessageDataValidator>;
  *   keeps on a binned share. Defaults `false` so Piles stored before this field
  *   existed keep parsing, and a live dwindling Pile is visible.
  *
- * A Deck with no entry here behaves as a fresh, non-dwindling Pile.
+ * Whether drawn Cards go to the Discard at all is *not* here: that is Deck
+ * configuration (`drawToDiscardPile`), read from the owner's file store at draw
+ * time so one Deck has one rule in every Room it is shared with (ADR-0001
+ * decision 6, as amended). Piles stored before that move carry a `returnCards`
+ * field; zod strips it on the way in, so they keep parsing.
+ *
+ * A Deck with no entry here has simply never had a Card kept out — either it
+ * returns its Cards, or nobody has drawn from it yet. The Pile is created lazily
+ * by the first draw that has a Discard to record.
  */
 const pileValidator = z.object({
   ownerUserId: z.string(),
   deckNodeId: z.string(),
-  returnCards: z.boolean(),
   discard: z.array(z.string()),
   hidden: z.boolean().default(false),
 });
@@ -110,8 +113,8 @@ export type CardsState = z.infer<typeof cardsStateValidator>;
 
 /**
  * Find the Pile for `(ownerUserId, deckNodeId)` in `stateDraft`. Returns
- * `undefined` for a Deck that has never been configured or drawn from — such a
- * Deck is a fresh, non-dwindling Pile and needs no stored entry.
+ * `undefined` for a Deck that has never had a Card kept out — it has an empty
+ * Discard, which needs no stored entry.
  */
 export function findPile(
   state: { piles: Pile[] },
@@ -127,8 +130,8 @@ export function findPile(
 /**
  * The `cards` capability holds Piles: per-room draw state for each shared Deck.
  * A draw picks uniformly at random from the Deck's live Cards, honouring the
- * Pile's dwindle rule, and broadcasts a Card Draw Message. Reset empties a
- * Pile's Discard so every Card is drawable again.
+ * Deck's `drawToDiscardPile` rule, and broadcasts a Card Draw Message. Reset
+ * empties a Pile's Discard so every Card is drawable again.
  */
 export const cardsCommon = createCapabilityCommon({
   name: "cards",
@@ -152,46 +155,6 @@ export const cardsCommon = createCapabilityCommon({
         ownerUserId: z.string(),
         deckNodeId: z.string(),
       }),
-    }),
-    // Set a Pile's dwindle rule.
-    //
-    // Non-dwindling (Cards return) is the default, so it needs no stored Pile:
-    // turning Cards back on drops any entry entirely rather than leaving one
-    // that merely restates the default. That keeps state minimal — a client
-    // toggling decks it will never dwindle cannot accumulate no-op Piles — and
-    // means toggling back to dwindling later starts from the whole Deck rather
-    // than resurfacing an old Discard. A dwindling Pile (returnCards `false`),
-    // by contrast, is genuinely non-default and gets an entry.
-    setReturnCards: createAction({
-      payloadValidator: z.object({
-        ownerUserId: z.string(),
-        deckNodeId: z.string(),
-        returnCards: z.boolean(),
-      }),
-      pureFn: ({ stateDraft, payload }) => {
-        const index = stateDraft.piles.findIndex(
-          (p) =>
-            p.ownerUserId === payload.ownerUserId &&
-            p.deckNodeId === payload.deckNodeId,
-        );
-        if (payload.returnCards) {
-          if (index !== -1) {
-            stateDraft.piles.splice(index, 1);
-          }
-          return;
-        }
-        if (index === -1) {
-          stateDraft.piles.push({
-            ownerUserId: payload.ownerUserId,
-            deckNodeId: payload.deckNodeId,
-            returnCards: false,
-            discard: [],
-            hidden: false,
-          });
-        } else {
-          stateDraft.piles[index].returnCards = false;
-        }
-      },
     }),
     // Reset: return every Card in the Discard to the Pile.
     reset: createAction({
