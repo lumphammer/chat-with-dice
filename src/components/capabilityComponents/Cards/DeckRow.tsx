@@ -1,6 +1,7 @@
 import type { Pile } from "#/capabilities/cards/common";
 import type { RoomShare } from "#/capabilities/files/common";
 import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roomUiNavigationContext";
+import { DeckSettingsDialog } from "#/components/FileManager/DeckSettingsDialog";
 import { DeckSettingsCogButton } from "./DeckSettingsCogButton";
 import { DwindleStatus } from "./DwindleStatus";
 import { useDeckDrawState } from "./useDeckDrawState";
@@ -11,6 +12,12 @@ import { memo, useCallback, useMemo, useState } from "react";
  * its Draw button — plus a cog into Deck settings when the current user owns the
  * Deck. Kept as its own component so `SidebarCards` only owns mount/loading
  * state and the deck list.
+ *
+ * The cog rides with the dwindle readout when there is one, and sits up on the
+ * name row when there is not — on a Deck that returns its Cards it would
+ * otherwise be marooned on a row of its own. The dialog is rendered here rather
+ * than inside the button so that moving the button between rows cannot destroy
+ * an open dialog.
  *
  * Whether the Deck dwindles is the Deck's own rule and lives in the owner's file
  * store, so it arrives by fetch ({@link useDeckDrawState}) rather than from room
@@ -38,6 +45,7 @@ export const DeckRow = memo(
     // Bumped when the owner closes Deck settings, so a change to the draw rule
     // shows up straight away instead of at the next draw.
     const [refreshKey, setRefreshKey] = useState(0);
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     const { drawToDiscardPile, remaining, total } = useDeckDrawState({
       ownerUserId: deck.userId,
@@ -66,43 +74,51 @@ export const DeckRow = memo(
       });
     }, [deck.node.id, deck.node.name, deck.userId, openSharedFolder]);
 
+    const handleOpenSettings = useCallback(() => {
+      setSettingsOpen(true);
+    }, []);
+
     const handleSettingsClosed = useCallback(() => {
+      setSettingsOpen(false);
       setRefreshKey((key) => key + 1);
     }, []);
+
+    const cog = isOwner ? (
+      <DeckSettingsCogButton
+        name={deck.node.name}
+        onOpen={handleOpenSettings}
+      />
+    ) : null;
 
     return (
       <li
         className="border-base-300 bg-base-100 rounded-box flex flex-col gap-2
           border px-3 py-2"
       >
-        <button
-          type="button"
-          className="link link-hover truncate text-left font-medium"
-          title="Browse this deck's cards in Shared with room"
-          onClick={handleOpenFolder}
-        >
-          {deck.node.name}
-        </button>
-        {(dwindling || isOwner) && (
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            className="heading link link-hover w-auto min-w-0 truncate
+              font-medium"
+            title="Browse this deck's cards in Shared with room"
+            onClick={handleOpenFolder}
+          >
+            {deck.node.name}
+          </button>
+          {/* No readout to sit beside, so the cog comes up here rather than
+              holding a row on its own. */}
+          {!dwindling && cog}
+        </div>
+        {dwindling && (
           <div className="flex items-center gap-2">
-            {dwindling && (
-              <DwindleStatus
-                remaining={remaining}
-                total={total}
-                onReset={onReset}
-              />
-            )}
-            {isOwner && (
-              // `ml-auto` rather than `justify-between` on the row, so the cog
-              // sits right whether or not the readout is there to push it.
-              <div className="ml-auto">
-                <DeckSettingsCogButton
-                  nodeId={deck.node.id}
-                  name={deck.node.name}
-                  onClosed={handleSettingsClosed}
-                />
-              </div>
-            )}
+            <DwindleStatus
+              remaining={remaining}
+              total={total}
+              onReset={onReset}
+            />
+            {/* `ml-auto` rather than `justify-between`, so the cog sits right
+                even before the readout has its counts. */}
+            {cog && <div className="ml-auto">{cog}</div>}
           </div>
         )}
         <button
@@ -113,6 +129,14 @@ export const DeckRow = memo(
         >
           Draw
         </button>
+        {isOwner && (
+          <DeckSettingsDialog
+            nodeId={deck.node.id}
+            name={deck.node.name}
+            open={settingsOpen}
+            onClose={handleSettingsClosed}
+          />
+        )}
       </li>
     );
   },
