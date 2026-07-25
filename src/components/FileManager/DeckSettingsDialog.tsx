@@ -52,17 +52,30 @@ export const DeckSettingsDialog = memo(
     // every control while a save is in flight makes the writes strictly ordered.
     const [saving, setSaving] = useState(false);
 
+    // Which load is the current one. A reload after a pairing change, or a quick
+    // close and reopen, can leave two reads in flight; without this the slower
+    // one could land last and overwrite the newer answer with a stale snapshot.
+    // A token rather than the usual effect cleanup flag, because `load` is
+    // called from the save handlers too, not only from the open effect.
+    const loadToken = useRef(0);
+
     // `showSkeleton` is only for the first open; a reload after a pairing change
     // refreshes the derived Card list in place without flashing the skeleton.
     // Memoised on `nodeId` so the open effect below can depend on it honestly
     // rather than re-firing on every render.
     const load = useCallback(
       async (showSkeleton: boolean) => {
+        const token = ++loadToken.current;
         if (showSkeleton) {
           setLoading(true);
         }
         setError(null);
         const result = await actions.files.getDeckSettings({ nodeId });
+        // Superseded: a newer load owns the state now, including clearing
+        // `loading` when it resolves.
+        if (token !== loadToken.current) {
+          return;
+        }
         setLoading(false);
         if (result.error) {
           setError(result.error.message);

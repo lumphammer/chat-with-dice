@@ -116,28 +116,30 @@ export const cardsServer = createServerCapability(cardsCommon, {
         }
       } else if (pile && pile.discard.length > 0) {
         // The Deck returns its Cards but this Room still holds a Discard from
-        // when it did not. Clear it, so switching the Deck back to a Discard
-        // later starts from the whole Deck rather than resurfacing an old one —
-        // the behaviour the removed `setReturnCards` action used to give. A
-        // visible Pile with an empty Discard only restates the default, so drop
-        // the entry entirely; a hidden one is kept because `hidden` is state
-        // this Room still needs (ADR-0001 decision 12).
+        // when it did not. Drop the entry, so switching the Deck back to a
+        // Discard later starts from the whole Deck rather than resurfacing an
+        // old one — the behaviour the removed `setReturnCards` action used to
+        // give — and because a Pile with an empty Discard only restates the
+        // default anyway.
+        //
+        // `hidden` needs no special case here. It exists solely to keep a
+        // Discard alive across a bin and restore (ADR-0001 decision 12), and
+        // this branch is clearing that Discard regardless, so a hidden entry has
+        // nothing left worth preserving. A hidden Pile cannot reach this code in
+        // any case: its Deck is binned, so the reachability check in
+        // `listDeckCards` fails and the draw errors out well before here.
         //
         // This is a draw-time repair, so the one gap is switching the rule off
         // and straight back on with no draw in between: the old Discard is
         // still there.
-        if (pile.hidden) {
-          pile.discard = [];
-        } else {
-          stateDraft.piles.splice(
-            stateDraft.piles.findIndex(
-              (p) =>
-                p.ownerUserId === payload.ownerUserId &&
-                p.deckNodeId === payload.deckNodeId,
-            ),
-            1,
-          );
-        }
+        stateDraft.piles.splice(
+          stateDraft.piles.findIndex(
+            (p) =>
+              p.ownerUserId === payload.ownerUserId &&
+              p.deckNodeId === payload.deckNodeId,
+          ),
+          1,
+        );
       }
 
       sendChatMessage({
