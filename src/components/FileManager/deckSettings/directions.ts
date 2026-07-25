@@ -6,6 +6,7 @@ import { createDirection } from "#/lib/minirouter";
  * {@link cardBack} is parameterised by the front Card's nodeId — the panel it
  * opens assigns an Individual Back to that one Card.
  */
+export const drawnCards = createDirection("drawnCards");
 export const invertedDraws = createDirection("invertedDraws");
 export const commonBack = createDirection("commonBack");
 export const individualBacks = createDirection("individualBacks");

@@ -1,5 +1,5 @@
 import { useFeedback } from "../FeedbackContext";
-import { DeckSettingsDialog } from "./DeckSettingsDialog";
+import { DeckSettingsMenuItem } from "./DeckSettingsMenuItem";
 import { actions } from "astro:actions";
 import { Layers } from "lucide-react";
 import { memo } from "react";
@@ -49,7 +49,7 @@ export const DeckMenuItems = memo(
         </li>
         {isDeck && (
           <li>
-            <DeckSettingsDialog nodeId={nodeId} name={name} />
+            <DeckSettingsMenuItem nodeId={nodeId} name={name} />
           </li>
         )}
       </>
