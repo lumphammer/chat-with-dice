@@ -3,7 +3,6 @@ import type { ClientUser } from "#/auth/clientUser.ts";
 import { isAdminOrBetter } from "#/utils/roleHelpers.ts";
 import {
   Contact,
-  Cookie,
   Dices,
   File,
   Info,
@@ -12,7 +11,6 @@ import {
   Menu,
   PaintRoller,
   PersonStanding,
-  ScrollText,
   Settings,
   Shield,
 } from "lucide-react";
@@ -169,21 +167,9 @@ export function NavBarAccount({
             </a>
           </li>
           <li>
-            <a href="/terms" onClick={closeMenu}>
-              <ScrollText size={16} />
-              Terms of service
-            </a>
-          </li>
-          <li>
             <a href="/contact" onClick={closeMenu}>
               <Contact size={16} />
               Contact
-            </a>
-          </li>
-          <li>
-            <a href="/cookie-policy" onClick={closeMenu}>
-              <Cookie size={16} />
-              Cookie policy
             </a>
           </li>
           <li className="border-base-200 my-1 border-t" aria-hidden="true" />
