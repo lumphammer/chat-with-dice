@@ -1,5 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
 import type { ClientUser } from "#/auth/clientUser.ts";
+import { getRelativeTimeString } from "#/utils/getRelativeTimeString";
 import { ChangeEmailSection } from "./ChangeEmailSection";
 import { ChangeImageSection } from "./ChangeImageSection";
 import { ChangeNameSection } from "./ChangeNameSection";
@@ -39,6 +40,25 @@ export function AccountSettingsForm({
           <ChangeImageSection currentImage={image} name={name} email={email} />
           <ChangeEmailSection currentEmail={email} />
         </>
+      )}
+      {sessionData && (
+        <div className="card bg-base-100 mb-4 shadow-md">
+          <div className="card-body font-mono text-xs">
+            <p>
+              Logged in at {sessionData.session.createdAt.toLocaleString()} (
+              {getRelativeTimeString(sessionData.session.createdAt)})
+            </p>
+            <p>
+              Session updated at{" "}
+              {sessionData.session.updatedAt.toLocaleString()} (
+              {getRelativeTimeString(sessionData.session.updatedAt)})
+            </p>
+            <p>
+              Session expires {sessionData.session.expiresAt.toLocaleString()} (
+              {getRelativeTimeString(sessionData.session.expiresAt)})
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );
