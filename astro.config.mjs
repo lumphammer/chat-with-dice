@@ -42,6 +42,9 @@ export default defineConfig({
         ".ngrok-free.app",
         // used in worker direct middleware when generating a 404
         "somehostname",
+        // tailscale tailnet
+        "*.werewolf-gharial.ts.net",
+        "carcosa-linux.werewolf-gharial.ts.net",
       ],
     },
   },
