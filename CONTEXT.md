@@ -76,6 +76,7 @@ _Avoid_: Room file, shared file
 - Drawing from a **Pile** never changes the **Deck**
 - A **Pile** has no order — a draw picks at random from the **Cards** not in its **Discard**
 - A **Pile** persists until it is **Reset** or its **Deck** is unshared; a **Room** has no concept of a session, so nothing returns **Cards** to a **Pile** implicitly
+- Changing a **Deck** to return its **Cards** lands in a **Room** at that **Room**'s next draw, not the moment the owner changes it: that draw discards the **Room**'s **Discard**. Until then the **Discard** is dormant — not shown, not drawn against — so a **Deck** switched away and back with no draw in between leaves the **Room** exactly as it was. Two **Rooms** sharing one **Deck** can land the change at different times, because the **Discard** is per-**Room**
 - Removing the **Room Share** for a **Deck** discards that **Deck**'s **Pile**, so re-sharing the **Deck** later starts a fresh **Pile** rather than resuming an old one
 - Deleting a **Deck** hides its **Pile** rather than discarding it, and restoring the **Deck** brings the **Pile** back with its **Discard** intact — deleting is reversible where unsharing is not
 - Deleting one **Card Image** from a shared **Deck** leaves the **Pile** alone: that **Card** stops being drawable, and any **Card Draw Message** naming it becomes unavailable

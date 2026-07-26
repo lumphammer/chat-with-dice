@@ -116,11 +116,19 @@ export const cardsServer = createServerCapability(cardsCommon, {
         }
       } else if (pile && pile.discard.length > 0) {
         // The Deck returns its Cards but this Room still holds a Discard from
-        // when it did not. Drop the entry, so switching the Deck back to a
-        // Discard later starts from the whole Deck rather than resurfacing an
-        // old one — the behaviour the removed `setReturnCards` action used to
-        // give — and because a Pile with an empty Discard only restates the
-        // default anyway.
+        // when it did not. Drop the entry: a Pile with an empty Discard only
+        // restates the default, so re-enabling later starts from the whole Deck.
+        //
+        // Deliberately here, at the first draw under the new rule, rather than
+        // pushed out to every Room the moment the owner changes the setting.
+        // The change only *lands* in a Room when that Room next draws — until
+        // then the Discard is dormant and unobservable: the sidebar hides the
+        // readout and Reset while the rule is off, and the draw above ignores
+        // the Discard entirely. So flipping the rule off and back on with no
+        // draw in between correctly leaves the Room exactly as it was; nothing
+        // happened here to change it. Two Rooms sharing one Deck can therefore
+        // land the change at different times, which is right — the Discard is
+        // per-Room.
         //
         // `hidden` needs no special case here. It exists solely to keep a
         // Discard alive across a bin and restore (ADR-0001 decision 12), and
@@ -128,10 +136,6 @@ export const cardsServer = createServerCapability(cardsCommon, {
         // nothing left worth preserving. A hidden Pile cannot reach this code in
         // any case: its Deck is binned, so the reachability check in
         // `listDeckCards` fails and the draw errors out well before here.
-        //
-        // This is a draw-time repair, so the one gap is switching the rule off
-        // and straight back on with no draw in between: the old Discard is
-        // still there.
         stateDraft.piles.splice(
           stateDraft.piles.findIndex(
             (p) =>

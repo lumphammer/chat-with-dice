@@ -677,10 +677,11 @@ describe("dwindling pile", () => {
     ]);
   });
 
-  it("clears a stale discard once the deck returns its cards", async () => {
+  it("drops the discard at the first draw after the deck returns its cards", async () => {
     // The Room built up a Discard while the Deck drew to one; the owner then
-    // switched the rule. The next draw repairs the leftover state, so switching
-    // back later starts from the whole Deck rather than resurfacing this.
+    // switched the rule. The change lands here, at this Room's next draw —
+    // before that the Discard is dormant, so a Deck switched away and back with
+    // no draw in between leaves the Room untouched (CONTEXT.md).
     vi.spyOn(Math, "random").mockReturnValue(0);
     const listDeckCards = twoCardDeck();
     const { mounted, errors } = await mountWith(listDeckCards);
@@ -704,6 +705,48 @@ describe("dwindling pile", () => {
     // The Pile only restated the default once its Discard was empty, so it is
     // gone entirely rather than left behind as a no-op entry.
     expect(pilesOf(mounted)).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  it("keeps the discard when the deck switches away and back with no draw", async () => {
+    // The counterpart to the test above: with no draw in between, nothing has
+    // happened in this Room, so its Discard is untouched and the next draw
+    // carries on from where it left off rather than starting the Deck over.
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const listDeckCards = twoCardDeck();
+    const { mounted, errors } = await mountWith(listDeckCards);
+
+    await draw(mounted);
+    expect(pilesOf(mounted)[0].discard).toEqual(["card-a"]);
+
+    listDeckCards.mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: false,
+      invertedDraws: "none",
+      drawToDiscardPile: false,
+      cards: [
+        { nodeId: "card-a", name: "The Fool", back: null },
+        { nodeId: "card-b", name: "The Magician", back: null },
+      ],
+    });
+    // ...and straight back on, without anyone drawing while it was off.
+    listDeckCards.mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: false,
+      invertedDraws: "none",
+      drawToDiscardPile: true,
+      cards: [
+        { nodeId: "card-a", name: "The Fool", back: null },
+        { nodeId: "card-b", name: "The Magician", back: null },
+      ],
+    });
+    await draw(mounted);
+
+    // card-a was still held out, so the pinned pick lands on card-b rather than
+    // drawing card-a a second time.
+    expect(pilesOf(mounted)[0].discard).toEqual(["card-a", "card-b"]);
     expect(errors).toEqual([]);
   });
 });
