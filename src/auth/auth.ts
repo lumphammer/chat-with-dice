@@ -1,3 +1,4 @@
+import { SECONDS_PER_DAY } from "#/constants";
 import { db } from "#/db";
 import * as schema from "#/schemas/coreD1-schema";
 import { users, accounts, sessions } from "#/schemas/coreD1-schema";
@@ -38,6 +39,8 @@ const MAX_ACCOUNT_AGE_TO_OVERWRITE_MS =
 
 const DEFAULT_FULL_USER_STORAGE_QUOTA_BYTES = 1_073_741_824;
 
+const SESSION_EXPIRY_DAYS = 90;
+
 const {
   GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET,
@@ -76,6 +79,10 @@ const getLoggedInUser = async (headers: Headers | null | undefined) => {
 };
 
 export const auth = betterAuth({
+  session: {
+    expiresIn: SECONDS_PER_DAY * SESSION_EXPIRY_DAYS,
+    updateAge: SECONDS_PER_DAY,
+  },
   // BETTER_AUTH_HOSTS is not an official env var - it's my invention to allow
   // providing multiple comma-separated URLs. So the idea here is if we need
   // multiple URLs, use BETTER_AUTH_HOSTS, and it will get parsed and used in
