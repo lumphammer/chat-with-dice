@@ -707,10 +707,29 @@ export class UserDataDO extends DurableObject {
   }
 
   /**
+   * Set what happens to a Card after it is drawn: go to the Discard until Reset,
+   * or return to the Deck. Deck configuration, so it travels with the Deck into
+   * every Room (ADR-0001 decision 6, as amended) — the Discard itself stays
+   * room-side.
+   */
+  async setDeckDrawToDiscardPile(
+    nodeId: string,
+    drawToDiscardPile: boolean,
+  ): Promise<{ result: "ok" | "not-a-deck" }> {
+    const node = await this.getDeckNode(nodeId);
+    if (!node) {
+      return { result: "not-a-deck" };
+    }
+    await this.repo.setDeckDrawToDiscardPile(nodeId, drawToDiscardPile);
+    return { result: "ok" };
+  }
+
+  /**
    * A Deck's configuration for its owner to edit: whether Face Down draws are
-   * permitted, the current Common Back, the Deck's image children to pick a
-   * Common Back from, and its Cards each with their current Individual Back.
-   * Owner-scoped — called against the owner's own DO.
+   * permitted, how Inverted draws are permitted, what happens to a drawn Card,
+   * the current Common Back, the Deck's image children to pick a Common Back
+   * from, and its Cards each with their current Individual Back. Owner-scoped —
+   * called against the owner's own DO.
    *
    * `cards` is the same derived Card list the draw path sees, so the editor and
    * a draw agree on what a Card is and what each Card's back resolves to. A Card
@@ -723,6 +742,7 @@ export class UserDataDO extends DurableObject {
         result: "ok";
         allowFaceDown: boolean;
         invertedDraws: InvertedDraws;
+        drawToDiscardPile: boolean;
         commonBack: { nodeId: string; name: string } | null;
         images: { nodeId: string; name: string }[];
         cards: {
@@ -753,6 +773,7 @@ export class UserDataDO extends DurableObject {
       result: "ok",
       allowFaceDown: node.folder.deck.allowFaceDown === 1,
       invertedDraws: node.folder.deck.invertedDraws,
+      drawToDiscardPile: node.folder.deck.drawToDiscardPile === 1,
       commonBack: derived.commonBack,
       images: derived.images,
       cards,
@@ -880,8 +901,9 @@ export class UserDataDO extends DurableObject {
    * Individual Back if it has one, else the Deck's Common Back, else `null`. Any
    * image serving as a back (Common or Individual) "stops being a Card in its own
    * right" and is excluded from the Cards. A Card without a back can never come
-   * up Face Down. `allowFaceDown` and `invertedDraws` are Deck configuration and
-   * travel with the Deck, so both are reported here for the draw to honour.
+   * up Face Down. `allowFaceDown`, `invertedDraws` and `drawToDiscardPile` are
+   * Deck configuration and travel with the Deck, so all three are reported here
+   * for the draw to honour.
    */
   async getDeckCards({
     nodeId,
@@ -895,6 +917,7 @@ export class UserDataDO extends DurableObject {
         deckName: string;
         allowFaceDown: boolean;
         invertedDraws: InvertedDraws;
+        drawToDiscardPile: boolean;
         cards: {
           nodeId: string;
           name: string;
@@ -921,6 +944,7 @@ export class UserDataDO extends DurableObject {
       deckName: node.name,
       allowFaceDown: node.folder.deck.allowFaceDown === 1,
       invertedDraws: node.folder.deck.invertedDraws,
+      drawToDiscardPile: node.folder.deck.drawToDiscardPile === 1,
       cards,
     };
   }

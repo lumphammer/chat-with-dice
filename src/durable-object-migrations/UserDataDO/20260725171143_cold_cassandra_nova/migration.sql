@@ -1,0 +1,1 @@
+ALTER TABLE `decks` ADD `draw_to_discard_pile` integer DEFAULT 1 NOT NULL;

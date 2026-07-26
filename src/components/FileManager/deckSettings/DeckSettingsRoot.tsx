@@ -4,13 +4,25 @@ import type { DeckCard } from "../DeckIndividualBacksEditor";
 import { PanelBody } from "./PanelBody";
 import { PanelFrame } from "./PanelFrame";
 import { SettingRow } from "./SettingRow";
-import { commonBack, individualBacks, invertedDraws } from "./directions";
+import {
+  commonBack,
+  drawnCards,
+  individualBacks,
+  invertedDraws,
+} from "./directions";
 import { memo, useId } from "react";
 
 const INVERTED_SUMMARY: Record<InvertedDraws, string> = {
   none: "Never",
   fronts: "Fronts only",
   "fronts-and-backs": "Fronts and backs",
+};
+
+// The summaries match the picker's option labels, so the row reads back as the
+// choice the owner made.
+const DRAWN_CARDS_SUMMARY = {
+  toDiscard: "Draw to discard pile",
+  toDeck: "Return cards to deck",
 };
 
 /**
@@ -22,6 +34,7 @@ export const DeckSettingsRoot = memo(
   ({
     allowFaceDown,
     invertedDrawsValue,
+    drawToDiscardPile,
     commonBackId,
     images,
     cards,
@@ -30,6 +43,7 @@ export const DeckSettingsRoot = memo(
   }: {
     allowFaceDown: boolean;
     invertedDrawsValue: InvertedDraws;
+    drawToDiscardPile: boolean;
     commonBackId: string | null;
     images: DeckImage[];
     cards: DeckCard[];
@@ -53,6 +67,19 @@ export const DeckSettingsRoot = memo(
     return (
       <PanelFrame>
         <PanelBody>
+          {/* Drawn cards leads: it is the rule that decides whether the Deck
+              dwindles at all, so it frames everything below it. */}
+          <SettingRow
+            label="Drawn cards"
+            summary={
+              drawToDiscardPile
+                ? DRAWN_CARDS_SUMMARY.toDiscard
+                : DRAWN_CARDS_SUMMARY.toDeck
+            }
+            to={drawnCards()}
+            disabled={disabled}
+          />
+
           {/* Face-down draws: a toggle, so it acts in place rather than drilling
               down. Label wraps the control; the description sits outside the
               label so the accessible name stays at a depth AT and the linter

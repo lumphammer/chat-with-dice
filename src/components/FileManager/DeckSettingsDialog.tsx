@@ -5,27 +5,44 @@ import type { DeckImage } from "./DeckCommonBackPicker";
 import type { DeckCard } from "./DeckIndividualBacksEditor";
 import { DeckSettingsStage } from "./deckSettings/DeckSettingsStage";
 import { actions } from "astro:actions";
-import { Settings2 } from "lucide-react";
-import { memo, useId, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useId, useRef, useState } from "react";
 
 /**
- * The owner's editor for a Deck's configuration: whether Face Down draws are
- * permitted, how Inverted draws are permitted, and which of the Deck's images is
- * the Common Back. All are Deck configuration, so they travel with the Deck into
- * any Room (ADR-0001).
+ * The owner's editor for a Deck's configuration: what happens to a drawn Card,
+ * whether Face Down draws are permitted, how Inverted draws are permitted, and
+ * which of the Deck's images is the Common Back. All are Deck configuration, so
+ * they travel with the Deck into any Room (ADR-0001).
  *
- * Rendered as a menu item plus its own dialog (mirroring HardDeleteDialog) so it
- * can live inside the folder's actions menu. Each change is saved immediately;
- * an optimistic local update is rolled back if the server rejects it.
+ * Controlled rather than self-triggering, because it is opened from two places
+ * that look nothing alike: a menu item in the File Manager
+ * ({@link DeckSettingsMenuItem}) and a settings button on the Cards sidebar's
+ * deck row (`DeckSettingsButton`). Each owns the `open` state and renders this.
+ *
+ * `onClose` fires from the dialog's own `close` event, so it covers Done, Escape
+ * and the backdrop alike — callers can rely on it to know the owner is finished.
+ *
+ * Each change is saved immediately; an optimistic local update is rolled back if
+ * the server rejects it.
  */
 export const DeckSettingsDialog = memo(
-  ({ nodeId, name }: { nodeId: string; name: string }) => {
+  ({
+    nodeId,
+    name,
+    open,
+    onClose,
+  }: {
+    nodeId: string;
+    name: string;
+    open: boolean;
+    onClose: () => void;
+  }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const titleId = useId();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [allowFaceDown, setAllowFaceDown] = useState(false);
     const [invertedDraws, setInvertedDraws] = useState<InvertedDraws>("none");
+    const [drawToDiscardPile, setDrawToDiscardPile] = useState(true);
     const [commonBackId, setCommonBackId] = useState<string | null>(null);
     const [images, setImages] = useState<DeckImage[]>([]);
     const [cards, setCards] = useState<DeckCard[]>([]);
@@ -35,30 +52,56 @@ export const DeckSettingsDialog = memo(
     // every control while a save is in flight makes the writes strictly ordered.
     const [saving, setSaving] = useState(false);
 
+    // Which load is the current one. A reload after a pairing change, or a quick
+    // close and reopen, can leave two reads in flight; without this the slower
+    // one could land last and overwrite the newer answer with a stale snapshot.
+    // A token rather than the usual effect cleanup flag, because `load` is
+    // called from the save handlers too, not only from the open effect.
+    const loadToken = useRef(0);
+
     // `showSkeleton` is only for the first open; a reload after a pairing change
     // refreshes the derived Card list in place without flashing the skeleton.
-    const load = async (showSkeleton: boolean) => {
-      if (showSkeleton) {
-        setLoading(true);
-      }
-      setError(null);
-      const result = await actions.files.getDeckSettings({ nodeId });
-      setLoading(false);
-      if (result.error) {
-        setError(result.error.message);
+    // Memoised on `nodeId` so the open effect below can depend on it honestly
+    // rather than re-firing on every render.
+    const load = useCallback(
+      async (showSkeleton: boolean) => {
+        const token = ++loadToken.current;
+        if (showSkeleton) {
+          setLoading(true);
+        }
+        setError(null);
+        const result = await actions.files.getDeckSettings({ nodeId });
+        // Superseded: a newer load owns the state now, including clearing
+        // `loading` when it resolves.
+        if (token !== loadToken.current) {
+          return;
+        }
+        setLoading(false);
+        if (result.error) {
+          setError(result.error.message);
+          return;
+        }
+        setAllowFaceDown(result.data.allowFaceDown);
+        setInvertedDraws(result.data.invertedDraws);
+        setDrawToDiscardPile(result.data.drawToDiscardPile);
+        setCommonBackId(result.data.commonBack?.nodeId ?? null);
+        setImages(result.data.images);
+        setCards(result.data.cards);
+      },
+      [nodeId],
+    );
+
+    // Drive the native dialog from `open`, and (re)load on each opening so the
+    // owner always sees the stored settings rather than a stale snapshot from a
+    // previous visit.
+    useEffect(() => {
+      if (!open) {
+        dialogRef.current?.close();
         return;
       }
-      setAllowFaceDown(result.data.allowFaceDown);
-      setInvertedDraws(result.data.invertedDraws);
-      setCommonBackId(result.data.commonBack?.nodeId ?? null);
-      setImages(result.data.images);
-      setCards(result.data.cards);
-    };
-
-    const handleOpen = () => {
       dialogRef.current?.showModal();
       void load(true);
-    };
+    }, [open, load]);
 
     const handleToggleFaceDown = async (next: boolean) => {
       const previous = allowFaceDown;
@@ -94,6 +137,25 @@ export const DeckSettingsDialog = memo(
       if (result.error) {
         logger.error("Failed to set invertedDraws", result.error);
         setInvertedDraws(previous);
+        setError(result.error.message);
+      }
+    };
+
+    const handleSelectDrawToDiscardPile = async (next: boolean) => {
+      const previous = drawToDiscardPile;
+      // Clear any error from an earlier failed save so a fresh attempt does not
+      // show a stale message while it is in flight.
+      setError(null);
+      setDrawToDiscardPile(next);
+      setSaving(true);
+      const result = await actions.files.setDeckDrawToDiscardPile({
+        nodeId,
+        drawToDiscardPile: next,
+      });
+      setSaving(false);
+      if (result.error) {
+        logger.error("Failed to set drawToDiscardPile", result.error);
+        setDrawToDiscardPile(previous);
         setError(result.error.message);
       }
     };
@@ -172,75 +234,74 @@ export const DeckSettingsDialog = memo(
     };
 
     return (
-      <>
-        <button type="button" onClick={handleOpen}>
-          <Settings2 size={14} />
-          Deck settings
-        </button>
-        {/* escape the menu's immediate-child styling, as HardDeleteDialog does */}
-        <div className="contents">
-          <dialog
-            ref={dialogRef}
-            closedby="any"
-            className="modal"
-            aria-labelledby={titleId}
+      // escape the menu's immediate-child styling, as HardDeleteDialog does
+      <div className="contents">
+        <dialog
+          ref={dialogRef}
+          closedby="any"
+          className="modal"
+          aria-labelledby={titleId}
+          onClose={onClose}
+        >
+          <div
+            className="modal-box flex h-[36rem] max-h-[calc(100dvh-5rem)]
+              flex-col overflow-hidden"
           >
-            <div
-              className="modal-box flex h-[36rem] max-h-[calc(100dvh-5rem)]
-                flex-col overflow-hidden"
-            >
-              <h3 id={titleId} className="text-lg font-bold">
-                Deck settings: {name}
-              </h3>
+            <h3 id={titleId} className="text-lg font-bold">
+              Deck settings: {name}
+            </h3>
 
-              {loading ? (
-                <div className="flex flex-col gap-2">
-                  <div className="skeleton h-8 w-full rounded-lg" />
-                  <div className="skeleton h-24 w-full rounded-lg" />
-                </div>
-              ) : (
-                <Router>
-                  <DeckSettingsStage
-                    allowFaceDown={allowFaceDown}
-                    invertedDrawsValue={invertedDraws}
-                    commonBackId={commonBackId}
-                    images={images}
-                    cards={cards}
-                    saving={saving}
-                    onToggleFaceDown={(next) => void handleToggleFaceDown(next)}
-                    onSelectInvertedDraws={(next) =>
-                      void handleSelectInvertedDraws(next)
-                    }
-                    onSelectBack={(backNodeId) =>
-                      void handleSelectBack(backNodeId)
-                    }
-                    onAssignIndividualBack={(frontNodeId, backNodeId) =>
-                      void handleAssignIndividualBack(frontNodeId, backNodeId)
-                    }
-                    onRemoveIndividualBack={(frontNodeId) =>
-                      void handleAssignIndividualBack(frontNodeId, null)
-                    }
-                    onApplyProposals={(pairings) =>
-                      void handleApplyProposals(pairings)
-                    }
-                  />
-                </Router>
-              )}
-
-              {error && <p className="text-error">{error}</p>}
-
-              <div className="modal-action">
-                <form method="dialog">
-                  <button className="btn">Done</button>
-                </form>
+            {loading ? (
+              <div className="flex flex-col gap-2">
+                <div className="skeleton h-8 w-full rounded-lg" />
+                <div className="skeleton h-24 w-full rounded-lg" />
               </div>
+            ) : (
+              <Router>
+                <DeckSettingsStage
+                  allowFaceDown={allowFaceDown}
+                  invertedDrawsValue={invertedDraws}
+                  drawToDiscardPile={drawToDiscardPile}
+                  commonBackId={commonBackId}
+                  images={images}
+                  cards={cards}
+                  saving={saving}
+                  onToggleFaceDown={(next) => void handleToggleFaceDown(next)}
+                  onSelectInvertedDraws={(next) =>
+                    void handleSelectInvertedDraws(next)
+                  }
+                  onSelectDrawToDiscardPile={(next) =>
+                    void handleSelectDrawToDiscardPile(next)
+                  }
+                  onSelectBack={(backNodeId) =>
+                    void handleSelectBack(backNodeId)
+                  }
+                  onAssignIndividualBack={(frontNodeId, backNodeId) =>
+                    void handleAssignIndividualBack(frontNodeId, backNodeId)
+                  }
+                  onRemoveIndividualBack={(frontNodeId) =>
+                    void handleAssignIndividualBack(frontNodeId, null)
+                  }
+                  onApplyProposals={(pairings) =>
+                    void handleApplyProposals(pairings)
+                  }
+                />
+              </Router>
+            )}
+
+            {error && <p className="text-error">{error}</p>}
+
+            <div className="modal-action">
+              <form method="dialog">
+                <button className="btn">Done</button>
+              </form>
             </div>
-            <form method="dialog" className="modal-backdrop">
-              <button>close</button>
-            </form>
-          </dialog>
-        </div>
-      </>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
+      </div>
     );
   },
 );

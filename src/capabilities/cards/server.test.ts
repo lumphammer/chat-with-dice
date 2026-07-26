@@ -94,20 +94,6 @@ const draw = (mounted: ServerMountedCapability) =>
     displayName: "Drawer",
   });
 
-const setReturnCards = (
-  mounted: ServerMountedCapability,
-  returnCards: boolean,
-) =>
-  mounted.onMessage({
-    actionCall: {
-      correlation: "c-config",
-      actionName: "setReturnCards",
-      params: { ownerUserId: OWNER, deckNodeId: DECK, returnCards },
-    },
-    userId: DRAWER,
-    displayName: "Drawer",
-  });
-
 const reset = (mounted: ServerMountedCapability) =>
   mounted.onMessage({
     actionCall: {
@@ -137,12 +123,16 @@ const setDrawStatus = (
     displayName: "Drawer",
   });
 
-const twoCardDeck = () =>
+// The Deck's own rule for what happens to a drawn Card now decides whether the
+// Pile dwindles, so it is set on the Deck fixture rather than by an action.
+// `true` is the product default, so that is what the fixtures carry.
+const twoCardDeck = ({ drawToDiscardPile = true } = {}) =>
   vi.fn<ListDeckCards>().mockResolvedValue({
     result: "ok",
     deckName: "Magus",
     allowFaceDown: false,
     invertedDraws: "none",
+    drawToDiscardPile,
     cards: [
       { nodeId: "card-a", name: "The Fool", back: null },
       { nodeId: "card-b", name: "The Magician", back: null },
@@ -167,6 +157,7 @@ const faceDownDeck = () =>
     deckName: "Magus",
     allowFaceDown: true,
     invertedDraws: "none",
+    drawToDiscardPile: true,
     cards: [
       { nodeId: "card-a", name: "The Fool", back: BACK },
       { nodeId: "card-b", name: "The Magician", back: BACK },
@@ -216,6 +207,7 @@ describe("cards draw action", () => {
       deckName: "Magus",
       allowFaceDown: false,
       invertedDraws: "none",
+      drawToDiscardPile: true,
       cards: [],
     });
     const { mounted, sentMessages, errors } = await mountWith(listDeckCards);
@@ -309,6 +301,7 @@ describe("face down draws", () => {
       deckName: "Magus",
       allowFaceDown: true,
       invertedDraws: "none",
+      drawToDiscardPile: true,
       cards: [{ nodeId: "card-a", name: "The Fool", back: null }],
     });
     const { mounted, sentMessages } = await mountWith(listDeckCards);
@@ -326,6 +319,7 @@ describe("face down draws", () => {
       deckName: "Magus",
       allowFaceDown: false,
       invertedDraws: "none",
+      drawToDiscardPile: true,
       cards: [{ nodeId: "card-a", name: "The Fool", back: BACK }],
     });
     const { mounted, sentMessages } = await mountWith(listDeckCards);
@@ -351,6 +345,7 @@ describe("inverted draws", () => {
       deckName: "Magus",
       allowFaceDown: false,
       invertedDraws: "fronts",
+      drawToDiscardPile: true,
       cards: [
         { nodeId: "card-a", name: "The Fool", back: null },
         { nodeId: "card-b", name: "The Magician", back: null },
@@ -417,6 +412,7 @@ describe("inverted draws", () => {
       deckName: "Magus",
       allowFaceDown: true,
       invertedDraws: "fronts",
+      drawToDiscardPile: true,
       cards: [{ nodeId: "card-a", name: "The Fool", back: BACK }],
     });
     const { mounted, sentMessages, errors } = await mountWith(listDeckCards);
@@ -451,6 +447,7 @@ describe("inverted draws", () => {
       deckName: "Magus",
       allowFaceDown: true,
       invertedDraws: "fronts-and-backs",
+      drawToDiscardPile: true,
       cards: [{ nodeId: "card-a", name: "The Fool", back: BACK }],
     });
     const { mounted, sentMessages, errors } = await mountWith(listDeckCards);
@@ -600,7 +597,6 @@ describe("dwindling pile", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     const { mounted, sentMessages, errors } = await mountWith(twoCardDeck());
 
-    await setReturnCards(mounted, false);
     await draw(mounted);
     await draw(mounted);
 
@@ -614,7 +610,6 @@ describe("dwindling pile", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     const { mounted, sentMessages, errors } = await mountWith(twoCardDeck());
 
-    await setReturnCards(mounted, false);
     await draw(mounted);
     await draw(mounted);
     // Both cards are now in the Discard; the third draw has nothing left.
@@ -633,7 +628,6 @@ describe("dwindling pile", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     const { mounted, sentMessages, errors } = await mountWith(twoCardDeck());
 
-    await setReturnCards(mounted, false);
     await draw(mounted);
     await draw(mounted);
     await reset(mounted);
@@ -646,16 +640,113 @@ describe("dwindling pile", () => {
     expect(drawnCardIds(sentMessages).at(-1)).toBe("card-a");
   });
 
-  it("keeps returning cards to the pile when not dwindling", async () => {
-    // Default (returnCards) pile: every draw sees the whole deck, so a pinned
-    // random repeats the same card and nothing is an error.
+  it("keeps returning cards to the pile when the deck returns its cards", async () => {
+    // A Deck whose rule is "return cards to deck": every draw sees the whole
+    // deck, so a pinned random repeats the same card and nothing is an error.
     vi.spyOn(Math, "random").mockReturnValue(0);
-    const { mounted, sentMessages, errors } = await mountWith(twoCardDeck());
+    const { mounted, sentMessages, errors } = await mountWith(
+      twoCardDeck({ drawToDiscardPile: false }),
+    );
 
     await draw(mounted);
     await draw(mounted);
 
     expect(drawnCardIds(sentMessages)).toEqual(["card-a", "card-a"]);
+    expect(errors).toEqual([]);
+    // Nothing was kept out, so no Pile was ever needed.
+    expect(pilesOf(mounted)).toEqual([]);
+  });
+
+  it("creates the pile on the first draw that keeps a card out", async () => {
+    // The rule used to create the Pile; now the draw is the only thing that
+    // does, so a Deck nobody has drawn from has no entry at all.
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const { mounted } = await mountWith(twoCardDeck());
+
+    expect(pilesOf(mounted)).toEqual([]);
+
+    await draw(mounted);
+
+    expect(pilesOf(mounted)).toEqual([
+      {
+        ownerUserId: OWNER,
+        deckNodeId: DECK,
+        discard: ["card-a"],
+        hidden: false,
+      },
+    ]);
+  });
+
+  it("drops the discard at the first draw after the deck returns its cards", async () => {
+    // The Room built up a Discard while the Deck drew to one; the owner then
+    // switched the rule. The change lands here, at this Room's next draw —
+    // before that the Discard is dormant, so a Deck switched away and back with
+    // no draw in between leaves the Room untouched (CONTEXT.md).
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const listDeckCards = twoCardDeck();
+    const { mounted, errors } = await mountWith(listDeckCards);
+
+    await draw(mounted);
+    expect(pilesOf(mounted)[0].discard).toEqual(["card-a"]);
+
+    listDeckCards.mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: false,
+      invertedDraws: "none",
+      drawToDiscardPile: false,
+      cards: [
+        { nodeId: "card-a", name: "The Fool", back: null },
+        { nodeId: "card-b", name: "The Magician", back: null },
+      ],
+    });
+    await draw(mounted);
+
+    // The Pile only restated the default once its Discard was empty, so it is
+    // gone entirely rather than left behind as a no-op entry.
+    expect(pilesOf(mounted)).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  it("keeps the discard when the deck switches away and back with no draw", async () => {
+    // The counterpart to the test above: with no draw in between, nothing has
+    // happened in this Room, so its Discard is untouched and the next draw
+    // carries on from where it left off rather than starting the Deck over.
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const listDeckCards = twoCardDeck();
+    const { mounted, errors } = await mountWith(listDeckCards);
+
+    await draw(mounted);
+    expect(pilesOf(mounted)[0].discard).toEqual(["card-a"]);
+
+    listDeckCards.mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: false,
+      invertedDraws: "none",
+      drawToDiscardPile: false,
+      cards: [
+        { nodeId: "card-a", name: "The Fool", back: null },
+        { nodeId: "card-b", name: "The Magician", back: null },
+      ],
+    });
+    // ...and straight back on, without anyone drawing while it was off.
+    listDeckCards.mockResolvedValue({
+      result: "ok",
+      deckName: "Magus",
+      allowFaceDown: false,
+      invertedDraws: "none",
+      drawToDiscardPile: true,
+      cards: [
+        { nodeId: "card-a", name: "The Fool", back: null },
+        { nodeId: "card-b", name: "The Magician", back: null },
+      ],
+    });
+    await draw(mounted);
+
+    // card-a was still held out, so the pinned pick lands on card-b rather than
+    // drawing card-a a second time.
+    expect(pilesOf(mounted)[0].discard).toEqual(["card-a", "card-b"]);
     expect(errors).toEqual([]);
   });
 });
@@ -669,7 +760,6 @@ describe("pile lifecycle", () => {
   // hooks have real room state to preserve or destroy.
   const withDiscardedCard = async () => {
     const result = await mountWith(twoCardDeck());
-    await setReturnCards(result.mounted, false);
     await draw(result.mounted);
     expect(pilesOf(result.mounted)[0].discard).toHaveLength(1);
     return result;

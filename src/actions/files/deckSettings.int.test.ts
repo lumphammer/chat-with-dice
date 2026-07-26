@@ -2,6 +2,7 @@ import { createFolder } from "#/actions/files/createFolder";
 import { getDeckSettings } from "#/actions/files/getDeckSettings";
 import { setDeckAllowFaceDown } from "#/actions/files/setDeckAllowFaceDown";
 import { setDeckCommonBack } from "#/actions/files/setDeckCommonBack";
+import { setDeckDrawToDiscardPile } from "#/actions/files/setDeckDrawToDiscardPile";
 import { setDeckIndividualBack } from "#/actions/files/setDeckIndividualBack";
 import { setDeckInvertedDraws } from "#/actions/files/setDeckInvertedDraws";
 import { setFolderIsDeck } from "#/actions/files/setFolderIsDeck";
@@ -97,6 +98,26 @@ describe("deck settings actions", () => {
     // Inverted moves off "none"; Face Down is untouched — the two are orthogonal.
     expect(after.invertedDraws).toBe("fronts-and-backs");
     expect(after.allowFaceDown).toBe(false);
+  });
+
+  it("sets drawn-cards handling and reads it back", async () => {
+    const { ctx, deck } = await setUpDeck();
+
+    // A Deck draws to a Discard unless its owner says otherwise.
+    const initial = await callAction(getDeckSettings, { nodeId: deck.id }, ctx);
+    expect(initial.drawToDiscardPile).toBe(true);
+
+    await callAction(
+      setDeckDrawToDiscardPile,
+      { nodeId: deck.id, drawToDiscardPile: false },
+      ctx,
+    );
+
+    const after = await callAction(getDeckSettings, { nodeId: deck.id }, ctx);
+    expect(after.drawToDiscardPile).toBe(false);
+    // Orthogonal to the other Deck settings, like they are to each other.
+    expect(after.allowFaceDown).toBe(false);
+    expect(after.invertedDraws).toBe("none");
   });
 
   it("sets and clears the common back, listing every image to pick from", async () => {
@@ -234,6 +255,13 @@ describe("deck settings actions", () => {
         ctx,
       ),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      callAction(
+        setDeckDrawToDiscardPile,
+        { nodeId: plain.id, drawToDiscardPile: false },
+        ctx,
+      ),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
   it("rejects an anonymous caller", async () => {
@@ -250,6 +278,13 @@ describe("deck settings actions", () => {
       callAction(
         setDeckInvertedDraws,
         { nodeId: "irrelevant", invertedDraws: "fronts" },
+        makeActionContext(anon),
+      ),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(
+      callAction(
+        setDeckDrawToDiscardPile,
+        { nodeId: "irrelevant", drawToDiscardPile: false },
         makeActionContext(anon),
       ),
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });

@@ -543,6 +543,14 @@ export class UserDataRepository {
       .where(eq(dbSchema.decks.id, folderId));
   }
 
+  /** Set whether a Deck's drawn Cards go to the Discard or return to the Deck. */
+  setDeckDrawToDiscardPile(folderId: string, drawToDiscardPile: boolean) {
+    return this.db
+      .update(dbSchema.decks)
+      .set({ drawToDiscardPile: drawToDiscardPile ? 1 : 0 })
+      .where(eq(dbSchema.decks.id, folderId));
+  }
+
   markFileReady(id: string, sizeBytes: number) {
     return this.db
       .update(dbSchema.files)

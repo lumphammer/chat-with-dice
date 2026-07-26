@@ -8,6 +8,11 @@ import { env } from "cloudflare:workers";
  * many remain in a dwindling Pile (remaining = these Cards minus the Pile's
  * Discard, which the client already holds in capability state).
  *
+ * `drawToDiscardPile` rides along because it is Deck configuration living in the
+ * owner's store, not room state: the sidebar has no other way to know whether a
+ * Deck dwindles at all, and reading it from the same call keeps the count and
+ * the rule it applies to from disagreeing.
+ *
  * This reuses the one authoritative definition of "what a Card is"
  * (`UserDataDO.getDeckCards`) rather than re-deriving it client-side, so the
  * count matches exactly what a draw would see. Authorisation mirrors the
@@ -51,6 +56,10 @@ export const getDeckCards = defineAction({
       });
     }
 
-    return { deckName: result.deckName, cards: result.cards };
+    return {
+      deckName: result.deckName,
+      drawToDiscardPile: result.drawToDiscardPile,
+      cards: result.cards,
+    };
   },
 });

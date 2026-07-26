@@ -35,7 +35,7 @@ A **Card** drawn rotated 180°, as if turned around flat on the table — showin
 _Avoid_: Flipped, reversed, upside-down
 
 **Pile**:
-The per-room, stateful version of a **Deck**: its **Discard**, what remains, and the room's own draw rules. You draw from a **Pile**, not a **Deck**.
+The per-room, stateful version of a **Deck**: its **Discard** and what remains. You draw from a **Pile**, not a **Deck**. The rules a draw follows belong to the **Deck**.
 
 **Reset**:
 Returning every **Card** in a **Pile**'s **Discard** to that **Pile**.
@@ -76,12 +76,14 @@ _Avoid_: Room file, shared file
 - Drawing from a **Pile** never changes the **Deck**
 - A **Pile** has no order — a draw picks at random from the **Cards** not in its **Discard**
 - A **Pile** persists until it is **Reset** or its **Deck** is unshared; a **Room** has no concept of a session, so nothing returns **Cards** to a **Pile** implicitly
+- Changing a **Deck** to return its **Cards** lands in a **Room** at that **Room**'s next draw, not the moment the owner changes it: that draw discards the **Room**'s **Discard**. Until then the **Discard** is dormant — not shown, not drawn against — so a **Deck** switched away and back with no draw in between leaves the **Room** exactly as it was. Two **Rooms** sharing one **Deck** can land the change at different times, because the **Discard** is per-**Room**
 - Removing the **Room Share** for a **Deck** discards that **Deck**'s **Pile**, so re-sharing the **Deck** later starts a fresh **Pile** rather than resuming an old one
 - Deleting a **Deck** hides its **Pile** rather than discarding it, and restoring the **Deck** brings the **Pile** back with its **Discard** intact — deleting is reversible where unsharing is not
 - Deleting one **Card Image** from a shared **Deck** leaves the **Pile** alone: that **Card** stops being drawable, and any **Card Draw Message** naming it becomes unavailable
 - A **Card Draw Message** stays in the chat log after its **Pile** is **Reset** or discarded, but records a draw that no longer reflects the **Pile**
 - **Deck** configuration is owned by the **Deck** and travels with it into any **Room**
-- **Pile** configuration, such as whether drawn **Cards** return to the **Pile**, is room-level and does not travel
+- Whether drawn **Cards** go to the **Discard** or return to the **Deck** is **Deck** configuration and travels, so one **Deck** follows the same rule in every **Room** it is shared with; only its owner can change it, and a **Deck** draws to its **Discard** unless the owner says otherwise
+- A **Pile**'s **Discard** is the room-level part and does not travel: two **Rooms** sharing one **Deck** follow the same rule but keep entirely separate **Discards**
 - Whether a **Deck** permits **Inverted** or **Face Down** draws is **Deck** configuration; whether a given draw came up **Inverted** or **Face Down** is a property of that draw
 - **Inverted** is a three-state **Deck** setting: not permitted, permitted for **fronts** only (a face-up draw can come up rotated, a **Face Down** one is left upright), or permitted for **fronts and backs** (a **Face Down** draw can come up rotated too, showing its back rotated 180°). A rotated back is meaningful — turning a **Card** around on the table rotates it whichever way it lands — even where the back art happens to look symmetric, which is why permitting it is a deliberate choice separate from permitting front rotation
 - A **Card** with no back can still be drawn **Inverted** wherever the **Deck** permits front rotation; otherwise **Inverted** and **Face Down** are independent, so a single draw can come up neither, either, or both
@@ -147,6 +149,7 @@ _Avoid_: Room file, shared file
 - Room authorization belongs to the **Room** side, even though **Room Share** records belong to the owner user's file store.
 - "flip" is ambiguous between turning a **Card** **Face Down** and turning it **Inverted**; use the specific term.
 - "drawing from a deck" is normal speech for drawing from a **Pile**, and is fine where context is obvious. Only the **Pile** has draw state.
+- "discard pile" is normal speech for the **Discard**, and "resetting the deck" for **Reset**ting its **Pile**. Both are fine in user-facing copy, on the same grounds as "drawing from a deck" — the Deck settings dialog uses them. Keep to **Discard** and **Reset** in code and docs.
 - "reversed", the usual tarot term, means **Inverted** here.
 - "shuffle" is ambiguous between **Reset** and reordering what remains. A **Pile** has no order, so reordering is meaningless and the intended action is always **Reset**.
 - **Face Down** is presentation, not secrecy — a **Card Image** a client can display is a **Card Image** a determined participant can find.
