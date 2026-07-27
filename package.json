@@ -64,7 +64,7 @@
     "nanoid": "^6.0.0",
     "nanostores": "^1.4.1",
     "oxlint": "^1.75.0",
-    "oxlint-tsgolint": "^0.25.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-astro-organize-imports": "^0.4.12",
