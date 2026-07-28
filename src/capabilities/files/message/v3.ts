@@ -34,7 +34,7 @@ export const migrateMessageV2ToV3 = (
             createdTime: 1,
             deletedTime: null,
             id: data.nodeId,
-            sizeBytes: 1,
+            sizeBytes: data.sizeBytes,
           },
   };
 };
