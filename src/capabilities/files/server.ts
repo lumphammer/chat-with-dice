@@ -1,5 +1,5 @@
 import { createServerCapability } from "#/capabilities/createServerCapability";
-import { type SharedItem, filesCommon } from "./common";
+import { filesCommon } from "./common";
 
 export const filesServer = createServerCapability(filesCommon, {
   actionEffects: {
@@ -22,7 +22,7 @@ export const filesServer = createServerCapability(filesCommon, {
         broadcaster.sendErrorToUserId(userId, shareResult.reason);
         return;
       }
-      const sharedItem: SharedItem = shareResult.sharedItem;
+      const sharedItem = shareResult.sharedItem;
       if (shareResult.result === "created") {
         stateDraft.shares.push({ ...sharedItem, unavailable: false });
       }
