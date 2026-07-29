@@ -12,14 +12,14 @@ export const SidebarSafety = memo(() => {
       title="Safety tools"
       isSaving={capInfo.initialised && capInfo.patches.length > 0}
     >
-      <SafetySignalButtons />
-      <AvoidList />
-      <section className="prose prose-sm mt-4">
-        <h3>Open Door Policy</h3>
-        <p>
+      <section className="mt-4">
+        <h3 className="heading">Open Door Policy</h3>
+        <p className="text-sm">
           Anyone may step away at any time, for any reason, without explanation.
         </p>
       </section>
+      <SafetySignalButtons />
+      <AvoidList />
     </SidebarPanel>
   );
 });
