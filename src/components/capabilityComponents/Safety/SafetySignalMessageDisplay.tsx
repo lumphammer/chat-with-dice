@@ -31,12 +31,14 @@ export const SafetySignalMessageDisplay = memo(
     const { Icon, label, colorClass, borderClass } = SIGNAL_PRESENTATION[kind];
 
     return (
+      // Stacked rather than side-by-side, matching the sidebar button: the icon
+      // reads as a card being played, not as a glyph decorating a line of text.
       <div
-        className={`rounded-box flex items-center gap-3 border-2 px-4 py-3
-          ${borderClass} ${colorClass}`}
+        className={`rounded-box flex flex-col items-center gap-1 border-2 px-6
+          py-4 text-center ${borderClass} ${colorClass}`}
       >
-        <Icon className="h-10 w-10 shrink-0" />
-        <div className="text-left">
+        <Icon className="h-12 w-12 shrink-0" />
+        <div>
           <div className="text-xl font-bold">{label}</div>
           {unattributed && (
             <div className="text-sm opacity-80">Sent anonymously</div>
