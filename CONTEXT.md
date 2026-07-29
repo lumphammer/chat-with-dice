@@ -166,6 +166,7 @@ or invited, and acknowledging it is a deliberate act rather than a stray click.
 - An **Unattributed** **Safety Signal** records no author anywhere, so nothing can later reveal who raised it — not the **Room** owner, not an admin, not the message store
 - Being **Unattributed** is independent of being an anonymous **Room Participant**: a signed-in user can raise an **Unattributed** signal, and a guest can raise an attributed one
 - A **Safety Signal** stays in the chat log after its interrupt is dismissed, so the table can see that one was raised even if they missed it
+- A **Safety Signal**'s interrupt names who raised it, or says "Anonymous" when it is **Unattributed** — the same name the chat log shows, derived from a single attribution so the two cannot disagree
 - An **Avoided Subject** belongs to one **Room** and one author; only its author sees it as theirs
 - An **Avoided Subject** can be removed by its author or by the **Room** owner, and by nobody else
 - The **Room** owner's power to remove an **Avoided Subject** does not come with the power to see who wrote it: moderation and authorship are separate, and the owner is told neither

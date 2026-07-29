@@ -80,14 +80,29 @@ const lastSignalValidator = z
     id: z.nanoid(),
     kind: signalKindValidator,
     createdTime: z.int(),
+    /**
+     * The name to show on the interrupt: the raiser's, or the sentinel's when
+     * the signal is Unattributed. This is the *attributed* name, never the name
+     * behind it — for an Unattributed signal the real one is discarded along
+     * with the rest of the raiser's identity, so there is nothing here to leak.
+     *
+     * Defaulted rather than required: a signal recorded before this field
+     * existed has no name to show, and falling back to the anonymous label is
+     * the safe direction, because it never attributes a signal to someone who
+     * did not raise it. A required field would also fail the whole state parse
+     * and take that room's Avoid List down with it, since `mount` responds to a
+     * failed parse by falling back to `getInitialState`.
+     */
+    displayName: z.string().default(UNATTRIBUTED_DISPLAY_NAME),
   })
   .nullable();
 
 /**
  * `lastSignal` is what drives the room overlay: clients watch it for a change
  * of `id` rather than watching the chat log, so a reconnect or a scrolled-away
- * log can't cause a missed or replayed interrupt. It deliberately carries no
- * author — an Unattributed signal has to be indistinguishable here too.
+ * log can't cause a missed or replayed interrupt. It carries no *identity* —
+ * only the attributed name, which for an Unattributed signal is the same
+ * constant for everyone, so one signal still cannot be told from another here.
  */
 export const safetyStateValidator = z.object({
   entries: z.array(avoidedSubjectValidator),

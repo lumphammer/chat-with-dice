@@ -32,19 +32,29 @@ export const safetyServer = createServerCapability(safetyCommon, {
       // could have been recorded, and it isn't: the sentinel goes to the message
       // store, `userId` goes out of scope, and nothing else in this effect sees
       // it. There is deliberately no audit trail to consult later.
+      //
+      // Both the chat message and the overlay's name are derived from this one
+      // value. Building them separately would let a later edit drift them apart,
+      // and a chat log saying "Anonymous" beside an interrupt naming a person is
+      // exactly how an unattributed raiser gets exposed.
+      const attribution = payload.unattributed
+        ? {
+            userId: UNATTRIBUTED_USER_ID,
+            displayName: UNATTRIBUTED_DISPLAY_NAME,
+          }
+        : { userId, displayName };
+
       sendChatMessage(
         { kind: payload.kind, unattributed: payload.unattributed },
-        payload.unattributed
-          ? {
-              userId: UNATTRIBUTED_USER_ID,
-              displayName: UNATTRIBUTED_DISPLAY_NAME,
-            }
-          : { userId, displayName },
+        attribution,
       );
       stateDraft.lastSignal = {
         id: nanoid(),
         kind: payload.kind,
         createdTime: Date.now(),
+        // Only the name. `attribution.userId` stays out of state — the overlay
+        // needs something to display, not something to identify with.
+        displayName: attribution.displayName,
       };
     },
     addAvoidedSubject: ({ pureFn, stateDraft, payload, userId }) => {

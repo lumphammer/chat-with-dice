@@ -38,9 +38,7 @@ export const SafetySignalMessageDisplay = memo(
           py-4 text-center ${borderClass} ${colorClass}`}
       >
         <Icon className="h-12 w-12 shrink-0" />
-        <div>
-          <div className="text-xl font-bold">{label}</div>
-        </div>
+        <div className="text-xl font-bold">{label}</div>
       </div>
     );
   },

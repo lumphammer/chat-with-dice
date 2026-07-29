@@ -14,6 +14,7 @@ import { nanoid } from "nanoid";
 import { describe, expect, it, vi } from "vitest";
 
 const AUTHOR = "author-user";
+const AUTHOR_NAME = "Author Displayname";
 const OTHER = "other-user";
 const ROOM_OWNER = "room-owner-user";
 
@@ -72,11 +73,15 @@ const call = (
   actionName: string,
   params: unknown,
   userId: string,
+  // Defaults to the user id so leak assertions can search for one string and
+  // catch either an id or a name escaping. Pass a distinct value when the test
+  // needs to tell the two apart.
+  displayName: string = userId,
 ) =>
   mounted.onMessage({
     actionCall: { actionName, correlation: nanoid(), params },
     userId,
-    displayName: userId,
+    displayName,
   });
 
 const stateFor = (mounted: ServerMountedCapability, viewerUserId: string) =>
@@ -200,15 +205,57 @@ describe("safety Safety Signals", () => {
       "raiseSignal",
       { kind: "xcard", unattributed: true },
       AUTHOR,
+      AUTHOR_NAME,
     );
 
     const [message] = sentMessages;
     expect(message.userId).toBe(UNATTRIBUTED_USER_ID);
     expect(message.displayName).toBe(UNATTRIBUTED_DISPLAY_NAME);
-    // The raiser's id must appear nowhere that outlives the frame — not on the
-    // message, and not in the state the signal wrote.
-    expect(JSON.stringify(message)).not.toContain(AUTHOR);
-    expect(JSON.stringify(stateRepository.get("safety"))).not.toContain(AUTHOR);
+    // Neither the raiser's id nor their name may appear anywhere that outlives
+    // the frame — not on the message, and not in the state the signal wrote.
+    // `lastSignal` carries a name for the overlay to show, so the name matters
+    // here as much as the id does.
+    for (const trace of [AUTHOR, AUTHOR_NAME]) {
+      expect(JSON.stringify(message)).not.toContain(trace);
+      expect(JSON.stringify(stateRepository.get("safety"))).not.toContain(
+        trace,
+      );
+    }
+  });
+
+  it("shows the sentinel name on the overlay when unattributed", async () => {
+    const { mounted } = await mountSafety();
+
+    await call(
+      mounted,
+      "raiseSignal",
+      { kind: "xcard", unattributed: true },
+      AUTHOR,
+      AUTHOR_NAME,
+    );
+
+    expect(stateFor(mounted, AUTHOR).lastSignal?.displayName).toBe(
+      UNATTRIBUTED_DISPLAY_NAME,
+    );
+  });
+
+  it("shows the raiser's name on the overlay when attributed", async () => {
+    const { mounted } = await mountSafety();
+
+    await call(
+      mounted,
+      "raiseSignal",
+      { kind: "xcard", unattributed: false },
+      AUTHOR,
+      AUTHOR_NAME,
+    );
+
+    // The name, not the id — the overlay needs something to display, not
+    // something to identify with.
+    expect(stateFor(mounted, AUTHOR).lastSignal?.displayName).toBe(AUTHOR_NAME);
+    expect(JSON.stringify(stateFor(mounted, AUTHOR).lastSignal)).not.toContain(
+      AUTHOR,
+    );
   });
 
   it("changes the signal id each time so clients can spot a new one", async () => {

@@ -27,6 +27,9 @@ export const SafetySignalOverlay = memo(() => {
   const signalKind = capInfo.initialised
     ? (capInfo.state.lastSignal?.kind ?? null)
     : null;
+  const signalDisplayName = capInfo.initialised
+    ? (capInfo.state.lastSignal?.displayName ?? null)
+    : null;
 
   /**
    * `undefined` until the first state arrives. That first value — from
@@ -38,6 +41,7 @@ export const SafetySignalOverlay = memo(() => {
   const [shownSignal, setShownSignal] = useState<{
     id: string;
     kind: SignalKind;
+    displayName: string;
   } | null>(null);
 
   useEffect(() => {
@@ -52,11 +56,19 @@ export const SafetySignalOverlay = memo(() => {
       return;
     }
     seenSignalIdRef.current = signalId;
-    if (signalId === null || signalKind === null) {
+    if (
+      signalId === null ||
+      signalKind === null ||
+      signalDisplayName === null
+    ) {
       return;
     }
-    setShownSignal({ id: signalId, kind: signalKind });
-  }, [initialised, signalId, signalKind]);
+    setShownSignal({
+      id: signalId,
+      kind: signalKind,
+      displayName: signalDisplayName,
+    });
+  }, [initialised, signalId, signalKind, signalDisplayName]);
 
   useEffect(() => {
     if (!shownSignal) {
@@ -95,6 +107,11 @@ export const SafetySignalOverlay = memo(() => {
         <h2 id={titleId} className="heading text-4xl font-bold">
           {overlayTitle}
         </h2>
+        {/* Whoever the signal is attributed to — a real name, or "Anonymous"
+            when it was raised unattributed. Never the identity behind it. */}
+        <p className="text-base-content text-xl font-medium">
+          {shownSignal.displayName}
+        </p>
         <p className="text-base-content max-w-prose text-lg">{overlayBody}</p>
         <button
           type="button"
