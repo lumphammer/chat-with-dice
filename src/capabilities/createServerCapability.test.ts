@@ -180,3 +180,117 @@ describe("createServerCapability hook firing", () => {
     expect(readState().log).toEqual(["hook:first", "hook:second"]);
   });
 });
+
+/**
+ * A capability whose stored state carries a field clients must never see.
+ *
+ * Its `projectState` is deliberately the identity function. That is the whole
+ * point: `projectState` returns the same type it was handed, so an identity
+ * projection type-checks, and a real one can lose its redaction to a careless
+ * edit without anything complaining. `clientStateValidator` is what actually
+ * keeps the field off the wire, and these tests fail if that stops being true.
+ */
+const redactingCommon = createCapabilityCommon({
+  name: "redactingcap",
+  displayName: "Redacting capability",
+  state: {
+    validator: z.object({
+      items: z.array(
+        z.object({ id: z.string(), secret: z.string().optional() }),
+      ),
+    }),
+    getInitialState: () => ({ items: [] }),
+  },
+  buildActions: ({ createAction }) => ({
+    add: createAction({
+      payloadValidator: z.object({ id: z.string() }),
+      pureFn: ({ stateDraft, payload }) => {
+        stateDraft.items.push({ id: payload.id, secret: "do not send" });
+      },
+    }),
+  }),
+});
+
+const redactingServer = createServerCapability(redactingCommon, {
+  clientStateValidator: z.object({
+    items: z.array(z.object({ id: z.string() })),
+  }),
+  projectState: ({ state }) => state,
+});
+
+type RedactingState = { items: { id: string; secret?: string }[] };
+
+/**
+ * The broadcast lands on a `setTimeout(…, 0)`, so it is a macrotask behind the
+ * action. Awaiting one timer flushes it.
+ */
+const flushBroadcast = () =>
+  new Promise<void>((resolve) => setTimeout(resolve));
+
+describe("createServerCapability client state stripping", () => {
+  let stateRepository: CapabilityStateRepository;
+  let broadcaster: Broadcaster;
+  let perViewerSpy: ReturnType<typeof vi.spyOn>;
+  let mounted: ServerMountedCapability;
+
+  beforeEach(async () => {
+    const store = new Map<string, unknown>();
+    stateRepository = new CapabilityStateRepository({
+      get: (key: string) => store.get(key),
+      put: (key: string, value: unknown) => void store.set(key, value),
+    } as unknown as SyncKvStorage);
+
+    broadcaster = new Broadcaster({
+      getWebSockets: () => [],
+    } as unknown as DurableObjectState);
+    perViewerSpy = vi.spyOn(broadcaster, "broadcastCapabilityStatePerViewer");
+
+    const mountResult = await redactingServer.mount({
+      doCtx: {} as unknown as DurableObjectState,
+      messageJiggler: {} as unknown as MessageJiggler,
+      stateRepository,
+      config: undefined,
+      nodeShareManager: {} as unknown as NodeShareManager,
+      broadcaster,
+      dispatchHook: async () => {},
+    });
+    if (!mountResult) throw new Error("redacting capability failed to mount");
+    mounted = mountResult;
+  });
+
+  const add = (id: string) =>
+    mounted.onMessage({
+      actionCall: { actionName: "add", correlation: "c1", params: { id } },
+      userId: "author",
+      displayName: "Author",
+    });
+
+  it("keeps the undeclared field in stored state", async () => {
+    await add("one");
+
+    const stored = stateRepository.get("redactingcap") as RedactingState;
+    expect(stored.items[0].secret).toBe("do not send");
+  });
+
+  it("strips it from the broadcast even though the projection does not", async () => {
+    await add("one");
+    await flushBroadcast();
+
+    const call = perViewerSpy.mock.calls.at(-1)?.[0] as {
+      project: (viewerUserId: string) => RedactingState;
+    };
+    const sent = call.project("author");
+
+    expect(sent.items).toEqual([{ id: "one" }]);
+    expect(sent.items[0]).not.toHaveProperty("secret");
+  });
+
+  it("strips it from the init payload too", async () => {
+    await add("one");
+
+    const sent = mounted.getInitPayload("author").state as RedactingState;
+
+    expect(sent.items).toEqual([{ id: "one" }]);
+    expect(sent.items[0]).not.toHaveProperty("secret");
+  });
+});

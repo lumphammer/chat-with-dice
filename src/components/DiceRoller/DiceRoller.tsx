@@ -13,6 +13,7 @@ import {
   useFeedbackToasterProvider,
 } from "../FeedbackToaster";
 import { Sidebar } from "../Sidebar/Sidebar";
+import { CapabilityRoomOverlays } from "./CapabilityRoomOverlays";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
 import { Header } from "./Header";
@@ -336,6 +337,7 @@ export const DiceRoller = memo(
                         />
                       </div>
                     </div>
+                    <CapabilityRoomOverlays />
                   </RoomUiNavigationContextProvider>
                 </RoomInfoContextProvider>
               </SendMessageContextProvider>

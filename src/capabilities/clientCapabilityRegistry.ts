@@ -7,6 +7,7 @@ import { filesClient } from "./files/client";
 import { havocClient } from "./havoc/client";
 import { laserfeelingsClient } from "./laserfeelings/client";
 import { rollClient } from "./roll/client";
+import { safetyClient } from "./safety/client";
 import { usersClient } from "./users/client";
 
 /**
@@ -32,4 +33,5 @@ export const clientCapabilityRegistry = {
   cards: cardsClient,
   feedback: feedbackClient,
   users: usersClient,
+  safety: safetyClient,
 } satisfies Record<CapabilityName, ClientCapability<any, any, any>>;

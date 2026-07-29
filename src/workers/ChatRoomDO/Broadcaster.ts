@@ -25,6 +25,30 @@ export class Broadcaster {
     }
   }
 
+  /**
+   * Run `callback` for every open socket alongside the user it belongs to.
+   * Sockets whose attachment fails to parse are skipped rather than sent a
+   * shared payload: the callers below build a payload *for a named viewer*, and
+   * "we don't know who this is" must never degrade into "send them everyone's
+   * view".
+   */
+  private forEachViewer(
+    callback: (ws: WebSocket, viewerUserId: string) => void,
+  ): void {
+    for (const ws of this.ctx.getWebSockets()) {
+      if (ws.readyState !== WebSocket.OPEN) {
+        continue;
+      }
+      const { data: attachment, success } = sessionAttachmentSchema.safeParse(
+        ws.deserializeAttachment(),
+      );
+      if (!success) {
+        continue;
+      }
+      callback(ws, attachment.userId);
+    }
+  }
+
   getWebsocketForUserId(userId: string): WebSocket | undefined {
     return this.ctx.getWebSockets().find((ws) => {
       if (ws.readyState === WebSocket.OPEN) {
@@ -82,17 +106,65 @@ export class Broadcaster {
     });
   }
 
-  sendCapabilityInit(ws: WebSocket, capability: ServerMountedCapability): void {
+  sendCapabilityInit(
+    ws: WebSocket,
+    capability: ServerMountedCapability,
+    viewerUserId: string,
+  ): void {
     this.send(ws, {
       type: "capabilityInit",
-      payload: capability.getInitPayload(),
+      payload: capability.getInitPayload(viewerUserId),
     });
   }
 
   broadcastCapabilityInit(capability: ServerMountedCapability): void {
+    this.forEachViewer((ws, viewerUserId) => {
+      this.send(ws, {
+        type: "capabilityInit",
+        payload: capability.getInitPayload(viewerUserId),
+      });
+    });
+  }
+
+  /**
+   * Send one capability-state update that every client may see in full.
+   */
+  broadcastCapabilityState({
+    capability,
+    correlation,
+    state,
+  }: {
+    capability: string;
+    correlation: string | undefined;
+    state: unknown;
+  }): void {
     this.broadcast({
-      type: "capabilityInit",
-      payload: capability.getInitPayload(),
+      type: "capabilityState",
+      payload: { capability, correlation, state },
+    });
+  }
+
+  /**
+   * As {@link broadcastCapabilityState}, but each client is sent its own
+   * payload, built by `project` from that socket's user id. Used by
+   * capabilities holding state one Room Participant may see and another may
+   * not — the redaction happens here, on the way out, rather than being trusted
+   * to the client.
+   */
+  broadcastCapabilityStatePerViewer({
+    capability,
+    correlation,
+    project,
+  }: {
+    capability: string;
+    correlation: string | undefined;
+    project: (viewerUserId: string) => unknown;
+  }): void {
+    this.forEachViewer((ws, viewerUserId) => {
+      this.send(ws, {
+        type: "capabilityState",
+        payload: { capability, correlation, state: project(viewerUserId) },
+      });
     });
   }
 

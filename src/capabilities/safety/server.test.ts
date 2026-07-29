@@ -1,0 +1,194 @@
+import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
+import {
+  UNATTRIBUTED_DISPLAY_NAME,
+  UNATTRIBUTED_USER_ID,
+  type SafetyState,
+} from "#/capabilities/safety/common";
+import { safetyServer } from "#/capabilities/safety/server";
+import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
+import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
+import { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
+import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
+import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
+import { nanoid } from "nanoid";
+import { describe, expect, it } from "vitest";
+
+const AUTHOR = "author-user";
+const OTHER = "other-user";
+
+/** What one viewer actually receives, redaction and strip both applied. */
+type ClientSafetyState = {
+  entries: { id: string; text: string; isMine: boolean }[];
+  lastSignal: SafetyState["lastSignal"];
+};
+
+const makeStateRepository = () => {
+  const kv = new Map<string, unknown>();
+  return new CapabilityStateRepository({
+    get: (key: string) => kv.get(key),
+    put: (key: string, value: unknown) => kv.set(key, value),
+    delete: (key: string) => kv.delete(key),
+    list: () => kv.entries(),
+  } as unknown as SyncKvStorage);
+};
+
+const mountSafety = async () => {
+  const sentMessages: ChatMessage[] = [];
+  const messageJiggler = {
+    sendChatMessage: (message: ChatMessage) => void sentMessages.push(message),
+  } as unknown as MessageJiggler;
+  const stateRepository = makeStateRepository();
+
+  const mounted = await safetyServer.mount({
+    doCtx: {} as unknown as DurableObjectState,
+    messageJiggler,
+    stateRepository,
+    config: undefined,
+    nodeShareManager: {} as unknown as NodeShareManager,
+    // The state assertions all read through `getInitPayload`, which runs the
+    // same projection the broadcast does, so the broadcast itself can no-op.
+    broadcaster: {
+      broadcast: () => {},
+      broadcastCapabilityState: () => {},
+      broadcastCapabilityStatePerViewer: () => {},
+    } as unknown as Broadcaster,
+    dispatchHook: async () => {},
+  });
+  if (!mounted) throw new Error("safety capability failed to mount");
+  return { mounted, sentMessages, stateRepository };
+};
+
+const call = (
+  mounted: ServerMountedCapability,
+  actionName: string,
+  params: unknown,
+  userId: string,
+) =>
+  mounted.onMessage({
+    actionCall: { actionName, correlation: nanoid(), params },
+    userId,
+    displayName: userId,
+  });
+
+const stateFor = (mounted: ServerMountedCapability, viewerUserId: string) =>
+  mounted.getInitPayload(viewerUserId).state as ClientSafetyState;
+
+describe("safety Avoided Subjects", () => {
+  it("never sends authorship to anyone, including the author", async () => {
+    const { mounted } = await mountSafety();
+    const id = nanoid();
+
+    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
+
+    for (const viewer of [AUTHOR, OTHER]) {
+      const entry = stateFor(mounted, viewer).entries[0];
+      expect(entry).not.toHaveProperty("authorUserId");
+    }
+  });
+
+  it("keeps authorship in stored state so removal can be authorised", async () => {
+    const { mounted, stateRepository } = await mountSafety();
+    const id = nanoid();
+
+    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
+
+    const stored = stateRepository.get("safety") as SafetyState;
+    expect(stored.entries[0].authorUserId).toBe(AUTHOR);
+  });
+
+  it("marks an entry as mine only for its author", async () => {
+    const { mounted } = await mountSafety();
+
+    await call(
+      mounted,
+      "addAvoidedSubject",
+      { id: nanoid(), text: "spiders" },
+      AUTHOR,
+    );
+
+    expect(stateFor(mounted, AUTHOR).entries[0].isMine).toBe(true);
+    expect(stateFor(mounted, OTHER).entries[0].isMine).toBe(false);
+  });
+
+  it("lets an author remove their own entry", async () => {
+    const { mounted } = await mountSafety();
+    const id = nanoid();
+
+    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
+    await call(mounted, "removeAvoidedSubject", { id }, AUTHOR);
+
+    expect(stateFor(mounted, AUTHOR).entries).toEqual([]);
+  });
+
+  it("refuses to remove someone else's entry", async () => {
+    const { mounted } = await mountSafety();
+    const id = nanoid();
+
+    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
+    await call(mounted, "removeAvoidedSubject", { id }, OTHER);
+
+    expect(stateFor(mounted, AUTHOR).entries).toHaveLength(1);
+  });
+});
+
+describe("safety Safety Signals", () => {
+  it("attributes a normal signal to its raiser", async () => {
+    const { mounted, sentMessages } = await mountSafety();
+
+    await call(
+      mounted,
+      "raiseSignal",
+      { kind: "xcard", unattributed: false },
+      AUTHOR,
+    );
+
+    expect(sentMessages).toHaveLength(1);
+    expect(sentMessages[0].userId).toBe(AUTHOR);
+    expect(sentMessages[0].capabilityData).toEqual({
+      kind: "xcard",
+      unattributed: false,
+    });
+  });
+
+  it("records the sentinel and nothing of the raiser when unattributed", async () => {
+    const { mounted, sentMessages, stateRepository } = await mountSafety();
+
+    await call(
+      mounted,
+      "raiseSignal",
+      { kind: "xcard", unattributed: true },
+      AUTHOR,
+    );
+
+    const [message] = sentMessages;
+    expect(message.userId).toBe(UNATTRIBUTED_USER_ID);
+    expect(message.displayName).toBe(UNATTRIBUTED_DISPLAY_NAME);
+    // The raiser's id must appear nowhere that outlives the frame — not on the
+    // message, and not in the state the signal wrote.
+    expect(JSON.stringify(message)).not.toContain(AUTHOR);
+    expect(JSON.stringify(stateRepository.get("safety"))).not.toContain(AUTHOR);
+  });
+
+  it("changes the signal id each time so clients can spot a new one", async () => {
+    const { mounted } = await mountSafety();
+
+    await call(
+      mounted,
+      "raiseSignal",
+      { kind: "pause", unattributed: false },
+      AUTHOR,
+    );
+    const first = stateFor(mounted, AUTHOR).lastSignal;
+
+    await call(
+      mounted,
+      "raiseSignal",
+      { kind: "pause", unattributed: false },
+      AUTHOR,
+    );
+    const second = stateFor(mounted, AUTHOR).lastSignal;
+
+    expect(first?.id).toBeDefined();
+    expect(second?.id).not.toBe(first?.id);
+  });
+});

@@ -68,6 +68,8 @@ const mountWith = async (
     sendErrorToUserId: (userId: string, error: unknown) =>
       errors.push({ userId, error }),
     broadcast: () => {},
+    broadcastCapabilityState: () => {},
+    broadcastCapabilityStatePerViewer: () => {},
   } as unknown as Broadcaster;
 
   const mounted = await cardsServer.mount({
@@ -170,7 +172,7 @@ const drawnCardIds = (sentMessages: unknown[]) =>
   );
 
 const pilesOf = (mounted: ServerMountedCapability) =>
-  (mounted.getInitPayload().state as CardsState).piles;
+  (mounted.getInitPayload("viewer").state as CardsState).piles;
 
 describe("cards draw action", () => {
   beforeEach(() => {

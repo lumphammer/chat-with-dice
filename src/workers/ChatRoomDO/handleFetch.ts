@@ -84,7 +84,7 @@ export async function handleFetch(
       log(
         `Sending "${capability.name}" capability state to ${displayName} (${userId})`,
       );
-      broadcaster.sendCapabilityInit(server, capability);
+      broadcaster.sendCapabilityInit(server, capability, userId);
     }
     // Let capabilities (e.g. `users`) react to the new connection.
     void capabilityService.hooks.onPresenceChange({
