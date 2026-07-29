@@ -29,6 +29,7 @@ export const SafetySignalButtons = memo(() => {
 
   return (
     <section>
+      <h3 className="heading my-2">Signals</h3>
       {/* `flex-col` overrides the row layout `.btn` gives its children, so the
           X reads as a card being played rather than as a stray glyph in front
           of the words. `h-auto` because the stacked content sets the height. */}
@@ -42,7 +43,8 @@ export const SafetySignalButtons = memo(() => {
         <SIGNAL_PRESENTATION.xcard.Icon className="h-12 w-12" />X Card
       </button>
       <p className="text-base-content/70 mt-2 mb-4 text-sm">
-        Stops the scene for everyone. You never have to explain why.
+        Stop and change, rewind, or skip the current content. No explanation is
+        required.
       </p>
 
       <button
@@ -55,7 +57,7 @@ export const SafetySignalButtons = memo(() => {
         Pause
       </button>
       <p className="text-base-content/70 mt-2 mb-4 text-sm">
-        Asks the table to hold on a moment.
+        Ask the table to pause for a break or check-in before continuing.
       </p>
 
       {/* The control is nested rather than wired up with `htmlFor`, matching
@@ -67,7 +69,7 @@ export const SafetySignalButtons = memo(() => {
         className="border-base-300 bg-base-100 rounded-box grid cursor-pointer
           grid-cols-[1fr_auto] items-center gap-x-3 border px-4 py-3"
       >
-        <span className="font-medium">Send anonymously</span>
+        <span className="font-medium">Send safety signals anonymously</span>
         <input
           className="checkbox col-start-2 row-span-2 row-start-1"
           type="checkbox"
@@ -75,8 +77,7 @@ export const SafetySignalButtons = memo(() => {
           onChange={(event) => setAnonymously(event.target.checked)}
         />
         <span className="text-base-content/70 col-start-1 row-start-2 text-sm">
-          Applies to both buttons. Your name is never recorded — not for the
-          room owner either.
+          Anonymous signals are stored without your name.
         </span>
       </label>
     </section>

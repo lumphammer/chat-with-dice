@@ -14,6 +14,12 @@ export const SidebarSafety = memo(() => {
     >
       <SafetySignalButtons />
       <AvoidList />
+      <section className="prose prose-sm mt-4">
+        <h3>Open Door Policy</h3>
+        <p>
+          Anyone may step away at any time, for any reason, without explanation.
+        </p>
+      </section>
     </SidebarPanel>
   );
 });

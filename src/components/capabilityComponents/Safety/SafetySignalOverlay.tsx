@@ -101,7 +101,7 @@ export const SafetySignalOverlay = memo(() => {
           className={`btn btn-lg ${buttonClass}`}
           onClick={() => dialogRef.current?.close()}
         >
-          {shownSignal.kind === "pause" ? "OK" : "Acknowledged"}
+          Acknowledge
         </button>
       </div>
       {shownSignal.kind === "pause" && (

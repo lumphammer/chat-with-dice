@@ -19,7 +19,8 @@ export const SIGNAL_PRESENTATION = {
     borderClass: "border-error",
     buttonClass: "btn-error",
     overlayTitle: "X Card",
-    overlayBody: "Stop, rewind, and move on. No explanation needed.",
+    overlayBody:
+      "Stop and change, rewind, or skip the current content. No explanation is required.",
   },
   pause: {
     label: "Pause",
@@ -28,7 +29,7 @@ export const SIGNAL_PRESENTATION = {
     borderClass: "border-warning",
     buttonClass: "btn-warning",
     overlayTitle: "Pause",
-    overlayBody: "Someone would like to hold on a moment.",
+    overlayBody: "Pause for a break or check-in before continuing.",
   },
 } as const satisfies Record<
   SignalKind,

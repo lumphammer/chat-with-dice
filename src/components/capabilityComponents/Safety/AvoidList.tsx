@@ -17,19 +17,21 @@ const EntryRow = memo(
     entry: AvoidedSubject;
     onRemove?: (id: string) => void;
   }) => (
-    <li className="list-row bg-base-200 items-center">
-      <span className="flex-1 break-words">{entry.text}</span>
-      {onRemove && (
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          aria-label={`Remove "${entry.text}"`}
-          onClick={() => onRemove(entry.id)}
-        >
-          <Trash2 size={16} />
-        </button>
-      )}
-    </li>
+    <>
+      <li className="list-row items-center px-2 py-0">
+        <div className="list-col-grow wrap-break-word">{entry.text}</div>
+        {onRemove && (
+          <button
+            type="button"
+            className="btn btn-ghost btn-square"
+            aria-label={`Remove "${entry.text}"`}
+            onClick={() => onRemove(entry.id)}
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
+      </li>
+    </>
   ),
 );
 
@@ -84,10 +86,10 @@ export const AvoidList = memo(() => {
 
   return (
     <section className="mt-8">
-      <h3 className="text-xl">Subjects and ideas to avoid</h3>
+      <h3 className="heading">Subjects to avoid</h3>
       <p className="text-base-content/70 mt-1 text-sm">
-        Anything you'd rather this game steered clear of. The table sees the
-        list; nobody sees who added what.
+        Anything you'd rather this game steered clear of. The room sees the
+        list, but nobody sees who added what.
       </p>
 
       <form
@@ -129,7 +131,7 @@ export const AvoidList = memo(() => {
               You haven't added anything.
             </p>
           ) : (
-            <ul className="list mt-2 gap-1">
+            <ul className="list mt-2 gap-0">
               {mine.map((entry) => (
                 <EntryRow
                   key={entry.id}

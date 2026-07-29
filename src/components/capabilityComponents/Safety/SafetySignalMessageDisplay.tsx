@@ -27,7 +27,7 @@ export const SafetySignalMessageDisplay = memo(
       return null;
     }
 
-    const { kind, unattributed } = parsed.data;
+    const { kind } = parsed.data;
     const { Icon, label, colorClass, borderClass } = SIGNAL_PRESENTATION[kind];
 
     return (
@@ -40,9 +40,6 @@ export const SafetySignalMessageDisplay = memo(
         <Icon className="h-12 w-12 shrink-0" />
         <div>
           <div className="text-xl font-bold">{label}</div>
-          {unattributed && (
-            <div className="text-sm opacity-80">Sent anonymously</div>
-          )}
         </div>
       </div>
     );
