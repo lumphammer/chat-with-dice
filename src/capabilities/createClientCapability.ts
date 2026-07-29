@@ -67,6 +67,14 @@ export type ClientCapabilityDefinition = {
     messageId: string;
     messageUserId: string;
   }>;
+  /**
+   * Rendered once per room, outside the sidebar's tab panels and the chat log,
+   * for UI that has to be present regardless of what the participant is
+   * currently looking at (an interrupt that takes over the screen, say). Mounted
+   * for as long as the capability is, so it is the right home for anything
+   * watching capability state for an event rather than drawing a view of it.
+   */
+  RoomOverlayComponent?: ComponentType;
 };
 
 export type ClientCapability<
@@ -94,6 +102,7 @@ export type ClientCapability<
     messageId: string;
     messageUserId: string;
   }>;
+  RoomOverlayComponent?: ComponentType;
 };
 
 /**
@@ -231,5 +240,6 @@ export function createClientCapability<
     visibility: common.visibility,
     sidebarInfos: def.sidebarInfos,
     ChatDisplayComponent: def.ChatDisplayComponent,
+    RoomOverlayComponent: def.RoomOverlayComponent,
   };
 }

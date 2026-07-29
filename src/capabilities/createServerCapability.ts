@@ -76,7 +76,17 @@ type EffectfulActionFn<
   TMessageDataValidator extends JsonValidator | undefined,
 > = (tools: {
   doCtx: DurableObjectState;
-  sendChatMessage: (data: inferIfZod<TMessageDataValidator>) => void;
+  /**
+   * Post a chat message from this capability. Attributed to the participant
+   * whose action call this is, unless `attribution` overrides it — which is how
+   * a message gets posted without recording who sent it. The override is
+   * written straight to the message store, so whatever it says is all that is
+   * ever known about the sender.
+   */
+  sendChatMessage: (
+    data: inferIfZod<TMessageDataValidator>,
+    attribution?: { userId: string; displayName: string },
+  ) => void;
   /**
    * Edit one of this capability's existing chat messages. The current message
    * data is validated before the updater runs, and returning `undefined`
@@ -90,6 +100,13 @@ type EffectfulActionFn<
   userId: string;
   displayName: string;
   nodeShareManager: NodeShareManager;
+  /**
+   * Who owns this Room, for effects that grant the owner powers other
+   * participants don't have. Lazy, and hits D1 on every call, so reach for it
+   * only once a cheaper check has already failed. `undefined` means the room
+   * row could not be read — treat that as "not the owner" and fail closed.
+   */
+  getRoomOwnerUserId: () => Promise<string | undefined>;
   /**
    * Fire a hook at the other mounted capabilities. Deferred until this
    * action's state change has committed, so bailing out or throwing after
@@ -154,6 +171,7 @@ export type ServerCapability = {
     config: unknown;
     nodeShareManager: NodeShareManager;
     broadcaster: Broadcaster;
+    getRoomOwnerUserId: () => Promise<string | undefined>;
     /** Fans a hook out to every mounted capability. */
     dispatchHook: HookDispatch;
   }) => Promise<ServerMountedCapability | null>;
@@ -259,6 +277,7 @@ export function createServerCapability<
     userId,
     displayName,
     nodeShareManager,
+    getRoomOwnerUserId,
     dispatchHook,
     deferred,
   }: {
@@ -271,6 +290,7 @@ export function createServerCapability<
     broadcaster: Broadcaster;
     displayName: string;
     nodeShareManager: NodeShareManager;
+    getRoomOwnerUserId: () => Promise<string | undefined>;
     dispatchHook: HookDispatch;
     deferred: DeferredHook[];
   }) => {
@@ -305,13 +325,17 @@ export function createServerCapability<
             userId,
             displayName,
             nodeShareManager,
+            getRoomOwnerUserId,
             fireHook,
-            sendChatMessage: (data: inferIfZod<TMessageDataValidator>) =>
+            sendChatMessage: (
+              data: inferIfZod<TMessageDataValidator>,
+              attribution?: { userId: string; displayName: string },
+            ) =>
               void messageJiggler.sendChatMessage({
                 chat: "",
-                userId,
+                userId: attribution?.userId ?? userId,
                 createdTime: Date.now(),
-                displayName,
+                displayName: attribution?.displayName ?? displayName,
                 id: nanoid(),
                 linkPreview: null,
                 capabilityData: data ?? {},
@@ -357,6 +381,7 @@ export function createServerCapability<
     messageJiggler,
     stateRepository,
     nodeShareManager,
+    getRoomOwnerUserId,
     dispatchHook,
   }) => {
     const configParseResult = common.config?.validator?.safeParse(config);
@@ -419,6 +444,7 @@ export function createServerCapability<
           userId,
           displayName,
           nodeShareManager,
+          getRoomOwnerUserId,
           dispatchHook,
           deferred,
         });

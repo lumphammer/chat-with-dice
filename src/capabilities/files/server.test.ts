@@ -57,6 +57,7 @@ describe("files onShareAvailabilityChange hook", () => {
       broadcaster: new Broadcaster({
         getWebSockets: () => [],
       } as unknown as DurableObjectState),
+      getRoomOwnerUserId: async () => undefined,
       dispatchHook: async () => {},
     });
     if (!result) throw new Error("files capability failed to mount");

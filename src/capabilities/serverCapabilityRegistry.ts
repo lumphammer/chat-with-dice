@@ -7,6 +7,7 @@ import { filesServer } from "./files/server";
 import { havocServer } from "./havoc/server";
 import { laserfeelingsServer } from "./laserfeelings/server";
 import { rollServer } from "./roll/server";
+import { safetyServer } from "./safety/server";
 import { usersServer } from "./users/server";
 
 /**
@@ -26,4 +27,5 @@ export const serverCapabilityRegistry: Record<
   cards: cardsServer,
   feedback: feedbackServer,
   users: usersServer,
+  safety: safetyServer,
 };

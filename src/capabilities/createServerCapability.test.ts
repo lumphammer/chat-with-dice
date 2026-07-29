@@ -87,6 +87,7 @@ describe("createServerCapability hook firing", () => {
       broadcaster: new Broadcaster({
         getWebSockets: () => [],
       } as unknown as DurableObjectState),
+      getRoomOwnerUserId: async () => undefined,
       dispatchHook: dispatchHook as unknown as HookDispatch,
     });
 

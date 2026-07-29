@@ -1,10 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
-import {
-  type CapabilityName,
-  isCapabilityName,
-} from "#/capabilities/capabilityNames";
-import { clientCapabilityRegistry } from "#/capabilities/clientCapabilityRegistry";
 import type { SidebarVisibilityContext } from "#/capabilities/createClientCapability";
+import { useMountedCapabilities } from "#/capabilities/useMountedCapabilities";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { useRoomUiNavigationContext } from "../DiceRoller/contexts/roomUiNavigationContext";
 import { useRefStash } from "../useRefStash";
@@ -74,33 +70,13 @@ export const Sidebar = memo(
     const returnFocusRef = useRef<HTMLElement | null>(null);
 
     const { data: sessionData } = authClient.useSession();
-    const { roomConfig, roomOwnerId } = useRoomInfoContext();
+    const { roomOwnerId } = useRoomInfoContext();
     const { sharedFolderOpenRequest } = useRoomUiNavigationContext();
     const isOwner = sessionData && sessionData.user.id === roomOwnerId;
     const isDesktop = useContainerMinWidth(ref, DESKTOP_CONTAINER_WIDTH_REM);
     const isDesktopRef = useRefStash(isDesktop);
 
-    const capabilities = useMemo(() => {
-      const configCapabilityNames = roomConfig.capabilities.flatMap(
-        ({ name }) => (isCapabilityName(name) ? [name] : []),
-      );
-      // "always" capabilities aren't listed in the room config (no opt-in/out),
-      // but their sidebar panels must always be present.
-      const alwaysCapabilityNames = (
-        Object.keys(clientCapabilityRegistry) as CapabilityName[]
-      ).filter(
-        (name) =>
-          clientCapabilityRegistry[name].visibility === "always" &&
-          !configCapabilityNames.includes(name),
-      );
-      return [...configCapabilityNames, ...alwaysCapabilityNames]
-        .sort((a, b) =>
-          clientCapabilityRegistry[a].displayName.localeCompare(
-            clientCapabilityRegistry[b].displayName,
-          ),
-        )
-        .map((name) => [name, clientCapabilityRegistry[name]] as const);
-    }, [roomConfig.capabilities]);
+    const capabilities = useMountedCapabilities();
 
     const sidebarVisibilityContext = useMemo<SidebarVisibilityContext>(
       () => ({
