@@ -1,5 +1,6 @@
 import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
 import {
+  MAX_AVOIDED_SUBJECTS,
   UNATTRIBUTED_DISPLAY_NAME,
   UNATTRIBUTED_USER_ID,
   type SafetyState,
@@ -37,6 +38,7 @@ const mountSafety = async ({
   getRoomOwner?: () => Promise<string | undefined>;
 } = {}) => {
   const sentMessages: ChatMessage[] = [];
+  const errors: { userId: string; error: unknown }[] = [];
   const messageJiggler = {
     sendChatMessage: (message: ChatMessage) => void sentMessages.push(message),
   } as unknown as MessageJiggler;
@@ -48,12 +50,16 @@ const mountSafety = async ({
     stateRepository,
     config: undefined,
     nodeShareManager: {} as unknown as NodeShareManager,
-    broadcaster: { broadcast: () => {} } as unknown as Broadcaster,
+    broadcaster: {
+      broadcast: () => {},
+      sendErrorToUserId: (userId: string, error: unknown) =>
+        errors.push({ userId, error }),
+    } as unknown as Broadcaster,
     getRoomOwnerUserId: getRoomOwner,
     dispatchHook: async () => {},
   });
   if (!mounted) throw new Error("safety capability failed to mount");
-  return { mounted, sentMessages, stateRepository };
+  return { mounted, sentMessages, stateRepository, errors };
 };
 
 const call = (
@@ -100,6 +106,67 @@ describe("safety Avoided Subjects", () => {
         authorDisplayName: AUTHOR_NAME,
       },
     ]);
+  });
+
+  it("rejects a whitespace-only subject", async () => {
+    const { mounted } = await mountSafety();
+
+    await expect(
+      call(mounted, "addAvoidedSubject", { id: nanoid(), text: "   " }, AUTHOR),
+    ).rejects.toThrow();
+
+    expect(stateOf(mounted).entries).toEqual([]);
+  });
+
+  it("trims surrounding whitespace off a subject", async () => {
+    const { mounted } = await mountSafety();
+
+    await call(
+      mounted,
+      "addAvoidedSubject",
+      { id: nanoid(), text: "  spiders  " },
+      AUTHOR,
+    );
+
+    expect(stateOf(mounted).entries[0].text).toBe("spiders");
+  });
+
+  it("ignores a reused entry id", async () => {
+    const { mounted } = await mountSafety();
+    const id = nanoid();
+
+    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
+    await call(mounted, "addAvoidedSubject", { id, text: "snakes" }, OTHER);
+
+    // Two entries sharing an id would be removed together by the id-based
+    // filter, so the second add is dropped rather than allowed to collide.
+    expect(stateOf(mounted).entries).toHaveLength(1);
+    expect(stateOf(mounted).entries[0].text).toBe("spiders");
+  });
+
+  it("caps the list and tells the user who hit the cap", async () => {
+    const { mounted, errors } = await mountSafety();
+
+    for (let i = 0; i < MAX_AVOIDED_SUBJECTS; i++) {
+      // oxlint-disable-next-line no-await-in-loop
+      await call(
+        mounted,
+        "addAvoidedSubject",
+        { id: nanoid(), text: `subject ${i}` },
+        AUTHOR,
+      );
+    }
+    await call(
+      mounted,
+      "addAvoidedSubject",
+      { id: nanoid(), text: "one too many" },
+      OTHER,
+    );
+
+    expect(stateOf(mounted).entries).toHaveLength(MAX_AVOIDED_SUBJECTS);
+    // Silence would just look like a broken Add button.
+    expect(errors).toHaveLength(1);
+    expect(errors[0].userId).toBe(OTHER);
   });
 
   it("lets an author remove their own entry", async () => {

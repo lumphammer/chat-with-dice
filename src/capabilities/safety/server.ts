@@ -1,5 +1,6 @@
 import { createServerCapability } from "#/capabilities/createServerCapability";
 import {
+  MAX_AVOIDED_SUBJECTS,
   safetyCommon,
   UNATTRIBUTED_DISPLAY_NAME,
   UNATTRIBUTED_USER_ID,
@@ -44,7 +45,33 @@ export const safetyServer = createServerCapability(safetyCommon, {
         displayName: attribution.displayName,
       };
     },
-    addAvoidedSubject: ({ stateDraft, payload, userId, displayName }) => {
+    addAvoidedSubject: ({
+      stateDraft,
+      payload,
+      userId,
+      displayName,
+      broadcaster,
+    }) => {
+      // The id is the client's to mint, which means it is also the client's to
+      // get wrong. Two entries sharing one id would collide on React's `key` and
+      // — worse — `removeAvoidedSubject` filters by id, so removing either would
+      // silently take both. Nothing useful to report: a duplicate can only come
+      // from a buggy or hostile client, never from the sidebar.
+      if (stateDraft.entries.some((entry) => entry.id === payload.id)) {
+        return;
+      }
+      if (stateDraft.entries.length >= MAX_AVOIDED_SUBJECTS) {
+        // Worth telling this user about, unlike the duplicate above: a real
+        // table could in principle reach the cap, and silence would just look
+        // like the Add button was broken.
+        broadcaster.sendErrorToUserId(
+          userId,
+          new Error(
+            `This room already has ${MAX_AVOIDED_SUBJECTS} subjects to avoid. Remove one before adding another.`,
+          ),
+        );
+        return;
+      }
       // Author comes from the connection, never from the payload — a client
       // cannot add a subject in somebody else's name. Only `id` and `text` are
       // the caller's to supply.

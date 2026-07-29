@@ -30,6 +30,14 @@ export const UNATTRIBUTED_DISPLAY_NAME = "Anonymous";
 
 export const AVOIDED_SUBJECT_MAX_LENGTH = 200;
 
+/**
+ * A backstop, not a UX limit — a real table of six will not come close. It
+ * exists because the Avoid List lives in capability state, and capability state
+ * is rebroadcast to every socket in the room in full on every change, so an
+ * unbounded list is an unbounded broadcast for everyone else.
+ */
+export const MAX_AVOIDED_SUBJECTS = 100;
+
 const signalKindValidator = z.enum(["xcard", "pause"]);
 
 export type SignalKind = z.infer<typeof signalKindValidator>;
@@ -60,7 +68,10 @@ export type SafetySignalMessageData = z.infer<
  */
 const avoidedSubjectValidator = z.object({
   id: z.nanoid(),
-  text: z.string().min(1).max(AVOIDED_SUBJECT_MAX_LENGTH),
+  // `.trim()` before the length checks, so " " is rejected rather than stored as
+  // a blank-looking row. The sidebar trims too, but the sidebar is not the only
+  // thing that can send this action.
+  text: z.string().trim().min(1).max(AVOIDED_SUBJECT_MAX_LENGTH),
   authorUserId: z.string(),
   authorDisplayName: z.string(),
 });
@@ -146,7 +157,7 @@ export const safetyCommon = createCapabilityCommon({
       // `cards.draw`).
       payloadValidator: z.object({
         id: z.nanoid(),
-        text: z.string().min(1).max(AVOIDED_SUBJECT_MAX_LENGTH),
+        text: z.string().trim().min(1).max(AVOIDED_SUBJECT_MAX_LENGTH),
       }),
     }),
     removeAvoidedSubject: createAction({
