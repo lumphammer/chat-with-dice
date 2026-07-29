@@ -79,7 +79,7 @@ export const SafetySignalOverlay = memo(() => {
   return (
     <dialog
       ref={dialogRef}
-      className="modal"
+      className="modal backdrop-blur-sm"
       aria-labelledby={titleId}
       // A Pause is a light interruption and dismisses on any outside gesture.
       // An X Card does not: acknowledging it should be a deliberate act. Escape
@@ -88,8 +88,8 @@ export const SafetySignalOverlay = memo(() => {
       onClose={() => setShownSignal(null)}
     >
       <div
-        className={`modal-box flex h-[100dvh] w-screen max-w-none flex-col
-          items-center justify-center gap-6 text-center ${colorClass}`}
+        className={`modal-box flex flex-col items-center justify-center gap-6
+          text-center ${colorClass}`}
       >
         <Icon className="h-32 w-32" />
         <h2 id={titleId} className="heading text-4xl font-bold">
@@ -104,6 +104,11 @@ export const SafetySignalOverlay = memo(() => {
           {shownSignal.kind === "pause" ? "OK" : "Acknowledged"}
         </button>
       </div>
+      {shownSignal.kind === "pause" && (
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      )}
     </dialog>
   );
 });
