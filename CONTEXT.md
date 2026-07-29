@@ -11,7 +11,8 @@ authorship.
 **Avoided Subject**:
 One subject a **Room Participant** has asked the table to steer clear of.
 Authorship is held by the **Room**'s server side and never sent to any client
-but the author's own, which is the only client that can remove it.
+but the author's own. Its author can remove it, and so can the **Room** owner —
+who still never learns whose it was.
 
 **Card**:
 A **Card Image**, or a pair of **Card Images**, stored in a **Deck** and drawn from a **Pile**.
@@ -165,7 +166,9 @@ or invited, and acknowledging it is a deliberate act rather than a stray click.
 - An **Unattributed** **Safety Signal** records no author anywhere, so nothing can later reveal who raised it — not the **Room** owner, not an admin, not the message store
 - Being **Unattributed** is independent of being an anonymous **Room Participant**: a signed-in user can raise an **Unattributed** signal, and a guest can raise an attributed one
 - A **Safety Signal** stays in the chat log after its interrupt is dismissed, so the table can see that one was raised even if they missed it
-- An **Avoided Subject** belongs to one **Room** and one author; only its author sees it as theirs, and only its author can remove it
+- An **Avoided Subject** belongs to one **Room** and one author; only its author sees it as theirs
+- An **Avoided Subject** can be removed by its author or by the **Room** owner, and by nobody else
+- The **Room** owner's power to remove an **Avoided Subject** does not come with the power to see who wrote it: moderation and authorship are separate, and the owner is told neither
 - The **Avoid List** is pooled rather than grouped by author, because the server sends no authorship for the client to group by
 - A **Room** owner sees the **Avoid List** exactly as every other participant does, with no additional attribution
 

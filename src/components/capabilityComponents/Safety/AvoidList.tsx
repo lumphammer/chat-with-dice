@@ -1,8 +1,10 @@
+import { authClient } from "#/auth/authClient.ts";
 import { safetyClient } from "#/capabilities/safety/client";
 import {
   AVOIDED_SUBJECT_MAX_LENGTH,
   type AvoidedSubject,
 } from "#/capabilities/safety/common";
+import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { Trash2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { memo, useId, useMemo, useState } from "react";
@@ -38,13 +40,21 @@ EntryRow.displayName = "EntryRow";
  *
  * "From the table" is pooled and unordered by author on purpose — the server
  * sends no authorship at all, so there is nothing here to group by even if the
- * UI wanted to. Removal is only offered on your own entries, and the server
- * enforces that independently.
+ * UI wanted to. Removal is offered on your own entries, and to the room owner
+ * on anyone's; the server enforces both independently.
+ *
+ * An owner removing someone's entry still learns nothing about who wrote it —
+ * the moderation power and the anonymity are separate concerns.
  */
 export const AvoidList = memo(() => {
   const capInfo = safetyClient.useMount();
+  const { data: sessionData } = authClient.useSession();
+  const { roomOwnerId } = useRoomInfoContext();
   const [draft, setDraft] = useState("");
   const inputId = useId();
+
+  const isRoomOwner =
+    sessionData !== null && sessionData.user.id === roomOwnerId;
 
   const entries = capInfo.initialised ? capInfo.state.entries : null;
 
@@ -138,7 +148,11 @@ export const AvoidList = memo(() => {
           ) : (
             <ul className="list mt-2 gap-1">
               {theirs.map((entry) => (
-                <EntryRow key={entry.id} entry={entry} />
+                <EntryRow
+                  key={entry.id}
+                  entry={entry}
+                  onRemove={isRoomOwner ? handleRemove : undefined}
+                />
               ))}
             </ul>
           )}

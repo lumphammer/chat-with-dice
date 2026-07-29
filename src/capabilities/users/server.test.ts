@@ -72,6 +72,7 @@ describe("users capability onPresenceChange hook", () => {
       config: undefined,
       nodeShareManager: {} as unknown as NodeShareManager,
       broadcaster,
+      getRoomOwnerUserId: async () => undefined,
       dispatchHook: async () => {},
     });
 

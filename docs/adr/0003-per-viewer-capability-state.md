@@ -6,8 +6,9 @@ Status: accepted
 
 Safety Tools introduces the Avoid List: each Room Participant enters subjects
 they would rather the game steered clear of, and the Room sees the pooled list
-with no authorship. Authorship still has to exist somewhere, because only an
-entry's author may remove it.
+with no authorship. Authorship still has to exist somewhere, because an entry is
+removable only by its author or by the room owner — and the owner's power to
+remove one deliberately does not come with the power to see whose it is.
 
 Capability state has one delivery path and it is wholesale.
 `createServerCapability#applyStateChange` finishes its immer draft, persists,

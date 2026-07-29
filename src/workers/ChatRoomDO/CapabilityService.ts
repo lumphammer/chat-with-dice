@@ -91,6 +91,9 @@ export class CapabilityService {
       config,
       broadcaster: this.broadcaster,
       nodeShareManager: this.nodeShareManager,
+      // `getUserId` is the room's `createdByUserId` — its owner — despite the
+      // name. Named plainly on the way into a capability.
+      getRoomOwnerUserId: () => this.getUserId(),
       dispatchHook: (hookName, event) => this.dispatch(hookName, event),
     });
     if (!mountedCap) {

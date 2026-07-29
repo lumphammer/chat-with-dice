@@ -79,6 +79,7 @@ const mountWith = async (
     config: undefined,
     nodeShareManager,
     broadcaster,
+    getRoomOwnerUserId: async () => undefined,
     dispatchHook: async () => {},
   });
   if (!mounted) throw new Error("cards capability failed to mount");

@@ -87,6 +87,7 @@ describe("createServerCapability hook firing", () => {
       broadcaster: new Broadcaster({
         getWebSockets: () => [],
       } as unknown as DurableObjectState),
+      getRoomOwnerUserId: async () => undefined,
       dispatchHook: dispatchHook as unknown as HookDispatch,
     });
 
@@ -252,6 +253,7 @@ describe("createServerCapability client state stripping", () => {
       config: undefined,
       nodeShareManager: {} as unknown as NodeShareManager,
       broadcaster,
+      getRoomOwnerUserId: async () => undefined,
       dispatchHook: async () => {},
     });
     if (!mountResult) throw new Error("redacting capability failed to mount");

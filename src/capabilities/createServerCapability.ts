@@ -110,6 +110,13 @@ type EffectfulActionFn<
   displayName: string;
   nodeShareManager: NodeShareManager;
   /**
+   * Who owns this Room, for effects that grant the owner powers other
+   * participants don't have. Lazy, and hits D1 on every call, so reach for it
+   * only once a cheaper check has already failed. `undefined` means the room
+   * row could not be read — treat that as "not the owner" and fail closed.
+   */
+  getRoomOwnerUserId: () => Promise<string | undefined>;
+  /**
    * Fire a hook at the other mounted capabilities. Deferred until this
    * action's state change has committed, so bailing out or throwing after
    * calling it means it never fires.
@@ -197,6 +204,7 @@ export type ServerCapability = {
     config: unknown;
     nodeShareManager: NodeShareManager;
     broadcaster: Broadcaster;
+    getRoomOwnerUserId: () => Promise<string | undefined>;
     /** Fans a hook out to every mounted capability. */
     dispatchHook: HookDispatch;
   }) => Promise<ServerMountedCapability | null>;
@@ -326,6 +334,7 @@ export function createServerCapability<
     userId,
     displayName,
     nodeShareManager,
+    getRoomOwnerUserId,
     dispatchHook,
     deferred,
   }: {
@@ -338,6 +347,7 @@ export function createServerCapability<
     broadcaster: Broadcaster;
     displayName: string;
     nodeShareManager: NodeShareManager;
+    getRoomOwnerUserId: () => Promise<string | undefined>;
     dispatchHook: HookDispatch;
     deferred: DeferredHook[];
   }) => {
@@ -372,6 +382,7 @@ export function createServerCapability<
             userId,
             displayName,
             nodeShareManager,
+            getRoomOwnerUserId,
             fireHook,
             sendChatMessage: (
               data: inferIfZod<TMessageDataValidator>,
@@ -427,6 +438,7 @@ export function createServerCapability<
     messageJiggler,
     stateRepository,
     nodeShareManager,
+    getRoomOwnerUserId,
     dispatchHook,
   }) => {
     const configParseResult = common.config?.validator?.safeParse(config);
@@ -489,6 +501,7 @@ export function createServerCapability<
           userId,
           displayName,
           nodeShareManager,
+          getRoomOwnerUserId,
           dispatchHook,
           deferred,
         });

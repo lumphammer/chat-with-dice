@@ -59,15 +59,31 @@ export const safetyServer = createServerCapability(safetyCommon, {
         entry.isMine = false;
       }
     },
-    removeAvoidedSubject: ({ pureFn, stateDraft, payload, userId }) => {
-      // The sidebar only offers the control on your own entries; this is what
+    removeAvoidedSubject: async ({
+      pureFn,
+      stateDraft,
+      payload,
+      userId,
+      getRoomOwnerUserId,
+    }) => {
+      // An entry is removable by its author or by the room owner, and by nobody
+      // else. The sidebar only offers the control to those two; this is what
       // actually enforces it. Rejecting still broadcasts — correlated changes
       // always do — so a hostile client's optimistic removal snaps back.
       const entry = stateDraft.entries.find(
         (candidate) => candidate.id === payload.id,
       );
-      if (entry?.authorUserId !== userId) {
+      if (!entry) {
         return;
+      }
+      if (entry.authorUserId !== userId) {
+        // Only worth a D1 round trip once the free check has failed. An
+        // unreadable room row yields `undefined`, which matches no real user
+        // id, so an unknown owner fails closed rather than open.
+        const roomOwnerUserId = await getRoomOwnerUserId();
+        if (userId !== roomOwnerUserId) {
+          return;
+        }
       }
       pureFn({ stateDraft, payload });
     },

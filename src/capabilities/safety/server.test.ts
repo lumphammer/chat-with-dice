@@ -11,10 +11,11 @@ import { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateR
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
 import { nanoid } from "nanoid";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 const AUTHOR = "author-user";
 const OTHER = "other-user";
+const ROOM_OWNER = "room-owner-user";
 
 /** What one viewer actually receives, redaction and strip both applied. */
 type ClientSafetyState = {
@@ -32,7 +33,14 @@ const makeStateRepository = () => {
   } as unknown as SyncKvStorage);
 };
 
-const mountSafety = async () => {
+const mountSafety = async ({
+  roomOwnerUserId = ROOM_OWNER,
+  getRoomOwner = async () => roomOwnerUserId,
+}: {
+  roomOwnerUserId?: string | undefined;
+  /** Override to assert on *whether* the owner lookup happened at all. */
+  getRoomOwner?: () => Promise<string | undefined>;
+} = {}) => {
   const sentMessages: ChatMessage[] = [];
   const messageJiggler = {
     sendChatMessage: (message: ChatMessage) => void sentMessages.push(message),
@@ -52,6 +60,7 @@ const mountSafety = async () => {
       broadcastCapabilityState: () => {},
       broadcastCapabilityStatePerViewer: () => {},
     } as unknown as Broadcaster,
+    getRoomOwnerUserId: getRoomOwner,
     dispatchHook: async () => {},
   });
   if (!mounted) throw new Error("safety capability failed to mount");
@@ -128,6 +137,39 @@ describe("safety Avoided Subjects", () => {
     await call(mounted, "removeAvoidedSubject", { id }, OTHER);
 
     expect(stateFor(mounted, AUTHOR).entries).toHaveLength(1);
+  });
+
+  it("lets the room owner remove anyone's entry", async () => {
+    const { mounted } = await mountSafety();
+    const id = nanoid();
+
+    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
+    await call(mounted, "removeAvoidedSubject", { id }, ROOM_OWNER);
+
+    expect(stateFor(mounted, AUTHOR).entries).toEqual([]);
+  });
+
+  it("fails closed when the room owner cannot be determined", async () => {
+    // An unreadable room row must not turn into "everyone is the owner".
+    const { mounted } = await mountSafety({ roomOwnerUserId: undefined });
+    const id = nanoid();
+
+    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
+    await call(mounted, "removeAvoidedSubject", { id }, OTHER);
+
+    expect(stateFor(mounted, AUTHOR).entries).toHaveLength(1);
+  });
+
+  it("does not consult the room owner when the author is doing the removing", async () => {
+    const getRoomOwner = vi.fn(async () => ROOM_OWNER);
+    const { mounted } = await mountSafety({ getRoomOwner });
+    const id = nanoid();
+
+    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
+    await call(mounted, "removeAvoidedSubject", { id }, AUTHOR);
+
+    // The owner lookup is a D1 round trip; the common case should never pay it.
+    expect(getRoomOwner).not.toHaveBeenCalled();
   });
 });
 
