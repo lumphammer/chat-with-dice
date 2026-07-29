@@ -7,7 +7,7 @@ import {
 import { useRoomInfoContext } from "#/components/DiceRoller/contexts/roomInfoContext";
 import { Trash2 } from "lucide-react";
 import { nanoid } from "nanoid";
-import { memo, useId, useMemo, useState } from "react";
+import { memo, useId, useState } from "react";
 
 const EntryRow = memo(
   ({
@@ -17,36 +17,39 @@ const EntryRow = memo(
     entry: AvoidedSubject;
     onRemove?: (id: string) => void;
   }) => (
-    <>
-      <li className="list-row items-center px-2 py-0">
-        <div className="list-col-grow wrap-break-word">{entry.text}</div>
-        {onRemove && (
-          <button
-            type="button"
-            className="btn btn-ghost btn-square"
-            aria-label={`Remove "${entry.text}"`}
-            onClick={() => onRemove(entry.id)}
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
-      </li>
-    </>
+    <li className="list-row items-center px-2 py-1">
+      <div className="list-col-grow wrap-break-word">
+        <div>{entry.text}</div>
+        <div className="text-base-content/70 text-sm">
+          {entry.authorDisplayName}
+        </div>
+      </div>
+      {onRemove && (
+        <button
+          type="button"
+          className="btn btn-ghost btn-square"
+          aria-label={`Remove "${entry.text}"`}
+          onClick={() => onRemove(entry.id)}
+        >
+          <Trash2 size={16} />
+        </button>
+      )}
+    </li>
   ),
 );
 
 EntryRow.displayName = "EntryRow";
 
 /**
- * The room's Avoid List: what you have added, and what the table has added.
+ * The room's Avoid List: one shared list, each entry carrying its author's name
+ * — the same thing a table does out loud or on a shared sheet (ADR-0003).
  *
- * "From the table" is pooled and unordered by author on purpose — the server
- * sends no authorship at all, so there is nothing here to group by even if the
- * UI wanted to. Removal is offered on your own entries, and to the room owner
- * on anyone's; the server enforces both independently.
+ * One list rather than a yours/theirs split: the split only existed to give you
+ * a way to find your own entries when nothing was attributed, and a name on
+ * every row does that better.
  *
- * An owner removing someone's entry still learns nothing about who wrote it —
- * the moderation power and the anonymity are separate concerns.
+ * Removal is offered on your own entries, and to the room owner on anyone's.
+ * The server enforces both independently — this only decides what to draw.
  */
 export const AvoidList = memo(() => {
   const capInfo = safetyClient.useMount();
@@ -55,17 +58,10 @@ export const AvoidList = memo(() => {
   const [draft, setDraft] = useState("");
   const inputId = useId();
 
-  const isRoomOwner =
-    sessionData !== null && sessionData.user.id === roomOwnerId;
+  const viewerUserId = sessionData?.user.id ?? null;
+  const isRoomOwner = viewerUserId !== null && viewerUserId === roomOwnerId;
 
   const entries = capInfo.initialised ? capInfo.state.entries : null;
-
-  const { mine, theirs } = useMemo(() => {
-    return {
-      mine: entries?.filter((entry) => entry.isMine) ?? [],
-      theirs: entries?.filter((entry) => !entry.isMine) ?? [],
-    };
-  }, [entries]);
 
   const trimmed = draft.trim();
 
@@ -87,9 +83,12 @@ export const AvoidList = memo(() => {
   return (
     <section className="mt-8">
       <h3 className="heading">Subjects to avoid</h3>
+      {/* Says whose name goes on it *before* the input, not after. Someone
+          deciding whether to add "violence against children" needs to know the
+          room will see it was them while they are still deciding. */}
       <p className="text-base-content/70 mt-1 text-sm">
-        Anything you'd rather this game steered clear of. The room sees the
-        list, but nobody sees who added what.
+        Anything you'd rather this game steered clear of. The whole room sees
+        the list, with your name next to anything you add.
       </p>
 
       <form
@@ -121,44 +120,26 @@ export const AvoidList = memo(() => {
         </div>
       </form>
 
-      {entries === null ? (
-        <p className="mt-4">Loading…</p>
-      ) : (
-        <>
-          <h4 className="mt-6 text-lg">Yours</h4>
-          {mine.length === 0 ? (
-            <p className="text-base-content/70 text-sm">
-              You haven't added anything.
-            </p>
-          ) : (
-            <ul className="list mt-2 gap-0">
-              {mine.map((entry) => (
-                <EntryRow
-                  key={entry.id}
-                  entry={entry}
-                  onRemove={handleRemove}
-                />
-              ))}
-            </ul>
-          )}
-
-          <h4 className="mt-6 text-lg">From the table</h4>
-          {theirs.length === 0 ? (
-            <p className="text-base-content/70 text-sm">
-              Nobody else has added anything.
-            </p>
-          ) : (
-            <ul className="list mt-2 gap-1">
-              {theirs.map((entry) => (
-                <EntryRow
-                  key={entry.id}
-                  entry={entry}
-                  onRemove={isRoomOwner ? handleRemove : undefined}
-                />
-              ))}
-            </ul>
-          )}
-        </>
+      {entries === null && <p className="mt-4">Loading…</p>}
+      {entries !== null && entries.length === 0 && (
+        <p className="text-base-content/70 mt-4 text-sm">
+          Nobody has added anything yet.
+        </p>
+      )}
+      {entries !== null && entries.length > 0 && (
+        <ul className="list mt-4 gap-0">
+          {entries.map((entry) => (
+            <EntryRow
+              key={entry.id}
+              entry={entry}
+              onRemove={
+                isRoomOwner || entry.authorUserId === viewerUserId
+                  ? handleRemove
+                  : undefined
+              }
+            />
+          ))}
+        </ul>
       )}
     </section>
   );

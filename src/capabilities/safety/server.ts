@@ -1,6 +1,5 @@
 import { createServerCapability } from "#/capabilities/createServerCapability";
 import {
-  clientSafetyStateValidator,
   safetyCommon,
   UNATTRIBUTED_DISPLAY_NAME,
   UNATTRIBUTED_USER_ID,
@@ -8,18 +7,6 @@ import {
 import { nanoid } from "nanoid";
 
 export const safetyServer = createServerCapability(safetyCommon, {
-  clientStateValidator: clientSafetyStateValidator,
-  // Replace stored authorship with a per-viewer "is this mine?" flag. The
-  // `clientStateValidator` above strips `authorUserId` again on the way out, so
-  // this function is the *readable* half of the redaction rather than the
-  // load-bearing half — an identity projection here would still not leak.
-  projectState: ({ state, viewerUserId }) => ({
-    ...state,
-    entries: state.entries.map(({ authorUserId, ...rest }) => ({
-      ...rest,
-      isMine: authorUserId === viewerUserId,
-    })),
-  }),
   actionEffects: {
     raiseSignal: ({
       payload,
@@ -57,17 +44,16 @@ export const safetyServer = createServerCapability(safetyCommon, {
         displayName: attribution.displayName,
       };
     },
-    addAvoidedSubject: ({ pureFn, stateDraft, payload, userId }) => {
-      pureFn({ stateDraft, payload });
-      const entry = stateDraft.entries.find(
-        (candidate) => candidate.id === payload.id,
-      );
-      if (entry) {
-        entry.authorUserId = userId;
-        // Meaningless in storage — every client's value is written by
-        // `projectState`. Kept false so the stored state claims nothing.
-        entry.isMine = false;
-      }
+    addAvoidedSubject: ({ stateDraft, payload, userId, displayName }) => {
+      // Author comes from the connection, never from the payload — a client
+      // cannot add a subject in somebody else's name. Only `id` and `text` are
+      // the caller's to supply.
+      stateDraft.entries.push({
+        id: payload.id,
+        text: payload.text,
+        authorUserId: userId,
+        authorDisplayName: displayName,
+      });
     },
     removeAvoidedSubject: async ({
       pureFn,

@@ -18,12 +18,6 @@ const AUTHOR_NAME = "Author Displayname";
 const OTHER = "other-user";
 const ROOM_OWNER = "room-owner-user";
 
-/** What one viewer actually receives, redaction and strip both applied. */
-type ClientSafetyState = {
-  entries: { id: string; text: string; isMine: boolean }[];
-  lastSignal: SafetyState["lastSignal"];
-};
-
 const makeStateRepository = () => {
   const kv = new Map<string, unknown>();
   return new CapabilityStateRepository({
@@ -54,13 +48,7 @@ const mountSafety = async ({
     stateRepository,
     config: undefined,
     nodeShareManager: {} as unknown as NodeShareManager,
-    // The state assertions all read through `getInitPayload`, which runs the
-    // same projection the broadcast does, so the broadcast itself can no-op.
-    broadcaster: {
-      broadcast: () => {},
-      broadcastCapabilityState: () => {},
-      broadcastCapabilityStatePerViewer: () => {},
-    } as unknown as Broadcaster,
+    broadcaster: { broadcast: () => {} } as unknown as Broadcaster,
     getRoomOwnerUserId: getRoomOwner,
     dispatchHook: async () => {},
   });
@@ -73,9 +61,6 @@ const call = (
   actionName: string,
   params: unknown,
   userId: string,
-  // Defaults to the user id so leak assertions can search for one string and
-  // catch either an id or a name escaping. Pass a distinct value when the test
-  // needs to tell the two apart.
   displayName: string = userId,
 ) =>
   mounted.onMessage({
@@ -84,44 +69,37 @@ const call = (
     displayName,
   });
 
-const stateFor = (mounted: ServerMountedCapability, viewerUserId: string) =>
-  mounted.getInitPayload(viewerUserId).state as ClientSafetyState;
+const stateOf = (mounted: ServerMountedCapability) =>
+  mounted.getInitPayload().state as SafetyState;
 
 describe("safety Avoided Subjects", () => {
-  it("never sends authorship to anyone, including the author", async () => {
+  it("stamps the author from the connection, not the payload", async () => {
     const { mounted } = await mountSafety();
     const id = nanoid();
-
-    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
-
-    for (const viewer of [AUTHOR, OTHER]) {
-      const entry = stateFor(mounted, viewer).entries[0];
-      expect(entry).not.toHaveProperty("authorUserId");
-    }
-  });
-
-  it("keeps authorship in stored state so removal can be authorised", async () => {
-    const { mounted, stateRepository } = await mountSafety();
-    const id = nanoid();
-
-    await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
-
-    const stored = stateRepository.get("safety") as SafetyState;
-    expect(stored.entries[0].authorUserId).toBe(AUTHOR);
-  });
-
-  it("marks an entry as mine only for its author", async () => {
-    const { mounted } = await mountSafety();
 
     await call(
       mounted,
       "addAvoidedSubject",
-      { id: nanoid(), text: "spiders" },
+      // A hostile client putting someone else's details in the payload gets
+      // them ignored: only `id` and `text` are the caller's to supply.
+      {
+        id,
+        text: "spiders",
+        authorUserId: OTHER,
+        authorDisplayName: "Someone",
+      },
       AUTHOR,
+      AUTHOR_NAME,
     );
 
-    expect(stateFor(mounted, AUTHOR).entries[0].isMine).toBe(true);
-    expect(stateFor(mounted, OTHER).entries[0].isMine).toBe(false);
+    expect(stateOf(mounted).entries).toEqual([
+      {
+        id,
+        text: "spiders",
+        authorUserId: AUTHOR,
+        authorDisplayName: AUTHOR_NAME,
+      },
+    ]);
   });
 
   it("lets an author remove their own entry", async () => {
@@ -131,7 +109,7 @@ describe("safety Avoided Subjects", () => {
     await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
     await call(mounted, "removeAvoidedSubject", { id }, AUTHOR);
 
-    expect(stateFor(mounted, AUTHOR).entries).toEqual([]);
+    expect(stateOf(mounted).entries).toEqual([]);
   });
 
   it("refuses to remove someone else's entry", async () => {
@@ -141,7 +119,7 @@ describe("safety Avoided Subjects", () => {
     await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
     await call(mounted, "removeAvoidedSubject", { id }, OTHER);
 
-    expect(stateFor(mounted, AUTHOR).entries).toHaveLength(1);
+    expect(stateOf(mounted).entries).toHaveLength(1);
   });
 
   it("lets the room owner remove anyone's entry", async () => {
@@ -151,7 +129,7 @@ describe("safety Avoided Subjects", () => {
     await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
     await call(mounted, "removeAvoidedSubject", { id }, ROOM_OWNER);
 
-    expect(stateFor(mounted, AUTHOR).entries).toEqual([]);
+    expect(stateOf(mounted).entries).toEqual([]);
   });
 
   it("fails closed when the room owner cannot be determined", async () => {
@@ -162,7 +140,7 @@ describe("safety Avoided Subjects", () => {
     await call(mounted, "addAvoidedSubject", { id, text: "spiders" }, AUTHOR);
     await call(mounted, "removeAvoidedSubject", { id }, OTHER);
 
-    expect(stateFor(mounted, AUTHOR).entries).toHaveLength(1);
+    expect(stateOf(mounted).entries).toHaveLength(1);
   });
 
   it("does not consult the room owner when the author is doing the removing", async () => {
@@ -187,10 +165,12 @@ describe("safety Safety Signals", () => {
       "raiseSignal",
       { kind: "xcard", unattributed: false },
       AUTHOR,
+      AUTHOR_NAME,
     );
 
     expect(sentMessages).toHaveLength(1);
     expect(sentMessages[0].userId).toBe(AUTHOR);
+    expect(sentMessages[0].displayName).toBe(AUTHOR_NAME);
     expect(sentMessages[0].capabilityData).toEqual({
       kind: "xcard",
       unattributed: false,
@@ -234,7 +214,7 @@ describe("safety Safety Signals", () => {
       AUTHOR_NAME,
     );
 
-    expect(stateFor(mounted, AUTHOR).lastSignal?.displayName).toBe(
+    expect(stateOf(mounted).lastSignal?.displayName).toBe(
       UNATTRIBUTED_DISPLAY_NAME,
     );
   });
@@ -252,10 +232,8 @@ describe("safety Safety Signals", () => {
 
     // The name, not the id — the overlay needs something to display, not
     // something to identify with.
-    expect(stateFor(mounted, AUTHOR).lastSignal?.displayName).toBe(AUTHOR_NAME);
-    expect(JSON.stringify(stateFor(mounted, AUTHOR).lastSignal)).not.toContain(
-      AUTHOR,
-    );
+    expect(stateOf(mounted).lastSignal?.displayName).toBe(AUTHOR_NAME);
+    expect(JSON.stringify(stateOf(mounted).lastSignal)).not.toContain(AUTHOR);
   });
 
   it("changes the signal id each time so clients can spot a new one", async () => {
@@ -267,7 +245,7 @@ describe("safety Safety Signals", () => {
       { kind: "pause", unattributed: false },
       AUTHOR,
     );
-    const first = stateFor(mounted, AUTHOR).lastSignal;
+    const first = stateOf(mounted).lastSignal;
 
     await call(
       mounted,
@@ -275,7 +253,7 @@ describe("safety Safety Signals", () => {
       { kind: "pause", unattributed: false },
       AUTHOR,
     );
-    const second = stateFor(mounted, AUTHOR).lastSignal;
+    const second = stateOf(mounted).lastSignal;
 
     expect(first?.id).toBeDefined();
     expect(second?.id).not.toBe(first?.id);

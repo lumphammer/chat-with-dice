@@ -61,16 +61,7 @@ export type ServerMountedCapability = {
     name: K,
     event: CapabilityHookEvents[K],
   ) => Promise<void>;
-  /**
-   * The state and config a newly-connected client should start from. Takes the
-   * viewer so capabilities holding per-participant state can tailor it; those
-   * that don't ignore the argument.
-   */
-  getInitPayload: (viewerUserId: string) => {
-    capability: string;
-    state: unknown;
-    config: unknown;
-  };
+  getInitPayload: () => { capability: string; state: unknown; config: unknown };
 };
 
 /**
@@ -166,30 +157,6 @@ export type ServerCapabilityDefinition<
       CapabilityHookEvents[K]
     >;
   };
-  /**
-   * Rewrite the state for one viewer before it goes out. Declared here rather
-   * than on the common kernel so the unredacted shape cannot reach the client
-   * bundle. Called once per connected socket per state change, so keep it cheap.
-   *
-   * Same type in and out: redaction is field-level. A field that must not reach
-   * other clients is `.optional()` on the state validator, deleted here, and —
-   * critically — absent from `clientStateValidator` below.
-   */
-  projectState?: (tools: {
-    state: StateValue<TStateValidator>;
-    viewerUserId: string;
-  }) => StateValue<TStateValidator>;
-  /**
-   * Validator for what clients are allowed to see. When present, every outgoing
-   * state is parsed through it immediately before broadcast; zod strips unknown
-   * keys, so a field omitted here cannot be sent *even if `projectState` forgets
-   * to delete it*.
-   *
-   * This — not the type system — is what makes a server-only field server-only.
-   * `projectState` returns the same type it was given, so an identity projection
-   * type-checks; only this strip stands between a careless edit and a leak.
-   */
-  clientStateValidator?: JsonValidator;
 };
 
 export type ServerCapability = {
@@ -241,22 +208,6 @@ export function createServerCapability<
   > = {},
 ): ServerCapability {
   /**
-   * Drop anything the capability has not declared client-visible. The last
-   * thing to touch a state before it leaves the DO, on every outgoing path.
-   */
-  const stripToClientShape = (state: StateValue<TStateValidator>): unknown =>
-    def.clientStateValidator ? def.clientStateValidator.parse(state) : state;
-
-  /** The state one named viewer should receive. */
-  const projectFor = (
-    state: StateValue<TStateValidator>,
-    viewerUserId: string,
-  ): unknown =>
-    stripToClientShape(
-      def.projectState ? def.projectState({ state, viewerUserId }) : state,
-    );
-
-  /**
    * The shared tail for any server-side mutation: open a draft over the current
    * state, let `run` mutate it, then (for stateful capabilities) persist and
    * broadcast the result. Used by both `handleMessage` (action calls, with a
@@ -304,22 +255,14 @@ export function createServerCapability<
     }
     stateRepository.set(common.name, finalState);
     setTimeout(() => {
-      // Only a capability that varies its state *by viewer* needs the
-      // per-socket path; everyone else gets one serialised payload, including
-      // capabilities that merely strip to a client shape (uniform for all).
-      if (def.projectState) {
-        broadcaster.broadcastCapabilityStatePerViewer({
+      broadcaster.broadcast({
+        type: "capabilityState",
+        payload: {
           capability: common.name,
           correlation,
-          project: (viewerUserId) => projectFor(finalState, viewerUserId),
-        });
-      } else {
-        broadcaster.broadcastCapabilityState({
-          capability: common.name,
-          correlation,
-          state: stripToClientShape(finalState),
-        });
-      }
+          state: finalState,
+        },
+      });
     }, ARTIFICIAL_LAG_MS);
     return finalState;
   };
@@ -560,9 +503,9 @@ export function createServerCapability<
           );
         }
       },
-      getInitPayload: (viewerUserId) => ({
+      getInitPayload: () => ({
         capability: common.name,
-        state: projectFor(state, viewerUserId),
+        state,
         config,
       }),
     };

@@ -49,28 +49,20 @@ export type SafetySignalMessageData = z.infer<
 >;
 
 /**
- * One Avoided Subject as a client sees it. `isMine` is written per viewer by the
- * server's projection and is the *only* thing distinguishing your own entries
- * from the table's — nothing else about authorship is ever sent.
+ * One Avoided Subject. Attributed: the whole room sees who asked for it, the
+ * same way a table would if you said it out loud or wrote it on a shared sheet
+ * (ADR-0003).
+ *
+ * `authorDisplayName` is a snapshot taken when the entry was added, matching how
+ * `ChatMessage.displayName` records the name as it was at the time. A later
+ * rename leaves older entries reading as they did when written, and saves every
+ * client having to resolve ids against the `users` capability to draw a list.
  */
-const clientAvoidedSubjectValidator = z.object({
+const avoidedSubjectValidator = z.object({
   id: z.nanoid(),
   text: z.string().min(1).max(AVOIDED_SUBJECT_MAX_LENGTH),
-  isMine: z.boolean().default(false),
-});
-
-/**
- * The stored shape. `authorUserId` is SERVER-ONLY and never leaves the DO: the
- * capability's `projectState` deletes it, and `clientSafetyStateValidator`
- * (which omits it) strips it again on the way out, so forgetting the projection
- * cannot leak it.
- *
- * It is optional here only so that the projection's own output still satisfies
- * this validator. Treat "optional" as "absent once it has left the server",
- * never as "sometimes we don't know the author".
- */
-const avoidedSubjectValidator = clientAvoidedSubjectValidator.extend({
-  authorUserId: z.string().optional(),
+  authorUserId: z.string(),
+  authorDisplayName: z.string(),
 });
 
 export type AvoidedSubject = z.infer<typeof avoidedSubjectValidator>;
@@ -109,22 +101,17 @@ export const safetyStateValidator = z.object({
   lastSignal: lastSignalValidator,
 });
 
-/**
- * What clients are allowed to receive. Handed to the kernel as
- * `clientStateValidator`, which parses every outgoing state through it; zod
- * strips unknown keys, so a field's absence *here* is what makes it unsendable.
- */
-export const clientSafetyStateValidator = z.object({
-  entries: z.array(clientAvoidedSubjectValidator),
-  lastSignal: lastSignalValidator,
-});
-
 export type SafetyState = z.infer<typeof safetyStateValidator>;
 
 /**
  * Safety Tools: an X Card and a Pause anyone can raise (optionally without
- * their name attached), and a per-room Avoid List whose entries are pooled and
- * shown without authorship.
+ * their name attached), and a per-room Avoid List whose entries carry their
+ * author's name.
+ *
+ * The two differ deliberately. A signal is a momentary interrupt and can be
+ * raised anonymously, because in the moment the cost of being seen to raise one
+ * is exactly what stops people raising it. An Avoided Subject is a session-zero
+ * statement, and attributing it matches what a table does out loud (ADR-0003).
  *
  * Mounted on every room — a safety tool a room owner can switch off is not much
  * of a safety tool — so it declares no config and never appears in the room
@@ -149,19 +136,18 @@ export const safetyCommon = createCapabilityCommon({
       }),
     }),
     addAvoidedSubject: createAction({
-      // `id` is minted by the client so the optimistic push and the stored
-      // entry agree on identity, as `havoc` does for its own ids.
+      // `id` is minted by the client so a later removal can name the entry
+      // without waiting to learn a server-assigned one.
+      //
+      // No `pureFn`: the author is stamped server-side from the connection, and
+      // predicting the entry locally would mean either trusting a client-supplied
+      // name or flashing a blank one until the round trip lands. The server owns
+      // part of the value, so there is nothing honest to predict (cf.
+      // `cards.draw`).
       payloadValidator: z.object({
         id: z.nanoid(),
         text: z.string().min(1).max(AVOIDED_SUBJECT_MAX_LENGTH),
       }),
-      pureFn: ({ stateDraft, payload }) => {
-        stateDraft.entries.push({
-          id: payload.id,
-          text: payload.text,
-          isMine: true,
-        });
-      },
     }),
     removeAvoidedSubject: createAction({
       payloadValidator: z.object({ id: z.nanoid() }),
