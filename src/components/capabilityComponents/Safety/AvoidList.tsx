@@ -9,6 +9,47 @@ import { Trash2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { memo, useId, useState } from "react";
 
+type AvoidedSubjectGroup = {
+  authorUserId: string;
+  authorDisplayName: string;
+  entries: AvoidedSubject[];
+};
+
+const groupEntriesByAuthor = (
+  entries: AvoidedSubject[],
+  viewerUserId: string | null,
+) => {
+  const groupsByAuthor = new Map<string, AvoidedSubjectGroup>();
+
+  for (const entry of entries) {
+    const group = groupsByAuthor.get(entry.authorUserId);
+
+    if (group) {
+      group.entries.push(entry);
+    } else {
+      groupsByAuthor.set(entry.authorUserId, {
+        authorUserId: entry.authorUserId,
+        authorDisplayName: entry.authorDisplayName,
+        entries: [entry],
+      });
+    }
+  }
+
+  const groups = [...groupsByAuthor.values()];
+  const viewerGroup = viewerUserId
+    ? groupsByAuthor.get(viewerUserId)
+    : undefined;
+
+  if (!viewerGroup) {
+    return groups;
+  }
+
+  return [
+    viewerGroup,
+    ...groups.filter((group) => group.authorUserId !== viewerUserId),
+  ];
+};
+
 const EntryRow = memo(
   ({
     entry,
@@ -20,9 +61,6 @@ const EntryRow = memo(
     <li className="list-row items-center px-2 py-1">
       <div className="list-col-grow wrap-break-word">
         <div>{entry.text}</div>
-        <div className="text-base-content/70 text-sm">
-          {entry.authorDisplayName}
-        </div>
       </div>
       {onRemove && (
         <button
@@ -41,12 +79,8 @@ const EntryRow = memo(
 EntryRow.displayName = "EntryRow";
 
 /**
- * The room's Avoid List: one shared list, each entry carrying its author's name
- * — the same thing a table does out loud or on a shared sheet (ADR-0003).
- *
- * One list rather than a yours/theirs split: the split only existed to give you
- * a way to find your own entries when nothing was attributed, and a name on
- * every row does that better.
+ * The room's Avoid List: one shared list, grouped by author. The viewer's
+ * entries come first, followed by other authors in order of first appearance.
  *
  * Removal is offered on your own entries, and to the room owner on anyone's.
  * The server enforces both independently — this only decides what to draw.
@@ -62,6 +96,8 @@ export const AvoidList = memo(() => {
   const isRoomOwner = viewerUserId !== null && viewerUserId === roomOwnerId;
 
   const entries = capInfo.initialised ? capInfo.state.entries : null;
+  const entryGroups =
+    entries === null ? [] : groupEntriesByAuthor(entries, viewerUserId);
 
   const trimmed = draft.trim();
 
@@ -88,7 +124,7 @@ export const AvoidList = memo(() => {
           room will see it was them while they are still deciding. */}
       <p className="text-base-content/70 mt-1 text-sm">
         Anything you'd rather this game steered clear of. The whole room sees
-        the list, with your name next to anything you add.
+        the list, grouped by who added each subject.
       </p>
 
       <form
@@ -127,19 +163,30 @@ export const AvoidList = memo(() => {
         </p>
       )}
       {entries !== null && entries.length > 0 && (
-        <ul className="list mt-4 gap-0">
-          {entries.map((entry) => (
-            <EntryRow
-              key={entry.id}
-              entry={entry}
-              onRemove={
-                isRoomOwner || entry.authorUserId === viewerUserId
-                  ? handleRemove
-                  : undefined
-              }
-            />
+        <div className="mt-4 space-y-4">
+          {entryGroups.map((group) => (
+            <section key={group.authorUserId}>
+              <h4 className="text-sm font-semibold">
+                {group.authorUserId === viewerUserId
+                  ? "Yours"
+                  : group.authorDisplayName}
+              </h4>
+              <ul className="list mt-1 gap-0">
+                {group.entries.map((entry) => (
+                  <EntryRow
+                    key={entry.id}
+                    entry={entry}
+                    onRemove={
+                      isRoomOwner || entry.authorUserId === viewerUserId
+                        ? handleRemove
+                        : undefined
+                    }
+                  />
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       )}
     </section>
   );
