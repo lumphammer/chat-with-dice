@@ -1,4 +1,5 @@
 import { safetyClient } from "#/capabilities/safety/client";
+import { useCloseMobileSidebar } from "#/components/Sidebar/mobileSidebarContext";
 import { SIGNAL_PRESENTATION } from "./signalPresentation";
 import { memo, useState } from "react";
 
@@ -13,6 +14,8 @@ import { memo, useState } from "react";
  * step on the way to raising a signal.
  */
 export const SafetySignalButtons = memo(() => {
+  const closeMobileSidebar = useCloseMobileSidebar();
+
   const capInfo = safetyClient.useMount();
   // Ticked by default, and re-ticked whenever this panel remounts. Erring
   // towards anonymity is the safe direction to fail in: someone who wanted
@@ -25,6 +28,7 @@ export const SafetySignalButtons = memo(() => {
       return;
     }
     capInfo.actions.raiseSignal({ kind, unattributed: anonymously });
+    closeMobileSidebar();
   };
 
   return (
