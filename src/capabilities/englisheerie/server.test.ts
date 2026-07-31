@@ -2,6 +2,7 @@ import type { ServerMountedCapability } from "#/capabilities/createServerCapabil
 import {
   englishEerieStateValidator,
   getInitialEnglishEerieState,
+  messageDataValidator,
   type StoryCard,
   buildNarrativeCards,
 } from "#/capabilities/englisheerie/common";
@@ -11,7 +12,7 @@ import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
 import { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
 import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
 import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("cloudflare:workers", () => ({ env: {} }));
 
@@ -45,12 +46,15 @@ const getNonObstruction = (): StoryCard => {
   return card;
 };
 
-const mountWithObstruction = async () => {
+const mountWithObstruction = async ({
+  spirit = getInitialEnglishEerieState().spirit,
+}: { spirit?: number } = {}) => {
   const obstruction = getObstruction();
   const stateRepository = makeStateRepository();
   stateRepository.set("englisheerie", {
     ...getInitialEnglishEerieState(),
     mode: "play",
+    spirit,
     stack: [getNonObstruction()],
     drawn: [obstruction],
     lastObstruction: {
@@ -60,12 +64,25 @@ const mountWithObstruction = async () => {
   });
 
   const sentMessages: ChatMessage[] = [];
+  const messages = new Map<string, ChatMessage>();
   const errors: { userId: string; error: unknown }[] = [];
   const mounted = await englisheerieServer.mount({
     doCtx: {} as unknown as DurableObjectState,
     messageJiggler: {
-      sendChatMessage: (message: ChatMessage) =>
-        void sentMessages.push(message),
+      sendChatMessage: (message: ChatMessage) => {
+        sentMessages.push(message);
+        messages.set(message.id, message);
+      },
+      getMessage: async (id: string) => {
+        const message = messages.get(id);
+        if (!message) {
+          throw new Error(`Message not found: ${id}`);
+        }
+        return message;
+      },
+      updateMessage: async (message: ChatMessage) => {
+        messages.set(message.id, message);
+      },
     } as unknown as MessageJiggler,
     stateRepository,
     config: undefined,
@@ -81,7 +98,7 @@ const mountWithObstruction = async () => {
   if (!mounted) {
     throw new Error("English Eerie capability failed to mount");
   }
-  return { mounted, obstruction, sentMessages, errors };
+  return { mounted, obstruction, sentMessages, messages, errors };
 };
 
 const roll = (
@@ -111,7 +128,38 @@ const draw = (mounted: ServerMountedCapability) =>
     displayName: "Drawer",
   });
 
+const boost = (
+  mounted: ServerMountedCapability,
+  messageId: string,
+  spend: number,
+) =>
+  mounted.onMessage({
+    actionCall: {
+      correlation: crypto.randomUUID(),
+      actionName: "boostRoll",
+      params: { messageId, spend },
+    },
+    userId: "alice-id",
+    displayName: "Alice",
+  });
+
+const getRollData = (message: ChatMessage) => {
+  const data = messageDataValidator.parse(message.capabilityData);
+  if (data.kind !== "roll") {
+    throw new Error("Expected an Obstruction roll message");
+  }
+  return data;
+};
+
 describe("rolling against an Obstruction", () => {
+  beforeEach(() => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("blocks the next draw until the Obstruction is rolled", async () => {
     const { mounted, sentMessages, errors } = await mountWithObstruction();
 
@@ -157,5 +205,56 @@ describe("rolling against an Obstruction", () => {
         error: "This obstruction was already rolled by Alice.",
       },
     ]);
+  });
+
+  it("deducts one Spirit for a failed roll", async () => {
+    const { mounted, sentMessages } = await mountWithObstruction({ spirit: 2 });
+
+    await roll(mounted, "alice-id", "Alice", 0);
+
+    const state = englishEerieStateValidator.parse(
+      mounted.getInitPayload().state,
+    );
+    expect(state.spirit).toBe(1);
+    expect(getRollData(sentMessages[0]).spiritLost).toBe(true);
+  });
+
+  it("reimburses Spirit when Resolve turns the failure into success", async () => {
+    const { mounted, sentMessages, messages } = await mountWithObstruction({
+      spirit: 1,
+    });
+
+    await roll(mounted, "alice-id", "Alice", 0);
+    const message = sentMessages[0];
+    const failedRoll = getRollData(message);
+    await boost(mounted, message.id, failedRoll.difficulty - failedRoll.total);
+
+    const state = englishEerieStateValidator.parse(
+      mounted.getInitPayload().state,
+    );
+    expect(state.spirit).toBe(1);
+    const updatedMessage = messages.get(message.id);
+    if (!updatedMessage) {
+      throw new Error("Updated roll message not found");
+    }
+    expect(getRollData(updatedMessage)).toMatchObject({
+      spiritLost: false,
+      success: true,
+    });
+  });
+
+  it("does not reimburse Spirit that was never lost", async () => {
+    const { mounted, sentMessages } = await mountWithObstruction({ spirit: 0 });
+
+    await roll(mounted, "alice-id", "Alice", 0);
+    const message = sentMessages[0];
+    const failedRoll = getRollData(message);
+    expect(failedRoll.spiritLost).toBe(false);
+    await boost(mounted, message.id, failedRoll.difficulty - failedRoll.total);
+
+    const state = englishEerieStateValidator.parse(
+      mounted.getInitPayload().state,
+    );
+    expect(state.spirit).toBe(0);
   });
 });

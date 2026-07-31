@@ -76,6 +76,9 @@ export const ObstructionRollMessage = ({
             {data.spentAfter} Resolve spent after
           </span>
         )}
+        {data.spiritLost && (
+          <span className="badge badge-sm">1 Spirit lost</span>
+        )}
       </div>
 
       {onBoost && (

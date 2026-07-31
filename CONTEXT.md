@@ -55,8 +55,10 @@ _Avoid_: Flipped, reversed, upside-down
 A **Story Card** that stands in the **Protagonist**'s way, carrying a difficulty
 of 4 to 7. Beating it is a d10 roll that has to equal or beat that difficulty,
 with **Resolve** spendable either before the roll (two each) or after it (one
-each), never both. The last **Obstruction** drawn is the one the next roll is
-made against, until another is drawn.
+each), never both. Failure deducts one **Spirit** if any remains; spending
+**Resolve** after the roll to turn that failure into success restores the point,
+but only when the roll actually deducted one. The last **Obstruction** drawn is
+the one the next roll is made against, until another is drawn.
 
 **Allocation**:
 The ten points split between an English Eerie **Protagonist**'s **Spirit** and
@@ -128,9 +130,10 @@ A chat message that highlights a **User File** made accessible through a **Room 
 _Avoid_: Attachment message
 
 **Spirit**:
-The **Protagonist**'s track of what the story has cost them. Crossed off by hand
-as the table decides — no roll spends it — which is why it is a tracker rather
-than a currency.
+The **Protagonist**'s track of what the story has cost them. Usually crossed off
+by hand as the table decides; losing an **Obstruction** also deducts one
+automatically when any remains. That point is restored if **Resolve** spent
+afterwards turns the roll into a success.
 _Contrast_: **Resolve**, which an **Obstruction** roll spends.
 
 **Story Card**:

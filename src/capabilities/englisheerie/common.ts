@@ -168,6 +168,8 @@ const rollMessageValidator = z.object({
   spentBefore: z.int().min(0),
   /** Resolve spent after the roll, worth 1 each. Never both (see `boostRoll`). */
   spentAfter: z.int().min(0),
+  /** Whether this failed roll actually deducted one Spirit. */
+  spiritLost: z.boolean().default(false),
   total: z.int(),
   success: z.boolean(),
 });

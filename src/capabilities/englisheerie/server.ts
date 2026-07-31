@@ -1,6 +1,7 @@
 import { createServerCapability } from "#/capabilities/createServerCapability";
 import {
   D10_SIDES,
+  TRACK_LENGTH,
   buildStoryDeck,
   englishEerieCommon,
   evaluateObstructionRoll,
@@ -129,6 +130,10 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
         spentBefore,
         spentAfter: 0,
       });
+      const spiritLost = !success && stateDraft.spirit > 0;
+      if (spiritLost) {
+        stateDraft.spirit -= 1;
+      }
 
       stateDraft.obstructionRollers[obstruction.cardId] = displayName;
       sendChatMessage({
@@ -137,6 +142,7 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
         die,
         spentBefore,
         spentAfter: 0,
+        spiritLost,
         total,
         success,
       });
@@ -150,6 +156,7 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       // synchronously inside the call, so it is settled by the time we read it —
       // and a refused edit must not cost anybody Resolve.
       let applied = 0;
+      let reimburseSpirit = false;
 
       await editChatMessage(payload.messageId, (data, message) => {
         if (
@@ -172,11 +179,21 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
           spentAfter,
         });
         applied = payload.spend;
-        return { ...data, spentAfter, total, success };
+        reimburseSpirit = success && data.spiritLost;
+        return {
+          ...data,
+          spentAfter,
+          spiritLost: reimburseSpirit ? false : data.spiritLost,
+          total,
+          success,
+        };
       });
 
       if (applied > 0) {
         stateDraft.resolve -= applied;
+        if (reimburseSpirit) {
+          stateDraft.spirit = Math.min(stateDraft.spirit + 1, TRACK_LENGTH);
+        }
       }
     },
   },
