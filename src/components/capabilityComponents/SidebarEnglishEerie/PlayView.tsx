@@ -1,7 +1,7 @@
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
 import { ObstructionSection } from "./ObstructionSection";
 import { ProtagonistSection } from "./ProtagonistSection";
-import { ReturnToSetupButton } from "./ReturnToSetupButton";
+import { ResetGameButton } from "./ResetGameButton";
 import { StoryDeckSection } from "./StoryDeckSection";
 import { TrackersSection } from "./TrackersSection";
 
@@ -25,9 +25,7 @@ export const PlayView = () => {
       <ProtagonistSection />
 
       <div className="mt-8">
-        <ReturnToSetupButton
-          onReturnToSetup={() => capInfo.actions.returnToSetup({})}
-        />
+        <ResetGameButton onResetGame={() => capInfo.actions.resetGame({})} />
       </div>
     </>
   );

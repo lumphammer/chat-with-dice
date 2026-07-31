@@ -245,8 +245,9 @@ export function evaluateObstructionRoll({
  * independent tracks.
  *
  * This is not simply "in setup": once a story is under way, Resolve has been
- * spent on Obstructions and the two no longer total ten, so a trip back to setup
- * must leave them alone. Allocation belongs to a sheet nobody has played yet.
+ * spent on Obstructions and the two no longer total ten. Allocation belongs to
+ * a sheet nobody has played yet. The state checks also keep rooms stored by
+ * older versions behaving correctly.
  */
 export function isAllocating(state: {
   mode: EnglishEerieMode;
@@ -358,13 +359,11 @@ export const englishEerieCommon = createCapabilityCommon({
         stateDraft[other] = ALLOCATION_TOTAL - value;
       },
     }),
-    // The way back out of play, for a room that began it by accident. The story
-    // is left where it is — `beginPlay` picks it up again rather than
-    // reshuffling (see the server), so this costs nothing but the mode.
-    returnToSetup: createAction({
+    // Abandons the current game completely and returns to a blank setup.
+    resetGame: createAction({
       payloadValidator: z.object({}),
       pureFn: ({ stateDraft }) => {
-        stateDraft.mode = "setup";
+        Object.assign(stateDraft, getInitialEnglishEerieState());
       },
     }),
     // The five below are server-only: they need randomness, the authoritative

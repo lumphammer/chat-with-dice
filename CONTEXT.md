@@ -77,8 +77,8 @@ The second of an English Eerie **Room**'s two modes: the story being told. The
 **Story Deck** and the **Obstruction** are at the front, **Spirit** and
 **Resolve** are independent tracks, and the **Protagonist** is prose with an
 editor behind a pencil. Entered from **Setup**, which shuffles a **Story Deck**
-if the **Room** has never had one, and leavable back to **Setup** without
-disturbing the story.
+if the **Room** has never had one. Resetting the game discards all of this and
+returns the **Room** to a blank **Setup**.
 
 **Protagonist**:
 The single character an English Eerie **Room** tells its story about: a name, an

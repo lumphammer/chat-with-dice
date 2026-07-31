@@ -291,16 +291,13 @@ describe("the modes", () => {
     expect(parsed.success && parsed.data.mode).toBe("setup");
   });
 
-  test("come back to setup without disturbing the story", () => {
-    const before = playingState();
+  test("reset the game to a blank setup", () => {
     const after = runAction(
-      before,
-      englishEerieCommon.actions.returnToSetup,
+      playingState(),
+      englishEerieCommon.actions.resetGame,
       {},
     );
-    expect(after.mode).toBe("setup");
-    expect(after.stack).toEqual(before.stack);
-    expect(after.resolve).toBe(before.resolve);
+    expect(after).toEqual(initialState());
   });
 });
 

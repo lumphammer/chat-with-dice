@@ -13,7 +13,7 @@ interface Props {
 
 /**
  * A button that asks before it acts. The sidebar has three of these — beginning
- * play, going back to setup, and reshuffling the deck — and they only differ in
+ * play, resetting the game, and reshuffling the deck — and they only differ in
  * their wording.
  *
  * `closedby="any"` gives Escape and the backdrop for free, so there is no

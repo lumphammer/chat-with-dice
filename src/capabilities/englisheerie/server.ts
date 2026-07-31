@@ -30,9 +30,8 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
     // because the mode and the deck have to move together — a room in play with
     // no deck has nothing to do.
     //
-    // Only a room that has never drawn gets a fresh one: a trip back to setup to
-    // fix a typo must not shuffle the story away when play resumes. Abandoning a
-    // story is what "Set up a new deck" is for.
+    // Only a room without a story gets a fresh one. The condition also lets a
+    // room stored in setup by an older version resume its existing story.
     beginPlay: ({ stateDraft }) => {
       stateDraft.mode = "play";
       if (stateDraft.stack.length === 0 && stateDraft.drawn.length === 0) {

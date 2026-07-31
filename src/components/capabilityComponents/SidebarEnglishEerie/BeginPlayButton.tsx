@@ -9,8 +9,7 @@ interface Props {
 
 /**
  * Leaves setup. Asks first because it is the moment the sheet stops being a form
- * and the deck gets shuffled — not irreversible (there is a way back), but not
- * something to do with a stray click either.
+ * and the deck gets shuffled, so it is not something to do with a stray click.
  */
 export const BeginPlayButton = ({ hasStoryInProgress, onBeginPlay }: Props) => (
   <ConfirmButton
@@ -19,9 +18,8 @@ export const BeginPlayButton = ({ hasStoryInProgress, onBeginPlay }: Props) => (
     body={
       hasStoryInProgress
         ? `The sheet settles into prose and the story picks up where it left
-           off. You can come back to setup if you need to.`
-        : `The sheet settles into prose and a fresh Story Deck is shuffled. You
-           can come back to setup if you need to.`
+           off.`
+        : `The sheet settles into prose and a fresh Story Deck is shuffled.`
     }
     confirmLabel="Begin play"
     onConfirm={onBeginPlay}
