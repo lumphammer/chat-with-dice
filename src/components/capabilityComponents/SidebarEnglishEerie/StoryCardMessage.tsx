@@ -1,9 +1,11 @@
+import { englisheerieClient } from "#/capabilities/englisheerie/client";
 import {
   GREY_LADY_COUNT,
   STORY_CARD_LABELS,
   type StoryCard,
   type StoryCardKind,
 } from "#/capabilities/englisheerie/common";
+import { ObstructionRollControls } from "./ObstructionRollControls";
 import { formatCardsRemaining } from "./formatCardsRemaining";
 import {
   GhostIcon,
@@ -48,7 +50,12 @@ export const StoryCardMessage = ({
   cardsRemaining,
   greyLadyNumber,
 }: Props) => {
+  const capInfo = englisheerieClient.useMount();
   const Icon = STORY_CARD_ICONS[card.kind];
+  const currentObstructionDifficulty =
+    capInfo.initialised && capInfo.state.lastObstruction?.cardId === card.id
+      ? card.difficulty
+      : undefined;
 
   return (
     <div className="mt-1 flex flex-col gap-1 py-1">
@@ -71,6 +78,9 @@ export const StoryCardMessage = ({
           ? "the deck is spent"
           : formatCardsRemaining(cardsRemaining)}
       </span>
+      {currentObstructionDifficulty !== undefined && (
+        <ObstructionRollControls difficulty={currentObstructionDifficulty} />
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
-import { TrackerRow } from "./TrackerRow";
+import { DotTracker } from "./DotTracker";
 
 export const TrackersSection = () => {
   const capInfo = englisheerieClient.useMount();
@@ -12,24 +12,28 @@ export const TrackersSection = () => {
   const { actions } = capInfo;
 
   return (
-    <section className="mt-8">
-      <h3 className="heading">Spirit &amp; Resolve</h3>
+    <section className="mt-8 flex flex-col gap-4">
+      <div>
+        <h3 className="heading mb-2">Spirit</h3>
+        <DotTracker
+          label="Spirit"
+          value={spirit}
+          onSetValue={(value) =>
+            actions.setTracker({ tracker: "spirit", value })
+          }
+        />
+      </div>
 
-      <TrackerRow
-        label="Spirit"
-        description="What the story leaves you. Empty a circle as the table decides."
-        value={spirit}
-        onSetValue={(value) => actions.setTracker({ tracker: "spirit", value })}
-      />
-
-      <TrackerRow
-        label="Resolve"
-        description="Spent on obstruction rolls — before the roll, or after it."
-        value={resolve}
-        onSetValue={(value) =>
-          actions.setTracker({ tracker: "resolve", value })
-        }
-      />
+      <div>
+        <h3 className="heading mb-2">Resolve</h3>
+        <DotTracker
+          label="Resolve"
+          value={resolve}
+          onSetValue={(value) =>
+            actions.setTracker({ tracker: "resolve", value })
+          }
+        />
+      </div>
     </section>
   );
 };
