@@ -26,6 +26,20 @@ function rollD10(): number {
 
 export const englisheerieServer = createServerCapability(englishEerieCommon, {
   actionEffects: {
+    // Leaving setup. Server-side because a first deck needs randomness, and
+    // because the mode and the deck have to move together — a room in play with
+    // no deck has nothing to do.
+    //
+    // Only a room that has never drawn gets a fresh one: a trip back to setup to
+    // fix a typo must not shuffle the story away when play resumes. Abandoning a
+    // story is what "Set up a new deck" is for.
+    beginPlay: ({ stateDraft }) => {
+      stateDraft.mode = "play";
+      if (stateDraft.stack.length === 0 && stateDraft.drawn.length === 0) {
+        stateDraft.stack = buildStoryDeck(shuffle);
+        stateDraft.lastObstruction = null;
+      }
+    },
     // Rebuilding the deck abandons whatever story was in progress — the sidebar
     // asks first.
     setUpDeck: ({ stateDraft }) => {

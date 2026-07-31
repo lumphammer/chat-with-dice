@@ -58,12 +58,27 @@ with **Resolve** spendable either before the roll (two each) or after it (one
 each), never both. The last **Obstruction** drawn is the one the next roll is
 made against, until another is drawn.
 
+**Allocation**:
+The ten points split between an English Eerie **Protagonist**'s **Spirit** and
+**Resolve** in **Setup**, five and five to begin, three to seven on either.
+Moving one moves the other, because it is one split rather than two trackers.
+Only ever on a sheet that has not been played: once a **Story Deck** has been
+shuffled the two are independent tracks and the ten no longer holds.
+
 **Pause**:
 The mild **Safety Signal**: hold on a moment. Same mechanism as an **X Card**,
 lower severity, and dismissible with any gesture rather than a deliberate one.
 
 **Pile**:
 The per-room, stateful version of a **Deck**: its **Discard** and what remains. You draw from a **Pile**, not a **Deck**. The rules a draw follows belong to the **Deck**.
+
+**Play**:
+The second of an English Eerie **Room**'s two modes: the story being told. The
+**Story Deck** and the **Obstruction** are at the front, **Spirit** and
+**Resolve** are independent tracks, and the **Protagonist** is prose with an
+editor behind a pencil. Entered from **Setup**, which shuffles a **Story Deck**
+if the **Room** has never had one, and leavable back to **Setup** without
+disturbing the story.
 
 **Protagonist**:
 The single character an English Eerie **Room** tells its story about: a name, an
@@ -96,6 +111,14 @@ _Avoid_: Member
 A room-wide interrupt raised by a **Room Participant**, which takes over every
 participant's screen and leaves a record in the chat log. Two kinds: **X Card**
 and **Pause**. May be **Unattributed**.
+
+**Setup**:
+The first of an English Eerie **Room**'s two modes, and the one it starts in: the
+sheet being written. Every **Protagonist** line is editable in place and
+committed on blur, and **Spirit** and **Resolve** are an **Allocation** rather
+than two tracks. Left by beginning **Play**.
+_Avoid_: Character creation (nothing is created — the sheet is always there)
+_Contrast_: the **Story Deck**'s setup ritual, which is a shuffle, not a mode.
 
 **Shared Item Message**:
 A chat message that highlights a **User File** made accessible through a **Room Share**.

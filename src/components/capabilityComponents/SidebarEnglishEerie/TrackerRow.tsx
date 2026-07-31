@@ -5,6 +5,8 @@ interface Props {
   label: string;
   description: string;
   value: number;
+  /** The floor the track cannot be taken below. Setup's allocation has one. */
+  min?: number;
   onSetValue: (value: number) => void;
 }
 
@@ -12,6 +14,7 @@ export const TrackerRow = ({
   label,
   description,
   value,
+  min,
   onSetValue,
 }: Props) => (
   <div className="border-base-content/60 rounded-box my-4 border p-3">
@@ -23,6 +26,6 @@ export const TrackerRow = ({
     </div>
     <p className="text-base-content/70 mb-2 text-sm">{description}</p>
 
-    <DotTracker label={label} value={value} onSetValue={onSetValue} />
+    <DotTracker label={label} value={value} min={min} onSetValue={onSetValue} />
   </div>
 );

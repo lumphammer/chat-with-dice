@@ -1,6 +1,8 @@
 import type { CommonActionDefinition } from "#/capabilities/createCapabilityCommon";
 import {
+  ALLOCATION_TOTAL,
   GREY_LADY_COUNT,
+  MIN_ALLOCATION,
   TRACK_LENGTH,
   type EnglishEerieState,
   type StoryCard,
@@ -179,12 +181,19 @@ describe("evaluating an obstruction roll", () => {
   });
 });
 
-describe("the trackers", () => {
+/** An unplayed sheet that has left setup: trackers, not an allocation. */
+const playingState = (): EnglishEerieState => ({
+  ...initialState(),
+  mode: "play",
+  stack: buildStoryDeck(noShuffle),
+});
+
+describe("the trackers in play", () => {
   const FILLED_CIRCLES = 3;
 
   test("count the filled circles", () => {
     const state = runAction(
-      initialState(),
+      playingState(),
       englishEerieCommon.actions.setTracker,
       { tracker: "spirit", value: FILLED_CIRCLES },
     );
@@ -193,7 +202,7 @@ describe("the trackers", () => {
 
   test("empty all the way down", () => {
     const state = runAction(
-      initialState(),
+      playingState(),
       englishEerieCommon.actions.setTracker,
       { tracker: "resolve", value: 0 },
     );
@@ -202,13 +211,13 @@ describe("the trackers", () => {
 
   test("refuse a value the track has no room for", () => {
     expect(() =>
-      runAction(initialState(), englishEerieCommon.actions.setTracker, {
+      runAction(playingState(), englishEerieCommon.actions.setTracker, {
         tracker: "spirit",
         value: TRACK_LENGTH + 1,
       }),
     ).toThrow();
     expect(() =>
-      runAction(initialState(), englishEerieCommon.actions.setTracker, {
+      runAction(playingState(), englishEerieCommon.actions.setTracker, {
         tracker: "spirit",
         value: -1,
       }),
@@ -217,11 +226,81 @@ describe("the trackers", () => {
 
   test("move one without disturbing the other", () => {
     const state = runAction(
-      initialState(),
+      playingState(),
       englishEerieCommon.actions.setTracker,
       { tracker: "resolve", value: 1 },
     );
+    expect(state.spirit).toBe(playingState().spirit);
+  });
+});
+
+describe("the allocation on an unplayed sheet", () => {
+  const HIGH = 7;
+  const LOW = 3;
+
+  test("begins split down the middle", () => {
+    const { spirit, resolve } = initialState();
+    expect(spirit + resolve).toBe(ALLOCATION_TOTAL);
+    expect(spirit).toBe(resolve);
+  });
+
+  test("moves the other track to meet the one that moved", () => {
+    const state = runAction(
+      initialState(),
+      englishEerieCommon.actions.setTracker,
+      { tracker: "spirit", value: HIGH },
+    );
+    expect(state.spirit).toBe(HIGH);
+    expect(state.resolve).toBe(ALLOCATION_TOTAL - HIGH);
+  });
+
+  test("clamps a value the other track has no room for", () => {
+    const state = runAction(
+      initialState(),
+      englishEerieCommon.actions.setTracker,
+      { tracker: "resolve", value: 0 },
+    );
+    expect(state.resolve).toBe(MIN_ALLOCATION);
+    expect(state.spirit).toBe(TRACK_LENGTH);
+  });
+
+  test("stops linking once the story has started", () => {
+    const started = {
+      ...initialState(),
+      drawn: [buildStoryDeck(noShuffle)[0]],
+    };
+    const state = runAction(started, englishEerieCommon.actions.setTracker, {
+      tracker: "resolve",
+      value: LOW,
+    });
+    expect(state.resolve).toBe(LOW);
     expect(state.spirit).toBe(initialState().spirit);
+  });
+});
+
+describe("the modes", () => {
+  test("start in setup", () => {
+    expect(initialState().mode).toBe("setup");
+  });
+
+  test("read state stored before there were modes as setup", () => {
+    const parsed = englishEerieStateValidator.safeParse({
+      ...initialState(),
+      mode: undefined,
+    });
+    expect(parsed.success && parsed.data.mode).toBe("setup");
+  });
+
+  test("come back to setup without disturbing the story", () => {
+    const before = playingState();
+    const after = runAction(
+      before,
+      englishEerieCommon.actions.returnToSetup,
+      {},
+    );
+    expect(after.mode).toBe("setup");
+    expect(after.stack).toEqual(before.stack);
+    expect(after.resolve).toBe(before.resolve);
   });
 });
 
@@ -253,6 +332,42 @@ describe("the protagonist sheet", () => {
     expect(after.spirit).toEqual(before.spirit);
     expect(after.resolve).toEqual(before.resolve);
     expect(after.stack).toEqual(before.stack);
+  });
+
+  test("is written a line at a time during setup", () => {
+    const named = runAction(
+      initialState(),
+      englishEerieCommon.actions.setProtagonistLine,
+      { field: "name", value: sheet.name },
+    );
+    const state = runAction(
+      named,
+      englishEerieCommon.actions.setProtagonistLine,
+      { field: "fears", index: 1, value: "Bats" },
+    );
+    expect(state.protagonist.name).toBe(sheet.name);
+    expect(state.protagonist.fears).toEqual(["", "Bats", ""]);
+  });
+
+  test("ignores a trio line with no line number", () => {
+    const state = runAction(
+      initialState(),
+      englishEerieCommon.actions.setProtagonistLine,
+      { field: "features", value: "Sword cane" },
+    );
+    expect(state.protagonist.features).toEqual(
+      initialState().protagonist.features,
+    );
+  });
+
+  test("refuses a trio line the trio has no room for", () => {
+    expect(() =>
+      runAction(initialState(), englishEerieCommon.actions.setProtagonistLine, {
+        field: "features",
+        index: 3,
+        value: "Fourth feature",
+      }),
+    ).toThrow();
   });
 
   test("refuses a trio that is not three lines", () => {

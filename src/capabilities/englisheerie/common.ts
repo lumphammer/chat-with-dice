@@ -38,6 +38,14 @@ const PROTAGONIST_LIST_LENGTH = 3;
 export const TRACK_LENGTH = 7;
 const DEFAULT_TRACKER_VALUE = 5;
 
+/**
+ * In setup the two tracks are one pool: whatever Spirit takes, Resolve gives up.
+ * Five and five to begin, and neither can hold more than its seven circles — so
+ * the pool can only ever be split between three and seven.
+ */
+export const ALLOCATION_TOTAL = 10;
+export const MIN_ALLOCATION = ALLOCATION_TOTAL - TRACK_LENGTH;
+
 const storyCardKindValidator = z.enum([
   "secondaryCharacterObstructs",
   "environmentObstructs",
@@ -99,7 +107,20 @@ const trackerNameValidator = z.enum(["spirit", "resolve"]);
  */
 const trackerValidator = z.int().min(0).max(TRACK_LENGTH);
 
+/**
+ * Setup is the sheet being written: every field is editable in place and the two
+ * tracks are one allocation. Play is the story being told: the deck and the
+ * Obstruction come to the front and the sheet settles into prose.
+ *
+ * Defaulted rather than required so a room stored before there were modes reads
+ * back as a room still in setup, with its Protagonist intact.
+ */
+const modeValidator = z.enum(["setup", "play"]).default("setup");
+
+export type EnglishEerieMode = z.infer<typeof modeValidator>;
+
 export const englishEerieStateValidator = z.object({
+  mode: modeValidator,
   protagonist: protagonistValidator,
   spirit: trackerValidator,
   resolve: trackerValidator,
@@ -219,8 +240,29 @@ export function evaluateObstructionRoll({
   return { total, success: total >= difficulty };
 }
 
+/**
+ * Whether Spirit and Resolve are still one ten-point allocation rather than two
+ * independent tracks.
+ *
+ * This is not simply "in setup": once a story is under way, Resolve has been
+ * spent on Obstructions and the two no longer total ten, so a trip back to setup
+ * must leave them alone. Allocation belongs to a sheet nobody has played yet.
+ */
+export function isAllocating(state: {
+  mode: EnglishEerieMode;
+  stack: unknown[];
+  drawn: unknown[];
+}): boolean {
+  return (
+    state.mode === "setup" &&
+    state.stack.length === 0 &&
+    state.drawn.length === 0
+  );
+}
+
 export function getInitialEnglishEerieState(): EnglishEerieState {
   return {
+    mode: "setup",
     protagonist: {
       name: "",
       occupation: "",
@@ -249,14 +291,46 @@ export const englishEerieCommon = createCapabilityCommon({
     getInitialState: getInitialEnglishEerieState,
   },
   buildActions: ({ createAction }) => ({
-    // The whole sheet at once, because the whole sheet is edited at once: the
-    // dialog holds a draft and saves it. So this is last-write-wins across the
-    // sheet rather than per field — two people editing the Protagonist
-    // simultaneously is not a thing this game does.
+    // The whole sheet at once: the play-mode dialog holds a draft and saves it.
+    // Last-write-wins across the sheet rather than per field, which is fine for
+    // an edit made behind a modal by one person at a time.
     setProtagonist: createAction({
       payloadValidator: protagonistValidator,
       pureFn: ({ stateDraft, payload }) => {
         stateDraft.protagonist = payload;
+      },
+    }),
+    // One line at a time, for the setup sheet, where the fields are live and
+    // anybody at the table may be in a different one. Sending the whole sheet on
+    // every blur would have each field's commit undo the others'.
+    setProtagonistLine: createAction({
+      payloadValidator: z.object({
+        field: z.enum([
+          "name",
+          "occupation",
+          "background",
+          "features",
+          "fears",
+        ]),
+        /** Which of the three lines. Only for `features` and `fears`. */
+        index: z
+          .int()
+          .min(0)
+          .max(PROTAGONIST_LIST_LENGTH - 1)
+          .optional(),
+        value: z.string(),
+      }),
+      pureFn: ({ stateDraft, payload }) => {
+        const { field, index, value } = payload;
+        if (field === "features" || field === "fears") {
+          // A trio line with no line number is nonsense; drop it rather than
+          // guess which of the three was meant.
+          if (index !== undefined) {
+            stateDraft.protagonist[field][index] = value;
+          }
+        } else {
+          stateDraft.protagonist[field] = value;
+        }
       },
     }),
     setTracker: createAction({
@@ -264,13 +338,39 @@ export const englishEerieCommon = createCapabilityCommon({
         tracker: trackerNameValidator,
         value: trackerValidator,
       }),
+      // On an unplayed sheet the tracks are two ends of one ten-point
+      // allocation, so setting one sets the other. Once the story starts they
+      // move independently: the story takes Spirit and Obstructions take
+      // Resolve, with no exchange rate between them. Deciding that here rather
+      // than in the sidebar means a client working from a stale mode can't
+      // unbalance the pool or refund spent Resolve.
       pureFn: ({ stateDraft, payload }) => {
-        stateDraft[payload.tracker] = payload.value;
+        if (!isAllocating(stateDraft)) {
+          stateDraft[payload.tracker] = payload.value;
+          return;
+        }
+        const value = Math.min(
+          Math.max(payload.value, MIN_ALLOCATION),
+          TRACK_LENGTH,
+        );
+        const other = payload.tracker === "spirit" ? "resolve" : "spirit";
+        stateDraft[payload.tracker] = value;
+        stateDraft[other] = ALLOCATION_TOTAL - value;
       },
     }),
-    // The four below are server-only: they need randomness, the authoritative
+    // The way back out of play, for a room that began it by accident. The story
+    // is left where it is — `beginPlay` picks it up again rather than
+    // reshuffling (see the server), so this costs nothing but the mode.
+    returnToSetup: createAction({
+      payloadValidator: z.object({}),
+      pureFn: ({ stateDraft }) => {
+        stateDraft.mode = "setup";
+      },
+    }),
+    // The five below are server-only: they need randomness, the authoritative
     // deck, or an edit to an existing chat message. No `pureFn`, so nothing is
     // predicted locally.
+    beginPlay: createAction({ payloadValidator: z.object({}) }),
     setUpDeck: createAction({ payloadValidator: z.object({}) }),
     drawCard: createAction({ payloadValidator: z.object({}) }),
     rollObstruction: createAction({

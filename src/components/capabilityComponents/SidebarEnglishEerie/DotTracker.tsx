@@ -4,6 +4,8 @@ import { useState } from "react";
 interface Props {
   label: string;
   value: number;
+  /** The floor the track cannot be taken below. Setup's allocation has one. */
+  min?: number;
   onSetValue: (value: number) => void;
 }
 
@@ -17,9 +19,9 @@ interface Props {
  * the same gesture; clicking the last filled circle empties it, which is the
  * only way to reach zero.
  */
-export const DotTracker = ({ label, value, onSetValue }: Props) => {
+export const DotTracker = ({ label, value, min = 0, onSetValue }: Props) => {
   const [hovered, setHovered] = useState<number | null>(null);
-  const previewValue = hovered === null ? value : hovered + 1;
+  const previewValue = hovered === null ? value : Math.max(hovered + 1, min);
 
   return (
     <div
@@ -29,8 +31,13 @@ export const DotTracker = ({ label, value, onSetValue }: Props) => {
       {Array.from({ length: TRACK_LENGTH }, (_, index) => {
         const filled = index < value;
         const previewFilled = index < previewValue;
-        // Filling this circle would undo the click, so offer to empty it.
-        const target = value === index + 1 ? index : index + 1;
+        // Filling this circle would undo the click, so offer to empty it —
+        // unless emptying it would breach the floor, in which case the click
+        // lands on the floor instead.
+        const target =
+          value === index + 1 && index >= min
+            ? index
+            : Math.max(index + 1, min);
 
         return (
           <button
