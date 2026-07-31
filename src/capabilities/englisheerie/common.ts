@@ -34,9 +34,9 @@ export const GREY_LADY_COUNT = 3;
 /** Features and Fears are three apiece, always — they are sheet lines, not lists. */
 const PROTAGONIST_LIST_LENGTH = 3;
 
-const DEFAULT_TRACKER_MAX = 5;
-/** Nothing in the game needs a bigger track; this only stops silly input. */
-export const MAX_TRACKER_MAX = 20;
+/** Spirit and Resolve are both seven circles long, always. */
+export const TRACK_LENGTH = 7;
+const DEFAULT_TRACKER_VALUE = 5;
 
 const storyCardKindValidator = z.enum([
   "secondaryCharacterObstructs",
@@ -80,14 +80,6 @@ const protagonistListValidator = z
   .array(z.string())
   .length(PROTAGONIST_LIST_LENGTH);
 
-const protagonistTextFieldValidator = z.enum([
-  "name",
-  "occupation",
-  "background",
-]);
-
-const protagonistListFieldValidator = z.enum(["features", "fears"]);
-
 const protagonistValidator = z.object({
   name: z.string(),
   occupation: z.string(),
@@ -96,19 +88,16 @@ const protagonistValidator = z.object({
   fears: protagonistListValidator,
 });
 
+export type Protagonist = z.infer<typeof protagonistValidator>;
+
 const trackerNameValidator = z.enum(["spirit", "resolve"]);
 
-const trackerValidator = z.object({
-  max: z.int().min(1).max(MAX_TRACKER_MAX),
-  current: z.int().min(0),
-});
-
-export type Tracker = z.infer<typeof trackerValidator>;
-
-const defaultTracker = (): Tracker => ({
-  max: DEFAULT_TRACKER_MAX,
-  current: DEFAULT_TRACKER_MAX,
-});
+/**
+ * How many of the track's seven circles are filled in. The value *is* the count
+ * of filled circles — the track is read by what is on it, not by what has been
+ * struck off it.
+ */
+const trackerValidator = z.int().min(0).max(TRACK_LENGTH);
 
 export const englishEerieStateValidator = z.object({
   protagonist: protagonistValidator,
@@ -239,8 +228,8 @@ export function getInitialEnglishEerieState(): EnglishEerieState {
       features: emptyProtagonistList(),
       fears: emptyProtagonistList(),
     },
-    spirit: defaultTracker(),
-    resolve: defaultTracker(),
+    spirit: DEFAULT_TRACKER_VALUE,
+    resolve: DEFAULT_TRACKER_VALUE,
     // No deck until somebody performs the setup ritual: building one needs
     // randomness, which `getInitialState` must not have (it runs on both sides,
     // and the two must agree).
@@ -260,48 +249,23 @@ export const englishEerieCommon = createCapabilityCommon({
     getInitialState: getInitialEnglishEerieState,
   },
   buildActions: ({ createAction }) => ({
-    setProtagonistText: createAction({
-      payloadValidator: z.object({
-        field: protagonistTextFieldValidator,
-        value: z.string(),
-      }),
+    // The whole sheet at once, because the whole sheet is edited at once: the
+    // dialog holds a draft and saves it. So this is last-write-wins across the
+    // sheet rather than per field — two people editing the Protagonist
+    // simultaneously is not a thing this game does.
+    setProtagonist: createAction({
+      payloadValidator: protagonistValidator,
       pureFn: ({ stateDraft, payload }) => {
-        stateDraft.protagonist[payload.field] = payload.value;
-      },
-    }),
-    setProtagonistListItem: createAction({
-      payloadValidator: z.object({
-        field: protagonistListFieldValidator,
-        index: z
-          .int()
-          .min(0)
-          .max(PROTAGONIST_LIST_LENGTH - 1),
-        value: z.string(),
-      }),
-      pureFn: ({ stateDraft, payload }) => {
-        stateDraft.protagonist[payload.field][payload.index] = payload.value;
+        stateDraft.protagonist = payload;
       },
     }),
     setTracker: createAction({
       payloadValidator: z.object({
         tracker: trackerNameValidator,
-        current: z.int().min(0),
+        value: trackerValidator,
       }),
       pureFn: ({ stateDraft, payload }) => {
-        const tracker = stateDraft[payload.tracker];
-        tracker.current = Math.min(payload.current, tracker.max);
-      },
-    }),
-    setTrackerMax: createAction({
-      payloadValidator: z.object({
-        tracker: trackerNameValidator,
-        max: z.int().min(1).max(MAX_TRACKER_MAX),
-      }),
-      pureFn: ({ stateDraft, payload }) => {
-        const tracker = stateDraft[payload.tracker];
-        tracker.max = payload.max;
-        // Shrinking the track can't leave more points on it than it has boxes.
-        tracker.current = Math.min(tracker.current, payload.max);
+        stateDraft[payload.tracker] = payload.value;
       },
     }),
     // The four below are server-only: they need randomness, the authoritative

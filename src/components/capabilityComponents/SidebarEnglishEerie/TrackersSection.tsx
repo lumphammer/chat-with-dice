@@ -17,22 +17,18 @@ export const TrackersSection = () => {
 
       <TrackerRow
         label="Spirit"
-        description="What the story costs you. Cross a box off as the table decides."
-        tracker={spirit}
-        onSetCurrent={(current) =>
-          actions.setTracker({ tracker: "spirit", current })
-        }
-        onSetMax={(max) => actions.setTrackerMax({ tracker: "spirit", max })}
+        description="What the story leaves you. Empty a circle as the table decides."
+        value={spirit}
+        onSetValue={(value) => actions.setTracker({ tracker: "spirit", value })}
       />
 
       <TrackerRow
         label="Resolve"
         description="Spent on obstruction rolls — before the roll, or after it."
-        tracker={resolve}
-        onSetCurrent={(current) =>
-          actions.setTracker({ tracker: "resolve", current })
+        value={resolve}
+        onSetValue={(value) =>
+          actions.setTracker({ tracker: "resolve", value })
         }
-        onSetMax={(max) => actions.setTrackerMax({ tracker: "resolve", max })}
       />
     </section>
   );

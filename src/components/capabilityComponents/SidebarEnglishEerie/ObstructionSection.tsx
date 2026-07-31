@@ -31,7 +31,7 @@ export const ObstructionSection = () => {
 
   // Somebody else may have spent Resolve since this was set, so the working
   // value is clamped on the way out rather than held clamped in state.
-  const spend = Math.min(resolveToSpend, resolve.current);
+  const spend = Math.min(resolveToSpend, resolve);
   const bonus = spend * RESOLVE_BEFORE_BONUS;
 
   return (
@@ -63,15 +63,13 @@ export const ObstructionSection = () => {
         <button
           type="button"
           className="btn btn-sm btn-ghost"
-          disabled={spend >= resolve.current}
+          disabled={spend >= resolve}
           onClick={() => setResolveToSpend(spend + 1)}
           aria-label="Spend one more Resolve"
         >
           <PlusIcon className="h-4 w-4" />
         </button>
-        <span className="text-base-content/50 text-xs">
-          of {resolve.current}
-        </span>
+        <span className="text-base-content/50 text-xs">of {resolve}</span>
       </div>
 
       <div className="mt-2">

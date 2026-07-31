@@ -1,6 +1,7 @@
 import type { CommonActionDefinition } from "#/capabilities/createCapabilityCommon";
 import {
   GREY_LADY_COUNT,
+  TRACK_LENGTH,
   type EnglishEerieState,
   type StoryCard,
   type StoryCardKind,
@@ -179,69 +180,93 @@ describe("evaluating an obstruction roll", () => {
 });
 
 describe("the trackers", () => {
-  test("clamp a spend to the length of the track", () => {
+  const FILLED_CIRCLES = 3;
+
+  test("count the filled circles", () => {
     const state = runAction(
       initialState(),
       englishEerieCommon.actions.setTracker,
-      {
+      { tracker: "spirit", value: FILLED_CIRCLES },
+    );
+    expect(state.spirit).toBe(FILLED_CIRCLES);
+  });
+
+  test("empty all the way down", () => {
+    const state = runAction(
+      initialState(),
+      englishEerieCommon.actions.setTracker,
+      { tracker: "resolve", value: 0 },
+    );
+    expect(state.resolve).toBe(0);
+  });
+
+  test("refuse a value the track has no room for", () => {
+    expect(() =>
+      runAction(initialState(), englishEerieCommon.actions.setTracker, {
         tracker: "spirit",
-        current: 99,
-      },
-    );
-    expect(state.spirit.current).toBe(state.spirit.max);
+        value: TRACK_LENGTH + 1,
+      }),
+    ).toThrow();
+    expect(() =>
+      runAction(initialState(), englishEerieCommon.actions.setTracker, {
+        tracker: "spirit",
+        value: -1,
+      }),
+    ).toThrow();
   });
 
-  test("lose points off the end when the track is shortened", () => {
+  test("move one without disturbing the other", () => {
     const state = runAction(
       initialState(),
-      englishEerieCommon.actions.setTrackerMax,
-      { tracker: "resolve", max: 3 },
-    );
-    expect(state.resolve).toEqual({ max: 3, current: 3 });
-  });
-
-  test("keep the points already spent when the track is lengthened", () => {
-    const spent = runAction(
-      initialState(),
       englishEerieCommon.actions.setTracker,
-      { tracker: "resolve", current: 2 },
+      { tracker: "resolve", value: 1 },
     );
-    const lengthened = runAction(
-      spent,
-      englishEerieCommon.actions.setTrackerMax,
-      { tracker: "resolve", max: 8 },
-    );
-    expect(lengthened.resolve).toEqual({ max: 8, current: 2 });
+    expect(state.spirit).toBe(initialState().spirit);
   });
 });
 
 describe("the protagonist sheet", () => {
-  test("writes a text field", () => {
+  const sheet = {
+    name: "Fred Bobkins",
+    occupation: "Retired major",
+    background: "Retired to the countryside to pursue antiquarianism",
+    features: ["Sword cane", "Monocle", "Prominent scar"],
+    fears: ["Bats", "Darkness", "Being alone"],
+  };
+
+  test("is written in one go", () => {
     const state = runAction(
       initialState(),
-      englishEerieCommon.actions.setProtagonistText,
-      { field: "occupation", value: "Curate" },
+      englishEerieCommon.actions.setProtagonist,
+      sheet,
     );
-    expect(state.protagonist.occupation).toBe("Curate");
+    expect(state.protagonist).toEqual(sheet);
   });
 
-  test("writes one Feature without disturbing the others", () => {
-    const state = runAction(
-      initialState(),
-      englishEerieCommon.actions.setProtagonistListItem,
-      { field: "features", index: 1, value: "Reads Latin" },
+  test("leaves the rest of the state alone", () => {
+    const before = initialState();
+    const after = runAction(
+      before,
+      englishEerieCommon.actions.setProtagonist,
+      sheet,
     );
-    expect(state.protagonist.features).toEqual(["", "Reads Latin", ""]);
-    expect(state.protagonist.fears).toEqual(["", "", ""]);
+    expect(after.spirit).toEqual(before.spirit);
+    expect(after.resolve).toEqual(before.resolve);
+    expect(after.stack).toEqual(before.stack);
   });
 
-  test("refuses a line the sheet does not have", () => {
+  test("refuses a trio that is not three lines", () => {
     expect(() =>
-      runAction(
-        initialState(),
-        englishEerieCommon.actions.setProtagonistListItem,
-        { field: "fears", index: 3, value: "Nope" },
-      ),
+      runAction(initialState(), englishEerieCommon.actions.setProtagonist, {
+        ...sheet,
+        features: ["Sword cane", "Monocle"],
+      }),
+    ).toThrow();
+    expect(() =>
+      runAction(initialState(), englishEerieCommon.actions.setProtagonist, {
+        ...sheet,
+        fears: ["Bats", "Darkness", "Being alone", "Moths"],
+      }),
     ).toThrow();
   });
 });

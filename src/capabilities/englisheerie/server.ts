@@ -88,9 +88,9 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       // over the top only happens when somebody else spent in between.
       const spentBefore = Math.min(
         payload.resolveSpentBefore,
-        stateDraft.resolve.current,
+        stateDraft.resolve,
       );
-      stateDraft.resolve.current -= spentBefore;
+      stateDraft.resolve -= spentBefore;
 
       const die = rollD10();
       const { total, success } = evaluateObstructionRoll({
@@ -113,7 +113,7 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
     // The "spend Resolve 1:1 after the roll" half, driven from the roll's own
     // chat bubble the way `cards` turns a drawn card over.
     boostRoll: async ({ payload, userId, editChatMessage, stateDraft }) => {
-      const available = stateDraft.resolve.current;
+      const available = stateDraft.resolve;
       // `editChatMessage` aborts silently when the updater returns undefined and
       // tells us nothing, so the updater reports back through this. It runs
       // synchronously inside the call, so it is settled by the time we read it —
@@ -145,7 +145,7 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       });
 
       if (applied > 0) {
-        stateDraft.resolve.current -= applied;
+        stateDraft.resolve -= applied;
       }
     },
   },

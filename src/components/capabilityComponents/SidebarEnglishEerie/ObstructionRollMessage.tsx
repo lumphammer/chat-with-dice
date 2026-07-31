@@ -35,9 +35,7 @@ export const ObstructionRollMessage = ({
   // and no more. Offered to the roller alone, and only when they didn't already
   // spend Resolve up front — it's one or the other.
   const shortfall = data.difficulty - data.total;
-  const resolveRemaining = capInfo.initialised
-    ? capInfo.state.resolve.current
-    : 0;
+  const resolveRemaining = capInfo.initialised ? capInfo.state.resolve : 0;
   const onBoost =
     capInfo.initialised &&
     sessionData?.user.id === messageUserId &&
