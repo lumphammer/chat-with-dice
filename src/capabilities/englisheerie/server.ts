@@ -6,6 +6,7 @@ import {
   englishEerieCommon,
   evaluateObstructionRoll,
   hasUnrolledObstruction,
+  type GreyLadyLoss,
 } from "./common";
 
 // Fisher–Yates over a copy, so the caller's array is left alone and
@@ -83,13 +84,50 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
         card.kind === "greyLady"
           ? stateDraft.drawn.filter((drawn) => drawn.kind === "greyLady").length
           : undefined;
+      let greyLadyLoss: GreyLadyLoss | null = null;
+      if (card.kind === "greyLady") {
+        if (stateDraft.spirit > 0) {
+          stateDraft.spirit -= 1;
+          greyLadyLoss = "spirit";
+        } else if (stateDraft.resolve > 0) {
+          stateDraft.resolve -= 1;
+          greyLadyLoss = "resolve";
+        }
+      }
 
       sendChatMessage({
         kind: "draw",
         card,
         cardsRemaining: stateDraft.stack.length,
         greyLadyNumber,
+        greyLadyLoss,
       });
+    },
+    spendResolveForGreyLady: async ({
+      payload,
+      editChatMessage,
+      stateDraft,
+    }) => {
+      if (stateDraft.resolve <= 0) {
+        return;
+      }
+      let applied = false;
+      await editChatMessage(payload.messageId, (data) => {
+        if (
+          data.kind !== "draw" ||
+          data.card.kind !== "greyLady" ||
+          data.greyLadyLoss !== "spirit" ||
+          !stateDraft.drawn.some((card) => card.id === data.card.id)
+        ) {
+          return undefined;
+        }
+        applied = true;
+        return { ...data, greyLadyLoss: "resolve" };
+      });
+      if (applied) {
+        stateDraft.resolve -= 1;
+        stateDraft.spirit = Math.min(stateDraft.spirit + 1, TRACK_LENGTH);
+      }
     },
     rollObstruction: ({
       stateDraft,

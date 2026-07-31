@@ -2,6 +2,7 @@ import { englisheerieClient } from "#/capabilities/englisheerie/client";
 import {
   GREY_LADY_COUNT,
   STORY_CARD_LABELS,
+  type GreyLadyLoss,
   type StoryCard,
   type StoryCardKind,
 } from "#/capabilities/englisheerie/common";
@@ -43,12 +44,16 @@ interface Props {
   card: StoryCard;
   cardsRemaining: number;
   greyLadyNumber?: number;
+  greyLadyLoss: GreyLadyLoss | null;
+  messageId: string;
 }
 
 export const StoryCardMessage = ({
   card,
   cardsRemaining,
   greyLadyNumber,
+  greyLadyLoss,
+  messageId,
 }: Props) => {
   const capInfo = englisheerieClient.useMount();
   const Icon = STORY_CARD_ICONS[card.kind];
@@ -59,6 +64,11 @@ export const StoryCardMessage = ({
     capInfo.initialised && capInfo.state.lastObstruction?.cardId === card.id
       ? card.difficulty
       : undefined;
+  const canSpendResolveForGreyLady =
+    greyLadyLoss === "spirit" &&
+    capInfo.initialised &&
+    capInfo.state.resolve > 0 &&
+    capInfo.state.drawn.some((drawn) => drawn.id === card.id);
 
   return (
     <div className="mt-1 flex flex-col gap-1 py-1 group-data-is-mine:items-end">
@@ -81,6 +91,24 @@ export const StoryCardMessage = ({
           ? "the deck is spent"
           : formatCardsRemaining(cardsRemaining)}
       </span>
+      {greyLadyLoss !== null && (
+        <div className="mt-1 flex items-center gap-2">
+          <span className="text-base-content/70 text-sm">
+            1 {greyLadyLoss === "spirit" ? "Spirit" : "Resolve"} lost
+          </span>
+          {canSpendResolveForGreyLady && (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline"
+              onClick={() =>
+                capInfo.actions.spendResolveForGreyLady({ messageId })
+              }
+            >
+              Spend 1 resolve instead.
+            </button>
+          )}
+        </div>
+      )}
       {rolledBy !== undefined ? (
         <span className="text-base-content/70 mt-1 text-sm">
           Rolled by {rolledBy}

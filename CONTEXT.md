@@ -42,7 +42,9 @@ _Avoid_: Flipped, hidden
 **Grey Lady**:
 One of the three cards the setup ritual seeds through a **Story Deck** — one
 under each of its three piles. Drawing one is a beat in its own right rather than
-something to roll against, and the third is always the last card in the deck.
+something to roll against. It deducts one **Spirit** when possible, with the
+option to spend one **Resolve** instead; with no **Spirit**, it deducts one
+**Resolve** when possible. The third is always the last card in the deck.
 
 **Individual Back**:
 A **Card Image** used as the back of exactly one **Card**. It takes precedence over a **Common Back**, but does not need one to exist — plenty of sets give every **Card** its own back and have no **Common Back** at all.
@@ -251,10 +253,11 @@ or invited, and acknowledging it is a deliberate act rather than a stray click.
 - A **Room** has at most one **Protagonist**, one **Story Deck**, and one pair of **Spirit** and **Resolve** tracks, all shared: any **Room Participant**, including an anonymous one, can edit the sheet, draw a **Story Card**, and roll against an **Obstruction**
 - A **Story Deck** is built into the game rather than shared into the **Room**, so it needs no **Room Share**, no **User File**, and no owner
 - Setting up a **Story Deck** again abandons the current one and every **Story Card** drawn from it, but leaves the **Protagonist**, **Spirit** and **Resolve** alone
-- Only an **Obstruction** becomes the thing rolls are made against; drawing a **Clue** or a **Grey Lady** leaves the last **Obstruction** standing, because a roll can come well after the card that prompted it
+- An **Obstruction** must be rolled against before another **Story Card** can be drawn, and can only be rolled against once
 - **Resolve** is spent before an **Obstruction** roll or after it, never both: spending up front is worth twice as much precisely because it is committed before the die is seen
 - **Resolve** spent after a roll is spent by the roller alone, on their own roll, and only enough to turn a failure into a success — there is nothing to buy above the difficulty
-- **Spirit** is never spent automatically: what a failed **Obstruction** costs is the table's call, so the track is crossed off by hand
+- Failing an **Obstruction** deducts one **Spirit** when any remains; if **Resolve** spent after the roll turns it into a success, that specific point is restored
+- Drawing a **Grey Lady** deducts one **Spirit** when possible, but the table may spend one **Resolve** instead; when no **Spirit** remains, it deducts one **Resolve** when possible
 - Attribution is where a **Safety Signal** and an **Avoided Subject** deliberately differ: a signal is a momentary interrupt and may be **Unattributed**, because in the moment the cost of being seen to raise one is what stops people raising it; an **Avoided Subject** is a session-zero statement and is always attributed
 
 ## Example Dialogue

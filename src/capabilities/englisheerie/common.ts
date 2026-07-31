@@ -152,12 +152,17 @@ export function hasUnrolledObstruction(state: {
   );
 }
 
+const greyLadyLossValidator = z.enum(["spirit", "resolve"]);
+export type GreyLadyLoss = z.infer<typeof greyLadyLossValidator>;
+
 const drawMessageValidator = z.object({
   kind: z.literal("draw"),
   card: storyCardValidator,
   cardsRemaining: z.int().min(0),
   /** Which of the three Grey Ladies this was. Absent for a narrative card. */
   greyLadyNumber: z.int().min(1).max(GREY_LADY_COUNT).optional(),
+  /** The track this Grey Lady actually deducted from, if either had a point. */
+  greyLadyLoss: greyLadyLossValidator.nullable().default(null),
 });
 
 const rollMessageValidator = z.object({
@@ -381,12 +386,15 @@ export const englishEerieCommon = createCapabilityCommon({
         Object.assign(stateDraft, getInitialEnglishEerieState());
       },
     }),
-    // The five below are server-only: they need randomness, the authoritative
+    // The six below are server-only: they need randomness, the authoritative
     // deck, or an edit to an existing chat message. No `pureFn`, so nothing is
     // predicted locally.
     beginPlay: createAction({ payloadValidator: z.object({}) }),
     setUpDeck: createAction({ payloadValidator: z.object({}) }),
     drawCard: createAction({ payloadValidator: z.object({}) }),
+    spendResolveForGreyLady: createAction({
+      payloadValidator: z.object({ messageId: z.string() }),
+    }),
     rollObstruction: createAction({
       payloadValidator: z.object({ resolveSpentBefore: z.int().min(0) }),
     }),
