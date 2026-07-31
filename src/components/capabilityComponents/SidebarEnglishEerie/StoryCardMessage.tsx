@@ -45,6 +45,7 @@ interface Props {
   cardsRemaining: number;
   greyLadyNumber?: number;
   greyLadyLoss: GreyLadyLoss | null;
+  difficultyBonus: number;
   messageId: string;
 }
 
@@ -53,6 +54,7 @@ export const StoryCardMessage = ({
   cardsRemaining,
   greyLadyNumber,
   greyLadyLoss,
+  difficultyBonus,
   messageId,
 }: Props) => {
   const capInfo = englisheerieClient.useMount();
@@ -60,9 +62,12 @@ export const StoryCardMessage = ({
   const rolledBy = capInfo.initialised
     ? capInfo.state.obstructionRollers[card.id]
     : undefined;
+  const currentObstruction = capInfo.initialised
+    ? capInfo.state.lastObstruction
+    : null;
   const currentObstructionDifficulty =
-    capInfo.initialised && capInfo.state.lastObstruction?.cardId === card.id
-      ? card.difficulty
+    currentObstruction?.cardId === card.id
+      ? currentObstruction.difficulty
       : undefined;
   const canSpendResolveForGreyLady =
     greyLadyLoss === "spirit" &&
@@ -81,9 +86,17 @@ export const StoryCardMessage = ({
             a short label (say "Clue") floating away from its icon. */}
         <span className="grow text-left">{STORY_CARD_LABELS[card.kind]}</span>
         {card.difficulty !== undefined && (
-          <span className="badge badge-sm">Difficulty {card.difficulty}</span>
+          <span className="badge badge-sm">
+            Difficulty {card.difficulty + difficultyBonus}
+          </span>
         )}
       </div>
+      {card.difficulty !== undefined && (
+        <span className="text-base-content/70 text-xs">
+          Base {card.difficulty} + {difficultyBonus} from {difficultyBonus} Grey{" "}
+          {difficultyBonus === 1 ? "Lady" : "Ladies"} drawn
+        </span>
+      )}
       <span className="text-base-content/50 text-xs">
         {greyLadyNumber !== undefined &&
           `Grey Lady ${greyLadyNumber} of ${GREY_LADY_COUNT} · `}

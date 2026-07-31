@@ -55,7 +55,9 @@ _Avoid_: Flipped, reversed, upside-down
 
 **Obstruction**:
 A **Story Card** that stands in the **Protagonist**'s way, carrying a difficulty
-of 4 to 7. Beating it is a d10 roll that has to equal or beat that difficulty,
+of 4 to 7. Its effective difficulty adds the number of **Grey Ladies** already
+drawn: +0 in the first chapter, +1 in the second, and +2 in the final chapter.
+Beating it is a d10 roll that has to equal or beat that effective difficulty,
 with **Resolve** spendable either before the roll (two each) or after it (one
 each), never both. Failure deducts one **Spirit** if any remains; spending
 **Resolve** after the roll to turn that failure into success restores the point,
@@ -254,6 +256,7 @@ or invited, and acknowledging it is a deliberate act rather than a stray click.
 - A **Story Deck** is built into the game rather than shared into the **Room**, so it needs no **Room Share**, no **User File**, and no owner
 - Setting up a **Story Deck** again abandons the current one and every **Story Card** drawn from it, but leaves the **Protagonist**, **Spirit** and **Resolve** alone
 - An **Obstruction** must be rolled against before another **Story Card** can be drawn, and can only be rolled against once
+- An **Obstruction**'s effective difficulty is its printed difficulty plus the number of **Grey Ladies** already drawn: +0, then +1, then +2
 - **Resolve** is spent before an **Obstruction** roll or after it, never both: spending up front is worth twice as much precisely because it is committed before the die is seen
 - **Resolve** spent after a roll is spent by the roller alone, on their own roll, and only enough to turn a failure into a success — there is nothing to buy above the difficulty
 - Failing an **Obstruction** deducts one **Spirit** when any remains; if **Resolve** spent after the roll turns it into a success, that specific point is restored

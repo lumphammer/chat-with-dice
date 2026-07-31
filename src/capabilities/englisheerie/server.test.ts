@@ -19,6 +19,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("cloudflare:workers", () => ({ env: {} }));
 
 const RESOLVE_BEFORE_GREY_LADY = 3;
+const MAX_CARD_DIFFICULTY = 7;
+const CHAPTER_DIFFICULTY_BONUSES = [0, 1, 2];
 
 const makeStateRepository = () => {
   const kv = new Map<string, unknown>();
@@ -39,6 +41,16 @@ const getObstruction = (): ObstructionCard => {
   const obstruction = buildNarrativeCards().find(isObstruction);
   if (!obstruction) {
     throw new Error("The English Eerie deck has no Obstruction");
+  }
+  return obstruction;
+};
+
+const getHardestObstruction = (): ObstructionCard => {
+  const obstruction = buildNarrativeCards().find(
+    (card): card is ObstructionCard => card.difficulty === MAX_CARD_DIFFICULTY,
+  );
+  if (!obstruction) {
+    throw new Error("The English Eerie deck has no hardest Obstruction");
   }
   return obstruction;
 };
@@ -303,6 +315,34 @@ describe("rolling against an Obstruction", () => {
     );
     expect(state.spirit).toBe(0);
   });
+
+  it.each(CHAPTER_DIFFICULTY_BONUSES)(
+    "adds a +%i Grey Lady modifier to the difficulty",
+    async (difficultyBonus) => {
+      const obstruction = getHardestObstruction();
+      const greyLadies = Array.from({ length: difficultyBonus }, () =>
+        getGreyLady(),
+      );
+      const { mounted, sentMessages } = await mountWithState({
+        stack: [obstruction],
+        drawn: greyLadies,
+      });
+
+      await draw(mounted);
+
+      const state = englishEerieStateValidator.parse(
+        mounted.getInitPayload().state,
+      );
+      expect(state.lastObstruction).toEqual({
+        cardId: obstruction.id,
+        difficulty: MAX_CARD_DIFFICULTY + difficultyBonus,
+      });
+      expect(getDrawData(sentMessages[0])).toMatchObject({
+        card: { difficulty: MAX_CARD_DIFFICULTY },
+        difficultyBonus,
+      });
+    },
+  );
 });
 
 describe("drawing a Grey Lady", () => {

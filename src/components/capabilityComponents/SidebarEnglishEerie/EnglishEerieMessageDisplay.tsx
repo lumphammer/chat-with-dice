@@ -35,6 +35,7 @@ export const EnglishEerieMessageDisplay = memo(
           cardsRemaining={parsed.data.cardsRemaining}
           greyLadyNumber={parsed.data.greyLadyNumber}
           greyLadyLoss={parsed.data.greyLadyLoss}
+          difficultyBonus={parsed.data.difficultyBonus}
           messageId={messageId}
         />
       );

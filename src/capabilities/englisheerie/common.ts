@@ -30,6 +30,7 @@ const CLUE_COUNT = 4;
 // recombines them with the larger pile at the bottom.
 const SMALL_PILE_SIZE = 5;
 export const GREY_LADY_COUNT = 3;
+export const MAX_GREY_LADY_DIFFICULTY_BONUS = GREY_LADY_COUNT - 1;
 
 /** Features and Fears are three apiece, always — they are sheet lines, not lists. */
 const PROTAGONIST_LIST_LENGTH = 3;
@@ -62,13 +63,17 @@ const OBSTRUCTION_KINDS = [
   "environmentObstructs",
 ] as const satisfies StoryCardKind[];
 
-const difficultyValidator = z.int().min(MIN_DIFFICULTY).max(MAX_DIFFICULTY);
+const cardDifficultyValidator = z.int().min(MIN_DIFFICULTY).max(MAX_DIFFICULTY);
+const adjustedDifficultyValidator = z
+  .int()
+  .min(MIN_DIFFICULTY)
+  .max(MAX_DIFFICULTY + MAX_GREY_LADY_DIFFICULTY_BONUS);
 
 const storyCardValidator = z.object({
   id: z.nanoid(),
   kind: storyCardKindValidator,
   // Only the two obstructing kinds carry one.
-  difficulty: difficultyValidator.optional(),
+  difficulty: cardDifficultyValidator.optional(),
 });
 
 export type StoryCard = z.infer<typeof storyCardValidator>;
@@ -134,7 +139,7 @@ export const englishEerieStateValidator = z.object({
    * a difficulty nobody drew.
    */
   lastObstruction: z
-    .object({ cardId: z.nanoid(), difficulty: difficultyValidator })
+    .object({ cardId: z.nanoid(), difficulty: adjustedDifficultyValidator })
     .nullable(),
   /** The participant who made the single roll allowed for each Obstruction. */
   obstructionRollers: z.record(z.nanoid(), z.string()).default({}),
@@ -163,11 +168,17 @@ const drawMessageValidator = z.object({
   greyLadyNumber: z.int().min(1).max(GREY_LADY_COUNT).optional(),
   /** The track this Grey Lady actually deducted from, if either had a point. */
   greyLadyLoss: greyLadyLossValidator.nullable().default(null),
+  /** The chapter modifier applied to an Obstruction's printed difficulty. */
+  difficultyBonus: z
+    .int()
+    .min(0)
+    .max(MAX_GREY_LADY_DIFFICULTY_BONUS)
+    .default(0),
 });
 
 const rollMessageValidator = z.object({
   kind: z.literal("roll"),
-  difficulty: difficultyValidator,
+  difficulty: adjustedDifficultyValidator,
   die: z.int().min(1).max(D10_SIDES),
   /** Resolve spent before the roll, worth `RESOLVE_BEFORE_BONUS` each. */
   spentBefore: z.int().min(0),

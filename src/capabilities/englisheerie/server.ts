@@ -1,6 +1,7 @@
 import { createServerCapability } from "#/capabilities/createServerCapability";
 import {
   D10_SIDES,
+  MAX_GREY_LADY_DIFFICULTY_BONUS,
   TRACK_LENGTH,
   buildStoryDeck,
   englishEerieCommon,
@@ -70,20 +71,25 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       // chat message, and reading a revoked draft proxy later would throw.
       const card = { ...top };
       stateDraft.drawn.push(card);
+      const greyLadiesDrawn = stateDraft.drawn.filter(
+        (drawn) => drawn.kind === "greyLady",
+      ).length;
+      const difficultyBonus =
+        card.difficulty === undefined
+          ? 0
+          : Math.min(greyLadiesDrawn, MAX_GREY_LADY_DIFFICULTY_BONUS);
 
       // Only an Obstruction becomes the thing rolls are made against. Once it
       // has been rolled, later non-obstructing cards leave it as the last one.
       if (card.difficulty !== undefined) {
         stateDraft.lastObstruction = {
           cardId: card.id,
-          difficulty: card.difficulty,
+          difficulty: card.difficulty + difficultyBonus,
         };
       }
 
       const greyLadyNumber =
-        card.kind === "greyLady"
-          ? stateDraft.drawn.filter((drawn) => drawn.kind === "greyLady").length
-          : undefined;
+        card.kind === "greyLady" ? greyLadiesDrawn : undefined;
       let greyLadyLoss: GreyLadyLoss | null = null;
       if (card.kind === "greyLady") {
         if (stateDraft.spirit > 0) {
@@ -101,6 +107,7 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
         cardsRemaining: stateDraft.stack.length,
         greyLadyNumber,
         greyLadyLoss,
+        difficultyBonus,
       });
     },
     spendResolveForGreyLady: async ({
