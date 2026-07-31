@@ -45,6 +45,14 @@ export const ObstructionRollMessage = ({
     resolveRemaining >= shortfall
       ? () => capInfo.actions.boostRoll({ messageId, spend: shortfall })
       : undefined;
+  const cannotSpendMessage =
+    !capInfo.initialised || data.success
+      ? undefined
+      : data.spentBefore > 0
+        ? "Cannot spend to succeed: Resolve spent before roll"
+        : resolveRemaining < shortfall
+          ? "Cannot spend to succeed: insufficient Resolve left"
+          : undefined;
 
   return (
     <div className="flex flex-col gap-1 py-1 group-data-is-mine:items-end">
@@ -90,6 +98,11 @@ export const ObstructionRollMessage = ({
           <HeartIcon className="h-4 w-4" />
           Spend {shortfall} Resolve to succeed
         </button>
+      )}
+      {cannotSpendMessage && (
+        <span className="text-base-content/50 mt-1 text-xs">
+          {cannotSpendMessage}
+        </span>
       )}
     </div>
   );
