@@ -142,6 +142,16 @@ export const englishEerieStateValidator = z.object({
 
 export type EnglishEerieState = z.infer<typeof englishEerieStateValidator>;
 
+export function hasUnrolledObstruction(state: {
+  lastObstruction: { cardId: string } | null;
+  obstructionRollers: Readonly<Record<string, string>>;
+}): boolean {
+  return (
+    state.lastObstruction !== null &&
+    state.obstructionRollers[state.lastObstruction.cardId] === undefined
+  );
+}
+
 const drawMessageValidator = z.object({
   kind: z.literal("draw"),
   card: storyCardValidator,

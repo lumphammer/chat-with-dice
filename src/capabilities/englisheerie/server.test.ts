@@ -35,12 +35,23 @@ const getObstruction = (): StoryCard => {
   return obstruction;
 };
 
+const getNonObstruction = (): StoryCard => {
+  const card = buildNarrativeCards().find(
+    (candidate) => candidate.difficulty === undefined,
+  );
+  if (!card) {
+    throw new Error("The English Eerie deck has no non-Obstruction");
+  }
+  return card;
+};
+
 const mountWithObstruction = async () => {
   const obstruction = getObstruction();
   const stateRepository = makeStateRepository();
   stateRepository.set("englisheerie", {
     ...getInitialEnglishEerieState(),
     mode: "play",
+    stack: [getNonObstruction()],
     drawn: [obstruction],
     lastObstruction: {
       cardId: obstruction.id,
@@ -89,7 +100,44 @@ const roll = (
     displayName,
   });
 
+const draw = (mounted: ServerMountedCapability) =>
+  mounted.onMessage({
+    actionCall: {
+      correlation: crypto.randomUUID(),
+      actionName: "drawCard",
+      params: {},
+    },
+    userId: "drawer-id",
+    displayName: "Drawer",
+  });
+
 describe("rolling against an Obstruction", () => {
+  it("blocks the next draw until the Obstruction is rolled", async () => {
+    const { mounted, sentMessages, errors } = await mountWithObstruction();
+
+    await draw(mounted);
+
+    let state = englishEerieStateValidator.parse(
+      mounted.getInitPayload().state,
+    );
+    expect(state.stack).toHaveLength(1);
+    expect(sentMessages).toHaveLength(0);
+    expect(errors).toEqual([
+      {
+        userId: "drawer-id",
+        error:
+          "Roll against the current obstruction before drawing another card.",
+      },
+    ]);
+
+    await roll(mounted, "alice-id", "Alice", 0);
+    await draw(mounted);
+
+    state = englishEerieStateValidator.parse(mounted.getInitPayload().state);
+    expect(state.stack).toHaveLength(0);
+    expect(sentMessages).toHaveLength(2);
+  });
+
   it("records the first roller and refuses a second roll", async () => {
     const { mounted, obstruction, sentMessages, errors } =
       await mountWithObstruction();

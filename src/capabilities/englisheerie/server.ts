@@ -4,6 +4,7 @@ import {
   buildStoryDeck,
   englishEerieCommon,
   evaluateObstructionRoll,
+  hasUnrolledObstruction,
 } from "./common";
 
 // Fisher–Yates over a copy, so the caller's array is left alone and
@@ -48,6 +49,13 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       stateDraft.obstructionRollers = {};
     },
     drawCard: ({ stateDraft, userId, broadcaster, sendChatMessage }) => {
+      if (hasUnrolledObstruction(stateDraft)) {
+        broadcaster.sendErrorToUserId(
+          userId,
+          "Roll against the current obstruction before drawing another card.",
+        );
+        return;
+      }
       const top = stateDraft.stack.shift();
       if (!top) {
         broadcaster.sendErrorToUserId(
@@ -61,9 +69,8 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       const card = { ...top };
       stateDraft.drawn.push(card);
 
-      // Only an Obstruction becomes the thing rolls are made against. Anything
-      // else leaves the last Obstruction standing — you may well roll against
-      // it after a Clue has come and gone.
+      // Only an Obstruction becomes the thing rolls are made against. Once it
+      // has been rolled, later non-obstructing cards leave it as the last one.
       if (card.difficulty !== undefined) {
         stateDraft.lastObstruction = {
           cardId: card.id,

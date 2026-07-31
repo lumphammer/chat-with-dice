@@ -1,5 +1,8 @@
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
-import { GREY_LADY_COUNT } from "#/capabilities/englisheerie/common";
+import {
+  GREY_LADY_COUNT,
+  hasUnrolledObstruction,
+} from "#/capabilities/englisheerie/common";
 import { useCloseMobileSidebar } from "#/components/Sidebar/mobileSidebarContext";
 import { SetUpDeckButton } from "./SetUpDeckButton";
 import { formatCardsRemaining } from "./formatCardsRemaining";
@@ -20,6 +23,7 @@ export const StoryDeckSection = () => {
 
   const { stack, drawn } = capInfo.state;
   const { actions } = capInfo;
+  const mustRollObstruction = hasUnrolledObstruction(capInfo.state);
   const greyLadiesDrawn = drawn.filter(
     (card) => card.kind === "greyLady",
   ).length;
@@ -37,7 +41,7 @@ export const StoryDeckSection = () => {
         <button
           type="button"
           className="btn btn-primary w-full"
-          disabled={stack.length === 0}
+          disabled={stack.length === 0 || mustRollObstruction}
           onClick={() => {
             actions.drawCard({});
             closeMobileSidebar();

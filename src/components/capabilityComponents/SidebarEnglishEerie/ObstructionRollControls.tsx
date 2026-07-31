@@ -1,6 +1,5 @@
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
 import { RESOLVE_BEFORE_BONUS } from "#/capabilities/englisheerie/common";
-import { FormulaLine } from "#/components/capabilityComponents/shared/diceDisplay/FormulaLine";
 import { DicesIcon, MinusIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 

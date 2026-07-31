@@ -47,7 +47,7 @@ export const ObstructionRollMessage = ({
       : undefined;
 
   return (
-    <div className="flex flex-col gap-1 py-1">
+    <div className="flex flex-col gap-1 py-1 group-data-is-mine:items-end">
       <FormulaLine>{formatFormula(data)}</FormulaLine>
 
       <DiceRow>
