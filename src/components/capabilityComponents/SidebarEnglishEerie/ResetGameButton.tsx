@@ -13,8 +13,8 @@ export const ResetGameButton = ({ onResetGame }: Props) => (
   <ConfirmButton
     className="btn btn-sm btn-ghost w-full"
     title="Reset the game?"
-    body="This will permanently wipe everything from this game, including the
-      Protagonist, Story Deck, drawn cards, Spirit and Resolve. You will return
+    body="This will permanently reset all the English Eerie info in this room, including the
+      Protagonist details, Story Deck, Spirit and Resolve. You will return
       to a blank setup and begin afresh. This cannot be undone."
     confirmLabel="Reset the game"
     onConfirm={onResetGame}

@@ -1,6 +1,7 @@
+import D10Icon from "#/assets/d10.svg?react";
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
 import { RESOLVE_BEFORE_BONUS } from "#/capabilities/englisheerie/common";
-import { DicesIcon, MinusIcon, PlusIcon } from "lucide-react";
+import { MinusIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 
 interface Props {
@@ -64,7 +65,7 @@ export const ObstructionRollControls = ({ difficulty, onRoll }: Props) => {
           onRoll?.();
         }}
       >
-        <DicesIcon className="h-5 w-5" />
+        <D10Icon className="h-5 w-5" />
         Roll d10{bonus > 0 ? ` + ${bonus}` : ""} vs {difficulty}
       </button>
     </>

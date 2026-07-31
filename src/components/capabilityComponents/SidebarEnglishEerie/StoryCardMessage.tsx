@@ -77,6 +77,7 @@ export const StoryCardMessage = ({
 
   return (
     <div className="mt-1 flex flex-col gap-1 py-1 group-data-is-mine:items-end">
+      <p className="text-sm">Drew a story card</p>
       <div
         className={`flex items-center gap-2 rounded border p-2 text-sm
           font-semibold ${STORY_CARD_TONES[card.kind]}`}

@@ -133,7 +133,7 @@ const defaultConfig: SvgoConfig = {
       params: {
         attributes: [
           {
-            fill: "currentColor",
+            fill: "none",
           },
           {
             stroke: "currentColor",
