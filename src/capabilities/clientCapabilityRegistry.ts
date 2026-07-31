@@ -2,6 +2,7 @@ import type { CapabilityName } from "./capabilityNames";
 import { cardsClient } from "./cards/client";
 import { counterClient } from "./counter/client";
 import type { ClientCapability } from "./createClientCapability";
+import { englisheerieClient } from "./englisheerie/client";
 import { feedbackClient } from "./feedback/client";
 import { filesClient } from "./files/client";
 import { havocClient } from "./havoc/client";
@@ -34,4 +35,5 @@ export const clientCapabilityRegistry = {
   feedback: feedbackClient,
   users: usersClient,
   safety: safetyClient,
+  englisheerie: englisheerieClient,
 } satisfies Record<CapabilityName, ClientCapability<any, any, any>>;

@@ -39,12 +39,24 @@ The **Cards** already drawn from a **Pile**. Only meaningful when the **Room** h
 A **Card** drawn showing its back rather than its front. Only possible for a **Card** that has a back. Face Down is a presentation choice, not a secrecy guarantee.
 _Avoid_: Flipped, hidden
 
+**Grey Lady**:
+One of the three cards the setup ritual seeds through a **Story Deck** — one
+under each of its three piles. Drawing one is a beat in its own right rather than
+something to roll against, and the third is always the last card in the deck.
+
 **Individual Back**:
 A **Card Image** used as the back of exactly one **Card**. It takes precedence over a **Common Back**, but does not need one to exist — plenty of sets give every **Card** its own back and have no **Common Back** at all.
 
 **Inverted**:
 A **Card** drawn rotated 180°, as if turned around flat on the table — showing its front when face up, or its back when also **Face Down**. Distinct from **Face Down**, which is about which face shows rather than orientation.
 _Avoid_: Flipped, reversed, upside-down
+
+**Obstruction**:
+A **Story Card** that stands in the **Protagonist**'s way, carrying a difficulty
+of 4 to 7. Beating it is a d10 roll that has to equal or beat that difficulty,
+with **Resolve** spendable either before the roll (two each) or after it (one
+each), never both. The last **Obstruction** drawn is the one the next roll is
+made against, until another is drawn.
 
 **Pause**:
 The mild **Safety Signal**: hold on a moment. Same mechanism as an **X Card**,
@@ -53,9 +65,21 @@ lower severity, and dismissible with any gesture rather than a deliberate one.
 **Pile**:
 The per-room, stateful version of a **Deck**: its **Discard** and what remains. You draw from a **Pile**, not a **Deck**. The rules a draw follows belong to the **Deck**.
 
+**Protagonist**:
+The single character an English Eerie **Room** tells its story about: a name, an
+occupation, a background, three features and three fears, plus a **Spirit** and a
+**Resolve** track. One per **Room**, shared and editable by everyone in it — the
+game is about one person, however many people are at the table.
+_Avoid_: Character sheet (there is only ever the one)
+
 **Reset**:
 Returning every **Card** in a **Pile**'s **Discard** to that **Pile**.
 _Avoid_: Shuffle, reshuffle
+
+**Resolve**:
+The **Protagonist**'s track of nerve, spent on an **Obstruction**: two points of
+result for each point spent before the roll, or one for each spent after it.
+_Contrast_: **Spirit**, which nothing spends automatically.
 
 **Room**:
 A shared play space with a chat log and optional side-panel tools.
@@ -76,6 +100,28 @@ and **Pause**. May be **Unattributed**.
 **Shared Item Message**:
 A chat message that highlights a **User File** made accessible through a **Room Share**.
 _Avoid_: Attachment message
+
+**Spirit**:
+The **Protagonist**'s track of what the story has cost them. Crossed off by hand
+as the table decides — no roll spends it — which is why it is a tracker rather
+than a currency.
+_Contrast_: **Resolve**, which an **Obstruction** roll spends.
+
+**Story Card**:
+One of the nineteen cards in a **Story Deck**: a type, and a difficulty when it
+is an **Obstruction**. Drawing one frames a scene.
+_Contrast_: a **Card**, which is a user-owned image in a **Deck**. A **Story
+Card** is built into the game — there is nothing to look at and nothing to own.
+
+**Story Deck**:
+The **Room**'s stack of **Story Cards**, drawn from the top a card at a time.
+Built by its setup ritual: shuffle the sixteen narrative cards, split them into
+piles of five, five and six, slide a **Grey Lady** under each pile, then stack
+them back up with the six-card pile at the bottom. Unlike a **Deck** it belongs
+to no user and is shared with no **Room** — ADR-0001 governs decks as shared
+folders, and this deliberately sits outside it.
+_Contrast_: a **Pile**, which has no order; a **Story Deck** is entirely about
+its order.
 
 **Unattributed**:
 Of a **Safety Signal**: raised without recording who raised it. The raiser's
@@ -173,6 +219,13 @@ or invited, and acknowledging it is a deliberate act rather than a stray click.
 - An **Avoided Subject** can be removed by its author or by the **Room** owner, and by nobody else
 - An **Avoided Subject**'s author is stamped from the connection that added it, never from what the client sent, so nobody can add one in somebody else's name
 - An **Avoided Subject** records the author's display name as it was when the entry was added, so a later rename leaves older entries reading as they were written
+- A **Room** has at most one **Protagonist**, one **Story Deck**, and one pair of **Spirit** and **Resolve** tracks, all shared: any **Room Participant**, including an anonymous one, can edit the sheet, draw a **Story Card**, and roll against an **Obstruction**
+- A **Story Deck** is built into the game rather than shared into the **Room**, so it needs no **Room Share**, no **User File**, and no owner
+- Setting up a **Story Deck** again abandons the current one and every **Story Card** drawn from it, but leaves the **Protagonist**, **Spirit** and **Resolve** alone
+- Only an **Obstruction** becomes the thing rolls are made against; drawing a **Clue** or a **Grey Lady** leaves the last **Obstruction** standing, because a roll can come well after the card that prompted it
+- **Resolve** is spent before an **Obstruction** roll or after it, never both: spending up front is worth twice as much precisely because it is committed before the die is seen
+- **Resolve** spent after a roll is spent by the roller alone, on their own roll, and only enough to turn a failure into a success — there is nothing to buy above the difficulty
+- **Spirit** is never spent automatically: what a failed **Obstruction** costs is the table's call, so the track is crossed off by hand
 - Attribution is where a **Safety Signal** and an **Avoided Subject** deliberately differ: a signal is a momentary interrupt and may be **Unattributed**, because in the moment the cost of being seen to raise one is what stops people raising it; an **Avoided Subject** is a session-zero statement and is always attributed
 
 ## Example Dialogue

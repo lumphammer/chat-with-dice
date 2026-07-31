@@ -2,6 +2,7 @@ import type { CapabilityName } from "./capabilityNames";
 import { cardsServer } from "./cards/server";
 import { counterServer } from "./counter/server";
 import type { ServerCapability } from "./createServerCapability";
+import { englisheerieServer } from "./englisheerie/server";
 import { feedbackServer } from "./feedback/server";
 import { filesServer } from "./files/server";
 import { havocServer } from "./havoc/server";
@@ -28,4 +29,5 @@ export const serverCapabilityRegistry: Record<
   feedback: feedbackServer,
   users: usersServer,
   safety: safetyServer,
+  englisheerie: englisheerieServer,
 };

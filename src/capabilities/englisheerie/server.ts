@@ -1,0 +1,152 @@
+import { createServerCapability } from "#/capabilities/createServerCapability";
+import {
+  D10_SIDES,
+  buildStoryDeck,
+  englishEerieCommon,
+  evaluateObstructionRoll,
+} from "./common";
+
+// Fisher–Yates over a copy, so the caller's array is left alone and
+// `buildStoryDeck` stays pure with this passed in.
+function shuffle<T>(items: T[]): T[] {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [
+      shuffled[swapIndex],
+      shuffled[index],
+    ];
+  }
+  return shuffled;
+}
+
+function rollD10(): number {
+  return Math.floor(Math.random() * D10_SIDES) + 1;
+}
+
+export const englisheerieServer = createServerCapability(englishEerieCommon, {
+  actionEffects: {
+    // Rebuilding the deck abandons whatever story was in progress — the sidebar
+    // asks first.
+    setUpDeck: ({ stateDraft }) => {
+      stateDraft.stack = buildStoryDeck(shuffle);
+      stateDraft.drawn = [];
+      stateDraft.lastObstruction = null;
+    },
+    drawCard: ({ stateDraft, userId, broadcaster, sendChatMessage }) => {
+      const top = stateDraft.stack.shift();
+      if (!top) {
+        broadcaster.sendErrorToUserId(
+          userId,
+          "The story deck is empty. Set it up again to start a new story.",
+        );
+        return;
+      }
+      // A plain copy, not the immer draft: this card outlives the draft in the
+      // chat message, and reading a revoked draft proxy later would throw.
+      const card = { ...top };
+      stateDraft.drawn.push(card);
+
+      // Only an Obstruction becomes the thing rolls are made against. Anything
+      // else leaves the last Obstruction standing — you may well roll against
+      // it after a Clue has come and gone.
+      if (card.difficulty !== undefined) {
+        stateDraft.lastObstruction = {
+          cardId: card.id,
+          difficulty: card.difficulty,
+        };
+      }
+
+      const greyLadyNumber =
+        card.kind === "greyLady"
+          ? stateDraft.drawn.filter((drawn) => drawn.kind === "greyLady").length
+          : undefined;
+
+      sendChatMessage({
+        kind: "draw",
+        card,
+        cardsRemaining: stateDraft.stack.length,
+        greyLadyNumber,
+      });
+    },
+    rollObstruction: ({
+      stateDraft,
+      payload,
+      userId,
+      broadcaster,
+      sendChatMessage,
+    }) => {
+      const obstruction = stateDraft.lastObstruction;
+      if (!obstruction) {
+        broadcaster.sendErrorToUserId(
+          userId,
+          "There is no obstruction to roll against yet — draw a card first.",
+        );
+        return;
+      }
+      // Clamped rather than rejected: the sidebar caps the stepper, so a spend
+      // over the top only happens when somebody else spent in between.
+      const spentBefore = Math.min(
+        payload.resolveSpentBefore,
+        stateDraft.resolve.current,
+      );
+      stateDraft.resolve.current -= spentBefore;
+
+      const die = rollD10();
+      const { total, success } = evaluateObstructionRoll({
+        die,
+        difficulty: obstruction.difficulty,
+        spentBefore,
+        spentAfter: 0,
+      });
+
+      sendChatMessage({
+        kind: "roll",
+        difficulty: obstruction.difficulty,
+        die,
+        spentBefore,
+        spentAfter: 0,
+        total,
+        success,
+      });
+    },
+    // The "spend Resolve 1:1 after the roll" half, driven from the roll's own
+    // chat bubble the way `cards` turns a drawn card over.
+    boostRoll: async ({ payload, userId, editChatMessage, stateDraft }) => {
+      const available = stateDraft.resolve.current;
+      // `editChatMessage` aborts silently when the updater returns undefined and
+      // tells us nothing, so the updater reports back through this. It runs
+      // synchronously inside the call, so it is settled by the time we read it —
+      // and a refused edit must not cost anybody Resolve.
+      let applied = 0;
+
+      await editChatMessage(payload.messageId, (data, message) => {
+        if (
+          // Only the roller spends their own Resolve on their own roll.
+          message.userId !== userId ||
+          data.kind !== "roll" ||
+          // Before or after, never both.
+          data.spentBefore > 0 ||
+          // Nothing to buy: the roll already made it.
+          data.success ||
+          payload.spend > available
+        ) {
+          return undefined;
+        }
+        const spentAfter = data.spentAfter + payload.spend;
+        const { total, success } = evaluateObstructionRoll({
+          die: data.die,
+          difficulty: data.difficulty,
+          spentBefore: 0,
+          spentAfter,
+        });
+        applied = payload.spend;
+        return { ...data, spentAfter, total, success };
+      });
+
+      if (applied > 0) {
+        stateDraft.resolve.current -= applied;
+      }
+    },
+  },
+});
