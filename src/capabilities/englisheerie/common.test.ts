@@ -291,6 +291,14 @@ describe("the modes", () => {
     expect(parsed.success && parsed.data.mode).toBe("setup");
   });
 
+  test("read state stored before obstruction rollers were tracked", () => {
+    const parsed = englishEerieStateValidator.parse({
+      ...initialState(),
+      obstructionRollers: undefined,
+    });
+    expect(parsed.obstructionRollers).toEqual({});
+  });
+
   test("reset the game to a blank setup", () => {
     const after = runAction(
       playingState(),

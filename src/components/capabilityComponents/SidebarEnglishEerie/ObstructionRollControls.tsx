@@ -24,11 +24,10 @@ export const ObstructionRollControls = ({ difficulty, onRoll }: Props) => {
   const bonus = spend * RESOLVE_BEFORE_BONUS;
 
   return (
-    <div>
-      <p className="text-base-content/70 mt-1 text-sm">
-        Roll a d10 and equal or beat {difficulty}. Spend Resolve now for +
-        {RESOLVE_BEFORE_BONUS} each, or spend it on the roll afterwards for +1
-        each — never both.
+    <>
+      <p className="text-base-content/70 mt-1 max-w-sm text-sm">
+        Roll d10 and equal or beat {difficulty}. Spend Resolve now for +
+        {RESOLVE_BEFORE_BONUS} each, or spend it afterwards for +1 each.
       </p>
 
       <div className="mt-4 flex items-center gap-2">
@@ -57,12 +56,6 @@ export const ObstructionRollControls = ({ difficulty, onRoll }: Props) => {
         <span className="text-base-content/50 text-xs">of {resolve}</span>
       </div>
 
-      <div className="mt-2">
-        <FormulaLine>
-          d10{bonus > 0 ? ` + ${bonus}` : ""} vs {difficulty}
-        </FormulaLine>
-      </div>
-
       <button
         type="button"
         className="btn btn-secondary mt-4 w-full"
@@ -73,8 +66,8 @@ export const ObstructionRollControls = ({ difficulty, onRoll }: Props) => {
         }}
       >
         <DicesIcon className="h-5 w-5" />
-        Roll d10
+        Roll d10{bonus > 0 ? ` + ${bonus}` : ""} vs {difficulty}
       </button>
-    </div>
+    </>
   );
 };

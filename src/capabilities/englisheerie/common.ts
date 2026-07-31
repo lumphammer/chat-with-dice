@@ -136,6 +136,8 @@ export const englishEerieStateValidator = z.object({
   lastObstruction: z
     .object({ cardId: z.nanoid(), difficulty: difficultyValidator })
     .nullable(),
+  /** The participant who made the single roll allowed for each Obstruction. */
+  obstructionRollers: z.record(z.nanoid(), z.string()).default({}),
 });
 
 export type EnglishEerieState = z.infer<typeof englishEerieStateValidator>;
@@ -279,6 +281,7 @@ export function getInitialEnglishEerieState(): EnglishEerieState {
     stack: [],
     drawn: [],
     lastObstruction: null,
+    obstructionRollers: {},
   };
 }
 

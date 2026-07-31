@@ -77,9 +77,10 @@ The second of an English Eerie **Room**'s two modes: the story being told. The
 **Story Deck** is at the front, **Spirit** and **Resolve** are independent
 tracks, and the **Protagonist** is prose with an editor behind a pencil. The
 current **Obstruction**'s chat message carries the controls for rolling against
-it. Entered from **Setup**, which shuffles a **Story Deck** if the **Room** has
-never had one. Resetting the game discards all of this and returns the **Room**
-to a blank **Setup**.
+it. Once someone rolls, those controls are replaced by their display name; an
+**Obstruction** can only be rolled against once. Entered from **Setup**, which
+shuffles a **Story Deck** if the **Room** has never had one. Resetting the game
+discards all of this and returns the **Room** to a blank **Setup**.
 
 **Protagonist**:
 The single character an English Eerie **Room** tells its story about: a name, an

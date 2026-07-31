@@ -52,13 +52,16 @@ export const StoryCardMessage = ({
 }: Props) => {
   const capInfo = englisheerieClient.useMount();
   const Icon = STORY_CARD_ICONS[card.kind];
+  const rolledBy = capInfo.initialised
+    ? capInfo.state.obstructionRollers[card.id]
+    : undefined;
   const currentObstructionDifficulty =
     capInfo.initialised && capInfo.state.lastObstruction?.cardId === card.id
       ? card.difficulty
       : undefined;
 
   return (
-    <div className="mt-1 flex flex-col gap-1 py-1">
+    <div className="mt-1 flex flex-col gap-1 py-1 group-data-is-mine:items-end">
       <div
         className={`flex items-center gap-2 rounded border p-2 text-sm
           font-semibold ${STORY_CARD_TONES[card.kind]}`}
@@ -78,9 +81,13 @@ export const StoryCardMessage = ({
           ? "the deck is spent"
           : formatCardsRemaining(cardsRemaining)}
       </span>
-      {currentObstructionDifficulty !== undefined && (
+      {rolledBy !== undefined ? (
+        <span className="text-base-content/70 mt-1 text-sm">
+          Rolled by {rolledBy}
+        </span>
+      ) : currentObstructionDifficulty !== undefined ? (
         <ObstructionRollControls difficulty={currentObstructionDifficulty} />
-      )}
+      ) : null}
     </div>
   );
 };

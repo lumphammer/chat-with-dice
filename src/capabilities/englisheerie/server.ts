@@ -45,6 +45,7 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       stateDraft.stack = buildStoryDeck(shuffle);
       stateDraft.drawn = [];
       stateDraft.lastObstruction = null;
+      stateDraft.obstructionRollers = {};
     },
     drawCard: ({ stateDraft, userId, broadcaster, sendChatMessage }) => {
       const top = stateDraft.stack.shift();
@@ -86,6 +87,7 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       stateDraft,
       payload,
       userId,
+      displayName,
       broadcaster,
       sendChatMessage,
     }) => {
@@ -94,6 +96,14 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
         broadcaster.sendErrorToUserId(
           userId,
           "There is no obstruction to roll against yet — draw a card first.",
+        );
+        return;
+      }
+      const previousRoller = stateDraft.obstructionRollers[obstruction.cardId];
+      if (previousRoller !== undefined) {
+        broadcaster.sendErrorToUserId(
+          userId,
+          `This obstruction was already rolled by ${previousRoller}.`,
         );
         return;
       }
@@ -113,6 +123,7 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
         spentAfter: 0,
       });
 
+      stateDraft.obstructionRollers[obstruction.cardId] = displayName;
       sendChatMessage({
         kind: "roll",
         difficulty: obstruction.difficulty,
