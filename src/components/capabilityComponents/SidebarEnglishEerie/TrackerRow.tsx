@@ -1,30 +1,19 @@
-import { TRACK_LENGTH } from "#/capabilities/englisheerie/common";
 import { DotTracker } from "./DotTracker";
 
-interface Props {
+export const TrackerRow = ({
+  label,
+  value,
+  min,
+  onSetValue,
+}: {
   label: string;
-  description: string;
   value: number;
   /** The floor the track cannot be taken below. Setup's allocation has one. */
   min?: number;
   onSetValue: (value: number) => void;
-}
-
-export const TrackerRow = ({
-  label,
-  description,
-  value,
-  min,
-  onSetValue,
-}: Props) => (
-  <div className="border-base-content/60 rounded-box my-4 border p-3">
-    <div className="mb-1 flex items-baseline gap-2">
-      <h4 className="grow font-semibold">{label}</h4>
-      <span className="text-base-content/50 text-sm tabular-nums">
-        {value} / {TRACK_LENGTH}
-      </span>
-    </div>
-    <p className="text-base-content/70 mb-2 text-sm">{description}</p>
+}) => (
+  <div>
+    <h4 className="heading">{label}</h4>
 
     <DotTracker label={label} value={value} min={min} onSetValue={onSetValue} />
   </div>

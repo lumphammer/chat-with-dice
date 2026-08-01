@@ -1,12 +1,8 @@
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
-import { ObstructionSection } from "./ObstructionSection";
 import { ProtagonistSection } from "./ProtagonistSection";
 import { ResetGameButton } from "./ResetGameButton";
 import { StoryDeckSection } from "./StoryDeckSection";
 import { TrackersSection } from "./TrackersSection";
-
-// Keep the old location easy to restore while the chat-message UI is tried out.
-const SHOW_OBSTRUCTION_IN_SIDEBAR = false;
 
 /**
  * Play: the story being told. What the table reaches for most goes to the top —
@@ -24,13 +20,10 @@ export const PlayView = () => {
   return (
     <>
       <StoryDeckSection />
-      {SHOW_OBSTRUCTION_IN_SIDEBAR && <ObstructionSection />}
       <TrackersSection />
       <ProtagonistSection />
 
-      <div className="mt-8">
-        <ResetGameButton onResetGame={() => capInfo.actions.resetGame({})} />
-      </div>
+      <ResetGameButton onResetGame={() => capInfo.actions.resetGame({})} />
     </>
   );
 };

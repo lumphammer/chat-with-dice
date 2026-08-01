@@ -1,5 +1,6 @@
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
+import { Credits } from "./Credits";
 import { PlayView } from "./PlayView";
 import { SetupView } from "./SetupView";
 import { memo } from "react";
@@ -19,6 +20,7 @@ export const SidebarEnglishEerie = memo(() => {
   return (
     <SidebarPanel title="English Eerie" isSaving={capInfo.patches.length > 0}>
       {capInfo.state.mode === "setup" ? <SetupView /> : <PlayView />}
+      <Credits />
     </SidebarPanel>
   );
 });

@@ -17,7 +17,10 @@ export const SidebarPanel = ({ title, isSaving, children }: Props) => (
       />
     )}
     {title && <h2 className="heading">{title}</h2>}
-    <div className="relative flex-1 overflow-x-hidden overflow-y-scroll">
+    <div
+      className="relative flex flex-1 flex-col gap-4 overflow-x-hidden
+        overflow-y-scroll"
+    >
       {children}
     </div>
   </div>

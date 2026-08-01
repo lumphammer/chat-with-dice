@@ -23,8 +23,8 @@ export const ProtagonistSetupSection = () => {
     <section>
       <h3 className="heading">The Protagonist</h3>
       <p className="text-base-content/70 mt-1 mb-4 text-sm">
-        One character, written by the whole table. Everything here can be
-        changed later.
+        Describe the single protagonist of the story. Multiplayer: take it in
+        turns to fill in the fields.
       </p>
 
       <div className="flex flex-col gap-4">
@@ -51,7 +51,7 @@ export const ProtagonistSetupSection = () => {
         />
 
         <ProtagonistTrioFields
-          legend="Features"
+          legend="Defining Features"
           lineLabel="Feature"
           values={protagonist.features}
           onCommit={(index, value) =>

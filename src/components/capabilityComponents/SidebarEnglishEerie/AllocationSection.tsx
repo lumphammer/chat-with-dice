@@ -2,7 +2,6 @@ import { englisheerieClient } from "#/capabilities/englisheerie/client";
 import {
   ALLOCATION_TOTAL,
   MIN_ALLOCATION,
-  TRACK_LENGTH,
 } from "#/capabilities/englisheerie/common";
 import { TrackerRow } from "./TrackerRow";
 
@@ -22,17 +21,14 @@ export const AllocationSection = () => {
   const { actions } = capInfo;
 
   return (
-    <section className="mt-8">
-      <h3 className="heading">Spirit &amp; Resolve</h3>
+    <section className="flex flex-col gap-4">
       <p className="text-base-content/70 mt-1 text-sm">
-        {ALLOCATION_TOTAL} points between the two, no fewer than{" "}
-        {MIN_ALLOCATION} and no more than {TRACK_LENGTH} on either. Move one and
-        the other moves to meet it.
+        Allocate {ALLOCATION_TOTAL} points between spirit and resolve, minimum{" "}
+        {MIN_ALLOCATION} in each.
       </p>
 
       <TrackerRow
         label="Spirit"
-        description="How much the story can take before there is nothing left to take."
         value={spirit}
         min={MIN_ALLOCATION}
         onSetValue={(value) => actions.setTracker({ tracker: "spirit", value })}
@@ -40,7 +36,6 @@ export const AllocationSection = () => {
 
       <TrackerRow
         label="Resolve"
-        description="The nerve there is to spend on obstructions."
         value={resolve}
         min={MIN_ALLOCATION}
         onSetValue={(value) =>

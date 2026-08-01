@@ -58,7 +58,7 @@ export const ObstructionRollControls = ({ difficulty, onRoll }: Props) => {
 
       <button
         type="button"
-        className="btn btn-secondary mt-4 w-full"
+        className="btn btn-primary mt-4 w-full"
         onClick={() => {
           capInfo.actions.rollObstruction({ resolveSpentBefore: spend });
           setResolveToSpend(0);

@@ -1,14 +1,5 @@
 import { useEffect, useState } from "react";
 
-interface Props {
-  label: string;
-  value: string;
-  onCommit: (value: string) => void;
-  /** Renders a textarea, in which Enter starts a new line rather than committing. */
-  multiline?: boolean;
-  rows?: number;
-}
-
 /**
  * A sheet field over shared, broadcast state. The Protagonist belongs to the
  * whole room, so sending every keystroke would spray the table with patches —
@@ -25,17 +16,36 @@ export const CommittedTextField = ({
   onCommit,
   multiline = false,
   rows,
-}: Props) => {
+}: {
+  label: string;
+  value: string;
+  onCommit: (value: string) => void;
+  /** Renders a textarea, in which Enter starts a new line rather than committing. */
+  multiline?: boolean;
+  rows?: number;
+}) => {
   const [draft, setDraft] = useState(value);
   const [isFocused, setIsFocused] = useState(false);
 
+  // incoming changes - if not focused, set the draft
   useEffect(() => {
     if (!isFocused) {
       setDraft(value);
     }
   }, [value, isFocused]);
 
-  const commit = () => {
+  // edit handler
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    console.log(
+      `handleChange, new text: ${event.target.value}, draft: ${draft}, value: ${value}`,
+    );
+    setDraft(event.target.value);
+  };
+
+  // evant handler for blur
+  const handleBlur = () => {
     setIsFocused(false);
     if (draft !== value) {
       onCommit(draft);
@@ -47,7 +57,10 @@ export const CommittedTextField = ({
   ) => {
     if (event.key === "Escape") {
       setDraft(value);
-      event.currentTarget.blur();
+      const target = event.currentTarget;
+      setTimeout(() => {
+        target.blur();
+      }, 0);
     } else if (event.key === "Enter" && !multiline) {
       event.currentTarget.blur();
     }
@@ -58,23 +71,23 @@ export const CommittedTextField = ({
       <span>{label}</span>
       {multiline ? (
         <textarea
-          className="textarea w-full"
+          className="textarea textarea-neutral w-full"
           rows={rows}
           value={draft}
           placeholder={label}
-          onChange={(event) => setDraft(event.target.value)}
+          onChange={handleChange}
           onFocus={() => setIsFocused(true)}
-          onBlur={commit}
+          onBlur={handleBlur}
           onKeyDown={handleKeyDown}
         />
       ) : (
         <input
-          className="input w-full"
+          className="input input-neutral w-full"
           value={draft}
           placeholder={label}
-          onChange={(event) => setDraft(event.target.value)}
+          onChange={handleChange}
           onFocus={() => setIsFocused(true)}
-          onBlur={commit}
+          onBlur={handleBlur}
           onKeyDown={handleKeyDown}
         />
       )}

@@ -30,9 +30,7 @@ export const StoryDeckSection = () => {
 
   return (
     <section>
-      <h3 className="heading">The Story</h3>
-
-      <p className="text-base-content/70 mt-1 text-sm">
+      <p className="text-base-content/90 mt-1 text-sm">
         {formatCardsRemaining(stack.length)} · {greyLadiesDrawn} of{" "}
         {GREY_LADY_COUNT} Grey Ladies drawn
       </p>

@@ -1,15 +1,15 @@
 import { ConfirmButton } from "./ConfirmButton";
 import { RotateCcwIcon } from "lucide-react";
 
-interface Props {
-  onResetGame: () => void;
-}
-
 /**
  * Starts the game over from a blank setup. Everything in the current game is
  * discarded, so it asks first.
  */
-export const ResetGameButton = ({ onResetGame }: Props) => (
+export const ResetGameButton = ({
+  onResetGame,
+}: {
+  onResetGame: () => void;
+}) => (
   <ConfirmButton
     className="btn btn-sm btn-ghost w-full"
     title="Reset the game?"

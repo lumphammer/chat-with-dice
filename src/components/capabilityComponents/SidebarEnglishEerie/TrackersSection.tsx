@@ -12,7 +12,7 @@ export const TrackersSection = () => {
   const { actions } = capInfo;
 
   return (
-    <section className="mt-8 flex flex-col gap-4">
+    <section className="flex flex-col gap-4">
       <div>
         <h3 className="heading mb-2">Spirit</h3>
         <DotTracker
