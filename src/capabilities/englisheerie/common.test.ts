@@ -100,7 +100,8 @@ describe("the story deck", () => {
   });
 
   test("has a Grey Lady under each pile, with the six-card pile at the bottom", () => {
-    const greyLadyIndexes = buildStoryDeck(noShuffle).flatMap((card, index) =>
+    const deck = buildStoryDeck(noShuffle);
+    const greyLadyIndexes = deck.flatMap((card, index) =>
       card.kind === "greyLady" ? [index] : [],
     );
     expect(greyLadyIndexes).toEqual([
@@ -109,7 +110,8 @@ describe("the story deck", () => {
       THIRD_GREY_LADY_INDEX,
     ]);
     // The gap before the last Grey Lady is the bottom pile: six, not five.
-    expect(THIRD_GREY_LADY_INDEX - SECOND_GREY_LADY_INDEX - 1).toBe(
+    const [, secondGreyLady, thirdGreyLady] = greyLadyIndexes;
+    expect(deck.slice(secondGreyLady + 1, thirdGreyLady)).toHaveLength(
       LARGE_PILE_SIZE,
     );
   });
