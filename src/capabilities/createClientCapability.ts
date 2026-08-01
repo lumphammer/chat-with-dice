@@ -29,11 +29,6 @@ type ClientMountedCapability<
 > =
   | {
       initialised: false;
-      actions: {
-        [K in keyof TActions]: (
-          payload: z.core.output<TActions[K]["payloadValidator"]>,
-        ) => void;
-      };
     }
   | {
       initialised: true;
@@ -211,7 +206,7 @@ export function createClientCapability<
     );
 
     if (!info || !info.initialised) {
-      return { initialised: false, actions: spicyCreators };
+      return { initialised: false };
     }
     const parsedState = common.state?.validator?.safeParse(info.state);
     const parsedConfig = common.config?.validator?.safeParse(info.config);
