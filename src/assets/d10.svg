@@ -30,7 +30,7 @@
      showgrid="true"
      inkscape:zoom="36.833333"
      inkscape:cx="12.013575"
-     inkscape:cy="12"
+     inkscape:cy="11.18552"
      inkscape:window-width="1920"
      inkscape:window-height="1132"
      inkscape:window-x="0"
@@ -53,12 +53,25 @@
        visible="true" />
   </sodipodi:namedview>
   <path
-     d="M 10.321267,3 C 11.547511,2.0082453 13,2 14,3 l 7,8 c 0.658504,0.752577 0.606418,2.204854 0,3 -2.287948,3 -7,7 -7,7 -1.333333,1.333333 -2.666667,1.333333 -4,0 C 10.171698,21.235722 7.7606548,19.72554 3,14 2.0958344,12.912579 2.7013091,11.297556 3,11 6.663744,7.3501787 10.321267,3 10.321267,3 Z"
+     d="m 12,2 c 2,0 10,9.821513 10,11 0,1.178487 -8,9 -10,9 C 10,22 2,14.873303 2,12.873303 2,10.873303 10,2 12,2 Z"
      id="path1"
-     sodipodi:nodetypes="ccssccssc" />
+     sodipodi:nodetypes="zzzzz" />
   <path
      style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:none"
-     d="m 3,14 4,-1 5,3 5,-3 4,1"
+     d="m 3,13 h 4 l 5,3 5,-3 4.419137,0.01962"
      id="path6"
      sodipodi:nodetypes="ccccc" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:none"
+     d="M 12,2.7330317 17,13"
+     id="path7"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:none"
+     d="M 12,2.1447964 7,13"
+     id="path8" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:none"
+     d="m 12,16 v 6"
+     id="path9" />
 </svg>
