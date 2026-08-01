@@ -4,7 +4,8 @@ export const Credits = () => {
       <a
         className="link link-secondary"
         href="https://trollish-delver-games.itch.io/english-eerie-second-edition"
-        target="_new"
+        target="_blank"
+        rel="noopener noreferrer"
       >
         English Eerie
       </a>{" "}

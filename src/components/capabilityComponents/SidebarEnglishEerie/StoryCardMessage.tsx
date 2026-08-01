@@ -92,11 +92,11 @@ export const StoryCardMessage = ({
           </span>
         )}
       </div>
-      {card.difficulty !== undefined && (
-        <span className="text-base-content/70 text-xs">
-          Base {card.difficulty} + {difficultyBonus} from {difficultyBonus} Grey{" "}
-          {difficultyBonus === 1 ? "Lady" : "Ladies"} drawn
-        </span>
+      {card.difficulty !== undefined && difficultyBonus > 0 && (
+        <DifficultyBreakdown
+          difficulty={card.difficulty}
+          difficultyBonus={difficultyBonus}
+        />
       )}
       <span className="text-base-content/50 text-xs">
         {greyLadyNumber !== undefined &&
@@ -106,22 +106,14 @@ export const StoryCardMessage = ({
           : formatCardsRemaining(cardsRemaining)}
       </span>
       {greyLadyLoss !== null && (
-        <div className="mt-1 flex items-center gap-2">
-          <span className="text-base-content/70 text-sm">
-            1 {greyLadyLoss === "spirit" ? "Spirit" : "Resolve"} lost
-          </span>
-          {canSpendResolveForGreyLady && (
-            <button
-              type="button"
-              className="btn btn-sm btn-outline"
-              onClick={() =>
-                capInfo.actions.spendResolveForGreyLady({ messageId })
-              }
-            >
-              Spend 1 resolve instead.
-            </button>
-          )}
-        </div>
+        <GreyLadyLossRow
+          greyLadyLoss={greyLadyLoss}
+          onSpendResolve={
+            canSpendResolveForGreyLady
+              ? () => capInfo.actions.spendResolveForGreyLady({ messageId })
+              : undefined
+          }
+        />
       )}
       {rolledBy !== undefined ? (
         <span className="text-base-content/70 mt-1 text-sm">
@@ -133,3 +125,46 @@ export const StoryCardMessage = ({
     </div>
   );
 };
+
+/**
+ * Where an Obstruction's effective difficulty came from. Only worth saying once
+ * a Grey Lady has been drawn — before that the printed difficulty is the whole
+ * story, and "+ 0 from 0 Grey Ladies drawn" is noise.
+ */
+const DifficultyBreakdown = ({
+  difficulty,
+  difficultyBonus,
+}: {
+  difficulty: number;
+  difficultyBonus: number;
+}) => (
+  <span className="text-base-content/70 text-xs">
+    Base {difficulty} + {difficultyBonus} from {difficultyBonus} Grey{" "}
+    {difficultyBonus === 1 ? "Lady" : "Ladies"} drawn
+  </span>
+);
+
+/** What a Grey Lady cost, and the offer to pay in Resolve instead. */
+const GreyLadyLossRow = ({
+  greyLadyLoss,
+  onSpendResolve,
+}: {
+  greyLadyLoss: GreyLadyLoss;
+  /** Absent when the swap is no longer on offer. */
+  onSpendResolve?: () => void;
+}) => (
+  <div className="mt-1 flex items-center gap-2">
+    <span className="text-base-content/70 text-sm">
+      1 {greyLadyLoss === "spirit" ? "Spirit" : "Resolve"} lost
+    </span>
+    {onSpendResolve && (
+      <button
+        type="button"
+        className="btn btn-sm btn-outline"
+        onClick={onSpendResolve}
+      >
+        Spend 1 resolve instead.
+      </button>
+    )}
+  </div>
+);

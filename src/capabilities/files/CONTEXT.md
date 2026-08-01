@@ -22,7 +22,7 @@ _Avoid_: Room file, shared file
 - A **Deck** is made available to a **Room** by a **Room Share** pointing at its folder; there is no separate deck-sharing grant
 - A shared **Deck** appears in the room's **Shared with room** sidebar as a folder, so participants can browse its Card Images directly
 - Only a signed-in, non-anonymous **Room Participant** can own a **Deck** or share one with a **Room**
-- Removing the **Room Share** for a **Deck** discards that **Deck**'s Pile, so re-sharing the **Deck** later starts a fresh Pile rather than resuming an old one
+- Removing the **Room Share** for a **Deck** discards that **Deck**'s Pile, so re-sharing the **Deck** later is meant to start a fresh Pile rather than resume an old one — cleanup is best-effort, and [ADR-0001](../../../docs/adr/0001-decks-piles-and-deck-sharing.md) records the residual window in which a missed hook lets the old Pile come back half-drawn
 - A **Room Share** belongs to exactly one **Room**
 - A **Room Share** points to exactly one **User File**
 - A **Room Share** has its own stable identity distinct from the **User File** it grants access to

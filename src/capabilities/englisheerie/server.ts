@@ -112,10 +112,16 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
     },
     spendResolveForGreyLady: async ({
       payload,
+      userId,
+      broadcaster,
       editChatMessage,
       stateDraft,
     }) => {
       if (stateDraft.resolve <= 0) {
+        broadcaster.sendErrorToUserId(
+          userId,
+          "There is no Resolve left to spend.",
+        );
         return;
       }
       let applied = false;
@@ -134,6 +140,11 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
       if (applied) {
         stateDraft.resolve -= 1;
         stateDraft.spirit = Math.min(stateDraft.spirit + 1, TRACK_LENGTH);
+      } else {
+        broadcaster.sendErrorToUserId(
+          userId,
+          "That Grey Lady has already been paid for.",
+        );
       }
     },
     rollObstruction: ({
@@ -194,36 +205,58 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
     },
     // The "spend Resolve 1:1 after the roll" half, driven from the roll's own
     // chat bubble the way `cards` turns a drawn card over.
-    boostRoll: async ({ payload, userId, editChatMessage, stateDraft }) => {
+    boostRoll: async ({
+      payload,
+      userId,
+      broadcaster,
+      editChatMessage,
+      stateDraft,
+    }) => {
       const available = stateDraft.resolve;
       // `editChatMessage` aborts silently when the updater returns undefined and
-      // tells us nothing, so the updater reports back through this. It runs
-      // synchronously inside the call, so it is settled by the time we read it —
-      // and a refused edit must not cost anybody Resolve.
+      // tells us nothing, so the updater reports back through these. They run
+      // synchronously inside the call, so they are settled by the time we read
+      // them — and a refused edit must not cost anybody Resolve.
       let applied = 0;
       let reimburseSpirit = false;
+      let refusal: string | undefined;
 
       await editChatMessage(payload.messageId, (data, message) => {
-        if (
-          // Only the roller spends their own Resolve on their own roll.
-          message.userId !== userId ||
-          data.kind !== "roll" ||
-          // Before or after, never both.
-          data.spentBefore > 0 ||
-          // Nothing to buy: the roll already made it.
-          data.success ||
-          payload.spend > available
-        ) {
+        if (data.kind !== "roll") {
+          refusal = "That message is not an obstruction roll.";
           return undefined;
         }
-        const spentAfter = data.spentAfter + payload.spend;
+        // Only the roller spends their own Resolve on their own roll.
+        if (message.userId !== userId) {
+          refusal = "Only the person who rolled can spend Resolve on it.";
+          return undefined;
+        }
+        // Before or after, never both.
+        if (data.spentBefore > 0) {
+          refusal = "Resolve was already spent on this roll before the die.";
+          return undefined;
+        }
+        // Nothing to buy: the roll already made it.
+        if (data.success) {
+          refusal = "This roll already succeeded.";
+          return undefined;
+        }
+        if (payload.spend > available) {
+          refusal = "There is not that much Resolve left to spend.";
+          return undefined;
+        }
+        // Only enough to turn the failure into a success — there is nothing to
+        // buy above the difficulty. Clamped rather than refused, the way
+        // `rollObstruction` clamps the spend before the roll.
+        const spend = Math.min(payload.spend, data.difficulty - data.total);
+        const spentAfter = data.spentAfter + spend;
         const { total, success } = evaluateObstructionRoll({
           die: data.die,
           difficulty: data.difficulty,
           spentBefore: 0,
           spentAfter,
         });
-        applied = payload.spend;
+        applied = spend;
         reimburseSpirit = success && data.spiritLost;
         return {
           ...data,
@@ -234,6 +267,9 @@ export const englisheerieServer = createServerCapability(englishEerieCommon, {
         };
       });
 
+      if (refusal !== undefined) {
+        broadcaster.sendErrorToUserId(userId, refusal);
+      }
       if (applied > 0) {
         stateDraft.resolve -= applied;
         if (reimburseSpirit) {

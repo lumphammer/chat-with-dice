@@ -7,15 +7,20 @@ import { useCloseMobileSidebar } from "#/components/Sidebar/mobileSidebarContext
 import { SetUpDeckButton } from "./SetUpDeckButton";
 import { formatCardsRemaining } from "./formatCardsRemaining";
 import { LayersIcon } from "lucide-react";
+import { useId } from "react";
 
 /**
  * The Story Deck. Play mode only, and by then there is always a deck: beginning
- * play shuffles one when the room has never had one, so there is no empty state
- * to write for.
+ * play shuffles one when the room has never had one, so there is nothing to
+ * write for a room that has never drawn. Nineteen draws later the deck does run
+ * out, and that end-of-story state is written for below.
  */
 export const StoryDeckSection = () => {
   const capInfo = englisheerieClient.useMount();
   const closeMobileSidebar = useCloseMobileSidebar();
+  // Whatever stops the draw is said out loud rather than left to a dimmed
+  // button, and pointed at from the button so it is announced too.
+  const hintId = useId();
 
   if (!capInfo.initialised) {
     return null;
@@ -27,6 +32,11 @@ export const StoryDeckSection = () => {
   const greyLadiesDrawn = drawn.filter(
     (card) => card.kind === "greyLady",
   ).length;
+  const drawHint = mustRollObstruction
+    ? "Roll against the current obstruction before drawing another card."
+    : stack.length === 0
+      ? "The deck is spent — the Grey Lady has had the last word."
+      : undefined;
 
   return (
     <section>
@@ -40,6 +50,7 @@ export const StoryDeckSection = () => {
           type="button"
           className="btn btn-primary w-full"
           disabled={stack.length === 0 || mustRollObstruction}
+          aria-describedby={drawHint === undefined ? undefined : hintId}
           onClick={() => {
             actions.drawCard({});
             closeMobileSidebar();
@@ -54,9 +65,9 @@ export const StoryDeckSection = () => {
         />
       </div>
 
-      {stack.length === 0 && (
-        <p className="text-base-content/70 mt-2 text-sm italic">
-          The deck is spent — the Grey Lady has had the last word.
+      {drawHint !== undefined && (
+        <p id={hintId} className="text-base-content/70 mt-2 text-sm italic">
+          {drawHint}
         </p>
       )}
     </section>

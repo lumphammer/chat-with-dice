@@ -1,4 +1,4 @@
-import { type ReactNode, useRef } from "react";
+import { type ReactNode, useId, useRef } from "react";
 
 /**
  * A button that asks before it acts. The sidebar has three of these — beginning
@@ -34,6 +34,9 @@ export const ConfirmButton = ({
   secondaryClass?: "warning" | "danger" | "secondary";
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // The sidebar mounts several of these at once, so the heading a screen reader
+  // announces the dialog by can't have a hard-coded id.
+  const titleId = useId();
 
   return (
     <>
@@ -45,9 +48,16 @@ export const ConfirmButton = ({
         {children}
       </button>
 
-      <dialog ref={dialogRef} closedby="any" className="modal">
+      <dialog
+        ref={dialogRef}
+        closedby="any"
+        className="modal"
+        aria-labelledby={titleId}
+      >
         <div className="modal-box">
-          <h3 className="text-lg font-bold">{title}</h3>
+          <h3 id={titleId} className="text-lg font-bold">
+            {title}
+          </h3>
           <div className="text-base-content/70 py-2 text-sm">{body}</div>
           <div className="modal-action">
             <form method="dialog">
@@ -56,7 +66,7 @@ export const ConfirmButton = ({
             {secondaryLabel && onSecondary && (
               <button
                 type="button"
-                className="btn data-[class=danger]:btn-danger
+                className="btn data-[class=danger]:btn-error
                   data-[class=warning]:btn-warning
                   data-[class=secondary]:btn-secondary"
                 data-class={secondaryClass}

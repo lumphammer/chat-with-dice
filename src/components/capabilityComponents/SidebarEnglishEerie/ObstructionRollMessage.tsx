@@ -68,42 +68,67 @@ export const ObstructionRollMessage = ({
 
       <ResultStat label="total" value={data.total} />
 
-      <div
-        className={`mt-1 flex items-center gap-2 rounded border p-2 text-sm
-          font-semibold ${
-            data.success
-              ? "bg-success/10 border-success/30 text-success"
-              : "bg-error/10 border-error/30 text-error"
-          }`}
-      >
-        <span className="grow text-left">
-          {data.success ? "Obstruction beaten" : "The obstruction holds"}
-        </span>
-        {data.spentAfter > 0 && (
-          <span className="badge badge-sm">
-            {data.spentAfter} Resolve spent after
-          </span>
-        )}
-        {data.spiritLost && (
-          <span className="badge badge-sm">1 Spirit lost</span>
-        )}
-      </div>
+      <ResultBanner data={data} />
 
-      {onBoost && (
-        <button
-          type="button"
-          className="btn btn-sm btn-outline mt-1 w-max"
-          onClick={onBoost}
-        >
-          <HeartIcon className="h-4 w-4" />
-          Spend {shortfall} Resolve to succeed
-        </button>
-      )}
-      {cannotSpendMessage && (
-        <span className="text-base-content/50 mt-1 text-xs">
-          {cannotSpendMessage}
-        </span>
-      )}
+      <SpendResolveRow
+        shortfall={shortfall}
+        onBoost={onBoost}
+        cannotSpendMessage={cannotSpendMessage}
+      />
     </div>
   );
 };
+
+/** How the roll landed, and what it cost or bought. */
+const ResultBanner = ({ data }: { data: ObstructionRollMessageData }) => (
+  <div
+    className={`mt-1 flex items-center gap-2 rounded border p-2 text-sm
+      font-semibold ${
+        data.success
+          ? "bg-success/10 border-success/30 text-success"
+          : "bg-error/10 border-error/30 text-error"
+      }`}
+  >
+    <span className="grow text-left">
+      {data.success ? "Obstruction beaten" : "The obstruction holds"}
+    </span>
+    {data.spentAfter > 0 && (
+      <span className="badge badge-sm">
+        {data.spentAfter} Resolve spent after
+      </span>
+    )}
+    {data.spiritLost && <span className="badge badge-sm">1 Spirit lost</span>}
+  </div>
+);
+
+/**
+ * The offer to buy the roll — or, for the roller who cannot, why not. Both are
+ * absent for everybody else at the table.
+ */
+const SpendResolveRow = ({
+  shortfall,
+  onBoost,
+  cannotSpendMessage,
+}: {
+  shortfall: number;
+  onBoost?: () => void;
+  cannotSpendMessage?: string;
+}) => (
+  <>
+    {onBoost && (
+      <button
+        type="button"
+        className="btn btn-sm btn-outline mt-1 w-max"
+        onClick={onBoost}
+      >
+        <HeartIcon className="h-4 w-4" />
+        Spend {shortfall} Resolve to succeed
+      </button>
+    )}
+    {cannotSpendMessage && (
+      <span className="text-base-content/50 mt-1 text-xs">
+        {cannotSpendMessage}
+      </span>
+    )}
+  </>
+);

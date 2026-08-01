@@ -1,5 +1,5 @@
 import type { Protagonist } from "#/capabilities/englisheerie/common";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 const BACKGROUND_ROWS = 3;
 
@@ -26,6 +26,8 @@ export const ProtagonistEditDialog = ({
 }: Props) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [draft, setDraft] = useState<Protagonist>(protagonist);
+  // The heading a screen reader announces the dialog by.
+  const titleId = useId();
 
   useEffect(() => {
     if (open) {
@@ -65,9 +67,17 @@ export const ProtagonistEditDialog = ({
   };
 
   return (
-    <dialog ref={dialogRef} closedby="any" className="modal" onClose={onClose}>
+    <dialog
+      ref={dialogRef}
+      closedby="any"
+      className="modal"
+      aria-labelledby={titleId}
+      onClose={onClose}
+    >
       <div className="modal-box">
-        <h3 className="text-lg font-bold">The Protagonist</h3>
+        <h3 id={titleId} className="text-lg font-bold">
+          The Protagonist
+        </h3>
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-2">
             <label className="floating-label">

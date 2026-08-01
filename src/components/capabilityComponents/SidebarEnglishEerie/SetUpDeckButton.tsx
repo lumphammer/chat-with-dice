@@ -26,7 +26,7 @@ export const SetUpDeckButton = ({
       secondaryClass="warning"
     >
       <ShuffleIcon className="h-4 w-4" />
-      Reset
+      Shuffle or reset
     </ConfirmButton>
   );
 };

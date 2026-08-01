@@ -14,7 +14,7 @@ If any of these files don't exist, **proceed silently**. Don't flag their absenc
 
 Multi-context repo:
 
-```
+```text
 /
 ├── CONTEXT-MAP.md
 ├── docs/adr/

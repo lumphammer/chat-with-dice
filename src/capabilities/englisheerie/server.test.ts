@@ -168,6 +168,7 @@ const boost = (
   mounted: ServerMountedCapability,
   messageId: string,
   spend: number,
+  { userId = "alice-id", displayName = "Alice" } = {},
 ) =>
   mounted.onMessage({
     actionCall: {
@@ -175,8 +176,8 @@ const boost = (
       actionName: "boostRoll",
       params: { messageId, spend },
     },
-    userId: "alice-id",
-    displayName: "Alice",
+    userId,
+    displayName,
   });
 
 const spendResolveForGreyLady = (
@@ -314,6 +315,53 @@ describe("rolling against an Obstruction", () => {
       mounted.getInitPayload().state,
     );
     expect(state.spirit).toBe(0);
+  });
+
+  it("spends only enough Resolve to turn the failure", async () => {
+    const { mounted, sentMessages, messages } = await mountWithObstruction();
+    const { resolve } = getInitialEnglishEerieState();
+
+    await roll(mounted, "alice-id", "Alice", 0);
+    const message = sentMessages[0];
+    const failedRoll = getRollData(message);
+    const shortfall = failedRoll.difficulty - failedRoll.total;
+    // Everything they have, rather than the exact shortfall the sidebar offers.
+    await boost(mounted, message.id, resolve);
+
+    const state = englishEerieStateValidator.parse(
+      mounted.getInitPayload().state,
+    );
+    expect(shortfall).toBeLessThan(resolve);
+    expect(state.resolve).toBe(resolve - shortfall);
+    const updatedMessage = messages.get(message.id);
+    if (!updatedMessage) {
+      throw new Error("Updated roll message not found");
+    }
+    expect(getRollData(updatedMessage)).toMatchObject({
+      spentAfter: shortfall,
+      success: true,
+    });
+  });
+
+  it("says why it refuses to spend somebody else's Resolve", async () => {
+    const { mounted, sentMessages, errors } = await mountWithObstruction();
+
+    await roll(mounted, "alice-id", "Alice", 0);
+    await boost(mounted, sentMessages[0].id, 1, {
+      userId: "bob-id",
+      displayName: "Bob",
+    });
+
+    const state = englishEerieStateValidator.parse(
+      mounted.getInitPayload().state,
+    );
+    expect(state.resolve).toBe(getInitialEnglishEerieState().resolve);
+    expect(errors).toEqual([
+      {
+        userId: "bob-id",
+        error: "Only the person who rolled can spend Resolve on it.",
+      },
+    ]);
   });
 
   it.each(CHAPTER_DIFFICULTY_BONUSES)(

@@ -38,9 +38,6 @@ export const CommittedTextField = ({
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    console.log(
-      `handleChange, new text: ${event.target.value}, draft: ${draft}, value: ${value}`,
-    );
     setDraft(event.target.value);
   };
 
