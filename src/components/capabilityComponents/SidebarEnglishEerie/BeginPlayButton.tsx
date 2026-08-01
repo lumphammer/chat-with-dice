@@ -18,8 +18,8 @@ export const BeginPlayButton = () => {
       className="btn btn-primary w-full"
       title="Ready to begin the story?"
       body="Everything can be edited while playing."
-      confirmLabel="Begin play"
-      onConfirm={() => capInfo.actions.beginPlay({})}
+      primaryLabel="Begin play"
+      onPrimary={() => capInfo.actions.beginPlay({})}
     >
       <PlayIcon className="h-5 w-5" />
       Begin play

@@ -1,6 +1,5 @@
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
 import { ProtagonistSection } from "./ProtagonistSection";
-import { ResetGameButton } from "./ResetGameButton";
 import { StoryDeckSection } from "./StoryDeckSection";
 import { TrackersSection } from "./TrackersSection";
 
@@ -22,8 +21,6 @@ export const PlayView = () => {
       <StoryDeckSection />
       <TrackersSection />
       <ProtagonistSection />
-
-      <ResetGameButton onResetGame={() => capInfo.actions.resetGame({})} />
     </>
   );
 };

@@ -48,7 +48,10 @@ export const StoryDeckSection = () => {
           <LayersIcon className="h-5 w-5" />
           Draw a card
         </button>
-        <SetUpDeckButton onSetUpDeck={() => actions.setUpDeck({})} />
+        <SetUpDeckButton
+          onSetUpDeck={() => actions.setUpDeck({})}
+          onResetGame={() => actions.resetGame({})}
+        />
       </div>
 
       {stack.length === 0 && (

@@ -1,16 +1,5 @@
 import { type ReactNode, useRef } from "react";
 
-interface Props {
-  /** What the trigger says. */
-  children: ReactNode;
-  /** Classes for the trigger. The dialog's own buttons are styled here. */
-  className: string;
-  title: string;
-  body: ReactNode;
-  confirmLabel: string;
-  onConfirm: () => void;
-}
-
 /**
  * A button that asks before it acts. The sidebar has three of these — beginning
  * play, resetting the game, and reshuffling the deck — and they only differ in
@@ -24,9 +13,26 @@ export const ConfirmButton = ({
   className,
   title,
   body,
-  confirmLabel,
-  onConfirm,
-}: Props) => {
+  primaryLabel,
+  onPrimary,
+  primaryClass = "primary",
+  secondaryLabel,
+  onSecondary,
+  secondaryClass = "secondary",
+}: {
+  /** What the trigger says. */
+  children: ReactNode;
+  /** Classes for the trigger. The dialog's own buttons are styled here. */
+  className: string;
+  title: string;
+  body: ReactNode;
+  primaryLabel: string;
+  onPrimary: () => void;
+  primaryClass?: "warning" | "danger" | "primary";
+  secondaryLabel?: string;
+  onSecondary?: () => void;
+  secondaryClass?: "warning" | "danger" | "secondary";
+}) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   return (
@@ -47,15 +53,34 @@ export const ConfirmButton = ({
             <form method="dialog">
               <button className="btn">Cancel</button>
             </form>
+            {secondaryLabel && onSecondary && (
+              <button
+                type="button"
+                className="btn data-[class=danger]:btn-danger
+                  data-[class=warning]:btn-warning
+                  data-[class=secondary]:btn-secondary"
+                data-class={secondaryClass}
+                onClick={() => {
+                  onSecondary();
+                  dialogRef.current?.close();
+                }}
+              >
+                {secondaryLabel}
+              </button>
+            )}
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn data-[class=danger]:btn-error
+                data-[class=warning]:btn-warning
+                data-[class=primary]:btn-primary"
+              data-class={primaryClass}
+
               onClick={() => {
-                onConfirm();
+                onPrimary();
                 dialogRef.current?.close();
               }}
             >
-              {confirmLabel}
+              {primaryLabel}
             </button>
           </div>
         </div>

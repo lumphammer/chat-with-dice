@@ -27,7 +27,14 @@ type ClientMountedCapability<
   TActions extends Record<string, CommonActionDefinition<TState, z.ZodType>> =
     Record<string, CommonActionDefinition<TState, z.ZodType>>,
 > =
-  | { initialised: false }
+  | {
+      initialised: false;
+      actions: {
+        [K in keyof TActions]: (
+          payload: z.core.output<TActions[K]["payloadValidator"]>,
+        ) => void;
+      };
+    }
   | {
       initialised: true;
       state: TState;
@@ -204,7 +211,7 @@ export function createClientCapability<
     );
 
     if (!info || !info.initialised) {
-      return { initialised: false };
+      return { initialised: false, actions: spicyCreators };
     }
     const parsedState = common.state?.validator?.safeParse(info.state);
     const parsedConfig = common.config?.validator?.safeParse(info.config);
