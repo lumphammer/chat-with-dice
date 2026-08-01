@@ -1,5 +1,20 @@
 ---
+import D10Icon from "#/assets/d10.svg";
+import D12Icon from "#/assets/d12.svg";
+import D20Icon from "#/assets/d20.svg";
+import D4Icon from "#/assets/d4.svg";
+import D6Icon from "#/assets/d6.svg";
+import D8Icon from "#/assets/d8.svg";
 import Layout from "#/layouts/HTML.astro";
+
+const dice = [
+  { label: "d4", Icon: D4Icon },
+  { label: "d6", Icon: D6Icon },
+  { label: "d8", Icon: D8Icon },
+  { label: "d10", Icon: D10Icon },
+  { label: "d12", Icon: D12Icon },
+  { label: "d20", Icon: D20Icon },
+];
 ---
 
 <Layout title="Style Demo">
@@ -38,6 +53,15 @@ import Layout from "#/layouts/HTML.astro";
             <div class="btn btn-outline btn-neutral">
               .btn-outline.btn-accent
             </div>
+            <div class="my-4 flex flex-wrap gap-2">
+              {dice.map(({ label, Icon }) => (
+                <button type="button" class="btn btn-primary">
+                  <Icon class="h-5 w-5" />
+                  Roll {label}
+                </button>
+              ))}
+            </div>
+
             <div class="toast toast-info">
               <div
                 data-scope="toast"
