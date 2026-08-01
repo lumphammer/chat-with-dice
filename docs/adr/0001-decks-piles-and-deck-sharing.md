@@ -22,7 +22,7 @@ Specifically:
 
 3. **Cards are derived, not stored.** A Card is an image that is a direct child of the Deck folder, minus the Common Back, minus any image serving as an Individual Back. Only the front→Individual Back _pairings_ are stored. This keeps the zero-config path (drop 78 images in a folder and it works) and keeps Decks live: add an image and it is drawable immediately, with no re-registration step. Pairings can be proposed by a filename heuristic (`front`/`back`, written up in `docs/deck-pairing-heuristic.md`) and corrected by hand; Decks that defeat the heuristic are paired manually.
 
-4. **A Pile stores its Discard, not its remaining Cards.** Remaining is derived as `liveCards − discard` at draw time. Storing the remainder would silently snapshot the Deck and require reconciliation whenever the owner edits it; storing the Discard means an added Card is instantly drawable and a deleted one just vanishes, with no drift logic. This preserves the "Room Share is a live grant, not a copy" property `CONTEXT.md` already asserts.
+4. **A Pile stores its Discard, not its remaining Cards.** Remaining is derived as `liveCards − discard` at draw time. Storing the remainder would silently snapshot the Deck and require reconciliation whenever the owner edits it; storing the Discard means an added Card is instantly drawable and a deleted one just vanishes, with no drift logic. This preserves the "Room Share is a live grant, not a copy" property `src/capabilities/files/CONTEXT.md` already asserts.
 
 5. **A Pile is keyed by owner user id and Deck node id.**
 
@@ -57,7 +57,7 @@ Specifically:
 
 7. **Face Down is presentation, not secrecy.** The client receives the front's node id regardless. This is a tool for friends playing games; if they snoop, they snoop. Real secrecy would require the server to withhold Card Images until a reveal and to make chat history per-participant, which the broadcast-everything model does not do.
 
-8. **The Files capability remains the sole authority on shares.** Deck folders appear in the Shared with room sidebar as folders, so participants can browse the Card Images. The `cards` capability holds only Piles, and authorizes every draw against the owner's DO via `isNodeAccessibleFromRoom` rather than trusting the room-side cache — as `CONTEXT.md` requires ("cached summaries do not authorize file access").
+8. **The Files capability remains the sole authority on shares.** Deck folders appear in the Shared with room sidebar as folders, so participants can browse the Card Images. The `cards` capability holds only Piles, and authorizes every draw against the owner's DO via `isNodeAccessibleFromRoom` rather than trusting the room-side cache — as `src/capabilities/files/CONTEXT.md` requires ("cached summaries do not authorize file access").
 
 9. **Anonymous Room Participants can draw** from a Pile, but cannot own or share a Deck (this follows from the existing Room Share rules).
 
