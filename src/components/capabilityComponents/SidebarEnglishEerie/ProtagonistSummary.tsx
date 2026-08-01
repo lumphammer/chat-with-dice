@@ -36,7 +36,7 @@ export const ProtagonistSummary = ({
   ) {
     return (
       <p className="text-base-content/70 mt-1 text-sm italic">
-        No protagonist yet.
+        No details yet.
       </p>
     );
   }
