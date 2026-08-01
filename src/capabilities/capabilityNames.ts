@@ -14,6 +14,7 @@ export const capabilityNames = [
   "feedback",
   "users",
   "safety",
+  "englisheerie",
 ] as const;
 
 export type CapabilityName = (typeof capabilityNames)[number];

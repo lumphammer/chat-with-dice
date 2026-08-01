@@ -1,15 +1,17 @@
 import type { RoomConfig } from "#/validators/roomConfigValidator";
-import { DicesIcon, FlameIcon, LayersIcon } from "lucide-react";
+import { DicesIcon, FlameIcon, GhostIcon, LayersIcon } from "lucide-react";
 import type { ComponentType } from "react";
 
 export const GENERIC_ROOM_PRESET_NAME = "generic";
 const HAVOC_ROOM_PRESET_NAME = "havoc";
 const CARDS_ROOM_PRESET_NAME = "cards";
+const ENGLISH_EERIE_ROOM_PRESET_NAME = "englisheerie";
 
 export const ROOM_PRESET_NAMES = [
   GENERIC_ROOM_PRESET_NAME,
   HAVOC_ROOM_PRESET_NAME,
   CARDS_ROOM_PRESET_NAME,
+  ENGLISH_EERIE_ROOM_PRESET_NAME,
 ] as const;
 
 export type RoomPresetName = (typeof ROOM_PRESET_NAMES)[number];
@@ -56,6 +58,18 @@ export const roomPresets = {
         { name: "files", config: {} },
         { name: "cards", config: {} },
       ],
+    },
+  },
+  [ENGLISH_EERIE_ROOM_PRESET_NAME]: {
+    label: "English Eerie",
+    description:
+      "Rural horror storytelling: a protagonist sheet, Spirit and Resolve, and the story deck",
+    Icon: GhostIcon,
+    config: {
+      version: 1,
+      // Everything the game needs is built in — no dice roller, because the only
+      // roll it makes is the obstruction d10 in its own sidebar.
+      capabilities: [{ name: "englisheerie", config: {} }],
     },
   },
 } satisfies Record<RoomPresetName, RoomPresetInfo>;

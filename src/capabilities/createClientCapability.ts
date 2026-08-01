@@ -27,7 +27,9 @@ type ClientMountedCapability<
   TActions extends Record<string, CommonActionDefinition<TState, z.ZodType>> =
     Record<string, CommonActionDefinition<TState, z.ZodType>>,
 > =
-  | { initialised: false }
+  | {
+      initialised: false;
+    }
   | {
       initialised: true;
       state: TState;

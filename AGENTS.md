@@ -72,7 +72,7 @@ Default label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `read
 
 ### Domain docs
 
-Single-context repo — `CONTEXT.md` + `docs/adr/` at the root. See `docs/agents/domain.md`.
+Multi-context repo — `CONTEXT-MAP.md` at the root points to a `CONTEXT.md` per bounded context, each of which currently lives with its capability (`src/capabilities/*/CONTEXT.md`); `docs/adr/` is at the root. See `docs/agents/domain.md`.
 
 ## Running local CLI tools
 
