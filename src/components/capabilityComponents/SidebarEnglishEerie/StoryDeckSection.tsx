@@ -4,7 +4,7 @@ import {
   hasUnrolledObstruction,
 } from "#/capabilities/englisheerie/common";
 import { useCloseMobileSidebar } from "#/components/Sidebar/mobileSidebarContext";
-import { SetUpDeckButton } from "./SetUpDeckButton";
+import { ShuffleOrResetButton } from "./ShuffleOrResetButton";
 import { formatCardsRemaining } from "./formatCardsRemaining";
 import { LayersIcon } from "lucide-react";
 import { useId } from "react";
@@ -59,7 +59,7 @@ export const StoryDeckSection = () => {
           <LayersIcon className="h-5 w-5" />
           Draw a card
         </button>
-        <SetUpDeckButton
+        <ShuffleOrResetButton
           onSetUpDeck={() => actions.setUpDeck({})}
           onResetGame={() => actions.resetGame({})}
         />
