@@ -113,6 +113,24 @@ body {
   }
 }
 
+/* =============================================================================
+ * App component base layer
+ * -----------------------------------------------------------------------------
+ * These are our own component classes, not daisyUI's — the hooks a theme reaches
+ * for to dress the app's own furniture (the chat surface, the sidebar, headings,
+ * the room name, dice faces).
+ *
+ * What lives here is the structural floor, and only that: the box a die needs to
+ * be square, the size ramp that makes a heading read as a heading, the opaque
+ * fills that stop the chat area and sidebar showing through to the page. It is
+ * deliberately plain, and it is what you see if no theme styles a given class.
+ *
+ * Everything expressive — typefaces, scanlines, bevels, glow, chamfered corners
+ * — belongs to a theme, which overrides these from a later layer. That means a
+ * theme can style as much or as little as it likes and still get a coherent app:
+ * skip `.main-area` entirely and you get a flat base-100 backdrop rather than a
+ * transparent one.
+ * ===========================================================================*/
 @layer components {
   .dice-face {
     width: 2rem;
@@ -136,6 +154,47 @@ body {
 
   .dice-face-pair .dice-face:not(:last-child) {
     border-right-width: 0;
+  }
+
+  /* Size by heading level, so a theme only has to pick a typeface rather than
+  restate the ramp. `.heading` is also used on non-heading elements (a <p> on the
+  landing page, an <a> in the deck list) which just want the treatment without a
+  level, hence the element-qualified nesting.
+
+  Living in `components` means a `text-*` utility in the markup outranks this,
+  which is the point — several call sites pass one expecting it to win. */
+  .heading {
+    h1& {
+      font-size: var(--text-3xl);
+      line-height: var(--tw-leading, var(--text-3xl--line-height));
+    }
+    h2& {
+      font-size: var(--text-2xl);
+      line-height: var(--tw-leading, var(--text-2xl--line-height));
+    }
+    h3& {
+      font-size: var(--text-xl);
+      line-height: var(--tw-leading, var(--text-xl--line-height));
+    }
+  }
+
+  /* The room's name in the chat header. Prominent by default; the theme picks
+  the face it's set in. */
+  .room-name {
+    font-size: var(--text-xl);
+    font-weight: 700;
+  }
+
+  /* The chat surface, and the sidebar that sits over it. Both need an opaque
+  fill of their own so content doesn't read through to the page beneath. A theme
+  that sets the `background` shorthand (as havocDark does) replaces these
+  outright, including their translucency — that's expected. */
+  .main-area {
+    background-color: var(--color-base-100);
+  }
+
+  .sidebar {
+    background-color: var(--color-base-200);
   }
 }
 
