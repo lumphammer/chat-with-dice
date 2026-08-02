@@ -9,7 +9,6 @@ export const HTTP_REQUEST_TIMEOUT = 408;
 
 // export const HTTP_CONFLICT = 409;
 export const HTTP_PAYLOAD_TOO_LARGE = 413;
-export const HTTP_TOO_MANY_REQUESTS = 429;
 export const HTTP_INTERNAL_SERVER_ERROR = 500;
 export const HTTP_BAD_GATEWAY = 502;
 export const HTTP_SERVICE_UNAVAILABLE = 503;

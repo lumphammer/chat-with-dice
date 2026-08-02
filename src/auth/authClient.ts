@@ -6,7 +6,6 @@ import {
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_REQUEST_TIMEOUT,
   HTTP_SERVICE_UNAVAILABLE,
-  HTTP_TOO_MANY_REQUESTS,
 } from "#/constants";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { inferAdditionalFields } from "better-auth/client/plugins";
@@ -20,11 +19,16 @@ const RETRY_MAX_DELAY_MS = 2000;
 
 /**
  * Statuses that mean "ask again in a moment" rather than "your request was
- * wrong". Notably absent: 401, which is a real answer about the session.
+ * wrong". Notably absent:
+ *
+ * - 401, which is a real answer about the session, not a failure to answer.
+ * - 429, because we can't retry it responsibly. better-fetch hands `getDelay`
+ *   only the attempt number, so there's no way to honour the `Retry-After`
+ *   better-auth's rate limiter sends, and its window defaults to 10s — longer
+ *   than this whole backoff schedule. We'd be burning quota to fail anyway.
  */
 const RETRYABLE_STATUSES = new Set([
   HTTP_REQUEST_TIMEOUT,
-  HTTP_TOO_MANY_REQUESTS,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_BAD_GATEWAY,
   HTTP_SERVICE_UNAVAILABLE,
