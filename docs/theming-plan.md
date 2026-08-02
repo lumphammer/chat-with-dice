@@ -25,15 +25,17 @@ Already done:
 - `bevel` in `src/styles/themeUtils.css` is theme-agnostic by design.
 - Colour discipline in markup is good — almost no hardcoded colour.
 
-Already wired but inert:
-
 - `rooms.theme` (text column, migration `20260419162104_amused_natasha_romanoff`)
-  is read at `src/pages/rooms/[roomId]/index.astro:30`, passed to `HTML.astro`,
-  and written to `data-theme` by a pre-paint inline script.
-- **Nothing writes it.** No UI, no action, no validation — it's unconstrained text.
-- Only `havocDark`'s CSS is loaded (`src/layouts/HTML.astro:3`), so any other
-  value silently falls back to daisyUI defaults.
-- `src/styles/themes/havocLight.css` is imported by nothing. It's dead.
+  is read on the room page, resolved against the registry, and rendered onto
+  `<html>` server-side as `data-theme` + `data-theme-polarity`.
+
+Still missing:
+
+- **Nothing writes `rooms.theme`.** No UI, no action — Phase 5.
+- Only `havocDark`'s CSS is loaded (`src/layouts/HTML.astro:3`), so the registry
+  currently has one entry and there is nothing to switch between — Phase 2.
+- `src/styles/themes/havocLight.css` is imported by nothing and unregistered.
+  It's dead until someone decides its fate.
 
 ## The theme contract
 
@@ -49,7 +51,7 @@ A theme **may**:
 
 A theme **must**:
 
-- be registered with a `scheme` of `light` or `dark`
+- be registered with a `polarity` of `light` or `dark`
 - leave every app base class usable — override appearance, never remove structure
 - honour the accessibility escapes below
 - meet contrast targets both normally and under each escape
@@ -99,20 +101,22 @@ Phase 3 is where we find out whether it survives contact with a real theme.
 
 ## Phases
 
-### Phase 1 — Registry and resolution
+### Phase 1 — Registry and resolution ✅
 
-- `src/styles/themes/registry.ts`: descriptors (`name`, `label`, `scheme`,
-  short description), a `ThemeName` union, and a default.
-- Validate `rooms.theme` against the registry; unknown values fall back to the
-  default rather than rendering unstyled. App-level validation only — no DB
-  constraint (existing rows, and migrations here are generated, not written).
-- Replace the hardcoded `dark` allowlist at `global.css:13-18`. Have the
-  pre-paint script write `data-theme-scheme` from the registry and key
-  `@custom-variant dark` off that, so every registered dark theme just works.
-- Drop `cupcake, dracula` at `global.css:10` if they're vestigial (they look it).
-
-**Done when:** a garbage `rooms.theme` value degrades cleanly, and `dark:`
-works for a newly registered dark theme with no edit to `global.css`.
+- `src/styles/themes/registry.ts` holds the names, descriptors, default,
+  `isThemeName` predicate and `resolveTheme`. `registry.test.ts` asserts every
+  registered name has a stylesheet declaring it, and that the registered
+  `polarity` matches the stylesheet's `color-scheme` — the two state the same
+  fact independently and would otherwise drift.
+- `resolveTheme` falls back to the default for anything unregistered. App-level
+  only, no DB constraint.
+- `@custom-variant dark` now keys off `data-theme-polarity`, written from the
+  registry. `cupcake, dracula` dropped; daisyUI's component base styles are
+  unaffected.
+- **Deviation:** the pre-paint inline script is gone rather than repurposed. The
+  theme is fully known server-side, so `HTML.astro` renders `data-theme` and
+  `data-theme-polarity` directly — fewer moving parts and no flash. Phase 3
+  reintroduces a script when there's genuinely client-only state to read.
 
 ### Phase 2 — Delivery, then a throwaway spike
 
@@ -135,8 +139,9 @@ with no flash, and we have a written list of gaps the spike exposed.
 
 - Implement the three escapes and whatever mechanism Phase 2's spike suggests.
 - Decide where the reduced-decoration preference lives. Recommend `localStorage`
-  read by the existing pre-paint script (matches how `data-theme` already works,
-  no server round-trip, no flash); it's covered by the existing cookie banner.
+  read by a pre-paint inline script in `HTML.astro` — Phase 1 removed the old
+  one, so this reintroduces it, and it's the first thing here that genuinely
+  can't be resolved server-side. Covered by the existing cookie banner.
 - Retrofit `havocDark`. This is the proving work — it's the transparency-heavy one.
 
 **Done when:** `havocDark` meets contrast targets under each escape, and reduced
@@ -193,5 +198,5 @@ the same pass shows what the base layer alone provides. This caught both the
   across devices, which would mean `UserDataDO` and a server round-trip.
 - Should themes be able to style capability UI (`src/components/capabilityComponents/`),
   or is that off-limits so capabilities stay portable?
-- Is `scheme` on a theme enough, or do we eventually want light/dark _variants_
+- Is `polarity` on a theme enough, or do we eventually want light/dark _variants_
   of one identity (`havoc` with a light and dark face) rather than two entries?

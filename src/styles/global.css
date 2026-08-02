@@ -6,13 +6,11 @@ html,
 body {
   overscroll-behavior: none;
 }
-@plugin "daisyui" {
-  themes: cupcake, dracula;
-}
-
+/* Driven by the `data-theme-polarity` attribute HTML.astro renders from the
+theme registry, rather than a hardcoded list of theme names — registering a new
+dark theme needs no edit here. */
 @custom-variant dark {
-  &:where([data-theme="dracula"], [data-theme="dracula"] *),
-  &:where([data-theme="havocDark"], [data-theme="havocDark"] *) {
+  &:where([data-theme-polarity="dark"], [data-theme-polarity="dark"] *) {
     @slot;
   }
 }

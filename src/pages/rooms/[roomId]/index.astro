@@ -27,7 +27,7 @@ if (configParseResult.success === false) {
 }
 ---
 
-<HTML title={room?.name ?? "(room not found)"} theme={room.theme ?? undefined}>
+<HTML title={room?.name ?? "(room not found)"} theme={room.theme}>
   <DiceRoller
     client:only
     roomId={roomId ?? ""}
