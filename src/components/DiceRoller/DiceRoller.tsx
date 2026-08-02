@@ -1,5 +1,4 @@
 import { authClient } from "#/auth/authClient.ts";
-import { generateRandomName } from "#/utils/generateRandomName";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
 import {
@@ -21,6 +20,7 @@ import { RoomInfoContextProvider } from "./contexts/roomInfoContext";
 import { RoomUiNavigationContextProvider } from "./contexts/roomUiNavigationContext";
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
 import styles from "./diceRoller.module.css";
+import { useAnonymousFallbackSignIn } from "./hooks/useAnonymousFallbackSignIn";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
 import { useSmartScroll } from "./hooks/useSmartScroll";
 import type { UserHueStyle } from "./types";
@@ -67,32 +67,9 @@ export const DiceRoller = memo(
 
     const feedbackToasterValue = useFeedbackToasterProvider();
 
-    const anonSignIn = useCallback(async () => {
-      const name = generateRandomName();
-      const { error: signInError } = await authClient.signIn.anonymous();
-      if (signInError) {
-        feedbackToasterValue.onError(
-          signInError.message ??
-            "Could not sign in anonymously. Please try refreshing.",
-        );
-        return;
-      }
-
-      const { error: updateError } = await authClient.updateUser({ name });
-      if (updateError) {
-        feedbackToasterValue.onError(
-          updateError.message ??
-            "Could not sign in anonymously. Please try refreshing.",
-        );
-        await authClient.signOut();
-        return;
-      }
-    }, [feedbackToasterValue]);
+    useAnonymousFallbackSignIn({ onError: feedbackToasterValue.onError });
 
     useEffect(() => {
-      if (!isPending && sessionData === null) {
-        void anonSignIn();
-      }
       if (
         !isPending &&
         sessionData?.user.isAnonymous &&
@@ -108,7 +85,7 @@ export const DiceRoller = memo(
           </>,
         );
       }
-    }, [isPending, sessionData, anonSignIn, feedbackToasterValue, roomOwnerId]);
+    }, [isPending, sessionData, feedbackToasterValue, roomOwnerId]);
 
     const optimisticallySetCapabilityState = useCallback(
       (

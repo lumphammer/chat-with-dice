@@ -58,7 +58,7 @@ Do not write migrations yourself. They are _only_ generated. If we need a schema
 
 ## We are not using TDD
 
-You don't have to write tests for everything. You _can_ write tests where the subject is neatly self-contained and you can write tests without having to do mad levels of mocking and faking.
+You don't have to write tests for everything. You _may_ write tests where the subject is neatly self-contained, **non-trvial**, and you can write tests without having to do mad levels of mocking or faking.
 
 ## Agent skills
 
