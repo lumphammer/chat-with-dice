@@ -208,28 +208,8 @@ so the noise would end up blending against transparency. */
         font-family: "Orbitron Variable";
       }
     }
+    /* the per-level size ramp is base structure and lives in global.css */
     .heading {
-      h1& {
-        font-size: var(--text-3xl);
-        line-height: var(
-          --tw-leading,
-          var(--text-3xl--line-height) /* calc(2.25 / 1.875) ≈ 1.2 */
-        );
-      }
-      h2& {
-        font-size: var(--text-2xl);
-        line-height: var(
-          --tw-leading,
-          var(--text-2xl--line-height) /* calc(2.25 / 1.875) ≈ 1.2 */
-        );
-      }
-      h3& {
-        font-size: var(--text-xl);
-        line-height: var(
-          --tw-leading,
-          var(--text-xl--line-height) /* calc(2.25 / 1.875) ≈ 1.2 */
-        );
-      }
       font-family: "Orbitron Variable";
       letter-spacing: 0.05em;
     }
@@ -428,12 +408,15 @@ so the noise would end up blending against transparency. */
   }
 
   @layer components {
+    /* size and weight are base structure and live in global.css */
     .room-name {
       font-family: "Orbitron Variable";
-      font-size: var(--text-xl);
-      font-weight: 700;
     }
 
+    /* The `background` shorthand below resets background-color, so the base
+    layer's opaque base-100 fill is replaced rather than composed with — which
+    is why the trailing `var(--color-base-100)` layer is load-bearing, not
+    decoration. */
     .main-area {
       --scanline-1: oklch(from var(--color-accent) l c h / 0);
       --scanline-2: oklch(from var(--color-accent) l c h / 0.05);
@@ -534,6 +517,9 @@ so the noise would end up blending against transparency. */
       }
     }
 
+    /* Deliberately translucent over the chat behind it: the `background`
+    shorthand drops the base layer's opaque base-200 fill, and the blur below
+    does the rest. */
     .sidebar {
       position: relative;
       border-radius: 2em 0 0 2em;
