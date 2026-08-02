@@ -208,11 +208,6 @@ so the noise would end up blending against transparency. */
         font-family: "Orbitron Variable";
       }
     }
-    /* the per-level size ramp is base structure and lives in global.css */
-    .heading {
-      font-family: "Orbitron Variable";
-      letter-spacing: 0.05em;
-    }
     @layer components {
       .btn {
         @apply bevel;
@@ -408,6 +403,15 @@ so the noise would end up blending against transparency. */
   }
 
   @layer components {
+    /* The per-level size ramp is base structure and lives in global.css; this
+    only picks the face. Kept in `components` rather than `utilities` so that a
+    `text-*`/`tracking-*` utility in the markup still outranks it — several call
+    sites pass one expecting it to win. */
+    .heading {
+      font-family: "Orbitron Variable";
+      letter-spacing: 0.05em;
+    }
+
     /* size and weight are base structure and live in global.css */
     .room-name {
       font-family: "Orbitron Variable";
@@ -519,9 +523,13 @@ so the noise would end up blending against transparency. */
 
     /* Deliberately translucent over the chat behind it: the `background`
     shorthand drops the base layer's opaque base-200 fill, and the blur below
-    does the rest. */
+    does the rest.
+
+    Positioning is owned by sidebar.module.css and deliberately not restated
+    here — CSS modules are emitted unlayered, so they outrank every `@layer` and
+    a theme cannot override them anyway. The `::before` ring below relies on the
+    module establishing the containing block. */
     .sidebar {
-      position: relative;
       border-radius: 2em 0 0 2em;
       background: linear-gradient(
         to bottom,
