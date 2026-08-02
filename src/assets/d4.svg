@@ -29,7 +29,7 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
      inkscape:zoom="33.641793"
-     inkscape:cx="7.65417"
+     inkscape:cx="7.6690324"
      inkscape:cy="13.376219"
      inkscape:window-width="1920"
      inkscape:window-height="1132"
@@ -53,12 +53,12 @@
        visible="true" />
   </sodipodi:namedview>
   <path
-     d="m 12,2 c 2,0 10,12.821513 10,14 0,1.178487 -8,6 -10,6 C 10,22 2,18 2,16 2,14 10,2 12,2 Z"
+     d="m 12,2.9809227 c 2,0 9,11.8405903 9,13.0190773 0,1.178487 -7,5 -9,5 C 10,21 3,18 3,16 3,14 10,2.9809227 12,2.9809227 Z"
      id="path1"
      sodipodi:nodetypes="zzzzz" />
   <path
      style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:none"
-     d="M 12,2 V 22"
+     d="M 12,2.9809227 V 19.443656"
      id="path9"
      sodipodi:nodetypes="cc" />
 </svg>

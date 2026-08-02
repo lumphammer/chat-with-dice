@@ -17,7 +17,76 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
-     id="defs5" />
+     id="defs5">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect4"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,2.237296,0,1 @ F,0,0,1,0,0,0,1"
+       radius="0"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect3"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,1.6542888,0,1 @ F,0,1,1,0,1.2393563,0,1 @ F,0,0,1,0,2.2542193,0,1 @ F,0,0,1,0,1.2393563,0,1 @ F,0,0,1,0,1.9432652,0,1 @ F,0,0,1,0,1.8478122,0,1"
+       radius="0"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect2"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,1.587873,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,1.3797797,0,1 @ F,0,0,1,0,0,0,1"
+       radius="0"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect1"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,1.6873908,0,1 @ F,0,1,1,0,2.0962457,0,1 @ F,0,0,1,0,2.0962457,0,1 @ F,0,0,1,0,0,0,1 @ F,0,0,1,0,0,0,1"
+       radius="0"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+  </defs>
   <sodipodi:namedview
      id="namedview5"
      pagecolor="#ffffff"
@@ -28,9 +97,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
-     inkscape:zoom="33.641793"
-     inkscape:cx="7.6690324"
-     inkscape:cy="13.376219"
+     inkscape:zoom="40.453388"
+     inkscape:cx="13.768933"
+     inkscape:cy="12.607102"
      inkscape:window-width="1920"
      inkscape:window-height="1132"
      inkscape:window-x="0"
@@ -53,16 +122,21 @@
        visible="true" />
   </sodipodi:namedview>
   <path
-     d="M 12,2 C 13,2 22,3.821513 22,5 22,6.178487 13,8 12,8 11,8 2.0594499,6 2,5 1.9405501,4 11,2 12,2 Z"
-     id="path1"
-     sodipodi:nodetypes="zzzzz" />
-  <path
      style="fill:none;stroke:#000000;stroke-width:2;stroke-dasharray:none"
-     d="m 2,5 v 14 c 0,0 9,3 10,3 1,0 10,-3 10,-3 V 5"
+     d="m 20.975192,8.6542815 0.02112,7.1063675 a 1.9103055,1.9103055 122.80414 0 1 -1.126568,1.747814 l -5.813975,2.615515 a 5.0108584,5.0108584 0 0 1 -4.1115464,0 L 4.130252,17.508463 A 1.916538,1.916538 57.110701 0 1 3,15.760644 V 8.9432652 A 3.0348683,3.0348683 122.63196 0 1 4.7649606,6.1868618 L 10.321734,3.6267904 a 4.004144,4.004144 0.03605719 0 1 3.355557,0.00211 l 5.791357,2.6769882 a 2.5956389,2.5956389 57.318943 0 1 1.506544,2.3483912 z"
      id="path9"
-     sodipodi:nodetypes="cczcc" />
+     sodipodi:nodetypes="ccccccc"
+     inkscape:path-effect="#path-effect3"
+     inkscape:original-d="M 20.970275,7 21,17 12,21.048802 3,17 V 7 l 9,-4.1464066 z"
+     transform="matrix(1.000859,0,0,1.0494744,-0.01030635,-0.5403921)" />
   <path
      style="fill:none;stroke:#000000;stroke-width:2"
-     d="M 12,8 V 22"
-     id="path2" />
+     d="m 12,13 v 7.143301"
+     id="path2"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:2"
+     d="M 3.6561666,6.8664592 10,10 c 0,0 2,1 2,2.988792 C 12,11 14,10 14,10 l 6.459925,-3.0890479"
+     id="path3"
+     sodipodi:nodetypes="ccccc" />
 </svg>
