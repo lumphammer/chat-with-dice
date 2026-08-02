@@ -28,11 +28,13 @@ export const useAnonymousFallbackSignIn = ({
   const hasEverHadSession = useRef(false);
   const isSigningIn = useRef(false);
   const hasReportedProblem = useRef(false);
+  const hasAbandonedFallback = useRef(false);
 
   const anonSignIn = useCallback(async () => {
     const name = generateRandomName();
     const { error: signInError } = await authClient.signIn.anonymous();
     if (signInError) {
+      hasAbandonedFallback.current = true;
       onError(
         signInError.message ??
           "Could not sign in anonymously. Please try refreshing.",
@@ -42,6 +44,11 @@ export const useAnonymousFallbackSignIn = ({
 
     const { error: updateError } = await authClient.updateUser({ name });
     if (updateError) {
+      // The sign-in landed, so by now the session atom may well have picked up
+      // the guest session we are about to throw away. Give up on the flow
+      // before signing out, so the session going back to null is recognised as
+      // our own cleanup rather than reported as the user being logged out.
+      hasAbandonedFallback.current = true;
       onError(
         updateError.message ??
           "Could not sign in anonymously. Please try refreshing.",
@@ -54,9 +61,17 @@ export const useAnonymousFallbackSignIn = ({
     if (sessionData !== null) {
       hasEverHadSession.current = true;
       hasReportedProblem.current = false;
+      hasAbandonedFallback.current = false;
       return;
     }
     if (isPending || isSigningIn.current) {
+      return;
+    }
+
+    // The fallback ran and failed, and said so. Retrying would create an
+    // anonymous user per attempt, and any of the messages below would either
+    // repeat that or contradict it.
+    if (hasAbandonedFallback.current) {
       return;
     }
 
