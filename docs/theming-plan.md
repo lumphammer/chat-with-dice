@@ -35,7 +35,8 @@ Already done:
 Still missing:
 
 - **Nothing writes `rooms.theme`.** No UI, no action — Phase 5.
-- No accessibility escapes yet — Phase 3.
+- Both accessibility escapes are implemented, but **nothing from Phase 3 has
+  been seen in a browser** — the preview connector was down throughout.
 - `havocLight` is legible but plain. Whether it becomes a crafted identity or
   stays the deliberately-bare regression canary is an open call.
 
@@ -55,8 +56,8 @@ A theme **must**:
 
 - be registered with a `polarity` of `light` or `dark`
 - leave every app base class usable — override appearance, never remove structure
+- meet WCAG AA in its base state, not just under an escape
 - honour the accessibility escapes below
-- meet contrast targets both normally and under each escape
 
 A theme **must not**:
 
@@ -70,36 +71,47 @@ A theme **must not**:
   its `text-5xl`.
 - hardcode colours outside its own palette
 
+### Baseline contrast
+
+Not an escape — a property every theme has in its **base state**. A theme that
+only becomes legible once the user asks for more contrast has failed. Measured
+with [the contrast audit](./theme-contrast-audit.md), which is a manual gate:
+run it whenever a palette, a surface colour, or anything putting text over a
+gradient changes.
+
+This is mostly falling out of the design already — the seed-variable palettes
+derive content colours from base colours with a large lightness delta, and
+havocLight passed with no failures unprompted.
+
 ### Accessibility escapes
 
-Orthogonal to theme choice. The room's theme still applies; these strip what
-makes it inaccessible. **Every theme must honour all three.**
+Orthogonal to theme choice: the room's theme still applies, these strip what
+makes it inaccessible. **Every theme must honour both.**
 
-| Escape             | Trigger                                                   | Theme must                                                               |
-| ------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Reduced motion     | `@media (prefers-reduced-motion: reduce)`                 | drop transitions and animation                                           |
-| Increased contrast | `@media (prefers-contrast: more)`                         | drop decorative overlays that sit over text; full-strength fg/bg         |
-| Reduced decoration | app-level toggle, `data-decoration="reduced"` on `<html>` | drop noise, scanlines, glow, backdrop blur, and semitransparent surfaces |
+| Escape             | Trigger                                   | Theme must                                                              |
+| ------------------ | ----------------------------------------- | ----------------------------------------------------------------------- |
+| Reduced motion     | `@media (prefers-reduced-motion: reduce)` | drop travel and scale; fades and spinners may stay                      |
+| Increased contrast | `@media (prefers-contrast: more)`         | drop decorative overlays over text; full-strength foreground/background |
 
-Reduced decoration is the one that bites: `havocDark` leans hard on
-transparency and blur, and MISSION.md says to avoid semitransparent elements
-except as a way to dim.
+Both are OS-driven, so they cost no settings UI, no storage and no pre-paint
+script.
 
-**Proposal to validate in Phase 3** — rather than each theme hand-writing three
-sets of overrides, express decorative intensity through a few registered custom
-properties that the escapes zero out centrally:
+### Deliberately deferred
 
-```css
-/* theme writes */
-backdrop-filter: blur(calc(30px * var(--decor-blur)));
-/* escape sets, once, globally */
---decor-blur: 0;
-```
-
-with something like `--decor-blur`, `--decor-glow`, `--decor-texture` and a
-surface-alpha knob. That makes the contract mechanically enforceable instead of
-aspirational, and means a new theme gets the escapes mostly for free. Unproven —
-Phase 3 is where we find out whether it survives contact with a real theme.
+- **`prefers-reduced-transparency`.** The natural fit for havocDark's blur and
+  translucency, but not supported in Firefox or Safari, so it can't be relied
+  on. Revisit if that changes.
+- **A bespoke "reduce decoration" toggle** for noise, scanlines and glow — the
+  decorative texture no standard query covers. There is no platform signal for
+  it and it is not an established web pattern (it shows up in games and OS
+  settings, not web apps), so it would be ours to invent, and it is the only
+  option here needing storage, UI and a settings surface. Deferred until we see
+  what is actually left over once motion and contrast are handled.
+- **The `--decor-*` custom-property scheme** (theme writes
+  `blur(calc(30px * var(--decor-blur)))`, an escape zeroes it centrally). It was
+  designed for a three-escape world. With two escapes, one of which the codebase
+  already handles through ordinary `motion-reduce:` variants, it is
+  over-engineering. Parked with the toggle above.
 
 ## Phases
 
@@ -175,17 +187,53 @@ Still open, for Phase 3/4:
 - `ErrorDisplay.tsx` is still hardcoded neon-on-black and will clash badly under
   havocLight (already in the debt bucket).
 
-### Phase 3 — Accessibility escapes
+### Phase 3 — Motion and contrast
 
-- Implement the three escapes and whatever mechanism Phase 2's spike suggests.
-- Decide where the reduced-decoration preference lives. Recommend `localStorage`
-  read by a pre-paint inline script in `HTML.astro` — Phase 1 removed the old
-  one, so this reintroduces it, and it's the first thing here that genuinely
-  can't be resolved server-side. Covered by the existing cookie banner.
-- Retrofit `havocDark`. This is the proving work — it's the transparency-heavy one.
+Scoped down from the original three escapes: `prefers-reduced-transparency` and
+the bespoke decoration toggle are [deferred](#deliberately-deferred). Everything
+here is OS-driven, so the phase adds no settings UI and no storage — and the
+pre-paint script Phase 1 removed stays gone.
 
-**Done when:** `havocDark` meets contrast targets under each escape, and reduced
-decoration genuinely removes blur, noise, glow and transparency.
+**Motion** turned out to be nearly done already. `sidebar.module.css` guards its
+width transition, backdrop fade and close button; `PanelFrame.tsx` (deck
+settings pane navigation) uses `motion-reduce:transition-none` on its slide.
+
+- ✅ `toaster.module.css` was the gap — toasts animated `translate` + `scale`
+  unguarded, and unlike the sidebar they move in response to events rather than
+  to something the user just did. Now fades in place under reduced motion.
+- Left alone deliberately: `animate-fadein`, `animate-spin` loaders,
+  `transition-colors` hovers. Reduced motion targets vestibular triggers, which
+  means travel and scale; opacity and small spinners are accepted.
+
+**Contrast**:
+
+- ✅ [Audit procedure](./theme-contrast-audit.md) committed, now covering both a
+  DOM pass and a palette pass. The palette pass exists because the DOM one only
+  sees mounted elements — which is precisely why the failures below were missed.
+- ✅ **havocDark had four AA failures**, all the same shape: near-white
+  `--color-X-content` on `--color-X` fills that are themselves light. `info`
+  1.62, `success` 1.64, `neutral` 1.78, `warning` 1.85; `error` 3.26. Fixed by
+  deriving every `-content` from `--l-content` / `--c-content`, which is what
+  primary/secondary/accent already did. All pairs now ≥ 5.24.
+  - The failure was **latent**, not visible: havocDark overrides `.btn` to a
+    transparent bevel and forces `.alert`'s background to base-100, so almost
+    nothing actually painted `--color-X` behind `--color-X-content`. It would
+    have bitten the first component this theme didn't override.
+  - `.alert` now sets `color: var(--color-base-content)` explicitly. It replaces
+    daisyUI's `--alert-color` background, so it has to own the foreground —
+    otherwise the ink is chosen for a fill we aren't painting. **New contract
+    rule: override a background, own the foreground.**
+- ✅ `prefers-contrast: more` implemented for havocDark. Not a colour change —
+  the palette already clears AA — but a removal of everything painted _between_
+  reader and text: the scanline grid, the noise texture on `.dropdown` and
+  `.alert`, bevel fills on `.modal-box` and `.chat-bubble`, the header's blur
+  edges, sidebar translucency, `.frost`, and `.label`'s 80% dimming.
+  havocLight needs nothing — it has no decoration to strip.
+
+**Not done:** none of this has been looked at in a browser. The preview
+connector was unavailable for the whole phase, so the palette work rests on a
+static oklch→sRGB model and the built CSS, and `prefers-contrast: more` has
+never been seen rendered. See below.
 
 ### Phase 4 — Theme #2, for real
 

@@ -35,6 +35,19 @@
       opacity 125ms cubic-bezier(0.06, 0.71, 0.55, 1);
   }
 
+  /* Toasts are the one piece of motion here that nobody asked for — they move
+  in response to events, not to something you just did. Under reduced motion we
+  keep the fade (opacity is not a vestibular trigger) and drop the travel, scale
+  and stack-collapse, so a toast appears in place instead of flying in. The
+  properties themselves still apply; only their transitions go. */
+  @media (prefers-reduced-motion: reduce) {
+    transition: opacity 250ms cubic-bezier(0.21, 1.02, 0.73, 1);
+
+    &[data-state="closed"] {
+      transition: opacity 125ms cubic-bezier(0.06, 0.71, 0.55, 1);
+    }
+  }
+
   .icon {
     grid-area: 1/1;
   }
