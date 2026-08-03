@@ -1,4 +1,5 @@
 const HAVOC_DARK_THEME_NAME = "havocDark";
+const HAVOC_LIGHT_THEME_NAME = "havocLight";
 
 /**
  * Every theme the app can render. A name listed here must have a matching
@@ -6,7 +7,10 @@ const HAVOC_DARK_THEME_NAME = "havocDark";
  * enforces that, so a typo or a rename fails the build rather than silently
  * rendering an unstyled app.
  */
-export const THEME_NAMES = [HAVOC_DARK_THEME_NAME] as const;
+export const THEME_NAMES = [
+  HAVOC_DARK_THEME_NAME,
+  HAVOC_LIGHT_THEME_NAME,
+] as const;
 
 export type ThemeName = (typeof THEME_NAMES)[number];
 
@@ -34,6 +38,11 @@ export const themes = {
     label: "Havoc Dark",
     description: "Cyberpunk chrome: neon, scanlines and chamfered edges",
     polarity: "dark",
+  },
+  [HAVOC_LIGHT_THEME_NAME]: {
+    label: "Havoc Light",
+    description: "Clean and legible, with none of the sci-fi chrome",
+    polarity: "light",
   },
 } satisfies Record<ThemeName, ThemeInfo>;
 

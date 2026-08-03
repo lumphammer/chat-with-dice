@@ -29,13 +29,15 @@ Already done:
   is read on the room page, resolved against the registry, and rendered onto
   `<html>` server-side as `data-theme` + `data-theme-polarity`.
 
+- Two themes are registered and shipped: `havocDark` (full-fat) and `havocLight`
+  (palette only). Switching between them works end to end.
+
 Still missing:
 
 - **Nothing writes `rooms.theme`.** No UI, no action — Phase 5.
-- Only `havocDark`'s CSS is loaded (`src/layouts/HTML.astro:3`), so the registry
-  currently has one entry and there is nothing to switch between — Phase 2.
-- `src/styles/themes/havocLight.css` is imported by nothing and unregistered.
-  It's dead until someone decides its fate.
+- No accessibility escapes yet — Phase 3.
+- `havocLight` is legible but plain. Whether it becomes a crafted identity or
+  stays the deliberately-bare regression canary is an open call.
 
 ## The theme contract
 
@@ -118,22 +120,60 @@ Phase 3 is where we find out whether it survives contact with a real theme.
   `data-theme-polarity` directly — fewer moving parts and no flash. Phase 3
   reintroduces a script when there's genuinely client-only state to read.
 
-### Phase 2 — Delivery, then a throwaway spike
+### Phase 2 — Delivery, and the base-layer spike ✅
 
-- Load every registered theme's CSS. Themes are `[data-theme=x]` blocks, so the
-  cost is bundle size — **measure it** before and after.
-- Fonts are the real question: each theme imports its own fontsource families, so
-  bundling all themes bundles all fonts. Measure, then decide (per-theme font
-  loading driven by the registry, `font-display: swap`, or just accept it).
-- Keep the TS registry and the CSS import list in sync with a test that reads
-  both and compares.
-- **Then spike a deliberately alien throwaway theme** — ~30 lines, light
-  parchment palette, serif type, no chrome — purely to smoke out what the base
-  layer is missing. Throw it away afterwards. This is cheap and buys the most
-  information in the plan.
+- `themes/index.css` imports every theme; `HTML.astro` imports that one file.
+  `registry.test.ts` fails if a registered name isn't imported there.
+- **Deviation:** rather than invent a throwaway spike, the orphaned
+  `havocLight` was resurrected and registered. It is palette-only — no component
+  styling whatsoever — which makes it a harsher base-layer test than a purpose-
+  built spike, and it settles the debt-bucket question at the same time. It also
+  earns its place as the permanent regression canary: base-layer bugs that
+  havocDark's overrides hide are visible immediately in havocLight.
 
-**Done when:** switching `rooms.theme` between registered themes visibly works
-with no flash, and we have a written list of gaps the spike exposed.
+#### Measurements
+
+|                           | CSS                       | Fonts           |
+| ------------------------- | ------------------------- | --------------- |
+| Baseline (havocDark only) | 209,654 B                 | 6 files, 116 KB |
+| Both themes               | 211,241 B (+1,587, +0.8%) | unchanged       |
+| havocDark in isolation    | 30,411 B                  | 116 KB          |
+| havocLight (palette only) | 1,587 B                   | none            |
+
+**The font question dissolved.** With havocLight active, 6 `@font-face` rules
+are declared and **0 fonts are fetched, 0 bytes** — browsers only download a
+face when something rendered actually uses it. Bundling every theme's fonts
+costs CSS text, not font bytes. No per-theme font loading needed.
+
+Budget for planning: a palette-only theme costs ~1.6 KB; a full-fat one like
+havocDark costs ~30 KB CSS plus its own fonts, which only its own users fetch.
+
+#### What the spike found
+
+The base layer held up better than expected. Layout, sidebar/chat surface
+separation, the heading ramp and the room name all survived a theme with zero
+component styling, and a contrast audit over 33 text elements found **no WCAG AA
+failures** (worst ratio 5.66) — the seed-variable palette is accessible by
+construction.
+
+One real bug, now fixed:
+
+- **`.chat-bubble` hardcoded `oklch(20% …)`** in `global.css`, so a light theme
+  got dark text on a dark bubble at **1.15:1**. It now uses `--user-colour`,
+  which `ChatBubble.tsx` already sets per polarity — 11.72:1, and havocDark is
+  unaffected because it replaces the bubble wholesale. Exactly the class of bug
+  a single dark theme hides.
+
+Still open, for Phase 3/4:
+
+- `.header` has no separation from the chat area without a theme; havocDark
+  supplies it via `::before`/`::after` blur edges. Cosmetic, but a theme-less
+  header floats.
+- Only the roll panel and chat were exercised. Modals, dropdowns, alerts,
+  toasts, the file manager and the other capability panels are **untested under
+  a light theme**.
+- `ErrorDisplay.tsx` is still hardcoded neon-on-black and will clash badly under
+  havocLight (already in the debt bucket).
 
 ### Phase 3 — Accessibility escapes
 

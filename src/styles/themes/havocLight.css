@@ -1,12 +1,20 @@
+@reference "#/styles/global.css";
+
 /* =============================================================================
  * Light theme
+ * -----------------------------------------------------------------------------
+ * Palette only — no component styling at all. That makes it the honest test of
+ * the app base layer: whatever this renders is what a theme author gets before
+ * they write a single rule.
  * ===========================================================================*/
 @plugin "daisyui/theme" {
   /* ---------------------------------------------------------------------------
    *  Daisy config
    * -------------------------------------------------------------------------*/
   name: "havocLight";
-  default: true; /* set as default */
+  /* Which theme is the default is the registry's call, not daisyUI's — we always
+  render an explicit data-theme, so nothing should apply at :root. */
+  default: false;
   prefersdark: false; /* set as default dark mode (prefers-color-scheme:dark) */
   color-scheme: light; /* color of browser-provided UI */
 

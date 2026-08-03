@@ -233,7 +233,11 @@ dark theme needs no edit here. */
 
 @utility chat-bubble {
   width: fit-content;
-  background-color: oklch(20% 30% var(--user-hue));
+  /* ChatBubble.tsx sets --user-colour on the wrapping <article>, light or dark
+  to match the theme's polarity. The bubble used to hardcode oklch(20% …), which
+  only read correctly because the one theme we had was dark — under a light
+  theme it put dark text on a dark bubble at 1.15:1. */
+  background-color: var(--user-colour);
   &:is(:where(.group)[data-is-mine] *) {
     margin-left: auto;
   }

@@ -38,6 +38,15 @@ describe("theme registry", () => {
     },
   );
 
+  // index.css is what actually ships the themes. A name registered but not
+  // imported there resolves fine and then renders with no theme at all.
+  it("imports every registered theme from index.css", async () => {
+    const index = await readFile(join(themesDir, "index.css"), "utf8");
+    for (const name of THEME_NAMES) {
+      expect(index).toContain(`@import "./${name}.css";`);
+    }
+  });
+
   it("defaults to a registered theme", () => {
     expect(isThemeName(DEFAULT_THEME_NAME)).toBe(true);
   });
