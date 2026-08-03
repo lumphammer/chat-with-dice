@@ -82,13 +82,13 @@
   --color-neutral: oklch(50% 0.05 240);
   --color-neutral-content: oklch(98% 0.01 240);
 
-  --color-info: oklch(70% 0.2 220);
+  --color-info: oklch(30% 0.2 220);
   --color-info-content: oklch(98% 0.01 220);
-  --color-success: oklch(65% 0.25 140);
+  --color-success: oklch(30% 0.25 140);
   --color-success-content: oklch(98% 0.01 140);
-  --color-warning: oklch(80% 0.25 80);
-  --color-warning-content: oklch(20% 0.05 80);
-  --color-error: oklch(65% 0.3 30);
+  --color-warning: oklch(40% 0.5 100);
+  --color-warning-content: oklch(98% 0.05 80);
+  --color-error: oklch(30% 0.3 30);
   --color-error-content: oklch(98% 0.01 30);
 
   /* border radius */
