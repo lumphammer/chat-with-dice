@@ -256,18 +256,19 @@ the registry.
 
 Independent, none of it blocking:
 
-- `.foo { color: red }` at `global.css:244`; `console.log` at `HTML.astro:28`.
-- `havocLight`: resurrect as a real theme or delete it. It's colours-only, and
-  with the base layer in place it might now render acceptably — worth ten minutes
-  to find out.
 - `src/components/ErrorDisplay.tsx` is a hardcoded neon cyberpunk crash screen.
-  Theme it or declare it deliberately theme-exempt.
+  Theme it or declare it deliberately theme-exempt. It will look wrong under
+  havocLight today.
 - Connection dot `bg-red-500`/`bg-green-500` at `DiceRoller/Header.tsx:45`.
 - `havocDark` is misnamed — it's cyberpunk/dark-sci-fi, not Havoc-specific, and
   the name collides with the `havoc` capability. Renaming means migrating
   existing `rooms.theme` values.
-- Restore the `prefers-color-scheme` default at `HTML.astro:32-34` once there's
-  a light theme worth defaulting to.
+- Pick the default from `prefers-color-scheme` now a light theme exists. Needs a
+  little care: `resolveTheme` runs server-side and the OS preference isn't known
+  there, so this is the first thing that would bring back a pre-paint script —
+  or a `@media` block that flips `data-theme-polarity`'s effect without it.
+- `.header` has no separation from the chat area without a theme (found by the
+  havocLight spike). Cosmetic; a base-layer border or shadow would fix it.
 
 ## Verifying theme work
 
@@ -280,10 +281,11 @@ the same pass shows what the base layer alone provides. This caught both the
 
 ## Open questions
 
-- Font delivery once all themes are bundled (Phase 2 measures it).
-- Where the reduced-decoration preference is stored — `localStorage` is the
-  recommendation, but a signed-in user might reasonably expect it to follow them
-  across devices, which would mean `UserDataDO` and a server round-trip.
+- Should the palette audit become a real test? It is pure computation, so unlike
+  the DOM audit it _could_ be one — but only if it parses the theme CSS. A
+  hand-maintained copy of the palette is a trap: this session produced wrong
+  havocLight findings from exactly that, after the file changed underneath the
+  model.
 - Should themes be able to style capability UI (`src/components/capabilityComponents/`),
   or is that off-limits so capabilities stay portable?
 - Is `polarity` on a theme enough, or do we eventually want light/dark _variants_
