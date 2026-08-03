@@ -211,6 +211,13 @@ dark theme needs no edit here. */
 @utility frost {
   background: oklch(from var(--color-base-100) l c h / 30%);
   backdrop-filter: blur(16px);
+
+  /* whatever is behind a frosted panel still shows through it at 30%, which is
+  exactly the sort of thing that makes text hard to pick out */
+  @media (prefers-contrast: more) {
+    background: var(--color-base-100);
+    backdrop-filter: none;
+  }
 }
 
 /* we're handling toast styling by hand, so revert everything that daisy does */
