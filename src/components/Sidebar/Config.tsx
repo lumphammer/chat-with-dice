@@ -7,6 +7,7 @@ import { DeleteButton } from "#/components/capabilityComponents/shared/DeleteBut
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
+import { ThemePicker } from "./ThemePicker";
 import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -164,6 +165,8 @@ export const Config = memo(() => {
           </button>
         </div>
       </form>
+
+      <ThemePicker />
 
       <section className="mt-6">
         <h3 className="text-xl">Capabilities</h3>

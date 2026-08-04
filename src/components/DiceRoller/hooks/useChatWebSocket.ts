@@ -1,5 +1,6 @@
 import { authClient } from "#/auth/authClient.ts";
 import { WS_KEEPALIVE_INTERVAL_MS } from "#/constants";
+import type { ThemeName } from "#/styles/themes/registry";
 import { logger } from "#/utils/logger.ts";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import {
@@ -29,12 +30,14 @@ export const useChatWebSocket = ({
   setCapabilityInfos,
   setRoomConfig,
   setRoomName,
+  setRoomTheme,
 }: {
   roomId: string;
   onError: (error: { errorMessage: string; detail: string }) => void;
   setCapabilityInfos: Dispatch<SetStateAction<CapabilityInfoContextValue>>;
   setRoomConfig: (config: RoomConfig) => void;
   setRoomName: (roomName: string) => void;
+  setRoomTheme: (theme: ThemeName) => void;
 }) => {
   const { data: sessionData } = authClient.useSession();
 
@@ -155,6 +158,8 @@ export const useChatWebSocket = ({
         setRoomConfig(data.payload.config);
       } else if (data.type === "roomName") {
         setRoomName(data.payload.roomName);
+      } else if (data.type === "roomTheme") {
+        setRoomTheme(data.payload.theme);
       }
     });
     ws.addEventListener("close", () => {
@@ -189,6 +194,7 @@ export const useChatWebSocket = ({
     setCapabilityInfos,
     setRoomConfig,
     setRoomName,
+    setRoomTheme,
     hasSession,
   ]);
 
