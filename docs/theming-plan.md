@@ -29,20 +29,24 @@ Already done:
   is read on the room page, resolved against the registry, and rendered onto
   `<html>` server-side as `data-theme` + `data-theme-polarity`.
 
-- Two themes are registered and shipped: `cyberdeck` (full-fat) and `plainLight`
-  (palette only). Switching between them works end to end.
+- Three themes are registered and shipped: `cyberdeck` and `grimoire` (full-fat)
+  and `plainLight` (palette only). Switching between them works end to end.
 
 - The room owner can pick a theme from the Config panel; it applies live for
   everyone in the room and persists.
 
+- `grimoire` ships — the second full identity, and the answer to the open call
+  above: plainLight stays the bare canary and a third theme was written instead.
+
+- `prefers-contrast: more` **has now been seen rendered**, for grimoire. There is
+  no devtools switch for it in the preview connector, so it was verified by
+  temporarily flipping the query to `no-preference`, screenshotting, and
+  reverting. Crude, but it is the difference between "the CSS says so" and
+  "we looked". Worth doing the same for cyberdeck.
+
 Still missing:
 
-- **A second theme with a real identity** — Phase 4, the only phase left.
-  Whether plainLight grows into one or stays the deliberately-bare regression
-  canary (and a third theme is written instead) is an open call.
-- `prefers-contrast: more` has never been seen rendered. Reduced motion has been
-  verified by eye; the contrast escape can't easily be simulated without also
-  forcing the palette, so it rests on the built CSS alone.
+- Nothing blocking. See the debt bucket.
 
 ## The theme contract
 
@@ -74,6 +78,27 @@ A theme **must not**:
   bare `text-*` utility in the same layer. This bug cost the landing-page hero
   its `text-5xl`.
 - hardcode colours outside its own palette
+
+### Which layer a component override goes in
+
+Not a free choice, and getting it wrong fails silently.
+
+- **`@layer utilities` directly** for daisyUI components. daisyUI emits some
+  declarations outside its own `daisyui.l1.l2.l3` sublayer — `.alert`'s
+  `border-width`/`border-color`, `.btn-soft`'s background — straight into
+  `utilities`. A sublayer rule loses to those regardless of specificity, and
+  `all: revert-layer` in global.css can't clear them either. Same for
+  `.chat-bubble`, which has to outrank the `@utility chat-bubble` in global.css.
+- **`@layer utilities { @layer components { … } }`** for `.btn` and friends,
+  which is late enough to beat daisyUI but early enough that a markup `text-*`
+  still wins.
+- **`@layer components`** for the app's own base classes (`.heading`,
+  `.main-area`, `.sidebar`, `.dice-face`), so markup utilities outrank them.
+
+When you override a **nested variant**, an escape has to name that variant too:
+grimoire's `prefers-contrast` rule for `.chat-bubble` was inert for the
+mirrored `.group[data-is-mine] &` version, which sets the same property from a
+(0,4,0) selector.
 
 ### Baseline contrast
 
@@ -239,14 +264,58 @@ connector was unavailable for the whole phase, so the palette work rests on a
 static oklch→sRGB model and the built CSS, and `prefers-contrast: more` has
 never been seen rendered. See below.
 
-### Phase 4 — Theme #2, for real
+### Phase 4 — Theme #2, for real ✅
 
-The actual test of everything above. Expect to promote things into the base
-layer as we go; that's success, not failure — each promotion is a gap the
-contract didn't cover yet.
+`grimoire`: aged paper and iron-gall ink. Chosen to be the opposite of cyberdeck
+on every axis at once — light not dark, printed not emissive, serif not
+geometric, texture not glow — because a theme that differs only in hue would not
+have tested anything. Palette is the medieval scribe's: iron-gall ink on
+parchment, rubric red, verdigris, ultramarine, all three pigments at one
+lightness (`--l-fill`), so a single contrast check covers the whole set.
 
-**Done when:** theme #2 is complete and styles nothing outside its own file and
-the registry.
+**Done:** it styles nothing outside `themes/grimoire.css`, `themes/index.css` and
+the registry. Nothing had to be promoted into the base layer — the contract held.
+
+#### What it cost
+
+Two new fonts (Cinzel for display, EB Garamond for body), both variable, both
+only fetched by rooms actually using this theme — as Phase 2 predicted.
+
+#### What it found
+
+- **daisyUI emits part of each component _outside_ its own sublayer.** `.alert`
+  carries `border-width` and `border-color` in plain `@layer utilities`, so a
+  theme rule in a nested sublayer loses however specific it is — and global.css's
+  `all: revert-layer` doesn't clear them, because they were never in the reverted
+  sublayer. The first draft had an `.alert` whose background applied and whose
+  4px margin rule silently did not. This is why cyberdeck keeps most components
+  in `utilities` directly and only `.btn` in a nested `components` sublayer; that
+  structure is load-bearing, not stylistic, and grimoire now mirrors it with a
+  comment saying why.
+- **The contrast audit snippet was broken.** `fillRect` with a transparent
+  `fillStyle` is a no-op, so `toRGB` returned the previous pixel — and since
+  `bgOf()` runs immediately after the text colour is sampled, every element with
+  a transparent background "measured" against its own text colour. Every row
+  scored exactly 1.00. Fixed with a `clearRect`; see
+  [the audit](./theme-contrast-audit.md). The recorded plainLight result predates
+  the fix and should be re-run.
+- **A theme can write inert rules against its own base rules.** grimoire's
+  `prefers-contrast` block set `box-shadow: none` on `.chat-bubble`, but the
+  mirrored `.group[data-is-mine] &` variant sets its own from a (0,4,0) selector
+  and won. Same class of bug as the `position: relative` and `text-5xl` cases,
+  but self-inflicted rather than caused by a CSS module — worth its own contract
+  note: **when you override a nested variant, the escape has to name it too.**
+- Two design corrections that only showed up on screen: `.btn-soft` at an 8%
+  tint with no border is very nearly invisible on a light theme (now 22% with a
+  fading rule), and Garamond's small x-height needs a 20px root rather than
+  cyberdeck's 18px.
+
+#### Verified in a browser
+
+Style demo across all five backdrops, and a real room: header, chat surface,
+sidebar, chat bubbles, dice faces, roll panel, toast, inputs. Contrast audit run
+with the panel open and dice rolled — 40 elements, 0 AA failures, worst 6.75.
+Both accessibility escapes checked.
 
 ### Phase 5 — Write path ✅
 

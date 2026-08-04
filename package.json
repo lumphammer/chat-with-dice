@@ -39,6 +39,8 @@
     "@astrojs/react": "6.0.2",
     "@better-auth/drizzle-adapter": "^1.6.25",
     "@cloudflare/vitest-pool-workers": "^0.20.1",
+    "@fontsource-variable/cinzel": "^5.3.0",
+    "@fontsource-variable/eb-garamond": "^5.3.0",
     "@fontsource-variable/nunito-sans": "^5.3.0",
     "@fontsource-variable/orbitron": "^5.3.0",
     "@lucide/astro": "^1.28.0",

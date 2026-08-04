@@ -33,6 +33,12 @@ ancestor background falls below AA (4.5:1, or 3:1 for text at 24px+).
   const ctx = cv.getContext("2d", { willReadFrequently: true });
   // canvas resolves any CSS colour — including oklch() — to real RGB
   const toRGB = (css) => {
+    // The clear is load-bearing. A transparent fillStyle makes fillRect a
+    // no-op, so without it the read-back returns whatever was drawn last —
+    // and since bgOf() runs straight after the text colour is sampled, every
+    // element with a transparent background reported its own text colour as
+    // its backdrop. That scores exactly 1.00, uniformly, for the whole page.
+    ctx.clearRect(0, 0, 1, 1);
     ctx.fillStyle = "#000";
     ctx.fillStyle = css;
     ctx.fillRect(0, 0, 1, 1);
@@ -127,10 +133,17 @@ approximate — fine for catching 1.6:1, not for splitting hairs at 4.4 vs 4.6.
 
 ## Results so far
 
-| Theme      | Palette pairs | Failing AA | Worst                             | DOM audit             |
-| ---------- | ------------- | ---------- | --------------------------------- | --------------------- |
-| cyberdeck  | 17            | 0 (was 4)  | 5.24 (`error` fill, approximate)  | not yet run           |
-| plainLight | 17            | 0          | 4.65 (`accent` fill, approximate) | 33 checked, 0 failing |
+| Theme      | Palette pairs | Failing AA | Worst                             | DOM audit                         |
+| ---------- | ------------- | ---------- | --------------------------------- | --------------------------------- |
+| cyberdeck  | 17            | 0 (was 4)  | 5.24 (`error` fill, approximate)  | not yet run                       |
+| grimoire   | 17            | 0          | 5.17 (`error` fill, approximate)  | 40 checked, 0 failing, worst 6.75 |
+| plainLight | 17            | 0          | 4.65 (`accent` fill, approximate) | 33 checked, 0 failing             |
+
+grimoire's DOM pass was run in a room with the roll panel open, three rolled
+dice, four chat bubbles and a toast on screen. Treat the earlier plainLight
+number with suspicion: it predates the `clearRect` fix above, and that bug
+scored every row at exactly 1.00, so "0 failing" can only have come from a run
+where the snippet behaved differently than it does now. Worth re-running.
 
 cyberdeck's four failures — `info` 1.62, `success` 1.64, `neutral` 1.78,
 `warning` 1.85 — were near-white `-content` on fills that are themselves light.

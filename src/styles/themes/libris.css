@@ -1,0 +1,713 @@
+@reference "#/styles/global.css";
+@import "@fontsource-variable/cinzel";
+@import "@fontsource-variable/eb-garamond";
+@import "@fontsource-variable/eb-garamond/wght-italic.css";
+
+/* =============================================================================
+ * Libris — aged paper and iron-gall ink
+ * -----------------------------------------------------------------------------
+ * The deliberate opposite of cyberdeck on every axis: light rather than dark,
+ * printed rather than emissive, serif rather than geometric, texture rather than
+ * glow. Nothing here is emitted — no glow, no blur, no scanlines. Where
+ * cyberdeck lights a surface from behind, this one puts ink on top of it.
+ *
+ * The palette is the medieval scribe's, which is also a genuinely accessible
+ * one: iron-gall ink on parchment, rubric red for emphasis, verdigris green and
+ * ultramarine blue for the other two. All three pigments sit at the same
+ * lightness, so anything drawn in them carries the same weight.
+ * ===========================================================================*/
+@plugin "daisyui/theme" {
+  /* ---------------------------------------------------------------------------
+   *  Daisy config
+   * -------------------------------------------------------------------------*/
+  name: "libris";
+  default: false;
+  prefersdark: false;
+  color-scheme: light; /* color of browser-provided UI */
+
+  /* ---------------------------------------------------------------------------
+   * seed vars - not part of daisy
+   * -------------------------------------------------------------------------*/
+
+  /* how far we rotate the hue from primary -> secondary -> accent */
+  --h-delta: 130;
+
+  /* Lightness for content colours. This is a light theme, so unlike cyberdeck
+  the ink on a saturated fill is the *pale* one — the fills below are all dark
+  pigments. */
+  --l-content: 0.97;
+
+  /* chroma for content colors */
+  --c-content: 0.015;
+
+  /* Every saturated fill sits here. A single lightness for all of them is the
+  point: ground pigment on paper doesn't have a "bright" and a "dim" version,
+  and it means one contrast check covers the whole set. Dark enough that pale
+  content ink clears AA on any of them (worst pair ~5.2:1). */
+  --l-fill: 0.44;
+
+  /* lightness where we start out base colours */
+  --l-base-100: 0.95;
+
+  /* how much each shift the lightness for base-100 -> 200 -> 300 */
+  --l-base-delta: -0.045;
+
+  /* Chroma for the base colours. Higher than the other themes on purpose:
+  parchment is a *colour*, not a neutral, and a grey-cast paper reads as dirty
+  rather than aged. */
+  --c-base: 0.024;
+
+  /* Lightness for text set in a saturated colour, on paper. Dark, and only
+  slightly lighter than the fills themselves. */
+  --l-colored-text: 0.4;
+
+  /* the hue of the paper itself — warm, on the yellow side of orange */
+  --h-paper: 85;
+
+  /* ---------------------------------------------------------------------------
+   * Daisy theme variables
+   * -------------------------------------------------------------------------*/
+
+  /* rubric red: the colour a scribe reserved for the bits that matter */
+  --h-primary: 28;
+  --color-primary: oklch(var(--l-fill) 0.15 var(--h-primary));
+  --color-primary-content: oklch(
+    from var(--color-primary) var(--l-content) var(--c-content) h
+  );
+
+  /* verdigris */
+  --h-secondary: calc(var(--h-primary) + var(--h-delta));
+  --color-secondary: oklch(from var(--color-primary) l 0.11 var(--h-secondary));
+  --color-secondary-content: oklch(
+    from var(--color-secondary) var(--l-content) var(--c-content) h
+  );
+
+  /* ultramarine — the expensive one, hence its use for initials and accents */
+  --h-accent: calc(var(--h-primary) - var(--h-delta));
+  --color-accent: oklch(from var(--color-primary) l 0.13 var(--h-accent));
+  --color-accent-content: oklch(
+    from var(--color-accent) var(--l-content) var(--c-content) h
+  );
+
+  --color-base-100: oklch(var(--l-base-100) var(--c-base) var(--h-paper));
+  --color-base-200: oklch(
+    from var(--color-base-100) calc(l + var(--l-base-delta)) calc(c + 0.004) h
+  );
+  --color-base-300: oklch(
+    from var(--color-base-200) calc(l + var(--l-base-delta)) calc(c + 0.004) h
+  );
+  /* Iron-gall ink, which is not black: it goes down blue-black and oxidises to
+  a warm brown over centuries. Stated outright rather than derived from the
+  paper, because that brown cast is the whole character of the colour and
+  `oklch(from base-100 …)` would just give a dark parchment. */
+  --color-base-content: oklch(0.24 0.035 55);
+
+  /* Every -content colour is derived the same way, so the contrast of a
+  `--color-X-content` on `--color-X` is a property of --l-fill and --l-content
+  rather than of each pair being spot-checked. */
+  --color-neutral: oklch(from var(--color-base-content) 0.42 0.02 h);
+  --color-neutral-content: oklch(
+    from var(--color-neutral) var(--l-content) var(--c-content) h
+  );
+
+  --color-info: oklch(var(--l-fill) 0.11 258);
+  --color-info-content: oklch(
+    from var(--color-info) var(--l-content) var(--c-content) h
+  );
+  --color-success: oklch(var(--l-fill) 0.11 152);
+  --color-success-content: oklch(
+    from var(--color-success) var(--l-content) var(--c-content) h
+  );
+  /* raw umber, not a highlighter yellow — a light warning colour has nowhere to
+  go on paper this pale */
+  --color-warning: oklch(var(--l-fill) 0.12 70);
+  --color-warning-content: oklch(
+    from var(--color-warning) var(--l-content) var(--c-content) h
+  );
+  /* vermilion: hotter and more saturated than the rubric red, so error doesn't
+  read as "primary" */
+  --color-error: oklch(0.42 0.19 34);
+  --color-error-content: oklch(
+    from var(--color-error) var(--l-content) var(--c-content) h
+  );
+
+  /* Border radius. Almost square throughout — a printed page has corners. The
+  selector radius stays round because it applies to radios and checkboxes, where
+  the shape carries meaning. */
+  --radius-selector: 1rem;
+  --radius-field: 0.125rem;
+  --radius-box: 0.125rem;
+
+  /* base sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  /* border size */
+  --border: 1px;
+
+  /* effects — this theme paints its own texture, see `laid-paper` below */
+  --depth: 0;
+  --noise: 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * Laid paper
+ * -----------------------------------------------------------------------------
+ * Handmade paper is formed on a wire mould, which leaves two sets of marks: fine
+ * *laid* lines a millimetre or so apart, and *chain* lines every inch or so at
+ * right angles to them. Together with a fibre grain and an aged edge, that is
+ * the whole of the texture, and it is what makes a flat fill read as a sheet
+ * rather than a rectangle.
+ *
+ * Split into a layer list plus a class for the same reason as cyberdeck's
+ * `noisy-bg`: the layers reference `var(--laid-line)` and `var(--laid-edge)`,
+ * and var() inside a custom property is substituted against the element the
+ * property is *declared* on — so this has to be a utility applied to the
+ * consumer, not a `:root` variable.
+ * ---------------------------------------------------------------------------*/
+@utility laid-paper-layers {
+  --laid-paper-images:
+    /* fibre grain. Opaque mid-grey noise under `soft-light`, where grey is a
+    no-op and only the deviation shows — so it roughens the surface without
+    shifting its colour. Alpha is flattened to 1 in the filter because
+    feTurbulence's own alpha channel is noise too, which would blotch it. */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.55'/%3E%3C/svg%3E"),
+    /* laid lines */
+      repeating-linear-gradient(
+        to bottom,
+        var(--laid-line) 0 1px,
+        transparent 1px 5px
+      ),
+    /* chain lines */
+      repeating-linear-gradient(
+        to right,
+        var(--laid-line) 0 1px,
+        transparent 1px 30px
+      ),
+    /* the aged edge: paper darkens where it has been handled */
+      radial-gradient(120% 90% at 50% 45%, transparent 40%, var(--laid-edge));
+  --laid-paper-blend: soft-light, multiply, multiply, multiply;
+
+  /* Sensible defaults so `@apply laid-paper` alone gives a usable sheet; every
+  consumer below tunes them. */
+  --laid-line: oklch(from var(--color-base-content) l c h / 4%);
+  --laid-edge: oklch(from var(--color-base-300) l c h / 45%);
+}
+
+/* Paint the texture over whatever background-color the element already has.
+Deliberately the background-image longhand, not the shorthand: consumers keep
+their own opaque fill (their own `background-color`, or a `bg-*` utility in the
+markup), and the shorthand would reset it out from under them. */
+@utility laid-paper {
+  @apply laid-paper-layers;
+
+  background-image: var(--laid-paper-images);
+  background-blend-mode: var(--laid-paper-blend);
+}
+
+[data-theme="libris"] {
+  &:is(html) {
+    font-family: "EB Garamond Variable", Georgia, "Times New Roman", serif;
+    /* Garamond has a small x-height by modern standards, so the same apparent
+    text size needs a larger em than cyberdeck's Nunito Sans. */
+    font-size: 20px;
+    font-optical-sizing: auto;
+  }
+
+  /* Ink at the four strengths this theme draws with. Everything below picks one
+  of these rather than inventing its own alpha, which is what keeps the rules
+  reading as a consistent hand. */
+  --ink: var(--color-base-content);
+  --ink-rule: oklch(from var(--color-base-content) l c h / 55%);
+  --ink-hair: oklch(from var(--color-base-content) l c h / 28%);
+  --ink-ghost: oklch(from var(--color-base-content) l c h / 12%);
+
+  --display-face: "Cinzel Variable", Georgia, "Times New Roman", serif;
+
+  @layer utilities {
+    /* Beats the `@utility chat-bubble` in global.css, which sets the bubble's
+    background-color: same layer, and `[data-theme] .chat-bubble` outspecifies a
+    bare class. */
+    .chat-bubble {
+      /* A note written on the page rather than a bubble floating over it: the
+      user's colour is washed right down into the paper and the only strong mark
+      is the ink rule down the outer edge. `--user-colour` comes from
+      ChatBubble.tsx and is already polarity-aware. */
+      background-color: color-mix(
+        in oklch,
+        var(--user-colour) 45%,
+        var(--color-base-100)
+      );
+      border-radius: 0;
+      padding: 0.5em 0.8em;
+      border-left: 3px solid oklch(from var(--user-colour) 0.5 0.14 h);
+      box-shadow: 1px 1px 0 var(--ink-ghost);
+
+      /* Messages from the current user are mirrored to the right. */
+      .group[data-is-mine] & {
+        border-left: 0;
+        border-right: 3px solid oklch(from var(--user-colour) 0.5 0.14 h);
+        box-shadow: -1px 1px 0 var(--ink-ghost);
+      }
+    }
+
+    .prose {
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: var(--display-face);
+        letter-spacing: 0.03em;
+      }
+    }
+
+    /* Sits after daisyUI's own sublayers but before the markup utilities, so a
+    `text-*` or `bg-*` in a component still wins. */
+    @layer components {
+      .btn {
+        /* daisyUI leaves --btn-color unset on a plain .btn; the fallback keeps
+        the letterpress look on those too. */
+        --edge: var(--btn-color, var(--color-base-content));
+
+        font-family: var(--display-face);
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: var(--btn-color-text, var(--color-base-content));
+        border: 1px solid oklch(from var(--edge) l c h / 70%);
+        background-color: color-mix(
+          in oklch,
+          var(--edge) 8%,
+          var(--color-base-100)
+        );
+        /* a sheet of card lifted a hair off the page: one bright edge along the
+        top, one soft shadow along the bottom */
+        box-shadow:
+          inset 0 1px 0 oklch(from var(--color-base-100) 0.99 0.01 h),
+          0 1px 0 var(--ink-ghost);
+        text-shadow: none;
+
+        &:hover {
+          background-color: color-mix(
+            in oklch,
+            var(--edge) 18%,
+            var(--color-base-100)
+          );
+        }
+        &[disabled],
+        &:has([disabled]) {
+          --edge: var(--color-base-content);
+          opacity: 50%;
+          cursor: not-allowed;
+          pointer-events: all;
+        }
+      }
+      .btn-soft {
+        /* Fill-led rather than rule-led. The fill has to do the work of the
+        missing rule, so it is stronger than `.btn`'s, and the rule fades rather
+        than vanishing — at 8% on a base-300 surface a borderless soft button is
+        very nearly invisible. */
+        border-color: oklch(from var(--edge) l c h / 25%);
+        background-color: color-mix(
+          in oklch,
+          var(--edge) 22%,
+          var(--color-base-100)
+        );
+        box-shadow: none;
+
+        &:hover {
+          background-color: color-mix(
+            in oklch,
+            var(--edge) 32%,
+            var(--color-base-100)
+          );
+        }
+      }
+      .btn-outline {
+        /* rule only */
+        background-color: transparent;
+        box-shadow: none;
+      }
+      .btn-ghost {
+        border-color: transparent;
+        background-color: transparent;
+        box-shadow: none;
+      }
+      .join > .btn.join-item {
+        /* joined buttons read as one ruled box, so the internal edges collapse
+        to a single shared line */
+        box-shadow: none;
+        &:not(:last-child) {
+          border-right-width: 0;
+        }
+      }
+    }
+
+    /* -----------------------------------------------------------------------
+     * Everything from here down sits in `utilities` itself rather than the
+     * sublayer above, and it has to.
+     *
+     * daisyUI emits part of each component *outside* its own `daisyui.l1.l2.l3`
+     * sublayer — `.alert`, for instance, carries `border-width` and
+     * `border-color` in plain `@layer utilities`. A rule in a sublayer loses to
+     * that however specific it is, which is why an earlier draft of this file
+     * had an `.alert` whose background applied and whose border silently did
+     * not. It is also why global.css's `all: revert-layer` doesn't clear these:
+     * the declarations were never in the reverted sublayer.
+     *
+     * The cost is that these outrank markup utilities too, so nothing here sets
+     * a property a `text-*`/`bg-*` in a component is likely to want back.
+     * -------------------------------------------------------------------- */
+
+    /* Fields are ruled lines on a form: a faint tint so the target is
+      discoverable, a hairline box, and a full-strength baseline where you would
+      actually write. */
+    .input,
+    .select,
+    .textarea,
+    .file-input {
+      font-family: inherit;
+      border: 1px solid var(--ink-hair);
+      border-bottom: 2px solid var(--ink-rule);
+      border-radius: 0;
+      background-color: oklch(
+        from var(--color-base-100) calc(l + 0.025) calc(c - 0.008) h
+      );
+
+      &:focus,
+      &:focus-within {
+        border-bottom-color: var(--color-primary);
+      }
+    }
+
+    /* A slip of paper laid on top of the page, with a cast shadow. */
+    .dropdown {
+      @apply laid-paper;
+
+      background-color: var(--color-base-100);
+      --laid-line: oklch(from var(--color-base-content) l c h / 3%);
+      --laid-edge: oklch(from var(--color-base-300) l c h / 35%);
+      border: 1px solid var(--ink-rule);
+      border-radius: 0;
+      box-shadow: 0 6px 16px -8px oklch(from var(--ink) l c h / 45%);
+    }
+
+    .menu {
+      padding: 0;
+      min-width: 100%;
+      & > li > :is(button, a) {
+        border-radius: 0;
+        &:hover {
+          /* a wash of rubric, plus a marginal mark down the edge so the
+            highlight doesn't rest on colour alone */
+          background-color: color-mix(
+            in oklch,
+            var(--color-primary) 12%,
+            transparent
+          );
+          box-shadow: inset 3px 0 0 var(--color-primary);
+        }
+      }
+    }
+
+    /* A note in the margin: the whole message is bracketed by one heavy ink
+      rule down its left edge, in the semantic colour. */
+    .alert {
+      background-color: var(--color-base-200);
+      /* daisyUI pairs `.alert-info`'s `color: var(--color-info-content)` with
+        an `--alert-color` background. We replace that background, so we own the
+        foreground too — otherwise the ink is picked for a fill we are not
+        painting. */
+      color: var(--color-base-content);
+      border: 1px solid var(--ink-hair);
+      border-left: 4px solid var(--color-base-content);
+      border-radius: 0;
+
+      &.alert-info {
+        border-left-color: var(--color-info);
+      }
+      &.alert-success {
+        border-left-color: var(--color-success);
+      }
+      &.alert-warning {
+        border-left-color: var(--color-warning);
+      }
+      &.alert-error {
+        border-left-color: var(--color-error);
+      }
+    }
+
+    /* A plate bound into the book: paper, a printer's double rule (border,
+      margin, hairline) and a cast shadow. The inner rules are inset shadows
+      rather than a second element, which is why the padding has to clear
+      them. */
+    .modal-box {
+      @apply laid-paper;
+
+      background-color: var(--color-base-100);
+      --laid-line: oklch(from var(--color-base-content) l c h / 3.5%);
+      --laid-edge: oklch(from var(--color-base-300) l c h / 35%);
+      border: 1px solid var(--ink-rule);
+      border-radius: 0;
+      padding: 1.4em;
+      box-shadow:
+        inset 0 0 0 5px var(--color-base-100),
+        inset 0 0 0 6px var(--ink-hair),
+        0 14px 34px -16px oklch(from var(--ink) l c h / 50%);
+
+      .modal-action {
+        margin-top: 1.2em;
+      }
+    }
+
+    /* Field labels as rubrics: small, spaced capitals in the display face. */
+    .label {
+      color: inherit;
+      font-family: var(--display-face);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: var(--text-xs);
+      font-weight: 600;
+      opacity: 75%;
+    }
+  }
+
+  @layer components {
+    /* The per-level size ramp is base structure and lives in global.css; this
+    only picks the face. Kept in `components` rather than `utilities` so that a
+    `text-*`/`tracking-*` utility in the markup still outranks it — several call
+    sites pass one expecting it to win. */
+    .heading {
+      font-family: var(--display-face);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* size and weight are base structure and live in global.css */
+    .room-name {
+      font-family: var(--display-face);
+      letter-spacing: 0.07em;
+    }
+
+    /* The page itself. */
+    .main-area {
+      @apply laid-paper;
+
+      background-color: var(--color-base-100);
+      --laid-line: oklch(from var(--color-base-content) l c h / 4%);
+      --laid-edge: oklch(from var(--color-base-300) l c h / 55%);
+    }
+
+    /* The chat scrolls up *underneath* the header (see the grid in
+    diceRoller.module.css, where .chatArea spans the header row), so this needs
+    an opaque fill of its own or the messages read through it. cyberdeck solves
+    that with a blur; on paper the honest answer is a running head — a solid band
+    of slightly heavier stock, closed off by a printer's double rule. That rule
+    is also what stops a theme-less header floating against the chat. */
+    .header {
+      background-color: var(--color-base-200);
+      border-bottom: 1px solid var(--ink-rule);
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 -4px 0;
+        height: 1px;
+        background: var(--ink-hair);
+        pointer-events: none;
+      }
+    }
+
+    /* A second leaf laid over the page: heavier stock, its own texture, a ruled
+    binding edge and a shadow where it lifts away from the sheet beneath.
+    Opaque, unlike cyberdeck's — you cannot see through paper.
+
+    Positioning is owned by sidebar.module.css and deliberately not restated
+    here: CSS modules are emitted unlayered, so they outrank every `@layer` and a
+    theme cannot override them anyway. The `::before` gutter rule relies on that
+    module establishing the containing block. */
+    .sidebar {
+      @apply laid-paper;
+
+      background-color: var(--color-base-200);
+      --laid-line: oklch(from var(--color-base-content) l c h / 3%);
+      --laid-edge: oklch(from var(--color-base-300) l c h / 40%);
+      border-left: 1px solid var(--ink-rule);
+      box-shadow: -8px 0 18px -10px oklch(from var(--ink) l c h / 35%);
+
+      /* the inner half of the double rule down the binding edge */
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 4px;
+        width: 1px;
+        background: var(--ink-hair);
+        pointer-events: none;
+      }
+    }
+
+    /***************************************************************************
+     * Dice faces
+     **************************************************************************/
+    /* Kept plainer than the rest of the theme on purpose: a die face is a number
+    you read at a glance, and it is the one place where texture would cost more
+    than it gives. Ruled box, paper fill, pigment for the result. */
+    .dice-face {
+      font-family: var(--display-face);
+      font-weight: 600;
+      font-size: 0.95em;
+      height: 2.2em;
+      width: 2.2em;
+      font-variant-numeric: lining-nums;
+      --color: var(--color-base-content);
+      color: var(--color);
+      border: 1px solid oklch(from var(--color) l c h / 60%);
+      border-radius: 1px;
+      background-color: oklch(from var(--color-base-100) calc(l + 0.02) c h);
+
+      &[data-degree="failure"] {
+        --color: var(--color-error);
+      }
+
+      &[data-degree="success"] {
+        --color: var(--color-success);
+      }
+
+      &[data-degree="critical"] {
+        --color: var(--color-success);
+        &:after {
+          content: "!";
+        }
+      }
+
+      &[data-dropped] {
+        text-decoration-line: line-through;
+        text-decoration-thickness: 2px;
+        opacity: 65%;
+      }
+    }
+
+    /* On a joined composite die, show the critical "!" only once, after the
+       whole pair, rather than once per digit chip. */
+    .dice-face-pair .dice-face:not(:last-child)[data-degree="critical"]:after {
+      content: none;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+   * prefers-reduced-motion
+   * -----------------------------------------------------------------------------
+   * This theme has almost nothing to strip, which is a design decision rather
+   * than an oversight: printed matter does not move, so nothing here travels or
+   * scales. The one exception is the button press below, which exists precisely
+   * because a letterpress button that does not depress is a wasted metaphor.
+   * -------------------------------------------------------------------------*/
+  @media (prefers-reduced-motion: no-preference) {
+    @layer utilities {
+      @layer components {
+        .btn:active:not([disabled]) {
+          /* down onto the page, and the lift shadow goes with it */
+          translate: 0 1px;
+          box-shadow: inset 0 1px 0 oklch(from var(--ink) l c h / 10%);
+        }
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+   * prefers-contrast: more
+   * -----------------------------------------------------------------------------
+   * As with cyberdeck, this is not a colour change — the palette clears AA on
+   * its own (see docs/theme-contrast-audit.md). It removes everything this theme
+   * paints *between* the reader and the text: the paper grain, the laid and
+   * chain lines, the aged edge, the washes and the deliberately soft rules.
+   *
+   * What is left is still recognisably this theme — same pigments, same faces,
+   * same square corners — it has simply stopped putting texture under its own
+   * words.
+   * -------------------------------------------------------------------------*/
+  @media (prefers-contrast: more) {
+    @layer components {
+      /* flat paper: no grain, no laid lines, no aged edge */
+      .main-area,
+      .sidebar {
+        background-image: none;
+      }
+
+      .sidebar {
+        box-shadow: none;
+        &::before {
+          display: none;
+        }
+      }
+
+      .header {
+        border-bottom-color: var(--color-base-content);
+        &::after {
+          display: none;
+        }
+      }
+
+      /* full-strength rule round the die, and an opaque fill */
+      .dice-face {
+        border-color: var(--color);
+        background-color: var(--color-base-100);
+        &[data-dropped] {
+          opacity: 100%;
+        }
+      }
+    }
+
+    @layer utilities {
+      /* The chat bubble's colour wash is a tint laid directly under body text.
+      The user's colour survives as the edge rule, which is where it was doing
+      the identifying work anyway.
+
+      The mirrored variant has to be named explicitly: it sets its own
+      box-shadow from a (0,4,0) selector, so a bare `.chat-bubble` here would
+      be silently inert for every message the reader sent themselves. */
+      .chat-bubble,
+      .group[data-is-mine] .chat-bubble {
+        background-color: var(--color-base-100);
+        box-shadow: none;
+      }
+
+      @layer components {
+        .btn {
+          border-color: var(--edge);
+          box-shadow: none;
+        }
+      }
+
+      /* in `utilities` itself, for the same daisyUI reason as the base rules */
+      .dropdown,
+      .modal-box {
+        background-image: none;
+      }
+
+      .modal-box {
+        /* the inner hairline of the double rule is decoration a few millimetres
+        from the text; the outer border stays */
+        box-shadow: none;
+        border-color: var(--color-base-content);
+      }
+
+      .input,
+      .select,
+      .textarea,
+      .file-input {
+        border-color: var(--color-base-content);
+      }
+
+      .alert {
+        border-color: var(--color-base-content);
+      }
+
+      /* dimmed purely for hierarchy */
+      .label {
+        opacity: 100%;
+      }
+    }
+  }
+}
