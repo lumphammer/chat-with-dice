@@ -59,6 +59,16 @@ describe("theme registry", () => {
     });
   });
 
+  // Rooms chosen before the rename still hold the old string in `rooms.theme`.
+  // Losing these mappings wouldn't fail loudly — those rooms would just quietly
+  // revert to the default.
+  it.each([
+    ["havocDark", "cyberdeck"],
+    ["havocLight", "plainLight"],
+  ])("maps the retired name %s onto %s", (legacy, current) => {
+    expect(resolveTheme(legacy).name).toBe(current);
+  });
+
   it.each([null, undefined, "", "  ", "notATheme", true, {}, []])(
     "falls back to the default for %o",
     (value) => {

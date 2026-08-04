@@ -11,7 +11,7 @@
   /* ---------------------------------------------------------------------------
    *  Daisy config
    * -------------------------------------------------------------------------*/
-  name: "havocLight";
+  name: "plainLight";
   /* Which theme is the default is the registry's call, not daisyUI's — we always
   render an explicit data-theme, so nothing should apply at :root. */
   default: false;

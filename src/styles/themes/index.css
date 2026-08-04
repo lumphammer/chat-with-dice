@@ -12,5 +12,5 @@
  * This list must match `THEME_NAMES` in ./registry.ts; registry.test.ts fails
  * the build if it drifts.
  * ===========================================================================*/
-@import "./havocDark.css";
-@import "./havocLight.css";
+@import "./cyberdeck.css";
+@import "./plainLight.css";
