@@ -32,13 +32,17 @@ Already done:
 - Two themes are registered and shipped: `havocDark` (full-fat) and `havocLight`
   (palette only). Switching between them works end to end.
 
+- The room owner can pick a theme from the Config panel; it applies live for
+  everyone in the room and persists.
+
 Still missing:
 
-- **Nothing writes `rooms.theme`.** No UI, no action — Phase 5.
-- Both accessibility escapes are implemented, but **nothing from Phase 3 has
-  been seen in a browser** — the preview connector was down throughout.
-- `havocLight` is legible but plain. Whether it becomes a crafted identity or
-  stays the deliberately-bare regression canary is an open call.
+- **A second theme with a real identity** — Phase 4, the only phase left.
+  Whether havocLight grows into one or stays the deliberately-bare regression
+  canary (and a third theme is written instead) is an open call.
+- `prefers-contrast: more` has never been seen rendered. Reduced motion has been
+  verified by eye; the contrast escape can't easily be simulated without also
+  forcing the palette, so it rests on the built CSS alone.
 
 ## The theme contract
 
@@ -244,13 +248,31 @@ contract didn't cover yet.
 **Done when:** theme #2 is complete and styles nothing outside its own file and
 the registry.
 
-### Phase 5 — Write path
+### Phase 5 — Write path ✅
 
-- Room settings UI to pick a theme. `src/components/Sidebar/Config.tsx` already
-  edits the room name and is the natural home.
-- Astro action + validation; apply live rather than building a preview mode.
+Done before Phase 4, deliberately: the base layer had already been proven by the
+havocLight spike, and crafting a rich theme is far easier once you can switch
+themes in the app instead of by hand-editing D1.
 
-**Done when:** a GM can change the room's theme and it persists for everyone.
+- **Deviation:** no Astro action. Room name and config don't use one either —
+  they go over the room's WebSocket so every client sees the change at once, and
+  a theme is exactly that kind of shared state. Added `updateRoomTheme`
+  (client→server) and `roomTheme` (server→client) alongside the existing
+  `updateRoomName` / `roomName` pair, so the theme rides the same path.
+- `ThemePicker.tsx` in the Config panel. Owner-only twice over: `Sidebar.tsx`
+  only offers the config tab to the owner, and the DO's `checkOwner` rejects the
+  message regardless.
+- `useApplyRoomTheme` swaps `data-theme` and `data-theme-polarity` on `<html>`.
+  Every theme's CSS is already loaded, so that attribute swap is the whole of
+  the change — which is also why there's no preview mode: picking a theme _is_
+  the preview.
+- The room page resolves the theme once and hands it to both the layout and the
+  island, so markup and hydrated state can't disagree.
+
+**Verified end to end:** picker reflects the stored theme, switching repaints
+live, D1 shows the new value, and a reload comes back server-rendered with it.
+The non-owner rejection path is not directly tested — it's the same shared
+`checkOwner` used by room name and config.
 
 ### Debt bucket — do any time
 
