@@ -16,8 +16,7 @@ dark theme needs no edit here. */
 }
 
 @import "./themeUtils.css";
-/*@import "./themes/havocDark.css";
-@import "./themes/havocLight.css";*/
+/* the themes themselves are imported by HTML.astro via ./themes/index.css */
 
 @theme {
   /*
@@ -197,7 +196,7 @@ dark theme needs no edit here. */
 
   /* The chat surface, and the sidebar that sits over it. Both need an opaque
   fill of their own so content doesn't read through to the page beneath. A theme
-  that sets the `background` shorthand (as havocDark does) replaces these
+  that sets the `background` shorthand (as cyberdeck does) replaces these
   outright, including their translucency — that's expected. */
   .main-area {
     background-color: var(--color-base-100);

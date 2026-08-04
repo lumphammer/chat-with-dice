@@ -103,7 +103,7 @@ ancestor background falls below AA (4.5:1, or 3:1 for text at 24px+).
   surface is measured against whatever is behind it — an approximation, and an
   optimistic one where a theme stacks several translucent layers.
 - Ignores text sitting on gradients, images and the noise texture; it samples
-  `background-color`, not painted pixels. havocDark's `.main-area` scanlines and
+  `background-color`, not painted pixels. cyberdeck's `.main-area` scanlines and
   `noisy-bg` are exactly this case, so treat its results as a floor rather than
   a guarantee.
 - `font-weight` is not considered, so bold text at 18.66px–24px is judged
@@ -129,10 +129,10 @@ approximate — fine for catching 1.6:1, not for splitting hairs at 4.4 vs 4.6.
 
 | Theme      | Palette pairs | Failing AA | Worst                             | DOM audit             |
 | ---------- | ------------- | ---------- | --------------------------------- | --------------------- |
-| havocDark  | 17            | 0 (was 4)  | 5.24 (`error` fill, approximate)  | not yet run           |
-| havocLight | 17            | 0          | 4.65 (`accent` fill, approximate) | 33 checked, 0 failing |
+| cyberdeck  | 17            | 0 (was 4)  | 5.24 (`error` fill, approximate)  | not yet run           |
+| plainLight | 17            | 0          | 4.65 (`accent` fill, approximate) | 33 checked, 0 failing |
 
-havocDark's four failures — `info` 1.62, `success` 1.64, `neutral` 1.78,
+cyberdeck's four failures — `info` 1.62, `success` 1.64, `neutral` 1.78,
 `warning` 1.85 — were near-white `-content` on fills that are themselves light.
 Fixed by deriving every `-content` from `--l-content` / `--c-content`, as
 primary/secondary/accent already did.

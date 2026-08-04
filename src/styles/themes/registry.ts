@@ -1,5 +1,5 @@
-const HAVOC_DARK_THEME_NAME = "havocDark";
-const HAVOC_LIGHT_THEME_NAME = "havocLight";
+const CYBERDECK_THEME_NAME = "cyberdeck";
+const PLAIN_LIGHT_THEME_NAME = "plainLight";
 
 /**
  * Every theme the app can render. A name listed here must have a matching
@@ -8,8 +8,8 @@ const HAVOC_LIGHT_THEME_NAME = "havocLight";
  * rendering an unstyled app.
  */
 export const THEME_NAMES = [
-  HAVOC_DARK_THEME_NAME,
-  HAVOC_LIGHT_THEME_NAME,
+  CYBERDECK_THEME_NAME,
+  PLAIN_LIGHT_THEME_NAME,
 ] as const;
 
 export type ThemeName = (typeof THEME_NAMES)[number];
@@ -34,19 +34,19 @@ export interface ThemeInfo {
 }
 
 export const themes = {
-  [HAVOC_DARK_THEME_NAME]: {
-    label: "Havoc Dark",
+  [CYBERDECK_THEME_NAME]: {
+    label: "Cyberdeck",
     description: "Cyberpunk chrome: neon, scanlines and chamfered edges",
     polarity: "dark",
   },
-  [HAVOC_LIGHT_THEME_NAME]: {
-    label: "Havoc Light",
+  [PLAIN_LIGHT_THEME_NAME]: {
+    label: "Plain Light",
     description: "Clean and legible, with none of the sci-fi chrome",
     polarity: "light",
   },
 } satisfies Record<ThemeName, ThemeInfo>;
 
-export const DEFAULT_THEME_NAME: ThemeName = HAVOC_DARK_THEME_NAME;
+export const DEFAULT_THEME_NAME: ThemeName = CYBERDECK_THEME_NAME;
 
 export interface ResolvedTheme extends ThemeInfo {
   name: ThemeName;
@@ -59,12 +59,30 @@ export function isThemeName(value: unknown): value is ThemeName {
 }
 
 /**
+ * Themes that have been renamed. Rooms picked their theme before the rename and
+ * `rooms.theme` still holds the old string, so these are mapped rather than
+ * migrated — same approach as `normalizeLegacyHavocCapabilities` takes with
+ * retired capability names, and for the same reason: the read path is a single
+ * choke point, so there is nothing a migration would buy.
+ *
+ * Entries here are permanent. Dropping one silently reverts those rooms to the
+ * default.
+ */
+const LEGACY_THEME_NAMES: Record<string, ThemeName> = {
+  havocDark: CYBERDECK_THEME_NAME,
+  havocLight: PLAIN_LIGHT_THEME_NAME,
+};
+
+/**
  * `rooms.theme` is unconstrained text, so it can hold anything: null for a room
- * created before themes existed, or a name we no longer ship. Resolving to the
- * default rather than throwing means a stale value costs the room its look, not
- * its usability.
+ * created before themes existed, a name we have since renamed, or a name we no
+ * longer ship at all. Resolving to the default rather than throwing means a
+ * stale value costs the room its look, not its usability.
  */
 export function resolveTheme(value: unknown): ResolvedTheme {
-  const name = isThemeName(value) ? value : DEFAULT_THEME_NAME;
+  const name = isThemeName(value)
+    ? value
+    : ((typeof value === "string" ? LEGACY_THEME_NAMES[value] : undefined) ??
+      DEFAULT_THEME_NAME);
   return { name, ...themes[name] };
 }

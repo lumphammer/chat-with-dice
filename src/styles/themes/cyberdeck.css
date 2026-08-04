@@ -9,7 +9,7 @@
   /* ---------------------------------------------------------------------------
    *  Daisy config
    * -------------------------------------------------------------------------*/
-  name: "havocDark";
+  name: "cyberdeck";
   default: false; /* set as default */
   prefersdark: true; /* set as default dark mode (prefers-color-scheme:dark) */
   color-scheme: dark; /* color of browser-provided UI */
@@ -165,7 +165,7 @@ so the noise would end up blending against transparency. */
   background-blend-mode: var(--noisy-bg-blend);
 }
 
-[data-theme="havocDark"] {
+[data-theme="cyberdeck"] {
   &:is(html) {
     /*font-family: "Exo 2 Variable";*/
     font-family: "Nunito Sans Variable";
