@@ -41,7 +41,7 @@ const iconMap = {
 export const Toaster = ({
   toaster,
 }: {
-  toaster: ReturnType<typeof createToaster>;
+  toaster: ReturnType<typeof useToaster>;
 }) => {
   return (
     <Portal>
