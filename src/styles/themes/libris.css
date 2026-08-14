@@ -375,11 +375,13 @@ markup), and the shorthand would reset it out from under them. */
         background-blend-mode: soft-light, soft-light;
 
         &:hover {
+          scale: 1.05;
           background-color: color-mix(
-            in oklch,
+            in srgb,
             var(--edge) 18%,
-            var(--color-base-100)
+            var(--color-base-300)
           );
+          background-color: #fff3;
         }
         &[disabled],
         &:has([disabled]) {
@@ -397,18 +399,18 @@ markup), and the shorthand would reset it out from under them. */
         very nearly invisible. */
         border-color: oklch(from var(--edge) l c h / 25%);
         background-color: color-mix(
-          in oklch,
+          in srgb,
           var(--edge) 22%,
           var(--color-base-100)
         );
         box-shadow: none;
 
         &:hover {
-          background-color: color-mix(
-            in oklch,
+          /*background-color: color-mix(
+            in srgb,
             var(--edge) 32%,
             var(--color-base-100)
-          );
+          );*/
         }
       }
       .btn-outline {
@@ -490,11 +492,7 @@ markup), and the shorthand would reset it out from under them. */
         &:hover {
           /* a wash of rubric, plus a marginal mark down the edge so the
             highlight doesn't rest on colour alone */
-          background-color: color-mix(
-            in oklch,
-            var(--color-primary) 12%,
-            transparent
-          );
+          background-color: oklch(from var(--color-primary) l c h / 12%);
           box-shadow: inset 3px 0 0 var(--color-primary);
         }
       }
@@ -506,11 +504,16 @@ markup), and the shorthand would reset it out from under them. */
       background-color: oklch(
         from
           color-mix(
+            /* srgb actually gives a better optiucacl mix than oklch or hsl - we
+            *don't* want a hue between the paper's beige and the alert color,
+            because that would yield e.g. green when the alert is blue. */
+              in srgb,
             var(--color-base-200),
             var(--libris-alert-color, var(--color-base-200)) 20%
           )
           0.9 c h
       );
+      /*background-color: oklch(from var(--libris-alert-color) 0.95 0.03 h);*/
       /* daisyUI pairs `.alert-info`'s `color: var(--color-info-content)` with
         an `--alert-color` background. We replace that background, so we own the
         foreground too — otherwise the ink is picked for a fill we are not
