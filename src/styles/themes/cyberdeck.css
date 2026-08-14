@@ -546,11 +546,13 @@ so the noise would end up blending against transparency. */
     shorthand drops the base layer's opaque base-200 fill, and the blur below
     does the rest.
 
-    Positioning is owned by sidebar.module.css and deliberately not restated
-    here — CSS modules are emitted unlayered, so they outrank every `@layer` and
-    a theme cannot override them anyway. The `::before` ring below relies on the
-    module establishing the containing block. */
+    Positioning is owned by the `.sidebar` floor in global.css and deliberately
+    not restated here — a theme is free to override it now that it lives in a
+    layer, but the grid and the width variables are structure, not dressing. The
+    `::before` ring below relies on that rule establishing the containing
+    block. */
     .sidebar {
+      margin: calc(var(--spacing) * 2) 0;
       border-radius: 2em 0 0 2em;
       background: linear-gradient(
         to bottom,
