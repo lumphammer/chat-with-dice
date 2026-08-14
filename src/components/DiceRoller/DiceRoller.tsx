@@ -13,6 +13,7 @@ import {
   useFeedbackToasterProvider,
 } from "../FeedbackToaster";
 import { Sidebar } from "../Sidebar/Sidebar";
+import { useApplyTheme } from "../useApplyTheme";
 import { CapabilityRoomOverlays } from "./CapabilityRoomOverlays";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
@@ -22,7 +23,6 @@ import { RoomUiNavigationContextProvider } from "./contexts/roomUiNavigationCont
 import { SendMessageContextProvider } from "./contexts/sendMessageContext";
 import styles from "./diceRoller.module.css";
 import { useAnonymousFallbackSignIn } from "./hooks/useAnonymousFallbackSignIn";
-import { useApplyRoomTheme } from "./hooks/useApplyRoomTheme";
 import { useChatWebSocket } from "./hooks/useChatWebSocket";
 import { useSmartScroll } from "./hooks/useSmartScroll";
 import type { UserHueStyle } from "./types";
@@ -67,7 +67,7 @@ export const DiceRoller = memo(
     const [roomConfig, setRoomConfig] = useState(initialConfig);
     const [roomName, setRoomName] = useState(initialDisplayName);
     const [roomTheme, setRoomTheme] = useState(initialTheme);
-    useApplyRoomTheme(roomTheme);
+    useApplyTheme(roomTheme);
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});
 
