@@ -30,7 +30,7 @@
 }
 
 .chatArea {
-  grid-area: header / header / chat / chat;
+  grid-area: chat / chat / entry/ entry;
   min-height: 0;
   position: relative;
   max-width: 56rem;
@@ -42,6 +42,7 @@
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  padding-bottom: 4em;
 }
 
 .chatMessages::before {
@@ -54,6 +55,7 @@
   max-width: 56rem;
   width: 100%;
   margin-inline: auto;
+  z-index: 2;
 }
 
 .sidebarWrapper {

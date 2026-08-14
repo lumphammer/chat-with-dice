@@ -313,8 +313,8 @@ export const DiceRoller = memo(
                         {hasNewMessages && (
                           <button
                             onClick={scrollToBottom}
-                            className="btn btn-primary btn-sm absolute bottom-4
-                              left-1/2 -translate-x-1/2 shadow-lg"
+                            className="btn btn-primary btn-sm absolute bottom-20
+                              left-1/2 z-10 -translate-x-1/2 shadow-lg"
                           >
                             ↓ New messages
                           </button>
