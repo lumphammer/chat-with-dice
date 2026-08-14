@@ -29,16 +29,16 @@ Already done:
   is read on the room page, resolved against the registry, and rendered onto
   `<html>` server-side as `data-theme` + `data-theme-polarity`.
 
-- Three themes are registered and shipped: `cyberdeck` and `grimoire` (full-fat)
+- Three themes are registered and shipped: `cyberdeck` and `libris` (full-fat)
   and `plainLight` (palette only). Switching between them works end to end.
 
 - The room owner can pick a theme from the Config panel; it applies live for
   everyone in the room and persists.
 
-- `grimoire` ships — the second full identity, and the answer to the open call
+- `libris` ships — the second full identity, and the answer to the open call
   above: plainLight stays the bare canary and a third theme was written instead.
 
-- `prefers-contrast: more` **has now been seen rendered**, for grimoire. There is
+- `prefers-contrast: more` **has now been seen rendered**, for libris. There is
   no devtools switch for it in the preview connector, so it was verified by
   temporarily flipping the query to `no-preference`, screenshotting, and
   reverting. Crude, but it is the difference between "the CSS says so" and
@@ -96,7 +96,7 @@ Not a free choice, and getting it wrong fails silently.
   `.main-area`, `.sidebar`, `.dice-face`), so markup utilities outrank them.
 
 When you override a **nested variant**, an escape has to name that variant too:
-grimoire's `prefers-contrast` rule for `.chat-bubble` was inert for the
+libris's `prefers-contrast` rule for `.chat-bubble` was inert for the
 mirrored `.group[data-is-mine] &` version, which sets the same property from a
 (0,4,0) selector.
 
@@ -266,14 +266,14 @@ never been seen rendered. See below.
 
 ### Phase 4 — Theme #2, for real ✅
 
-`grimoire`: aged paper and iron-gall ink. Chosen to be the opposite of cyberdeck
+`libris`: aged paper and iron-gall ink. Chosen to be the opposite of cyberdeck
 on every axis at once — light not dark, printed not emissive, serif not
 geometric, texture not glow — because a theme that differs only in hue would not
 have tested anything. Palette is the medieval scribe's: iron-gall ink on
 parchment, rubric red, verdigris, ultramarine, all three pigments at one
 lightness (`--l-fill`), so a single contrast check covers the whole set.
 
-**Done:** it styles nothing outside `themes/grimoire.css`, `themes/index.css` and
+**Done:** it styles nothing outside `themes/libris.css`, `themes/index.css` and
 the registry. Nothing had to be promoted into the base layer — the contract held.
 
 #### What it cost
@@ -290,7 +290,7 @@ only fetched by rooms actually using this theme — as Phase 2 predicted.
   sublayer. The first draft had an `.alert` whose background applied and whose
   4px margin rule silently did not. This is why cyberdeck keeps most components
   in `utilities` directly and only `.btn` in a nested `components` sublayer; that
-  structure is load-bearing, not stylistic, and grimoire now mirrors it with a
+  structure is load-bearing, not stylistic, and libris now mirrors it with a
   comment saying why.
 - **The contrast audit snippet was broken.** `fillRect` with a transparent
   `fillStyle` is a no-op, so `toRGB` returned the previous pixel — and since
@@ -299,7 +299,7 @@ only fetched by rooms actually using this theme — as Phase 2 predicted.
   scored exactly 1.00. Fixed with a `clearRect`; see
   [the audit](./theme-contrast-audit.md). The recorded plainLight result predates
   the fix and should be re-run.
-- **A theme can write inert rules against its own base rules.** grimoire's
+- **A theme can write inert rules against its own base rules.** libris's
   `prefers-contrast` block set `box-shadow: none` on `.chat-bubble`, but the
   mirrored `.group[data-is-mine] &` variant sets its own from a (0,4,0) selector
   and won. Same class of bug as the `position: relative` and `text-5xl` cases,

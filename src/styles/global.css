@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/* Up here with the other imports because an `@import` after any other rule is
+invalid per the CSS cascade spec. Tailwind resolves it at build time either way,
+so this isn't currently load-bearing — but it's one pipeline change away from
+being dropped, and `bevel-layers`/`bevel` would then silently not exist. */
+@import "./themeUtils.css";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui";
 
@@ -15,7 +20,6 @@ dark theme needs no edit here. */
   }
 }
 
-@import "./themeUtils.css";
 /* the themes themselves are imported by HTML.astro via ./themes/index.css */
 
 @theme {

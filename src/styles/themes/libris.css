@@ -888,9 +888,13 @@ markup), and the shorthand would reset it out from under them. */
    * -------------------------------------------------------------------------*/
   @media (prefers-contrast: more) {
     @layer components {
-      /* flat paper: no grain, no laid lines, no aged edge */
+      /* flat paper: no grain, no laid lines, no aged edge. `.sidebar` itself is
+      `background: none` above — the sheet's texture is painted by
+      `.sidebar-content-area`, so that is the one that actually has to be
+      cleared. */
       .main-area,
-      .sidebar {
+      .sidebar,
+      .sidebar-content-area {
         background-image: none;
       }
 
@@ -935,9 +939,15 @@ markup), and the shorthand would reset it out from under them. */
 
       The mirrored variant has to be named explicitly: it sets its own
       box-shadow from a (0,4,0) selector, so a bare `.chat-bubble` here would
-      be silently inert for every message the reader sent themselves. */
+      be silently inert for every message the reader sent themselves.
+
+      `background-color` on its own is not enough, either: the bubble paints the
+      ink wash, the stripe and the laid paper through the `background`
+      *shorthand*, so those layers outlive a colour-only override and stay
+      sitting under the text. */
       .chat-bubble,
       .group[data-is-mine] .chat-bubble {
+        background-image: none;
         background-color: var(--color-base-100);
         box-shadow: none;
       }
