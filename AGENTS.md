@@ -20,7 +20,7 @@ In our `pages/` tree, any page with more than trivial complexity should be expre
 
 Icons in react components should come from lucide-react where possible.
 
-Avoid hard-coding colors - use theme colours where possible. If the theme doesn't contain something you need, stop and ask the user about the possibility of adding it.
+Avoid hard-coding colors in the markup (e.g. --text-red-300) - use theme colours where possible. If the theme doesn't contain something you need, stop and ask the user about the possibility of adding it. Hard-coded colours within themes are fine, assuming they're only used in a few places.
 
 ## Type casts (`as`)
 

@@ -273,7 +273,9 @@ markup), and the shorthand would reset it out from under them. */
         var(--libris-chat-stripe-alignment) -10px / 10px 120% repeat-y
           repeating-linear-gradient(
             135deg,
-            #fff7,
+            /* hard-coded colours because we're just adding a brightening
+            effect */
+              #fff7,
             #fff0 10px,
             var(--libris-chat-stripe) 10px,
             var(--libris-chat-stripe) 20px
