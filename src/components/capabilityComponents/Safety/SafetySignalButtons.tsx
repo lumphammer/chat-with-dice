@@ -70,8 +70,8 @@ export const SafetySignalButtons = memo(() => {
           rather than wrapped in a container span so it stays a direct child:
           jsx-a11y only looks so deep for a label's accessible text. */}
       <label
-        className="border-base-300 bg-base-100 rounded-box grid cursor-pointer
-          grid-cols-[1fr_auto] items-center gap-x-3 border px-4 py-3"
+        className="surface grid cursor-pointer grid-cols-[1fr_auto] items-center
+          gap-x-3 px-4 py-3"
       >
         <span className="font-medium">Send safety signals anonymously</span>
         <input
