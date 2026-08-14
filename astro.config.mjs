@@ -43,8 +43,7 @@ export default defineConfig({
         // used in worker direct middleware when generating a 404
         "somehostname",
         // tailscale tailnet
-        "*.werewolf-gharial.ts.net",
-        "carcosa-linux.werewolf-gharial.ts.net",
+        ".werewolf-gharial.ts.net",
       ],
     },
   },

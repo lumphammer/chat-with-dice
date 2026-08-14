@@ -1,4 +1,5 @@
 const CYBERDECK_THEME_NAME = "cyberdeck";
+const LIBRIS_THEME_NAME = "libris";
 const PLAIN_LIGHT_THEME_NAME = "plainLight";
 
 /**
@@ -9,6 +10,7 @@ const PLAIN_LIGHT_THEME_NAME = "plainLight";
  */
 export const THEME_NAMES = [
   CYBERDECK_THEME_NAME,
+  LIBRIS_THEME_NAME,
   PLAIN_LIGHT_THEME_NAME,
 ] as const;
 
@@ -38,6 +40,11 @@ export const themes = {
     label: "Cyberdeck",
     description: "Cyberpunk chrome: neon, scanlines and chamfered edges",
     polarity: "dark",
+  },
+  [LIBRIS_THEME_NAME]: {
+    label: "Libris",
+    description: "A refined, turn-of-the-century library.",
+    polarity: "light",
   },
   [PLAIN_LIGHT_THEME_NAME]: {
     label: "Plain Light",
