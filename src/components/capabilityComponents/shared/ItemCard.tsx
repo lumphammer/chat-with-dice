@@ -44,8 +44,8 @@ export const ItemCard = ({
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="text-base-content/50 hover:text-base-content -mr-1
-                shrink-0 cursor-pointer rounded p-1 transition-colors"
+              className="muted hover:text-base-content -mr-1 shrink-0
+                cursor-pointer rounded p-1 transition-colors"
               aria-label={`Edit ${itemType ?? "item"}`}
             >
               <PencilIcon className="h-4 w-4" />

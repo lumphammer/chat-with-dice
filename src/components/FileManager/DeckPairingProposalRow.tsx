@@ -26,7 +26,7 @@ export const DeckPairingProposalRow = memo(
         <span className="min-w-0 flex-1 truncate">{proposal.front.name}</span>
         <ArrowRight
           size={16}
-          className="text-base-content/60 shrink-0"
+          className="muted shrink-0"
           aria-label="proposed individual back"
         />
         <DeckImageThumbnail nodeId={proposal.back.nodeId} />

@@ -39,6 +39,11 @@
   /* lightness for text based on saturated colours (accent, success, etc) */
   --l-colored-text: 0.8;
 
+  /* Secondary text. Dark theme, so muting means stepping *down* from an ink
+  that reads 11.16:1 at full strength. 0.7 lands at 5.28:1 on the worst base
+  surface — softer than the body ink by more than half, still clear of AA. */
+  --l-base-content-muted: 0.7;
+
   /* ---------------------------------------------------------------------------
    * Daisy theme variables
    * -------------------------------------------------------------------------*/
@@ -436,6 +441,14 @@ so the noise would end up blending against transparency. */
     /* size and weight are base structure and live in global.css */
     .room-name {
       font-family: "Orbitron Variable";
+    }
+
+    /* Secondary text reads as instrument chrome — the tracked-out lettering of
+    a HUD annotation. Tracking rather than uppercase: this class carries real
+    sentences ("Cannot spend to succeed: insufficient Resolve"), and small caps
+    at 12px would cost more legibility than the muted ink already does. */
+    .muted {
+      letter-spacing: 0.08em;
     }
 
     /* The `background` shorthand below resets background-color, so the base

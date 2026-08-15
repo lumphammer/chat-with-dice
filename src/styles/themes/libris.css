@@ -57,6 +57,12 @@
   slightly lighter than the fills themselves. */
   --l-colored-text: 0.3;
 
+  /* Secondary text. Light theme, so muting steps *up* from the iron-gall ink.
+  This theme has the least room of the three — its body ink is 8.86:1 where
+  cyberdeck's is 11.16 — so it mutes the least: 0.38 gives 5.42:1 on the worst
+  base surface. Going to the 0.5 that suits plainLight would land at 3.27. */
+  --l-base-content-muted: 0.38;
+
   /* the hue of the paper itself — warm, on the yellow side of orange */
   --h-paper: 85;
 
@@ -595,6 +601,15 @@ markup), and the shorthand would reset it out from under them. */
       font-family: var(--display-face);
       font-size-adjust: var(--display-face-adjust);
       letter-spacing: 0.07em;
+    }
+
+    /* Secondary text speaks in the hand a book uses for it: the italic of a
+    gloss or a marginal note. Garamond's italic is a genuinely different cut
+    rather than a slanted roman, so this reads as a change of voice and not as
+    emphasis — which is the whole reason the colour no longer has to carry the
+    distinction on its own. */
+    .muted {
+      font-style: italic;
     }
 
     /* The page itself. */

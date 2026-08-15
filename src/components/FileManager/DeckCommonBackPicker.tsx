@@ -24,7 +24,7 @@ export const DeckCommonBackPicker = memo(
     return (
       <div className="flex flex-col gap-1">
         <span className="font-medium">Common back</span>
-        <span className="text-base-content/60">
+        <span className="muted">
           The back shown for every card. The chosen image stops being a card in
           its own right.
         </span>
@@ -54,7 +54,7 @@ export const DeckCommonBackPicker = memo(
             />
           ))}
           {images.length === 0 && (
-            <span className="text-base-content/60 p-2">
+            <span className="muted p-2">
               This deck has no images to use as a back yet.
             </span>
           )}

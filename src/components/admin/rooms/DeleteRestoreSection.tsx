@@ -45,7 +45,7 @@ export const DeleteRestoreSection = memo(({ room, onRoomUpdated }: Props) => {
         <h2 className="card-title text-base">
           {isDeleted ? "Restore Room" : "Delete Room"}
         </h2>
-        <p className="text-base-content/70 text-sm">
+        <p className="muted text-sm">
           {isDeleted
             ? "This room is currently soft-deleted. Restoring it will make it visible to users again."
             : "Soft-deleting hides the room from all users. It can be restored at any time."}

@@ -64,8 +64,7 @@ export const RoomList = () => {
 
       {!isPending && !isError && Array.isArray(rooms) && rooms.length === 0 && (
         <div
-          className="flex flex-col items-center gap-4 py-16 text-center
-            opacity-60"
+          className="muted flex flex-col items-center gap-4 py-16 text-center"
         >
           <DoorOpen size={48} strokeWidth={1.5} />
           <div>
@@ -95,9 +94,9 @@ function RoomCard({ room }: { room: Room }) {
     <li className="card bg-base-300 transition-shadow hover:shadow-md">
       <div className="card-body gap-2 py-4">
         <h3 className="card-title text-lg leading-tight">{room.name}</h3>
-        {room.description && <p className="opacity-70">{room.description}</p>}
+        {room.description && <p className="muted">{room.description}</p>}
         <div className="mt-1 flex items-center justify-between">
-          <span className="flex items-center gap-1 text-xs opacity-50">
+          <span className="muted flex items-center gap-1 text-xs">
             <CalendarDays size={12} />
             {formattedDate}
           </span>

@@ -25,13 +25,13 @@ export const ObstructionRollControls = ({ difficulty, onRoll }: Props) => {
 
   return (
     <>
-      <p className="text-base-content/70 mt-1 max-w-sm text-sm">
+      <p className="muted mt-1 max-w-sm text-sm">
         Roll d10 and equal or beat {difficulty}. Spend Resolve now for +
         {RESOLVE_BEFORE_BONUS} each, or spend it afterwards for +1 each.
       </p>
 
       <div className="mt-4 flex items-center gap-2">
-        <span className="text-base-content/50 text-xs">Spend now</span>
+        <span className="muted text-xs">Spend now</span>
         <button
           type="button"
           className="btn btn-sm btn-ghost"
@@ -53,7 +53,7 @@ export const ObstructionRollControls = ({ difficulty, onRoll }: Props) => {
         >
           <PlusIcon className="h-4 w-4" />
         </button>
-        <span className="text-base-content/50 text-xs">of {resolve}</span>
+        <span className="muted text-xs">of {resolve}</span>
       </div>
 
       <button

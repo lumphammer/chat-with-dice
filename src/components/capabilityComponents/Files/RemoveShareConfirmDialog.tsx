@@ -29,7 +29,7 @@ export const RemoveShareConfirmDialog = forwardRef<
           <h3 id={titleId} className="text-lg font-bold">
             Remove "{name}"?
           </h3>
-          <p className="text-base-content/70 py-2">
+          <p className="muted py-2">
             {deckHasPile
               ? `This deck's pile has cards in its discard. Removing it from the
                  room clears the pile — this cannot be undone.`

@@ -38,9 +38,7 @@ export const AdminRoomList = memo(({ rooms: allRooms }: Props) => {
         <h2 className="text-2xl font-bold">
           {filtered.length} Room{filtered.length !== 1 ? "s" : ""}
           {search && (
-            <span className="text-base-content/50 ml-1 text-base font-normal">
-              (filtered)
-            </span>
+            <span className="muted ml-1 text-base font-normal">(filtered)</span>
           )}
         </h2>
         <div className="flex items-center gap-4">
@@ -79,10 +77,7 @@ export const AdminRoomList = memo(({ rooms: allRooms }: Props) => {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td
-                  colSpan={5}
-                  className="text-base-content/50 py-8 text-center"
-                >
+                <td colSpan={5} className="muted py-8 text-center">
                   {total === 0
                     ? "No rooms yet."
                     : "No rooms match your filters."}

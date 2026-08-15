@@ -8,7 +8,7 @@ function joinSetLines(lines: string[]): string {
 const ProseLine = ({ label, value }: { label: string; value: string }) =>
   value === "" ? null : (
     <p>
-      <span className="text-base-content/50">{label}:</span> {value}
+      <span className="muted">{label}:</span> {value}
     </p>
   );
 
@@ -34,11 +34,7 @@ export const ProtagonistSummary = ({
     features === "" &&
     fears === ""
   ) {
-    return (
-      <p className="text-base-content/70 mt-1 text-sm italic">
-        No details yet.
-      </p>
-    );
+    return <p className="muted mt-1 text-sm italic">No details yet.</p>;
   }
 
   return (
@@ -47,7 +43,7 @@ export const ProtagonistSummary = ({
         <p>
           <strong>{name}</strong>
           {occupation !== "" && (
-            <span className="text-base-content/70">
+            <span className="muted">
               {name !== "" && " "}({occupation})
             </span>
           )}

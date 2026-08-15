@@ -20,13 +20,20 @@ import type { ComponentType } from "react";
 /**
  * Theme colours only, written out in full: Tailwind ships the classes it can see
  * in the source, so these can't be assembled from pieces.
+ *
+ * Note the `-text` variants rather than the raw fills. A fill colour is chosen
+ * to carry white-ish `-content` text *on top of it*, so using it as ink over a
+ * 10% tint of itself is the same mistake `.btn-outline` used to make: 2.57:1
+ * under plainLight, 4.08 under libris. The `-text` partners are derived per
+ * theme to be legible on the page, and all five of these have one.
  */
 const STORY_CARD_TONES: Record<StoryCardKind, string> = {
-  secondaryCharacterObstructs: "bg-warning/10 border-warning/30 text-warning",
-  environmentObstructs: "bg-accent/10 border-accent/30 text-accent",
-  secondaryCharacterHarmed: "bg-error/10 border-error/30 text-error",
-  clue: "bg-info/10 border-info/30 text-info",
-  greyLady: "bg-neutral/10 border-neutral/30 text-neutral",
+  secondaryCharacterObstructs:
+    "bg-warning/10 border-warning/30 text-warning-text",
+  environmentObstructs: "bg-accent/10 border-accent/30 text-accent-text",
+  secondaryCharacterHarmed: "bg-error/10 border-error/30 text-error-text",
+  clue: "bg-info/10 border-info/30 text-info-text",
+  greyLady: "bg-neutral/10 border-neutral/30 text-neutral-text",
 };
 
 const STORY_CARD_ICONS: Record<
@@ -98,7 +105,7 @@ export const StoryCardMessage = ({
           difficultyBonus={difficultyBonus}
         />
       )}
-      <span className="text-base-content/50 text-xs">
+      <span className="muted text-xs">
         {greyLadyNumber !== undefined &&
           `Grey Lady ${greyLadyNumber} of ${GREY_LADY_COUNT} · `}
         {cardsRemaining === 0
@@ -116,9 +123,7 @@ export const StoryCardMessage = ({
         />
       )}
       {rolledBy !== undefined ? (
-        <span className="text-base-content/70 mt-1 text-sm">
-          Rolled by {rolledBy}
-        </span>
+        <span className="muted mt-1 text-sm">Rolled by {rolledBy}</span>
       ) : currentObstructionDifficulty !== undefined ? (
         <ObstructionRollControls difficulty={currentObstructionDifficulty} />
       ) : null}
@@ -138,7 +143,7 @@ const DifficultyBreakdown = ({
   difficulty: number;
   difficultyBonus: number;
 }) => (
-  <span className="text-base-content/70 text-xs">
+  <span className="muted text-xs">
     Base {difficulty} + {difficultyBonus} from {difficultyBonus} Grey{" "}
     {difficultyBonus === 1 ? "Lady" : "Ladies"} drawn
   </span>
@@ -154,7 +159,7 @@ const GreyLadyLossRow = ({
   onSpendResolve?: () => void;
 }) => (
   <div className="mt-1 flex items-center gap-2">
-    <span className="text-base-content/70 text-sm">
+    <span className="muted text-sm">
       1 {greyLadyLoss === "spirit" ? "Spirit" : "Resolve"} lost
     </span>
     {onSpendResolve && (

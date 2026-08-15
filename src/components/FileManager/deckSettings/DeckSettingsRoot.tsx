@@ -98,7 +98,7 @@ export const DeckSettingsRoot = memo(
                 onChange={(e) => onToggleFaceDown(e.currentTarget.checked)}
               />
             </label>
-            <span id={faceDownDescriptionId} className="text-base-content/60">
+            <span id={faceDownDescriptionId} className="muted">
               Cards with a back can come up face down at random.
             </span>
           </div>

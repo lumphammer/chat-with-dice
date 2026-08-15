@@ -47,9 +47,7 @@ export const StyleDemoToolbar = () => {
           ))}
         </select>
       </label>
-      <span className="text-base-content/70 text-sm">
-        {themes[theme].description}
-      </span>
+      <span className="muted text-sm">{themes[theme].description}</span>
     </div>
   );
 };

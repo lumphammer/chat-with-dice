@@ -45,7 +45,7 @@ export const CardBackPanel = memo(
             <span className="px-2 font-medium">
               Set back for {card?.name ?? "card"}
             </span>
-            <span className="text-base-content/60 px-2">
+            <span className="muted px-2">
               Pick an image to show as this card&rsquo;s back. It stops being a
               card in its own right.
             </span>
@@ -65,7 +65,7 @@ export const CardBackPanel = memo(
               </button>
             ))}
             {candidates.length === 0 && (
-              <span className="text-base-content/60 p-2">
+              <span className="muted p-2">
                 No free images left to use as a back.
               </span>
             )}

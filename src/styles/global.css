@@ -54,6 +54,30 @@ dark theme needs no edit here. */
     from var(--color-success) var(--l-colored-text) clamp(0, c, 0.12) h
   );
 
+  /* ---------------------------------------------------------------------------
+   * Secondary text
+   * ---------------------------------------------------------------------------
+   * This replaces `text-base-content/NN`, which the app used at eight different
+   * alpha levels and which cannot be made safe. Fading ink toward the surface
+   * costs each theme a different amount, because each theme picks its own
+   * distance between `base-content` and `base-100`: at `/70`, cyberdeck reads
+   * 7.46:1 and libris 4.45:1 — same token, 3.3x apart, one of them failing.
+   * Alpha hides that from the author, who sees only a number that looked
+   * reasonable in whichever theme they had open.
+   *
+   * An absolute lightness moves the decision to the theme, which is the only
+   * place that knows how much room it has. Full alpha, so what you measure is
+   * what is painted, and the palette pass can audit it once for every theme.
+   *
+   * Every theme must set `--l-base-content-muted`; there is no default that
+   * works for both polarities, since muting means *down* on a dark theme and
+   * *up* on a light one. The 0.5 below is a placeholder, not a fallback.
+   * -------------------------------------------------------------------------*/
+  --l-base-content-muted: 0.5;
+  --color-base-content-muted: oklch(
+    from var(--color-base-content) var(--l-base-content-muted) c h
+  );
+
   /* info and neutral complete the set. Every daisyUI button colour needs a
   `-text` partner, because the fill-less button variants paint their label in a
   palette colour and have to fall back to *something* legible on the page —
@@ -162,6 +186,25 @@ The fallback catches an uncoloured `.btn`, which has no `--btn-color-text`. */
   }
 }
 
+/* `.btn-link` is the one member of the fill-less family that daisyUI gives a
+literal `color` rather than routing through `--btn-rest-fg`, so the rule above
+misses it and it has to be named separately. Same bug, same fix: 3.24:1 under
+plainLight before this. */
+@utility btn-link {
+  color: var(--btn-color-text, var(--color-primary-text));
+}
+
+/* daisyUI's coloured links are `color: var(--color-accent)` — the fill again.
+`link-secondary` below already had to correct for this; the others need it for
+the same reason. */
+@utility link-accent {
+  color: var(--color-accent-text);
+}
+
+@utility link-primary {
+  color: var(--color-primary-text);
+}
+
 @utility link-secondary {
   color: var(--btn-color-text, var(--color-base-content));
 
@@ -189,6 +232,21 @@ The fallback catches an uncoloured `.btn`, which has no `--btn-color-text`. */
  * transparent one.
  * ===========================================================================*/
 @layer components {
+  /* Secondary text: timestamps, bylines, "3 cards remain", the quiet half of a
+  label pair. The colour is the structural floor and is all plainLight takes;
+  the *voice* — italic in libris, wide-tracked in cyberdeck — is the theme's,
+  which is why this is a class rather than only a colour utility.
+
+  That voice is the point. Once the ink clears AA it is no longer dim enough to
+  read as secondary on colour alone, so each theme says "secondary" in its own
+  register instead. It also survives `prefers-contrast: more`, where dimming is
+  exactly what gets stripped.
+
+  In `components` so a `text-*` utility in the markup still outranks it. */
+  .muted {
+    color: var(--color-base-content-muted);
+  }
+
   .dice-face {
     width: 2rem;
     height: 2rem;

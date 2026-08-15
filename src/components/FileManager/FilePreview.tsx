@@ -132,7 +132,7 @@ export const FilePreview = memo(
                 contentType={node.contentType}
                 size={64}
                 strokeWidth={1}
-                className="text-base-content/50"
+                className="muted"
               />
 
               {/* oxlint-disable-next-line jsx-a11y/media-has-caption */}
@@ -168,12 +168,12 @@ export const FilePreview = memo(
                 contentType={node.contentType}
                 size={64}
                 strokeWidth={1}
-                className="text-base-content/50"
+                className="muted"
               />
 
               <div className="text-center">
                 <p className="font-medium">{node.name}</p>
-                <p className="text-base-content/50 text-sm">
+                <p className="muted text-sm">
                   {node.contentType} &middot; {formatBytes(node.sizeBytes)}
                 </p>
               </div>

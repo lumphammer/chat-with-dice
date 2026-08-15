@@ -16,7 +16,7 @@ export const ObstructionSection = () => {
     return (
       <section className="mt-8">
         <h3 className="heading">The Obstruction</h3>
-        <p className="text-base-content/70 mt-1 text-sm">
+        <p className="muted mt-1 text-sm">
           Nothing to beat yet. Draw a card that obstructs and its difficulty
           lands here.
         </p>

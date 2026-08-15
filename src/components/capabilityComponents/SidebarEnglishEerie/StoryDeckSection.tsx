@@ -40,7 +40,7 @@ export const StoryDeckSection = () => {
 
   return (
     <section>
-      <p className="text-base-content/90 mt-1 text-sm">
+      <p className="muted mt-1 text-sm">
         {formatCardsRemaining(stack.length)} · {greyLadiesDrawn} of{" "}
         {GREY_LADY_COUNT} Grey Ladies drawn
       </p>
@@ -66,7 +66,7 @@ export const StoryDeckSection = () => {
       </div>
 
       {drawHint !== undefined && (
-        <p id={hintId} className="text-base-content/70 mt-2 text-sm italic">
+        <p id={hintId} className="muted mt-2 text-sm italic">
           {drawHint}
         </p>
       )}

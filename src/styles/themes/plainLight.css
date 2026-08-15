@@ -41,7 +41,28 @@
   /* chroma for the base colours */
   --c-base: 0.01;
 
-  --l-colored-text: 0.4;
+  /* Both seeds below are set by the *chat bubble*, not by the base surfaces.
+  The bubble is `oklch(82% 0.12 hue)` — a saturated pastel, luminance ~0.54 —
+  while this theme's base-100 is ~0.91, so a bubble is by far the darkest thing
+  the app paints text on here. Tuning against base-100 and stopping is how the
+  first pass ended up with muted text at 4.18:1 and story-card banners at 4.03,
+  both fine on the page and both failing in a bubble.
+
+  cyberdeck and libris don't have this gap: cyberdeck is dark throughout, and
+  libris's paper is close to its bubbles. This theme is the outlier, so it is
+  the one that has to be measured against the bubble. */
+
+  /* 0.34 puts the tinted story-card banners at 5.13:1 on a bubble (0.4 gave
+  4.03). Darker ink on a light theme only helps the page, where these were
+  already 7.4-9.0. */
+  --l-colored-text: 0.34;
+
+  /* Secondary text. Light theme, so muting steps up from base-content. 0.40
+  gives 5.20:1 on a bubble and 7.05 on the worst base surface — still a clear
+  step down from body ink at 15.57. No typographic voice to go with it: this
+  theme is deliberately palette-only, which makes it the check that the colour
+  alone still reads as secondary. */
+  --l-base-content-muted: 0.4;
 
   /* ---------------------------------------------------------------------------
    * Daisy theme variables

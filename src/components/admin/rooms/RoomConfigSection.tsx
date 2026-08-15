@@ -65,7 +65,7 @@ export const RoomConfigSection = memo(({ room, onRoomUpdated }: Props) => {
     <div className="card bg-base-200">
       <div className="card-body">
         <h2 className="card-title text-base">Config</h2>
-        <p className="text-base-content/60 text-xs">
+        <p className="muted text-xs">
           JSON is validated against the room config schema on save.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">

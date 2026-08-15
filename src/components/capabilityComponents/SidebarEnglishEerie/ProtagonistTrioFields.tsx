@@ -19,10 +19,7 @@ export const ProtagonistTrioFields = ({
   onCommit,
 }: Props) => (
   <fieldset className="m-0 min-w-0 border-0 p-0">
-    <legend
-      className="text-base-content/50 mb-2 text-xs font-semibold tracking-wide
-        uppercase"
-    >
+    <legend className="muted mb-2 text-xs font-semibold tracking-wide uppercase">
       {legend}
     </legend>
     <div className="flex flex-col gap-2">

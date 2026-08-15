@@ -29,13 +29,9 @@ export const SettingRow = memo(
       >
         <span className="min-w-0 flex-1">
           <span className="block font-medium">{label}</span>
-          <span className="text-base-content/60 block truncate">{summary}</span>
+          <span className="muted block truncate">{summary}</span>
         </span>
-        <ChevronRight
-          size={20}
-          className="text-base-content/60 shrink-0"
-          aria-hidden="true"
-        />
+        <ChevronRight size={20} className="muted shrink-0" aria-hidden="true" />
       </Link>
     );
   },

@@ -52,8 +52,8 @@ export const RemoveShareControl = memo(({ item }: { item: SharedItem }) => {
         type="button"
         onClick={() => dialogRef.current?.showModal()}
         aria-label={`Remove "${item.node.name}" from this room`}
-        className="text-base-content/40 hover:text-error hover:bg-base-200 flex
-          size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg
+        className="muted hover:text-error hover:bg-base-200 flex size-9 shrink-0
+          cursor-pointer items-center justify-center rounded-lg
           transition-colors"
       >
         <Trash2 size={18} />

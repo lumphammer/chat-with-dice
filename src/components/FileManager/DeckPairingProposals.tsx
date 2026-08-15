@@ -69,7 +69,7 @@ export const DeckPairingProposals = memo(
       return (
         <div className="flex flex-col gap-2">
           <span className="px-2 font-medium">Propose card pairings</span>
-          <span className="text-base-content/60 px-2">
+          <span className="muted px-2">
             No pairings found from card image names. Pair them by hand from the
             list.
           </span>
@@ -99,7 +99,7 @@ export const DeckPairingProposals = memo(
             {visibleProposals.length === 1 ? "pairing" : "pairings"}
           </button>
         </div>
-        <span className="text-base-content/60 px-2">
+        <span className="muted px-2">
           Proposed from card image names — review, then apply. Nothing is
           changed until you do.
         </span>

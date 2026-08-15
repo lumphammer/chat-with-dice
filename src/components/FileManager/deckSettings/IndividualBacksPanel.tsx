@@ -46,7 +46,7 @@ export const IndividualBacksPanel = memo(
         <PanelBody back>
           <div className="flex flex-col gap-1">
             <span className="px-2 font-medium">Individual backs</span>
-            <span className="text-base-content/60 px-2">
+            <span className="muted px-2">
               Give a card its own back, shown instead of the common back. The
               chosen image stops being a card in its own right.
             </span>
@@ -73,7 +73,7 @@ export const IndividualBacksPanel = memo(
               );
             })}
             {cards.length === 0 && (
-              <span className="text-base-content/60 p-2">
+              <span className="muted p-2">
                 This deck has no cards to pair yet.
               </span>
             )}

@@ -39,9 +39,7 @@ export const ThemePicker = memo(() => {
                   onChange={() => setRoomTheme(name)}
                 />
                 <span className="font-medium">{label}</span>
-                <span className="text-base-content/70 text-sm">
-                  {description}
-                </span>
+                <span className="muted text-sm">{description}</span>
               </label>
             </li>
           );

@@ -1,6 +1,6 @@
 export const Credits = () => {
   return (
-    <p className="text-sm opacity-70">
+    <p className="muted text-sm">
       <a
         className="link link-secondary"
         href="https://trollish-delver-games.itch.io/english-eerie-second-edition"

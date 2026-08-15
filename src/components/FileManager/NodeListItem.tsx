@@ -98,7 +98,7 @@ export const NodeListItem = memo(
               </span>
             )}
           </div>
-          <span className="text-base-content/50 text-sm">
+          <span className="muted text-sm">
             <NodeMetadata node={node} />
           </span>
         </button>

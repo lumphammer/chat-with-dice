@@ -78,8 +78,8 @@ SidebarUsers.displayName = "SidebarUsers";
 
 const UserTag = memo(({ children }: { children: React.ReactNode }) => (
   <div
-    className="peer text-xs font-semibold uppercase opacity-60
-      not-first:before:mx-1 not-first:before:content-['/']"
+    className="muted peer text-xs font-semibold uppercase not-first:before:mx-1
+      not-first:before:content-['/']"
   >
     {children}
   </div>

@@ -55,7 +55,7 @@ export const SharedItemListItem = memo(
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="block truncate">{item.node.name}</span>
-            <span className="text-base-content/50 block truncate text-sm">
+            <span className="muted block truncate text-sm">
               <time
                 dateTime={
                   item.dateShared === 0

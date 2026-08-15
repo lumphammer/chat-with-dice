@@ -151,8 +151,8 @@ export const FolderActionsMenu = memo(
         )}
         <li>
           <div
-            className="text-base-content/70 pointer-events-none flex flex-col
-              items-stretch gap-1.5 px-3 py-2"
+            className="muted pointer-events-none flex flex-col items-stretch
+              gap-1.5 px-3 py-2"
             role="presentation"
           >
             <span className="flex min-w-0 items-center gap-2">

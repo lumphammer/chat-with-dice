@@ -3,7 +3,7 @@ import { memo } from "react";
 export const Intro = memo(() => {
   return (
     <section className="mt-4">
-      <p className="text-sm opacity-70">
+      <p className="muted text-sm">
         Visit{" "}
         <a
           className="link link-hover link-accent"

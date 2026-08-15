@@ -60,7 +60,9 @@ export const LaserFeelingsResultDisplay = memo(
 
         {laserFeelingsCount > 0 && (
           <div
-            className="bg-info/10 border-info/30 text-info mt-1 flex
+            /* `-text` rather than the `info` fill — same tinted-banner shape
+            as English Eerie's story cards, same reason. */
+            className="bg-info/10 border-info/30 text-info-text mt-1 flex
               items-center gap-2 rounded border p-2 text-sm font-semibold"
           >
             <Sparkles className="h-4 w-4 shrink-0" />

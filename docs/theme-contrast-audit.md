@@ -401,38 +401,78 @@ Run on a populated dev room, sweeping all eight sidebar panels per theme, with
 a chat message sent so the `data-is-mine` bubble variant was on screen.
 Disabled controls excluded per WCAG 1.4.3.
 
-| Theme      | Checked | Failing | Worst | Exempt (disabled) |
-| ---------- | ------- | ------- | ----- | ----------------- |
-| cyberdeck  | 229     | 31      | 3.23  | 0                 |
-| libris     | 231     | 34      | 2.70  | 0                 |
-| plainLight | 230     | 41      | 2.57  | 4                 |
+| Theme      | Checked | Was | Now   |
+| ---------- | ------- | --- | ----- |
+| cyberdeck  | 231     | 31  | **0** |
+| libris     | 234     | 34  | **0** |
+| plainLight | 233     | 41  | **0** |
 
-Nothing here is a palette problem — all three palettes pass — and nothing is
-theme CSS. **Every finding is markup reaching past the theme tokens**, which is
-why the style demo missed all of it and why these are app fixes rather than
-theme fixes. Three clusters, in descending order of reach:
+Nothing found here was a palette problem — all three palettes passed
+throughout — and nothing was theme CSS. **Every finding was markup reaching
+past the theme tokens**, which is why the style demo missed all of it. Three
+clusters, all now fixed:
 
-1. **`text-base-content/50` — fails in all three themes, ~23 rows each.**
-   cyberdeck 4.39, plainLight 3.35, libris 2.89. `base-content` at half alpha
-   cannot reach 4.5:1 at 12–13.5px over any base surface, in any theme. It is
-   the app's house style for secondary text — 35 occurrences across `src/` —
-   and it carries real content: `"3 cards remain"`, `"Cannot spend to succeed:
-insufficient Resolve"`, file bylines, every `<time>` stamp. Needs a decision
-   about the convention, not a local patch.
-2. **Avatar initials — 2.70 libris/plainLight, 3.23 cyberdeck, 8 rows each.**
-   `OnlineUserBadge.tsx:40` and `:44` paint the initials in the bubble ink at
-   `/0.6`. The full-strength version of the same pair is what the chat bubble
-   uses and it passes, so dropping the `0.6` should be the whole fix.
-3. **English Eerie story-card tones — 2.57 plainLight, 4.08 libris.**
-   `STORY_CARD_TONES` in `StoryCardMessage.tsx:24` sets `text-warning`,
-   `text-accent`, `text-error`, `text-info`, `text-neutral` — the **fill**
-   colours as ink, on a 10% tint of themselves. Identical to the
-   `.btn-outline` bug fixed above, and now with an identical fix available:
-   every one of those five has a `-text` partner. `ObstructionRollMessage.tsx`
-   does the same.
+1. **Alpha on ink — the whole `text-base-content/NN` family.** 116 uses across
+   eight alpha levels. Fading ink toward the surface costs each theme a
+   different amount, because each picks its own distance between `base-content`
+   and `base-100`: at `/70`, cyberdeck read 7.46:1 and libris 4.45:1 — same
+   token, 3.3x apart, one of them failing. Replaced wholesale by the muted
+   token below.
+2. **Avatar initials.** 2.70 libris/plainLight, 3.23 cyberdeck.
+   `OnlineUserBadge.tsx` painted the initials in the bubble ink at `/0.6`. The
+   bubble uses that same pair at full strength and passes, so the alpha was the
+   whole problem.
+3. **Fill colours used as ink.** 2.57 plainLight, 4.08 libris.
+   `STORY_CARD_TONES`, `ObstructionRollMessage`, `CardDrawMessageDisplay` and
+   `LaserFeelingsResultDisplay` set `text-warning` / `text-accent` /
+   `text-info` / `text-neutral` — fills, over a 10% tint of themselves. Same
+   bug as `.btn-outline` above, same fix: the `-text` partners. daisyUI's
+   `.btn-link`, `.link-accent` and `.link-primary` were the same shape and are
+   now corrected centrally in global.css.
 
-plainLight also has `.btn-link.btn-secondary` "Show more" at 3.24 and
-`.link-accent` at 4.21 — the same fill-as-ink shape in link form.
+### Secondary text: the muted token
+
+`--color-base-content-muted`, derived from `base-content` by an absolute
+lightness each theme sets (`--l-base-content-muted`), at full alpha. One class,
+`.muted`, replaces all 116 alpha sites plus the `opacity-*` uses that sat on
+text.
+
+The absolute lightness is the point: it moves the decision to the theme, which
+is the only place that knows how much room it has between its ink and its
+surfaces. And because it is a real colour rather than a compositing trick, the
+palette pass can audit it.
+
+| Theme      | `--l-base-content-muted` | Worst measured | Body ink, for scale |
+| ---------- | ------------------------ | -------------- | ------------------- |
+| cyberdeck  | 0.70                     | 6.75           | 11.16               |
+| libris     | 0.38                     | 6.38           | 8.86                |
+| plainLight | 0.40                     | 5.20           | 15.57               |
+
+Each theme then adds a **typographic voice**, because once the ink clears AA it
+is no longer dim enough to read as secondary on colour alone: libris sets it in
+italic (Garamond's italic is a separate cut, so it reads as a change of voice
+rather than emphasis), cyberdeck tracks it out like HUD chrome, and plainLight
+deliberately takes neither — being palette-only makes it the check that the
+colour alone still works. The voice also survives `prefers-contrast: more`,
+where dimming is the first thing stripped.
+
+**Watch the chat bubble.** It is `oklch(82% 0.12 hue)` in every theme, so under
+plainLight — base-100 luminance 0.91 — a bubble at 0.54 is by far the darkest
+thing the app paints text on. Tuning against the base surfaces and stopping put
+muted text at 4.18:1 and the story-card banners at 4.03: fine on the page, both
+failing in a bubble. plainLight's `--l-colored-text` came down from 0.4 to 0.34
+for the same reason. **Tune a light theme against a bubble, not against
+base-100.**
+
+### Deliberately left alone
+
+`opacity-*` that signals **state** rather than hierarchy: `disabled:opacity-50`,
+`data-offline:opacity-50`, `data-completed:opacity-50`, and `opacity-35` on
+dimmed dice. Disabled controls are WCAG-exempt, and the others say "this thing
+is inactive", which is what a fade is for. Icon-only `opacity-50` is left too —
+no text, no requirement. Note the audit **cannot see any of these**: it ignores
+`opacity` below 1 entirely, so this class has to be reasoned about rather than
+measured, and it is where transparency will creep back in first.
 
 ### Still not covered
 
