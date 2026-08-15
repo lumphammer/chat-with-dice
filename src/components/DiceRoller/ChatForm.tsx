@@ -27,12 +27,12 @@ export const ChatForm = memo(({ onNewMessage }: ChatFormProps) => {
   );
 
   return (
-    <form onSubmit={handleSubmit} className="m-4 flex flex-row">
+    <form onSubmit={handleSubmit} className="chat-form m-4 flex flex-row">
       <textarea
         ref={textareaRef}
         rows={1}
-        className={`${styles.input} input frost max-h-[30cqh] flex-1 resize-none
-          overflow-y-auto px-4 py-2 text-left transition-[height]`}
+        className={`${styles.input} input input-primary max-h-[30cqh] flex-1
+          resize-none overflow-y-auto px-4 py-2 text-left transition-[height]`}
         value={chat}
         onChange={(e) => setChat(e.target.value)}
         placeholder="Chat"
