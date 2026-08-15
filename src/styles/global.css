@@ -54,6 +54,18 @@ dark theme needs no edit here. */
     from var(--color-success) var(--l-colored-text) clamp(0, c, 0.12) h
   );
 
+  /* info and neutral complete the set. Every daisyUI button colour needs a
+  `-text` partner, because the fill-less button variants paint their label in a
+  palette colour and have to fall back to *something* legible on the page —
+  without these two, `.btn-outline.btn-info` had nowhere to go but the fill. */
+  --color-info-text: oklch(
+    from var(--color-info) var(--l-colored-text) clamp(0, c, 0.12) h
+  );
+
+  --color-neutral-text: oklch(
+    from var(--color-neutral) var(--l-colored-text) clamp(0, c, 0.12) h
+  );
+
   --color-accent-tint: red;
   --color-accent-tint: color-mix(
     in oklch,
@@ -88,6 +100,11 @@ dark theme needs no edit here. */
   }
 }
 
+/* `--btn-color-text` is this app's "what ink does a button of this colour use
+when there is no fill behind it" variable. Themes read it (cyberdeck paints
+every `.btn` with it; libris feeds it into `--btn-fg`), so every button colour
+needs an entry — a missing one resolves to nothing and silently falls back to
+the fill hue. */
 @utility btn-primary {
   /*--color-btn-soft: var(--color-primary-text);*/
   --btn-color-text: var(--color-primary-text);
@@ -99,6 +116,43 @@ dark theme needs no edit here. */
 
 @utility btn-accent {
   --btn-color-text: var(--color-accent-text);
+}
+
+@utility btn-neutral {
+  --btn-color-text: var(--color-neutral-text);
+}
+
+@utility btn-info {
+  --btn-color-text: var(--color-info-text);
+}
+
+@utility btn-success {
+  --btn-color-text: var(--color-success-text);
+}
+
+@utility btn-warning {
+  --btn-color-text: var(--color-warning-text);
+}
+
+@utility btn-error {
+  --btn-color-text: var(--color-error-text);
+}
+
+/* daisyUI's fill-less button family — outline, dash, soft, ghost — paints its
+label in `--btn-color`, the *fill* hue, and only flips to `--btn-fg` on hover
+when a fill actually appears. A fill hue is chosen to carry white-ish content
+text on top of it, so it is far too light to be ink on a light page: that put
+every `.btn-outline` on libris and plainLight between 3.85 and 4.47 against
+base-100.
+
+`--btn-rest-fg` is daisyUI's own hook for the resting foreground (it uses it
+itself, on `.btn-neutral`), so pointing it at `--btn-color-text` is a variable
+handover rather than another `color` declaration fighting for the cascade. One
+rule covers all four variants because all four read the same variable.
+
+The fallback catches an uncoloured `.btn`, which has no `--btn-color-text`. */
+@utility btn {
+  --btn-rest-fg: var(--btn-color-text, var(--color-base-content));
 }
 
 @utility btn-soft {
