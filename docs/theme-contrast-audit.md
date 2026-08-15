@@ -317,11 +317,11 @@ also predate [the transition trap](#switching-theme-mid-session).
 
 ### Palette pass — clean
 
-| Theme      | Pairs                      | Failing AA         | Worst                                 |
-| ---------- | -------------------------- | ------------------ | ------------------------------------- |
-| cyberdeck  | 19                         | 0 (was 4)          | 5.22 `error-content on error`         |
-| libris     | stale — rerun required     | stale              | stale                                 |
-| plainLight | stale — rerun required     | stale              | stale                                 |
+| Theme      | Pairs                  | Failing AA | Worst                         |
+| ---------- | ---------------------- | ---------- | ----------------------------- |
+| cyberdeck  | 19                     | 0 (was 4)  | 5.22 `error-content on error` |
+| libris     | stale — rerun required | stale      | stale                         |
+| plainLight | stale — rerun required | stale      | stale                         |
 
 Every palette a theme declares clears AA. The failures below are all things the
 palette pass cannot see, which is the argument for running both.
@@ -339,11 +339,11 @@ separately rather than mixed into the verdict.
 
 Failures on theme surfaces, before and after the button fix below:
 
-| Theme      | Checked                | Was        | Now        | Off-theme backdrops    | Worst on theme surfaces |
-| ---------- | ---------------------- | ---------- | ---------- | ---------------------- | ----------------------- |
-| cyberdeck  | 187                    | **0**      | **0**      | 36 (all `bg-white`)    | 7.06                    |
-| libris     | stale — rerun required | stale      | stale      | stale                  | stale                   |
-| plainLight | stale — rerun required | stale      | stale      | stale                  | stale                   |
+| Theme      | Checked                | Was   | Now   | Off-theme backdrops | Worst on theme surfaces |
+| ---------- | ---------------------- | ----- | ----- | ------------------- | ----------------------- |
+| cyberdeck  | 187                    | **0** | **0** | 36 (all `bg-white`) | 7.06                    |
+| libris     | stale — rerun required | stale | stale | stale               | stale                   |
+| plainLight | stale — rerun required | stale | stale | stale               | stale                   |
 
 The off-theme column falls out exactly as polarity predicts — the dark theme
 fails only on white, the two light themes only on black — which is a decent
