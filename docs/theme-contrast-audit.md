@@ -407,6 +407,9 @@ Disabled controls excluded per WCAG 1.4.3.
 | libris     | 234     | 34  | **0** |
 | plainLight | 233     | 41  | **0** |
 
+Modals and toasts are counted separately, below — they are not in these totals,
+because the sweep only sees what is mounted and neither is open by default.
+
 Nothing found here was a palette problem — all three palettes passed
 throughout — and nothing was theme CSS. **Every finding was markup reaching
 past the theme tokens**, which is why the style demo missed all of it. Three
@@ -474,10 +477,37 @@ no text, no requirement. Note the audit **cannot see any of these**: it ignores
 `opacity` below 1 entirely, so this class has to be reasoned about rather than
 measured, and it is where transparency will creep back in first.
 
-### Still not covered
+### Modals and toasts
 
-Modals and toasts. Both exist in the room (`ProtagonistEditDialog`, the toaster)
-but neither was open during the sweep, so neither has ever been measured.
+Both now measured, in all three themes.
+
+**The X Card overlay passes everywhere** — worst 4.74 (libris), and that is its
+40px heading, which only owes 3:1. Note _why_ it passes: `signalPresentation.tsx`
+sets the heading in `text-error` / `text-warning`, fill-as-ink again, and it is
+saved purely by being huge. Shrink that heading and it fails. Latent, not
+broken.
+
+**Toasts fail under plainLight**: info 2.89, error 2.87, warning 6.65 (pass).
+cyberdeck 14.28 and libris 12.09–12.26, both fine. This is not a new bug — it
+is [the `.alert` foreground bug](#results-so-far) reaching live UI. `Toaster.tsx`
+renders `toast alert alert-${type}`, global.css reverts `.alert`'s daisyUI
+sublayer, the fill goes and daisyUI's `color: var(--color-X-content)` stays
+because it is emitted outside that sublayer. cyberdeck and libris both restyle
+`.alert` and supply their own foreground, so both are covered; plainLight
+restyles nothing and gets near-white ink on a pale toast.
+
+So the same defect produces `.alert.alert-error` at 1.03 on the style demo and
+unreadable info/error toasts in a real room. One fix covers both.
+
+**It is not a one-liner, and the reason is instructive.** The foreground has to
+be reset in a layer that beats daisyUI's out-of-sublayer `.alert-info { color }`
+but still loses to a theme's own `.alert` rule — and both of those live in plain
+`@layer utilities`, so it comes down to source order rather than specificity.
+`@layer components` is too early (daisyUI wins); an unlayered rule is too late
+(it beats the themes). This is the same trap that made `.alert`'s 4px margin
+inert and cost the hero its `text-5xl`. Whatever is written here needs the DOM
+pass re-run against all three themes to prove it, not just a reading of the
+cascade.
 
 ### Previously fixed
 
