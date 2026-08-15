@@ -505,7 +505,7 @@ markup), and the shorthand would reset it out from under them. */
       background-color: oklch(
         from
           color-mix(
-            /* srgb actually gives a better optiucacl mix than oklch or hsl - we
+            /* srgb actually gives a better optical mix than oklch or hsl - we
             *don't* want a hue between the paper's beige and the alert color,
             because that would yield e.g. green when the alert is blue. */
               in srgb,
