@@ -22,7 +22,7 @@ export const AllocationSection = () => {
 
   return (
     <section className="flex flex-col gap-4">
-      <p className="text-base-content/70 mt-1 text-sm">
+      <p className="muted mt-1 text-sm">
         Allocate {ALLOCATION_TOTAL} points between spirit and resolve, minimum{" "}
         {MIN_ALLOCATION} in each.
       </p>

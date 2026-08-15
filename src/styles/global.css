@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/* Up here with the other imports because an `@import` after any other rule is
+invalid per the CSS cascade spec. Tailwind resolves it at build time either way,
+so this isn't currently load-bearing — but it's one pipeline change away from
+being dropped, and `bevel-layers`/`bevel` would then silently not exist. */
+@import "./themeUtils.css";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui";
 
@@ -6,20 +11,16 @@ html,
 body {
   overscroll-behavior: none;
 }
-@plugin "daisyui" {
-  themes: cupcake, dracula;
-}
-
+/* Driven by the `data-theme-polarity` attribute HTML.astro renders from the
+theme registry, rather than a hardcoded list of theme names — registering a new
+dark theme needs no edit here. */
 @custom-variant dark {
-  &:where([data-theme="dracula"], [data-theme="dracula"] *),
-  &:where([data-theme="havocDark"], [data-theme="havocDark"] *) {
+  &:where([data-theme-polarity="dark"], [data-theme-polarity="dark"] *) {
     @slot;
   }
 }
 
-@import "./themeUtils.css";
-/*@import "./themes/havocDark.css";
-@import "./themes/havocLight.css";*/
+/* the themes themselves are imported by HTML.astro via ./themes/index.css */
 
 @theme {
   /*
@@ -51,6 +52,42 @@ body {
 
   --color-success-text: oklch(
     from var(--color-success) var(--l-colored-text) clamp(0, c, 0.12) h
+  );
+
+  /* ---------------------------------------------------------------------------
+   * Secondary text
+   * ---------------------------------------------------------------------------
+   * This replaces `text-base-content/NN`, which the app used at eight different
+   * alpha levels and which cannot be made safe. Fading ink toward the surface
+   * costs each theme a different amount, because each theme picks its own
+   * distance between `base-content` and `base-100`: at `/70`, cyberdeck reads
+   * 7.46:1 and libris 4.45:1 — same token, 3.3x apart, one of them failing.
+   * Alpha hides that from the author, who sees only a number that looked
+   * reasonable in whichever theme they had open.
+   *
+   * An absolute lightness moves the decision to the theme, which is the only
+   * place that knows how much room it has. Full alpha, so what you measure is
+   * what is painted, and the palette pass can audit it once for every theme.
+   *
+   * Every theme must set `--l-base-content-muted`; there is no default that
+   * works for both polarities, since muting means *down* on a dark theme and
+   * *up* on a light one. The 0.5 below is a placeholder, not a fallback.
+   * -------------------------------------------------------------------------*/
+  --l-base-content-muted: 0.5;
+  --color-base-content-muted: oklch(
+    from var(--color-base-content) var(--l-base-content-muted) c h
+  );
+
+  /* info and neutral complete the set. Every daisyUI button colour needs a
+  `-text` partner, because the fill-less button variants paint their label in a
+  palette colour and have to fall back to *something* legible on the page —
+  without these two, `.btn-outline.btn-info` had nowhere to go but the fill. */
+  --color-info-text: oklch(
+    from var(--color-info) var(--l-colored-text) clamp(0, c, 0.12) h
+  );
+
+  --color-neutral-text: oklch(
+    from var(--color-neutral) var(--l-colored-text) clamp(0, c, 0.12) h
   );
 
   --color-accent-tint: red;
@@ -87,6 +124,11 @@ body {
   }
 }
 
+/* `--btn-color-text` is this app's "what ink does a button of this colour use
+when there is no fill behind it" variable. Themes read it (cyberdeck paints
+every `.btn` with it; libris feeds it into `--btn-fg`), so every button colour
+needs an entry — a missing one resolves to nothing and silently falls back to
+the fill hue. */
 @utility btn-primary {
   /*--color-btn-soft: var(--color-primary-text);*/
   --btn-color-text: var(--color-primary-text);
@@ -100,6 +142,43 @@ body {
   --btn-color-text: var(--color-accent-text);
 }
 
+@utility btn-neutral {
+  --btn-color-text: var(--color-neutral-text);
+}
+
+@utility btn-info {
+  --btn-color-text: var(--color-info-text);
+}
+
+@utility btn-success {
+  --btn-color-text: var(--color-success-text);
+}
+
+@utility btn-warning {
+  --btn-color-text: var(--color-warning-text);
+}
+
+@utility btn-error {
+  --btn-color-text: var(--color-error-text);
+}
+
+/* daisyUI's fill-less button family — outline, dash, soft, ghost — paints its
+label in `--btn-color`, the *fill* hue, and only flips to `--btn-fg` on hover
+when a fill actually appears. A fill hue is chosen to carry white-ish content
+text on top of it, so it is far too light to be ink on a light page: that put
+every `.btn-outline` on libris and plainLight between 3.85 and 4.47 against
+base-100.
+
+`--btn-rest-fg` is daisyUI's own hook for the resting foreground (it uses it
+itself, on `.btn-neutral`), so pointing it at `--btn-color-text` is a variable
+handover rather than another `color` declaration fighting for the cascade. One
+rule covers all four variants because all four read the same variable.
+
+The fallback catches an uncoloured `.btn`, which has no `--btn-color-text`. */
+@utility btn {
+  --btn-rest-fg: var(--btn-color-text, var(--color-base-content));
+}
+
 @utility btn-soft {
   /*color: var(--color-btn-soft);*/
   &:hover {
@@ -107,13 +186,67 @@ body {
   }
 }
 
+/* `.btn-link` is the one member of the fill-less family that daisyUI gives a
+literal `color` rather than routing through `--btn-rest-fg`, so the rule above
+misses it and it has to be named separately. Same bug, same fix: 3.24:1 under
+plainLight before this. */
+@utility btn-link {
+  color: var(--btn-color-text, var(--color-primary-text));
+}
+
+/* daisyUI's coloured links are `color: var(--color-accent)` — the fill again.
+`link-secondary` below already had to correct for this; the others need it for
+the same reason. */
+@utility link-accent {
+  color: var(--color-accent-text);
+}
+
+@utility link-primary {
+  color: var(--color-primary-text);
+}
+
 @utility link-secondary {
+  color: var(--btn-color-text, var(--color-base-content));
+
   @variant dark {
     color: oklch(from var(--color-secondary) 80% c h);
   }
 }
 
+/* =============================================================================
+ * App component base layer
+ * -----------------------------------------------------------------------------
+ * These are our own component classes, not daisyUI's — the hooks a theme reaches
+ * for to dress the app's own furniture (the chat surface, the sidebar, headings,
+ * the room name, dice faces).
+ *
+ * What lives here is the structural floor, and only that: the box a die needs to
+ * be square, the size ramp that makes a heading read as a heading, the opaque
+ * fills that stop the chat area and sidebar showing through to the page. It is
+ * deliberately plain, and it is what you see if no theme styles a given class.
+ *
+ * Everything expressive — typefaces, scanlines, bevels, glow, chamfered corners
+ * — belongs to a theme, which overrides these from a later layer. That means a
+ * theme can style as much or as little as it likes and still get a coherent app:
+ * skip `.main-area` entirely and you get a flat base-100 backdrop rather than a
+ * transparent one.
+ * ===========================================================================*/
 @layer components {
+  /* Secondary text: timestamps, bylines, "3 cards remain", the quiet half of a
+  label pair. The colour is the structural floor and is all plainLight takes;
+  the *voice* — italic in libris, wide-tracked in cyberdeck — is the theme's,
+  which is why this is a class rather than only a colour utility.
+
+  That voice is the point. Once the ink clears AA it is no longer dim enough to
+  read as secondary on colour alone, so each theme says "secondary" in its own
+  register instead. It also survives `prefers-contrast: more`, where dimming is
+  exactly what gets stripped.
+
+  In `components` so a `text-*` utility in the markup still outranks it. */
+  .muted {
+    color: var(--color-base-content-muted);
+  }
+
   .dice-face {
     width: 2rem;
     height: 2rem;
@@ -137,11 +270,280 @@ body {
   .dice-face-pair .dice-face:not(:last-child) {
     border-right-width: 0;
   }
+
+  /* Size by heading level, so a theme only has to pick a typeface rather than
+  restate the ramp. `.heading` is also used on non-heading elements (a <p> on the
+  landing page, an <a> in the deck list) which just want the treatment without a
+  level, hence the element-qualified nesting.
+
+  Living in `components` means a `text-*` utility in the markup outranks this,
+  which is the point — several call sites pass one expecting it to win. */
+  .heading {
+    h1& {
+      font-size: var(--text-3xl);
+      line-height: var(--tw-leading, var(--text-3xl--line-height));
+    }
+    h2& {
+      font-size: var(--text-2xl);
+      line-height: var(--tw-leading, var(--text-2xl--line-height));
+    }
+    h3& {
+      font-size: var(--text-xl);
+      line-height: var(--tw-leading, var(--text-xl--line-height));
+    }
+    h4& {
+      font-size: var(--text-lg);
+      line-height: var(--tw-leading, var(--text-lg--line-height));
+    }
+    h5& {
+      font-size: var(--text-base);
+      line-height: var(--tw-leading, var(--text-base--line-height));
+    }
+    h6& {
+      font-size: var(--text-sm);
+      line-height: var(--tw-leading, var(--text-sm--line-height));
+    }
+  }
+
+  /* The room's name in the chat header. Prominent by default; the theme picks
+  the face it's set in. */
+  .room-name {
+    font-size: var(--text-xl);
+    font-weight: 700;
+  }
+
+  /* The chat surface, and the sidebar that sits over it. Both need an opaque
+  fill of their own so content doesn't read through to the page beneath. A theme
+  that sets the `background` shorthand (as cyberdeck does) replaces these
+  outright, including their translucency — that's expected. */
+  .main-area {
+    background-color: var(--color-base-100);
+  }
+
+  /* ---------------------------------------------------------------------------
+   * Sidebar
+   * ---------------------------------------------------------------------------
+   * inspiration: https://freefrontend.com/css-sidebar-menus/
+   *
+   * This lot used to live in a CSS module next to Sidebar.tsx. Modules are
+   * emitted unlayered, so they outranked every `@layer` and made the sidebar the
+   * one piece of furniture a theme couldn't argue with — not even to nudge the
+   * padding on a tab button. Layered here, a theme's `[data-theme=x] .sidebar-*`
+   * rule wins over the floor exactly like it does everywhere else.
+   * -------------------------------------------------------------------------*/
+
+  /* The sidebar proper: tab rail and sliding content area, side by side. The
+  variables it declares are the whole open/close animation — `--sidebar-width` is
+  what the content area interpolates, and the rest feed into it. */
+  .sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: [tabs] auto [content] 1fr;
+    background-color: var(--color-base-200);
+    --sidebar-tab-rail-width: 3em;
+    --mobile-close-button-size: calc(var(--spacing) * 10);
+    --mobile-close-button-gap: calc(var(--spacing) * 2);
+    --content-width-when-open: min(
+      var(--container-xs),
+      max(
+        0px,
+        calc(
+          100dvw - var(--sidebar-tab-rail-width) -
+            var(--mobile-close-button-size) - var(--mobile-close-button-gap)
+        )
+      )
+    );
+    --sidebar-drag-distance: 0px;
+    --sidebar-width: 0px;
+
+    &[data-mobile-open] {
+      --sidebar-width: max(
+        0px,
+        calc(var(--content-width-when-open) - var(--sidebar-drag-distance))
+      );
+    }
+
+    @container (width >= 80rem) {
+      position: relative;
+      z-index: 0;
+      --content-width-when-open: var(--container-xs);
+      --sidebar-width: var(--content-width-when-open);
+      &[data-desktop-closed] {
+        --sidebar-width: 0px;
+      }
+    }
+  }
+
+  /* The sidebar is absolutely positioned on mobile, so this reserves the strip
+  of layout the tab rail sits over. On desktop the sidebar is in flow and takes
+  its own space, so this collapses. */
+  .sidebar-space-holder {
+    width: 3em; /* should equal --sidebar-tab-rail-width */
+    @container (width >= 80rem) {
+      width: 0px;
+    }
+  }
+
+  /* Dims the app behind the mobile sidebar; a tap on it closes. Sidebar.tsx
+  drives `opacity` inline as the swipe progresses. */
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    cursor: pointer;
+    background-color: oklch(from var(--color-base-content) l c h / 0.08);
+    transition: opacity 200ms ease-out;
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  /* Carries the `role="dialog"` when the mobile sidebar is modal, but must not
+  disturb the grid the rail and content area are placed in. */
+  .sidebar-dialog-wrapper {
+    display: contents;
+  }
+
+  .sidebar-tab-rail {
+    margin-top: calc(var(--spacing) * 4);
+    padding: calc(var(--spacing) * 2);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing) * 4);
+    touch-action: pan-y;
+  }
+
+  .sidebar-tab-button {
+    border: 0px solid oklch(from var(--color-base-content) l c h / 0.3);
+    color: var(--color-base-content);
+    padding: calc(var(--spacing) * 1);
+    border-radius: var(--spacing);
+    transition:
+      scale 200ms ease-out,
+      background-color 200ms;
+    cursor: pointer;
+
+    &:hover:not([aria-selected="true"]) {
+      background-color: oklch(from var(--color-accent) l c h / 0.3);
+      scale: 1.2;
+    }
+
+    &[aria-selected="true"] {
+      background-color: var(--color-accent);
+      color: var(--color-accent-content);
+      cursor: default;
+    }
+  }
+
+  /* this bad boy changes width as the sidebar slides in and out, which is why
+  the content within must be sized separately, so that it correctly "slides out"
+  instead of frantically re-laying out in ever decreasing space, like Luke, Leia,
+  and Han in the trash compactor. */
+  .sidebar-content-area {
+    width: var(--sidebar-width);
+    transition: width 350ms cubic-bezier(0.49, 0.08, 0.24, 1.43);
+    overflow: hidden;
+    position: relative;
+    /* scrolling vertically should always be handled by whatever's inside the
+    sidebar, not by panning around the actual structure of the sidebar. */
+    touch-action: pan-y;
+
+    /* mid-swipe the width follows the finger, so the easing has to get out of
+    the way */
+    .sidebar[data-swipe-dragging] & {
+      transition: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  /* this is what sits inside the content area. The width is fixed so it slides
+  out of view without causing its children to reflow. */
+  .sidebar-content-drawer {
+    position: absolute;
+    width: var(--content-width-when-open);
+    top: 0;
+    left: 0;
+    bottom: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+
+  /* Sits in the gutter to the left of the open mobile sidebar, outside it. */
+  .sidebar-close-button {
+    position: absolute;
+    top: calc(var(--spacing) * 6);
+    left: calc(
+      -1 * (var(--mobile-close-button-size) + var(--mobile-close-button-gap))
+    );
+    z-index: 1;
+    width: var(--mobile-close-button-size);
+    height: var(--mobile-close-button-size);
+    display: grid;
+    place-items: center;
+    border: 1px solid oklch(from var(--color-base-content) l c h / 0.2);
+    border-radius: var(--radius-field);
+    background-color: var(--color-base-100);
+    color: var(--color-base-content);
+    cursor: pointer;
+    box-shadow: 0 calc(var(--spacing) * 2) calc(var(--spacing) * 4)
+      oklch(from var(--color-base-content) l c h / 0.2);
+    transition:
+      background-color 200ms ease-out,
+      color 200ms ease-out;
+
+    &:hover {
+      background-color: var(--color-accent);
+      color: var(--color-accent-content);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    > svg {
+      width: calc(var(--spacing) * 5);
+      height: calc(var(--spacing) * 5);
+    }
+
+    @container (width >= 80rem) {
+      display: none;
+    }
+  }
+
+  /* A card inside a panel: a deck row, a settings block. The floor is the
+  plainest thing that still reads as a raised patch — an opaque fill, a hairline
+  and the box radius. Padding is left to the call site, which knows how tight it
+  wants the row.
+
+  A theme is free to swap the flat fill for something that reacts to what is
+  behind it; libris blends its own paper up through the card rather than
+  covering it. */
+  .surface {
+    background-color: var(--color-base-100);
+    border: 1px solid var(--color-base-300);
+    border-radius: var(--radius-box);
+  }
 }
 
 @utility frost {
   background: oklch(from var(--color-base-100) l c h / 30%);
   backdrop-filter: blur(16px);
+
+  /* whatever is behind a frosted panel still shows through it at 30%, which is
+  exactly the sort of thing that makes text hard to pick out */
+  @media (prefers-contrast: more) {
+    background: var(--color-base-100);
+    backdrop-filter: none;
+  }
 }
 
 /* we're handling toast styling by hand, so revert everything that daisy does */
@@ -157,19 +559,23 @@ body {
 }
 
 .chat-bubble {
-  @layer utilities.daisyui.l1.l2.l3 {
-    all: revert-layer;
+  &,
+  &:before,
+  &:after {
+    @layer utilities.daisyui.l1.l2.l3 {
+      all: revert-layer;
+    }
   }
 }
 
 @utility chat-bubble {
   width: fit-content;
-  background-color: oklch(20% 30% var(--user-hue));
+  /* ChatBubble.tsx sets --user-colour on the wrapping <article>, light or dark
+  to match the theme's polarity. The bubble used to hardcode oklch(20% …), which
+  only read correctly because the one theme we had was dark — under a light
+  theme it put dark text on a dark bubble at 1.15:1. */
+  background-color: var(--user-colour);
   &:is(:where(.group)[data-is-mine] *) {
     margin-left: auto;
   }
-}
-
-.foo {
-  color: red;
 }

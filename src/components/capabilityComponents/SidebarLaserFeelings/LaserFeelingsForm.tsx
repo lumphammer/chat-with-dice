@@ -16,10 +16,7 @@ type LaserFeelingsFormProps = {
 };
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
-  <p
-    className="text-base-content/50 mb-1 text-xs font-semibold tracking-wide
-      uppercase"
-  >
+  <p className="muted mb-1 text-xs font-semibold tracking-wide uppercase">
     {children}
   </p>
 );
@@ -107,7 +104,7 @@ export const LaserFeelingsForm = memo(({ onRoll }: LaserFeelingsFormProps) => {
         <Zap className="h-5 w-5" />
         Roll Feelings
       </button>
-      <aside className="prose prose-sm opacity-80">
+      <aside className="prose prose-sm muted">
         {/*<hr />*/}
         <p>
           Based on{" "}

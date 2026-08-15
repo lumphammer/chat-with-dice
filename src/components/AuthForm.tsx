@@ -87,11 +87,11 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
             <Mail size={28} className="text-success" />
           </div>
           <h2 className="text-xl font-bold">Check your inbox</h2>
-          <p className="text-base-content/70">
+          <p className="muted">
             We've sent a link to <strong>{email}</strong>. Click it to continue.
             The link expires shortly and can only be used once.
           </p>
-          <p className="text-base-content/50 text-xs">
+          <p className="muted text-xs">
             Didn't get it? Check your spam folder, or{" "}
             <button
               type="button"
@@ -113,7 +113,7 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
   return (
     <div className="card bg-base-100 w-full max-w-full shadow-xl lg:max-w-md">
       <div className="card-body gap-4">
-        <p className="text-base-content/60 text-center">
+        <p className="muted text-center">
           New or returning, one link does both — no password to remember.
         </p>
 
@@ -202,7 +202,7 @@ export function AuthForm({ initialUser }: { initialUser: ClientUser | null }) {
             Email me a link
           </button>
 
-          <p className="text-base-content/60 text-center text-xs">
+          <p className="muted text-center text-xs">
             We'll email you a link — it signs you in or sets up your account. No
             password needed.
           </p>

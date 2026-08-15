@@ -1,0 +1,17 @@
+@reference "#/styles/global.css";
+
+/* =============================================================================
+ * Every theme the app can render
+ * -----------------------------------------------------------------------------
+ * One import for the whole set, so a room can be switched to any registered
+ * theme without a round trip. Each theme is a `[data-theme=x]` block plus its
+ * own `@font-face` declarations, and a browser only downloads a face once
+ * something on the page actually uses it — so bundling them all costs CSS text,
+ * not font bytes.
+ *
+ * This list must match `THEME_NAMES` in ./registry.ts; registry.test.ts fails
+ * the build if it drifts.
+ * ===========================================================================*/
+@import "./cyberdeck.css";
+@import "./libris.css";
+@import "./plainLight.css";

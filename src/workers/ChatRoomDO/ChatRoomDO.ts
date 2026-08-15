@@ -245,6 +245,16 @@ export class ChatRoomDO extends DurableObject {
             .where(eq(rooms.durableObjectId, this.ctx.id.toString()));
           this.broadcaster.brodcastRoomName(roomName);
         });
+      } else if (data.type === "updateRoomTheme") {
+        await checkOwner("update room theme", async () => {
+          const theme = data.payload.theme;
+          log("Updating room theme", theme, this.ctx.id.toString());
+          await d1
+            .update(rooms)
+            .set({ theme })
+            .where(eq(rooms.durableObjectId, this.ctx.id.toString()));
+          this.broadcaster.broadcastRoomTheme(theme);
+        });
       }
     } catch (error) {
       this.broadcaster.sendError(ws, error);

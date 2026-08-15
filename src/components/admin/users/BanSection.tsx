@@ -122,15 +122,15 @@ const UnbanPanel = ({ user, onUserUpdated }: Props) => {
   return (
     <div className="flex flex-col gap-3">
       <div className="text-sm">
-        <span className="text-base-content/60">Reason: </span>
-        {user.banReason ?? <span className="text-base-content/50">—</span>}
+        <span className="muted">Reason: </span>
+        {user.banReason ?? <span className="muted">—</span>}
       </div>
       <div className="text-sm">
-        <span className="text-base-content/60">Expires: </span>
+        <span className="muted">Expires: </span>
         {user.banExpires ? (
           user.banExpires.toLocaleString()
         ) : (
-          <span className="text-base-content/50">Never</span>
+          <span className="muted">Never</span>
         )}
       </div>
       {error && <div className="alert alert-error">{error}</div>}

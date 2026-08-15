@@ -17,7 +17,7 @@ export const TimeDisplay = memo(({ timeStamp }: TimeDisplayProps) => {
       }
     >
       <time
-        className={"opacity-70"}
+        className={"muted"}
         dateTime={new Date(timeStamp)
           .toISOString()
           .slice(0, ISO_CORE_PART_LENGTH)}

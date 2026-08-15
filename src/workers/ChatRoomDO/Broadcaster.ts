@@ -1,4 +1,5 @@
 import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
+import type { ThemeName } from "#/styles/themes/registry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type {
   ChatMessage,
@@ -110,6 +111,15 @@ export class Broadcaster {
       type: "roomName",
       payload: {
         roomName,
+      },
+    });
+  }
+
+  broadcastRoomTheme(theme: ThemeName): void {
+    this.broadcast({
+      type: "roomTheme",
+      payload: {
+        theme,
       },
     });
   }

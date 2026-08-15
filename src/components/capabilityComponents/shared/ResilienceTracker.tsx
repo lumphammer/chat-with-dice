@@ -29,7 +29,7 @@ const ResilienceBox = ({
       {showX && (
         <XIcon
           className={`h-4 w-4 transition-colors ${
-            isPreview ? "text-base-content/30" : "text-base-content"
+            isPreview ? "muted" : "text-base-content"
           }`}
         />
       )}
@@ -76,8 +76,8 @@ export const ResilienceTracker = ({
           className={`flex h-7 w-7 cursor-pointer items-center justify-center
             rounded transition-colors ${
               isAtFullResilience
-                ? "text-base-content/20 cursor-default"
-                : "text-base-content/50 hover:text-base-content"
+                ? "muted cursor-default"
+                : "muted hover:text-base-content"
             }`}
         >
           <RotateCcwIcon className="h-4 w-4" />
@@ -98,8 +98,7 @@ export const ResilienceTracker = ({
         })}
         {resilience <= 0 && (
           <svg
-            className="text-base-content/40 pointer-events-none absolute inset-0
-              h-full w-full"
+            className="muted pointer-events-none absolute inset-0 h-full w-full"
             aria-hidden="true"
             preserveAspectRatio="none"
           >

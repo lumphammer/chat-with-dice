@@ -22,7 +22,7 @@ export const ProtagonistSetupSection = () => {
   return (
     <section>
       <h3 className="heading">The Protagonist</h3>
-      <p className="text-base-content/70 mt-1 mb-4 text-sm">
+      <p className="muted mt-1 mb-4 text-sm">
         Describe the single protagonist of the story. Multiplayer: take it in
         turns to fill in the fields.
       </p>

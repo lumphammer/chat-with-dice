@@ -96,7 +96,9 @@ export const CardDrawMessageDisplay = memo(
 
     return (
       <div
-        className="text-neutral mt-1 flex flex-col gap-1 text-sm
+        /* `-text`, not the raw `neutral` fill: a fill is chosen to carry
+        `-content` ink on top of it, not to be ink itself. 3.37:1 before. */
+        className="text-neutral-text mt-1 flex flex-col gap-1 text-sm
           group-data-is-mine:items-end"
       >
         <span className="">Drew from {deck.name}</span>

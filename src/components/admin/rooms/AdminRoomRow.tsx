@@ -33,7 +33,7 @@ export const AdminRoomRow = memo(({ room }: Props) => {
           </a>
         </div>
         {room.description && (
-          <div className="text-base-content/50 text-xs">{room.description}</div>
+          <div className="muted text-xs">{room.description}</div>
         )}
       </td>
       <td>

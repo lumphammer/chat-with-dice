@@ -11,10 +11,10 @@ export const SidebarCounter = memo(() => {
 
   return (
     <SidebarPanel title="Counter" isSaving={capInfo.patches.length > 0}>
-      <p className="sm text-base-content/70">
+      <p className="sm muted">
         A minimal room capability. Click the button to increment the number.
       </p>
-      <p className="text-base-content/70 my-4 text-5xl">
+      <p className="muted my-4 text-5xl">
         {capInfo.state?.count ?? "loading?"}
       </p>
       <button
@@ -24,7 +24,7 @@ export const SidebarCounter = memo(() => {
         Increment
       </button>
       <h3 className="mt-4 text-xl">Patches</h3>
-      <p className="sm text-base-content/70">
+      <p className="sm muted">
         This shows pending optimistic state patches. Every time you click
         "increment" a patch is added to the list; when the corresponding state
         update comes back from the server, the patch is removed.

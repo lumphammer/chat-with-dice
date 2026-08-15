@@ -36,9 +36,7 @@ export const DeckDrawnCardsPicker = memo(
     return (
       <div className="flex flex-col gap-1">
         <span className="font-medium">Drawn cards</span>
-        <span className="text-base-content/60">
-          What happens to a card after it is drawn.
-        </span>
+        <span className="muted">What happens to a card after it is drawn.</span>
         <div className="mt-2 flex flex-col gap-1">
           {OPTIONS.map((option) => {
             const key = String(option.value);
@@ -66,7 +64,7 @@ export const DeckDrawnCardsPicker = memo(
                   onChange={() => onChange(option.value)}
                 />
                 <span id={labelId}>{option.label}</span>
-                <span id={descriptionId} className="text-base-content/60">
+                <span id={descriptionId} className="muted">
                   {option.description}
                 </span>
               </label>

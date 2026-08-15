@@ -83,10 +83,12 @@ export const ObstructionRollMessage = ({
 const ResultBanner = ({ data }: { data: ObstructionRollMessageData }) => (
   <div
     className={`mt-1 flex items-center gap-2 rounded border p-2 text-sm
-      font-semibold ${
+      font-semibold ${ /* `-text`, not the raw fill — see the note on
+      STORY_CARD_TONES */
+
         data.success
-          ? "bg-success/10 border-success/30 text-success"
-          : "bg-error/10 border-error/30 text-error"
+          ? "bg-success/10 border-success/30 text-success-text"
+          : "bg-error/10 border-error/30 text-error-text"
       }`}
   >
     <span className="grow text-left">
@@ -126,9 +128,7 @@ const SpendResolveRow = ({
       </button>
     )}
     {cannotSpendMessage && (
-      <span className="text-base-content/50 mt-1 text-xs">
-        {cannotSpendMessage}
-      </span>
+      <span className="muted mt-1 text-xs">{cannotSpendMessage}</span>
     )}
   </>
 );

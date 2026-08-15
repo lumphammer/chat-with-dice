@@ -88,10 +88,7 @@ export const DeckRow = memo(
     ) : null;
 
     return (
-      <li
-        className="border-base-300 bg-base-100 rounded-box flex flex-col gap-2
-          border px-3 py-2"
-      >
+      <li className="surface flex flex-col gap-2 px-3 py-2">
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"

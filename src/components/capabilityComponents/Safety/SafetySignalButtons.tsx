@@ -46,7 +46,7 @@ export const SafetySignalButtons = memo(() => {
       >
         <SIGNAL_PRESENTATION.xcard.Icon className="h-12 w-12" />X Card
       </button>
-      <p className="text-base-content/70 mt-2 mb-4 text-sm">
+      <p className="muted mt-2 mb-4 text-sm">
         Stop and change, rewind, or skip the current content. No explanation is
         required.
       </p>
@@ -60,7 +60,7 @@ export const SafetySignalButtons = memo(() => {
         <SIGNAL_PRESENTATION.pause.Icon className="h-5 w-5" />
         Pause
       </button>
-      <p className="text-base-content/70 mt-2 mb-4 text-sm">
+      <p className="muted mt-2 mb-4 text-sm">
         Ask the table to pause for a break or check-in before continuing.
       </p>
 
@@ -70,8 +70,8 @@ export const SafetySignalButtons = memo(() => {
           rather than wrapped in a container span so it stays a direct child:
           jsx-a11y only looks so deep for a label's accessible text. */}
       <label
-        className="border-base-300 bg-base-100 rounded-box grid cursor-pointer
-          grid-cols-[1fr_auto] items-center gap-x-3 border px-4 py-3"
+        className="surface grid cursor-pointer grid-cols-[1fr_auto] items-center
+          gap-x-3 px-4 py-3"
       >
         <span className="font-medium">Send safety signals anonymously</span>
         <input
@@ -80,7 +80,7 @@ export const SafetySignalButtons = memo(() => {
           checked={anonymously}
           onChange={(event) => setAnonymously(event.target.checked)}
         />
-        <span className="text-base-content/70 col-start-1 row-start-2 text-sm">
+        <span className="muted col-start-1 row-start-2 text-sm">
           Anonymous signals are stored without your name.
         </span>
       </label>

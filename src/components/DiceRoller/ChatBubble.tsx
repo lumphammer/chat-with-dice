@@ -52,7 +52,7 @@ function LinkPreviewCard({ preview }: { preview: LinkPreview }) {
     >
       <span className="min-w-0 flex-1">
         {preview.siteName && (
-          <span className="block truncate text-xs opacity-70">
+          <span className="muted block truncate text-xs">
             {preview.siteName}
           </span>
         )}
@@ -60,7 +60,7 @@ function LinkPreviewCard({ preview }: { preview: LinkPreview }) {
           {preview.title}
         </span>
         {preview.description && (
-          <span className="mt-1 line-clamp-2 text-sm opacity-80">
+          <span className="muted mt-1 line-clamp-2 text-sm">
             {preview.description}
           </span>
         )}

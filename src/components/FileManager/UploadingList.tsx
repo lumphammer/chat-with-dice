@@ -29,7 +29,7 @@ export const UploadingList = memo(
             <span className="flex-1 truncate text-sm">
               {file.name}
               {file.status === "uploading" && (
-                <span className="text-base-content/50 ml-2">Uploading…</span>
+                <span className="muted ml-2">Uploading…</span>
               )}
               {file.status === "error" && (
                 <span className="text-error ml-2">{file.errorMessage}</span>

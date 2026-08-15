@@ -19,6 +19,13 @@ type NumberComboProps = {
 // portalled and auto-positioned so the sidebar can't clip it. Double chevrons
 // (not +/−) keep the steppers visually distinct from the modifier's +/−
 // operators sitting alongside.
+//
+// The whole row has to survive a ~230px sidebar column on a 375px phone, which
+// takes two things. All three chrome buttons are `btn-square`, so each is one
+// `--size` square around its icon rather than a slab of `--btn-p` either side of
+// it. And the input carries `min-w-0`: daisyUI's `.btn` is `flex-shrink: 0`, so
+// the input is the only elastic item here, and a width utility on it would floor
+// the whole row via `min-width: auto` and make it inelastic too.
 export const NumberCombo = ({
   value,
   onChange,
@@ -35,17 +42,17 @@ export const NumberCombo = ({
     onValueChange={(details) => {
       if (!Number.isNaN(details.valueAsNumber)) onChange(details.valueAsNumber);
     }}
-    className="join flex items-stretch gap-1"
+    className="join flex items-stretch"
   >
     <NumberInput.DecrementTrigger
-      className="btn btn-sm btn-neutral join-item px-4"
+      className="btn btn-sm btn-neutral btn-square join-item"
       aria-label={`Decrease ${ariaLabel}`}
     >
-      <ChevronsDown className="h-5 w-5" />
+      <ChevronsDown className="h-4 w-4" />
     </NumberInput.DecrementTrigger>
 
     <NumberInput.Input
-      className="input input-sm join-item w-16 flex-1 text-center text-lg
+      className="input input-sm join-item min-w-0 flex-1 text-center text-lg
         font-bold"
       aria-label={ariaLabel}
     />
@@ -81,10 +88,10 @@ export const NumberCombo = ({
     </Menu.Root>
 
     <NumberInput.IncrementTrigger
-      className="btn btn-neutral btn-sm join-item px-4"
+      className="btn btn-neutral btn-sm btn-square join-item"
       aria-label={`Increase ${ariaLabel}`}
     >
-      <ChevronsUp className="h-5 w-5" />
+      <ChevronsUp className="h-4 w-4" />
     </NumberInput.IncrementTrigger>
   </NumberInput.Root>
 );

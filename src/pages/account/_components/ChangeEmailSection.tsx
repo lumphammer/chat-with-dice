@@ -37,11 +37,8 @@ export function ChangeEmailSection({ currentEmail }: { currentEmail: string }) {
       <div className="card-body gap-4">
         <div>
           <h2 className="card-title text-lg">Email address</h2>
-          <p className="text-base-content/60 mt-0.5">
-            Current:{" "}
-            <span className="text-base-content/80 font-medium">
-              {currentEmail}
-            </span>
+          <p className="muted mt-0.5">
+            Current: <span className="muted font-medium">{currentEmail}</span>
           </p>
         </div>
 

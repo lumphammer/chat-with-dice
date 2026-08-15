@@ -1,3 +1,4 @@
+import { THEME_NAMES } from "#/styles/themes/registry";
 import { type JsonData, type JsonValidator } from "./jsonObjectValidator";
 import { roomConfigValidator } from "./roomConfigValidator";
 import { z } from "zod/v4";
@@ -144,6 +145,12 @@ export const webSocketServerMessageSchema = z.discriminatedUnion("type", [
       roomName: z.string(),
     }),
   }),
+  z.object({
+    type: z.literal("roomTheme"),
+    payload: z.object({
+      theme: z.enum(THEME_NAMES),
+    }),
+  }),
 ]);
 
 /**
@@ -202,6 +209,12 @@ export const webSocketClientMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("updateRoomName"),
     payload: z.object({
       roomName: z.string(),
+    }),
+  }),
+  z.object({
+    type: z.literal("updateRoomTheme"),
+    payload: z.object({
+      theme: z.enum(THEME_NAMES),
     }),
   }),
   actionCallMessageValidator,

@@ -17,7 +17,7 @@ export const DwindleStatus = memo(
     onReset: () => void;
   }) => (
     <div className="flex items-center gap-2">
-      <span className="text-base-content/70">
+      <span className="muted">
         {remaining === null ? "…" : `${remaining} of ${total ?? 0} left`}
       </span>
       <button

@@ -29,7 +29,7 @@ export const RevokeSessionsSection = memo(({ userId }: { userId: string }) => {
     <div className="card bg-base-200">
       <div className="card-body">
         <h2 className="card-title text-base">Sessions</h2>
-        <p className="text-base-content/70 text-sm">
+        <p className="muted text-sm">
           Force the user to sign out of all active sessions.
         </p>
         <div className="flex flex-col gap-2">

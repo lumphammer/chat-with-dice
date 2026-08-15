@@ -122,7 +122,7 @@ export const AvoidList = memo(() => {
       {/* Says whose name goes on it *before* the input, not after. Someone
           deciding whether to add "violence against children" needs to know the
           room will see it was them while they are still deciding. */}
-      <p className="text-base-content/70 mt-1 text-sm">
+      <p className="muted mt-1 text-sm">
         Anything you'd rather this game steered clear of. The whole room sees
         the list, grouped by who added each subject.
       </p>
@@ -158,9 +158,7 @@ export const AvoidList = memo(() => {
 
       {entries === null && <p className="mt-4">Loading…</p>}
       {entries !== null && entries.length === 0 && (
-        <p className="text-base-content/70 mt-4 text-sm">
-          Nobody has added anything yet.
-        </p>
+        <p className="muted mt-4 text-sm">Nobody has added anything yet.</p>
       )}
       {entries !== null && entries.length > 0 && (
         <div className="mt-4 space-y-4">

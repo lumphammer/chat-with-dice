@@ -8,7 +8,6 @@ import { useStateWithRef } from "../useStateWithRef";
 import { Config } from "./Config";
 import { Help } from "./Help";
 import { MobileSidebarControlsProvider } from "./mobileSidebarContext";
-import styles from "./sidebar.module.css";
 import { useContainerMinWidth } from "./useContainerMinWidth";
 import { useModalRegion } from "./useModalRegion";
 import { useSwipeToDismiss } from "./useSwipeToDismiss";
@@ -22,7 +21,7 @@ const SWIPE_HANDLE_SELECTOR = "[data-sidebar-swipe-handle]";
 const BACKDROP_DRAG_FADE_AMOUNT = 0.75;
 
 type SidebarStyle = CSSProperties & {
-  "--sidebarDragDistance": string;
+  "--sidebar-drag-distance": string;
 };
 
 const SidebarTabTrigger = memo(
@@ -39,7 +38,7 @@ const SidebarTabTrigger = memo(
   }) => (
     <Tabs.Trigger
       aria-label={label}
-      className={styles.tabButton}
+      className="sidebar-tab-button"
       value={value}
       onClick={(event) => {
         const isSelected = event.currentTarget.ariaSelected === "true";
@@ -143,7 +142,7 @@ export const Sidebar = memo(
     });
 
     const sidebarStyle: SidebarStyle = {
-      "--sidebarDragDistance": `${dragDistance}px`,
+      "--sidebar-drag-distance": `${dragDistance}px`,
     };
 
     useModalRegion({
@@ -203,10 +202,10 @@ export const Sidebar = memo(
 
     return (
       <>
-        <div className={styles.spaceHolder} />
+        <div className="sidebar-space-holder" />
         {isModalOpen && (
           <div
-            className={styles.backdrop}
+            className="sidebar-backdrop"
             aria-hidden="true"
             onClick={closeMobileSidebar}
             style={{ opacity: 1 - dragProgress * BACKDROP_DRAG_FADE_AMOUNT }}
@@ -214,7 +213,7 @@ export const Sidebar = memo(
         )}
 
         <Tabs.Root
-          className={`${styles.root} sidebar`}
+          className="sidebar"
           value={selectedTab}
           onValueChange={(details) => setSelectedTab(details.value)}
           orientation="vertical"
@@ -231,7 +230,7 @@ export const Sidebar = memo(
           >
             <div
               ref={dialogRef}
-              className={styles.dialogWrapper}
+              className="sidebar-dialog-wrapper"
               role={isModalOpen ? "dialog" : undefined}
               aria-modal={isModalOpen || undefined}
               aria-label={isModalOpen ? "Sidebar" : undefined}
@@ -239,7 +238,7 @@ export const Sidebar = memo(
               {isModalOpen && (
                 <button
                   ref={closeButtonRef}
-                  className={styles.mobileCloseButton}
+                  className="sidebar-close-button"
                   type="button"
                   aria-label="Close sidebar"
                   onClick={closeMobileSidebar}
@@ -247,7 +246,7 @@ export const Sidebar = memo(
                   <X />
                 </button>
               )}
-              <Tabs.List className={styles.tabList} asChild>
+              <Tabs.List className="sidebar-tab-rail" asChild>
                 {/* Tap on the nav's empty area (not a tab button) opens the
                     sidebar on mobile. Keyboard users have full access via the
                     focusable tab buttons inside, so the click handler is a
@@ -293,12 +292,12 @@ export const Sidebar = memo(
               <MobileSidebarControlsProvider
                 closeMobileSidebar={closeMobileSidebar}
               >
-                <section className={styles.contentArea}>
+                <section className="sidebar-content-area">
                   {capabilitySidebars.map(({ SidebarComponent, value }) => (
                     <Tabs.Content
                       key={value}
                       value={value}
-                      className={styles.contentDrawer}
+                      className="sidebar-content-drawer"
                     >
                       <SidebarComponent />
                     </Tabs.Content>
@@ -306,12 +305,12 @@ export const Sidebar = memo(
                   {isOwner && (
                     <Tabs.Content
                       value="config"
-                      className={styles.contentDrawer}
+                      className="sidebar-content-drawer"
                     >
                       <Config />
                     </Tabs.Content>
                   )}
-                  <Tabs.Content value="help" className={styles.contentDrawer}>
+                  <Tabs.Content value="help" className="sidebar-content-drawer">
                     <Help />
                   </Tabs.Content>
                 </section>

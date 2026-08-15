@@ -6,6 +6,19 @@ import D4Icon from "#/assets/d4.svg";
 import D6Icon from "#/assets/d6.svg";
 import D8Icon from "#/assets/d8.svg";
 import Layout from "#/layouts/HTML.astro";
+import { StyleDemoToolbar } from "@/components/StyleDemoToolbar";
+
+// spelled out in full so Tailwind's source scanner sees each class literally
+const buttonColors = [
+  "btn-primary",
+  "btn-secondary",
+  "btn-accent",
+  "btn-neutral",
+  "btn-info",
+  "btn-warning",
+  "btn-error",
+];
+const buttonStyles = ["", "btn-soft", "btn-outline"];
 
 const dice = [
   { label: "d4", Icon: D4Icon },
@@ -18,6 +31,9 @@ const dice = [
 ---
 
 <Layout title="Style Demo">
+  <StyleDemoToolbar client:load />
+  <!-- the toolbar is fixed, so the swatches need somewhere to start -->
+  <div class="h-20 shrink-0"></div>
   {
     ["bg-base-100", "bg-base-200", "bg-base-300", "bg-black", "bg-white"].map(
       (bg) => {
@@ -31,28 +47,18 @@ const dice = [
             <p class="p text-primary-text">.text-primary-text</p>
             <p class="p text-secondary-text">.text-secondary-text</p>
             <p class="p text-accent-text">.text-accent-text</p>
-            <div class="btn btn-primary">.btn-primary</div>
-            <div class="btn btn-secondary">.btn-secondary</div>
-            <div class="btn btn-accent">.btn-accent</div>
-            <div class="btn btn-neutral">.btn-neutral</div>
-            <div class="btn btn-soft btn-primary">.btn-soft.btn-primary</div>
-            <div class="btn btn-soft btn-secondary">
-              .btn-soft.btn-secondary
-            </div>
-            <div class="btn btn-soft btn-accent">.btn-soft.btn-accent</div>
-            <div class="btn btn-soft btn-neutral">.btn-soft.btn-accent</div>
-            <div class="btn btn-outline btn-primary">
-              .btn-outline.btn-primary
-            </div>
-            <div class="btn btn-outline btn-secondary">
-              .btn-outline.btn-secondary
-            </div>
-            <div class="btn btn-outline btn-accent">
-              .btn-outline.btn-accent
-            </div>
-            <div class="btn btn-outline btn-neutral">
-              .btn-outline.btn-accent
-            </div>
+            {buttonStyles.map((style) => (
+              <div class="my-2 flex flex-wrap gap-2">
+                {buttonColors.map((color) => (
+                  <div class={`btn ${style} ${color}`}>
+                    {[style, color]
+                      .filter(Boolean)
+                      .map((cls) => `.${cls}`)
+                      .join("")}
+                  </div>
+                ))}
+              </div>
+            ))}
             <div class="my-4 flex flex-wrap gap-2">
               {dice.map(({ label, Icon }) => (
                 <button type="button" class="btn btn-primary">

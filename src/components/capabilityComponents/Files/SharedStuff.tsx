@@ -138,9 +138,7 @@ export const SharedStuff = memo(() => {
 
   if (sortedShares.length === 0) {
     return (
-      <div
-        className="text-base-content/50 flex min-h-32 items-center px-4 text-sm"
-      >
+      <div className="muted flex min-h-32 items-center px-4 text-sm">
         Nothing has been shared with this room yet.
       </div>
     );

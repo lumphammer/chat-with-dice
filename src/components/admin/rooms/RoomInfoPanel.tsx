@@ -13,10 +13,7 @@ const Field = ({
   children: React.ReactNode;
 }) => (
   <div className="flex flex-col gap-0.5">
-    <dt
-      className="text-base-content/60 text-xs font-semibold tracking-wide
-        uppercase"
-    >
+    <dt className="muted text-xs font-semibold tracking-wide uppercase">
       {label}
     </dt>
     <dd className="text-base-content text-sm">{children}</dd>
@@ -43,9 +40,7 @@ export const RoomInfoPanel = memo(
             </Field>
             <Field label="Name">{room.name}</Field>
             <Field label="Description">
-              {room.description ?? (
-                <span className="text-base-content/50">—</span>
-              )}
+              {room.description ?? <span className="muted">—</span>}
             </Field>
             <Field label="Type">
               <span className="badge badge-ghost gap-1">
@@ -76,14 +71,14 @@ export const RoomInfoPanel = memo(
                   {room.durableObjectId}
                 </span>
               ) : (
-                <span className="text-base-content/50">—</span>
+                <span className="muted">—</span>
               )}
             </Field>
             <Field label="Deleted">
               {room.deleted_time ? (
                 new Date(room.deleted_time).toLocaleString()
               ) : (
-                <span className="text-base-content/50">—</span>
+                <span className="muted">—</span>
               )}
             </Field>
             <Field label="Open in app">
@@ -97,7 +92,7 @@ export const RoomInfoPanel = memo(
                   /rooms/{room.id}
                 </a>
               ) : (
-                <span className="text-base-content/50">Room is deleted</span>
+                <span className="muted">Room is deleted</span>
               )}
             </Field>
           </dl>

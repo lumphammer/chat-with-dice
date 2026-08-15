@@ -44,11 +44,7 @@ export const RoomPresetPicker = memo(
                   <div className="card-body gap-2 p-4">
                     <Icon
                       size={22}
-                      className={
-                        isSelected
-                          ? "text-primary-text"
-                          : "text-base-content/50"
-                      }
+                      className={isSelected ? "text-primary-text" : "muted"}
                     />
                     <p
                       className={`leading-tight font-semibold ${
@@ -57,9 +53,7 @@ export const RoomPresetPicker = memo(
                     >
                       {label}
                     </p>
-                    <p className="text-base-content/60 text-xs leading-snug">
-                      {description}
-                    </p>
+                    <p className="muted text-xs leading-snug">{description}</p>
                   </div>
                 </label>
               );

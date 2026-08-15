@@ -3,7 +3,7 @@ import { CheckCircle, HatGlasses, XCircle } from "lucide-react";
 import { memo } from "react";
 
 const BoolField = ({ value }: { value: boolean | null | undefined }) => {
-  if (value == null) return <span className="text-base-content/50">—</span>;
+  if (value == null) return <span className="muted">—</span>;
   return value ? (
     <CheckCircle className="text-success h-4 w-4" />
   ) : (
@@ -48,10 +48,7 @@ const Field = ({
   children: React.ReactNode;
 }) => (
   <div className="flex flex-col gap-0.5">
-    <dt
-      className="text-base-content/60 text-xs font-semibold tracking-wide
-        uppercase"
-    >
+    <dt className="muted text-xs font-semibold tracking-wide uppercase">
       {label}
     </dt>
     <dd className="text-base-content text-sm">{children}</dd>
@@ -75,19 +72,19 @@ export const UserInfoPanel = memo(({ user }: { user: User }) => (
           <BoolField value={user.emailVerified} />
         </Field>
         <Field label="Role">
-          {user.role ?? <span className="text-base-content/50">user</span>}
+          {user.role ?? <span className="muted">user</span>}
         </Field>
         <Field label="Banned">
           <BoolField value={user.banned} />
         </Field>
         <Field label="Ban Reason">
-          {user.banReason ?? <span className="text-base-content/50">—</span>}
+          {user.banReason ?? <span className="muted">—</span>}
         </Field>
         <Field label="Ban Expires">
           {user.banExpires ? (
             user.banExpires.toLocaleString()
           ) : (
-            <span className="text-base-content/50">—</span>
+            <span className="muted">—</span>
           )}
         </Field>
         <Field label="Joined">{user.createdAt.toLocaleString()}</Field>

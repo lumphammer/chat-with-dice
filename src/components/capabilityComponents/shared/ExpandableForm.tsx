@@ -24,8 +24,8 @@ export const ExpandableForm = ({ label, onOpen, children }: Props) => (
     >
       {label}
       <ChevronDownIcon
-        className="text-base-content/60 h-5 w-5 transition-transform
-          duration-200 group-open:rotate-180"
+        className="muted h-5 w-5 transition-transform duration-200
+          group-open:rotate-180"
       />
     </summary>
     {children}

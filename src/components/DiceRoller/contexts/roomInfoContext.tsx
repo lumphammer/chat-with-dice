@@ -1,3 +1,4 @@
+import type { ThemeName } from "#/styles/themes/registry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import { type PropsWithChildren, createContext, memo, useContext } from "react";
 
@@ -6,6 +7,8 @@ type RoomInfoContextValue = {
   setRoomConfig: (config: RoomConfig) => void;
   roomName: string;
   setRoomName: (newRoomName: string) => void;
+  roomTheme: ThemeName;
+  setRoomTheme: (theme: ThemeName) => void;
   roomId: string;
   roomOwnerId: string;
 };

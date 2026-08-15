@@ -1,4 +1,5 @@
 import { authClient } from "#/auth/authClient.ts";
+import type { ThemeName } from "#/styles/themes/registry";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import type { WebSocketClientMessage } from "#/validators/webSocketMessageSchemas";
 import {
@@ -12,6 +13,7 @@ import {
   useFeedbackToasterProvider,
 } from "../FeedbackToaster";
 import { Sidebar } from "../Sidebar/Sidebar";
+import { useApplyTheme } from "../useApplyTheme";
 import { CapabilityRoomOverlays } from "./CapabilityRoomOverlays";
 import { ChatBubble } from "./ChatBubble";
 import { ChatForm } from "./ChatForm";
@@ -45,11 +47,13 @@ export const DiceRoller = memo(
     displayName: initialDisplayName,
     config: initialConfig,
     roomOwnerId,
+    theme: initialTheme,
   }: {
     roomId: string;
     displayName: string;
     config: RoomConfig;
     roomOwnerId: string;
+    theme: ThemeName;
   }) => {
     const outerDivRef = useRef<HTMLDivElement>(null);
     const headerRef = useRef<HTMLElement>(null);
@@ -62,6 +66,8 @@ export const DiceRoller = memo(
     const { isPending, data: sessionData } = authClient.useSession();
     const [roomConfig, setRoomConfig] = useState(initialConfig);
     const [roomName, setRoomName] = useState(initialDisplayName);
+    const [roomTheme, setRoomTheme] = useState(initialTheme);
+    useApplyTheme(roomTheme);
     const [capabilityInfos, setCapabilityInfos] =
       useState<CapabilityInfoContextValue>({});
 
@@ -121,6 +127,7 @@ export const DiceRoller = memo(
       setCapabilityInfos,
       setRoomConfig: setRoomConfig,
       setRoomName: setRoomName,
+      setRoomTheme: setRoomTheme,
     });
 
     const handleSetRoomConfig = useCallback(
@@ -130,6 +137,19 @@ export const DiceRoller = memo(
           type: "updateConfig",
           payload: {
             config,
+          },
+        });
+      },
+      [sendMessage],
+    );
+
+    const handleSetRoomTheme = useCallback(
+      (theme: ThemeName) => {
+        setRoomTheme(theme);
+        sendMessage({
+          type: "updateRoomTheme",
+          payload: {
+            theme,
           },
         });
       },
@@ -232,6 +252,8 @@ export const DiceRoller = memo(
                       setRoomConfig: handleSetRoomConfig,
                       roomName,
                       setRoomName: handleSetRoomName,
+                      roomTheme,
+                      setRoomTheme: handleSetRoomTheme,
                       roomId,
                       roomOwnerId,
                     }),
@@ -240,6 +262,8 @@ export const DiceRoller = memo(
                       handleSetRoomConfig,
                       handleSetRoomName,
                       roomName,
+                      roomTheme,
+                      handleSetRoomTheme,
                       roomId,
                       roomOwnerId,
                     ],
@@ -289,8 +313,8 @@ export const DiceRoller = memo(
                         {hasNewMessages && (
                           <button
                             onClick={scrollToBottom}
-                            className="btn btn-primary btn-sm absolute bottom-4
-                              left-1/2 -translate-x-1/2 shadow-lg"
+                            className="btn btn-primary btn-sm absolute bottom-20
+                              left-1/2 z-10 -translate-x-1/2 shadow-lg"
                           >
                             ↓ New messages
                           </button>

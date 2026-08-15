@@ -9,7 +9,7 @@
   /* ---------------------------------------------------------------------------
    *  Daisy config
    * -------------------------------------------------------------------------*/
-  name: "havocDark";
+  name: "cyberdeck";
   default: false; /* set as default */
   prefersdark: true; /* set as default dark mode (prefers-color-scheme:dark) */
   color-scheme: dark; /* color of browser-provided UI */
@@ -38,6 +38,11 @@
 
   /* lightness for text based on saturated colours (accent, success, etc) */
   --l-colored-text: 0.8;
+
+  /* Secondary text. Dark theme, so muting means stepping *down* from an ink
+  that reads 11.16:1 at full strength. 0.7 lands at 5.28:1 on the worst base
+  surface — softer than the body ink by more than half, still clear of AA. */
+  --l-base-content-muted: 0.7;
 
   /* ---------------------------------------------------------------------------
    * Daisy theme variables
@@ -73,17 +78,33 @@
     from var(--color-base-100) 0.92 var(--c-content) h
   );
 
+  /* Every -content colour is derived the same way as primary/secondary/accent
+  above: dark ink on a light fill. These used to be near-white (98%) on fills
+  that are themselves light (80%), which is 1.6–1.9:1 — unreadable anywhere
+  daisyUI actually paints `--color-X` behind `--color-X-content`. It went
+  unnoticed because this theme overrides the components that would have shown
+  it. */
   --color-neutral: oklch(from var(--color-base-100) 80% 0.02 h);
-  --color-neutral-content: oklch(98% 0.01 240);
+  --color-neutral-content: oklch(
+    from var(--color-neutral) var(--l-content) var(--c-content) h
+  );
 
   --color-info: oklch(80% 0.2 220);
-  --color-info-content: oklch(98% 0.01 220);
+  --color-info-content: oklch(
+    from var(--color-info) var(--l-content) var(--c-content) h
+  );
   --color-success: oklch(80% 0.25 140);
-  --color-success-content: oklch(98% 0.01 140);
+  --color-success-content: oklch(
+    from var(--color-success) var(--l-content) var(--c-content) h
+  );
   --color-warning: oklch(80% 0.25 80);
-  --color-warning-content: oklch(98% 0.05 80);
+  --color-warning-content: oklch(
+    from var(--color-warning) var(--l-content) var(--c-content) h
+  );
   --color-error: oklch(80% 0.3 30);
-  --color-error-content: oklch(98% 0.01 30);
+  --color-error-content: oklch(
+    from var(--color-error) var(--l-content) var(--c-content) h
+  );
 
   /* border radius */
   --radius-selector: 1rem;
@@ -149,7 +170,7 @@ so the noise would end up blending against transparency. */
   background-blend-mode: var(--noisy-bg-blend);
 }
 
-[data-theme="havocDark"] {
+[data-theme="cyberdeck"] {
   &:is(html) {
     /*font-family: "Exo 2 Variable";*/
     font-family: "Nunito Sans Variable";
@@ -207,31 +228,6 @@ so the noise would end up blending against transparency. */
       h6 {
         font-family: "Orbitron Variable";
       }
-    }
-    .heading {
-      h1& {
-        font-size: var(--text-3xl);
-        line-height: var(
-          --tw-leading,
-          var(--text-3xl--line-height) /* calc(2.25 / 1.875) ≈ 1.2 */
-        );
-      }
-      h2& {
-        font-size: var(--text-2xl);
-        line-height: var(
-          --tw-leading,
-          var(--text-2xl--line-height) /* calc(2.25 / 1.875) ≈ 1.2 */
-        );
-      }
-      h3& {
-        font-size: var(--text-xl);
-        line-height: var(
-          --tw-leading,
-          var(--text-xl--line-height) /* calc(2.25 / 1.875) ≈ 1.2 */
-        );
-      }
-      font-family: "Orbitron Variable";
-      letter-spacing: 0.05em;
     }
     @layer components {
       .btn {
@@ -354,6 +350,11 @@ so the noise would end up blending against transparency. */
     .alert {
       @apply noisy-bg;
       background-color: var(--color-base-100);
+      /* daisyUI pairs `.alert-info`'s `color: var(--color-info-content)` with an
+      `--alert-color` background. We replace that background with base-100, so
+      we own the foreground too — otherwise the ink is picked to sit on a fill
+      we are no longer painting. */
+      color: var(--color-base-content);
       --noisy-bg-color: var(--color-accent);
       border-width: 0;
       border-radius: 0;
@@ -428,12 +429,32 @@ so the noise would end up blending against transparency. */
   }
 
   @layer components {
-    .room-name {
+    /* The per-level size ramp is base structure and lives in global.css; this
+    only picks the face. Kept in `components` rather than `utilities` so that a
+    `text-*`/`tracking-*` utility in the markup still outranks it — several call
+    sites pass one expecting it to win. */
+    .heading {
       font-family: "Orbitron Variable";
-      font-size: var(--text-xl);
-      font-weight: 700;
+      letter-spacing: 0.05em;
     }
 
+    /* size and weight are base structure and live in global.css */
+    .room-name {
+      font-family: "Orbitron Variable";
+    }
+
+    /* Secondary text reads as instrument chrome — the tracked-out lettering of
+    a HUD annotation. Tracking rather than uppercase: this class carries real
+    sentences ("Cannot spend to succeed: insufficient Resolve"), and small caps
+    at 12px would cost more legibility than the muted ink already does. */
+    .muted {
+      letter-spacing: 0.08em;
+    }
+
+    /* The `background` shorthand below resets background-color, so the base
+    layer's opaque base-100 fill is replaced rather than composed with — which
+    is why the trailing `var(--color-base-100)` layer is load-bearing, not
+    decoration. */
     .main-area {
       --scanline-1: oklch(from var(--color-accent) l c h / 0);
       --scanline-2: oklch(from var(--color-accent) l c h / 0.05);
@@ -534,8 +555,17 @@ so the noise would end up blending against transparency. */
       }
     }
 
+    /* Deliberately translucent over the chat behind it: the `background`
+    shorthand drops the base layer's opaque base-200 fill, and the blur below
+    does the rest.
+
+    Positioning is owned by the `.sidebar` floor in global.css and deliberately
+    not restated here — a theme is free to override it now that it lives in a
+    layer, but the grid and the width variables are structure, not dressing. The
+    `::before` ring below relies on that rule establishing the containing
+    block. */
     .sidebar {
-      position: relative;
+      margin: calc(var(--spacing) * 2) 0;
       border-radius: 2em 0 0 2em;
       background: linear-gradient(
         to bottom,
@@ -611,6 +641,63 @@ so the noise would end up blending against transparency. */
        whole pair, rather than once per digit chip. */
     .dice-face-pair .dice-face:not(:last-child)[data-degree="critical"]:after {
       content: none;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+   * prefers-contrast: more
+   * -----------------------------------------------------------------------------
+   * The palette already clears AA on its own (see docs/theme-contrast-audit.md),
+   * so this is not about colour pairs — it is about everything this theme paints
+   * *between* the reader and the text: scanline grids, noise texture, glow, and
+   * surfaces you can partly see through. Each is decoration that lowers the
+   * effective contrast of whatever sits on it.
+   *
+   * Structure and colour are untouched, so the theme still reads as itself; it
+   * just stops competing with its own content.
+   * -------------------------------------------------------------------------*/
+  @media (prefers-contrast: more) {
+    @layer components {
+      /* flat base-100 instead of the scanline grid and corner glows */
+      .main-area {
+        background: var(--color-base-100);
+      }
+
+      /* opaque, so the chat behind it can't bleed through */
+      .sidebar {
+        background: var(--color-base-200);
+        backdrop-filter: none;
+      }
+
+      .header::before,
+      .header::after {
+        display: none;
+      }
+    }
+
+    @layer utilities {
+      /* The noise/gradient stack is a texture sitting directly behind body
+      text. `noisy-bg` is only ever pulled in with `@apply`, never used as a
+      class, so these have to be named individually — `.modal-box` gets the same
+      treatment below, via the --bevel-fill it routes its noise through. */
+      .dropdown,
+      .alert {
+        background-image: none;
+      }
+
+      .alert {
+        box-shadow: none;
+      }
+
+      .modal-box,
+      .chat-bubble {
+        --bevel-fill: none;
+      }
+
+      /* this dims label text to 80% purely for hierarchy */
+      .label {
+        opacity: 100%;
+      }
     }
   }
 }

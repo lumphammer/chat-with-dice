@@ -40,8 +40,8 @@ export const DeleteButton = ({
         <button
           type="button"
           onClick={handleOpen}
-          className="text-base-content/50 hover:text-error shrink-0
-            cursor-pointer rounded p-1 transition-colors"
+          className="muted hover:text-error shrink-0 cursor-pointer rounded p-1
+            transition-colors"
           aria-label={`Delete ${itemType}`}
         >
           <Trash2Icon className="h-4 w-4" />
@@ -51,12 +51,10 @@ export const DeleteButton = ({
       <dialog ref={dialogRef} className="modal">
         <div className="modal-box">
           <h3 className="text-lg font-bold capitalize">Delete {itemType}?</h3>
-          <p className="text-base-content/70 py-2 text-sm">
-            This cannot be undone.
-          </p>
+          <p className="muted py-2 text-sm">This cannot be undone.</p>
           {challengePhrase && (
             <>
-              <p className="text-base-content/70 pb-2 text-sm">
+              <p className="muted pb-2 text-sm">
                 Type <strong>{challengePhrase}</strong> to confirm.
               </p>
               <input

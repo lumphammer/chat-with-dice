@@ -1,6 +1,7 @@
 ---
 import { db } from "#/db";
 import HTML from "#/layouts/HTML.astro";
+import { resolveTheme } from "#/styles/themes/registry";
 import { logger } from "#/utils/logger";
 import { roomConfigValidator } from "#/validators/roomConfigValidator";
 import { defaultRoomConfig } from "#/workers/ChatRoomDO/defaultRoomConfig";
@@ -25,14 +26,19 @@ const config = configParseResult.success
 if (configParseResult.success === false) {
   logger.error("Room failed config validation");
 }
+
+// Resolved once and handed to both consumers, so the markup and the island
+// can't disagree about which theme this room is in.
+const theme = resolveTheme(room.theme);
 ---
 
-<HTML title={room?.name ?? "(room not found)"} theme={room.theme ?? undefined}>
+<HTML title={room?.name ?? "(room not found)"} theme={theme.name}>
   <DiceRoller
     client:only
     roomId={roomId ?? ""}
     config={config}
     displayName={room.name}
     roomOwnerId={room.createdByUserId}
+    theme={theme.name}
   />
 </HTML>

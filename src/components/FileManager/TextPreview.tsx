@@ -93,7 +93,7 @@ export const TextPreview = memo(
             justify-center gap-2 rounded p-8 text-center"
         >
           <p className="font-medium">Preview unavailable</p>
-          <p className="text-base-content/60 text-sm">
+          <p className="muted text-sm">
             Text previews are limited to{" "}
             {formatBytes(TEXT_PREVIEW_SIZE_LIMIT_BYTES)}. This file is{" "}
             {formatBytes(sizeBytes)}.
@@ -131,7 +131,7 @@ export const TextPreview = memo(
             justify-center gap-2 rounded p-8 text-center"
         >
           <p className="font-medium">Preview failed</p>
-          <p className="text-base-content/60 text-sm">{loadState.message}</p>
+          <p className="muted text-sm">{loadState.message}</p>
         </div>
       );
     }

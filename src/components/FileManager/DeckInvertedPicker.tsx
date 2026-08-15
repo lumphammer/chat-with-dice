@@ -46,7 +46,7 @@ export const DeckInvertedPicker = memo(
     return (
       <div className="flex flex-col gap-1">
         <span className="font-medium">Inverted draws</span>
-        <span className="text-base-content/60">
+        <span className="muted">
           Whether cards can be turned around 180° on the table when drawn.
         </span>
         <div className="mt-2 flex flex-col gap-1">
@@ -75,7 +75,7 @@ export const DeckInvertedPicker = memo(
                   onChange={() => onChange(option.value)}
                 />
                 <span id={labelId}>{option.label}</span>
-                <span id={descriptionId} className="text-base-content/60">
+                <span id={descriptionId} className="muted">
                   {option.description}
                 </span>
               </label>

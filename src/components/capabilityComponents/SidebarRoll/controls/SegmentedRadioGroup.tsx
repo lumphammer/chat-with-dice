@@ -57,9 +57,15 @@ export const SegmentedRadioGroup = <Value extends string>({
     );
   });
 
+  // Both branches take `className`. It used to be applied only to the labelled
+  // one, which silently dropped DieSizeToggle's `flex-1` — leaving the group at
+  // `w-full` beside the "d" prefix, so the row asked for more than 100% of its
+  // fieldset and the die labels got clipped on a narrow sidebar.
   if (!ariaLabel)
     return (
-      <div className="group join m-0 w-full min-w-0 border-0 p-0">
+      <div
+        className={`group join m-0 w-full min-w-0 border-0 p-0 ${className}`}
+      >
         {controls}
       </div>
     );

@@ -55,7 +55,7 @@ export const SidebarCards = memo(() => {
   return (
     <SidebarPanel title="Cards" isSaving={false}>
       {decks.length === 0 ? (
-        <div className="text-base-content/60 flex min-h-32 items-center pt-2">
+        <div className="muted flex min-h-32 items-center pt-2">
           No decks are shared with this room yet. Share a deck folder from the
           Files panel to draw from it.
         </div>

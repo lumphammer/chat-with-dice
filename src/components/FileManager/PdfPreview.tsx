@@ -13,7 +13,7 @@ export const PdfPreview = memo(
         <div
           className="flex h-full flex-col items-center justify-center gap-4 p-8"
         >
-          <p className="text-base-content/70 text-center">
+          <p className="muted text-center">
             This browser cannot display the PDF preview.
           </p>
           <a

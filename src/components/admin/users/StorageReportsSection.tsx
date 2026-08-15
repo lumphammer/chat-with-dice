@@ -40,7 +40,7 @@ export const StorageReportsSection = memo(({ userId }: { userId: string }) => {
     <div className="card bg-base-200">
       <div className="card-body">
         <h2 className="card-title text-base">Storage Integrity Reports</h2>
-        <p className="text-base-content/60 text-xs">
+        <p className="muted text-xs">
           Run read-only checks comparing folder size bookkeeping and R2 blobs
           against the file table, then repair specific discrepancies.
         </p>
@@ -72,7 +72,7 @@ export const StorageReportsSection = memo(({ userId }: { userId: string }) => {
             <FolderSizeResult report={report.folderReport} />
             <R2Result report={report.r2Report} />
             <details>
-              <summary className="text-base-content/60 cursor-pointer text-xs">
+              <summary className="muted cursor-pointer text-xs">
                 Raw JSON
               </summary>
               <pre
@@ -157,7 +157,7 @@ FolderSizeResult.displayName = "FolderSizeResult";
 const R2Result = memo(({ report }: { report: R2ReconciliationReport }) => (
   <section className="flex flex-col gap-3">
     <h3 className="font-semibold">R2 reconciliation</h3>
-    <p className="text-base-content/60 text-xs">
+    <p className="muted text-xs">
       {report.totals.blobsInR2} blobs in R2 · {report.totals.fileRowsInDb} file
       rows ({report.totals.readyFileRows} ready)
     </p>

@@ -54,7 +54,7 @@ export function HandfulDisplay({
       )}
       {showSubtotal && (
         <>
-          <span className="text-base-content/30 mx-0.5">=</span>
+          <span className="muted mx-0.5">=</span>
           <span className="font-semibold tabular-nums">{handful.total}</span>
         </>
       )}

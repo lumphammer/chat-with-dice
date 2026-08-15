@@ -31,7 +31,7 @@ export const IndividualBackNavRow = memo(
           <span className="min-w-0 flex-1 truncate">{card.name}</span>
           <ArrowRight
             size={16}
-            className="text-base-content/60 shrink-0"
+            className="muted shrink-0"
             aria-label="has individual back"
           />
           <DeckImageThumbnail nodeId={card.individualBack.nodeId} />
@@ -60,14 +60,10 @@ export const IndividualBackNavRow = memo(
       >
         <DeckImageThumbnail nodeId={card.nodeId} />
         <span className="min-w-0 flex-1 truncate">{card.name}</span>
-        <span className="text-base-content/60 shrink-0">
+        <span className="muted shrink-0">
           {candidateCount === 0 ? "No images free" : "Set back"}
         </span>
-        <ChevronRight
-          size={20}
-          className="text-base-content/60 shrink-0"
-          aria-hidden="true"
-        />
+        <ChevronRight size={20} className="muted shrink-0" aria-hidden="true" />
       </Link>
     );
   },

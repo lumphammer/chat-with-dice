@@ -9,6 +9,14 @@
  * Everything is steered by CSS custom properties, so you opt in with
  * `@apply bevel;` and then set a handful of vars:
  *
+ * Split into a layer list (`bevel-layers`) plus a class that applies it
+ * (`bevel`), for the same reason as libris's `laid-paper`: the layers reference
+ * `var(--bevel-color)` and friends, and var() inside a custom property is
+ * substituted against the element the property is *declared* on — so this has
+ * to be a utility applied to the consumer, not a `:root` variable. Reach for
+ * `bevel-layers` when you need to splice the bevel into a background stack of
+ * your own; reach for `bevel` when you just want the box.
+ *
  *   --bevel-radius        chamfer / corner-bevel size          (length, 9px)
  *   --bevel-border-width  border line thickness                (length, 3px)
  *   --bevel-color         border colour                        (<color>)
@@ -20,6 +28,13 @@
  *   --bevel-border-blend  background-blend-mode for the border layers (screen)
  *   --bevel-fill-blend    background-blend-mode for those fills
  *   --bevel-mix-blend     mix-blend-mode for the whole element (default screen)
+ *
+ * `bevel-layers` leaves its results in three output vars, for consumers that
+ * want to compose rather than be composed:
+ *
+ *   --bevel-images        the background layer list
+ *   --bevel-blend         the matching background-blend-mode list
+ *   --bevel-clip          the chamfering clip-path polygon
  *
  * The corner/side toggles are alpha gates: a "0" corner collapses its clip-path
  * chamfer to a square point and makes its bevel layer fully transparent (a
@@ -83,7 +98,7 @@
   initial-value: 0;
 }
 
-@utility bevel {
+@utility bevel-layers {
   /*
    * Trigonometry, in CSS. Each bevelled corner is a radius×radius square
    * carrying a 45° line (the visible bevel). We keep the public knobs as real
@@ -157,13 +172,7 @@
     from var(--bevel-color) l c h / calc(alpha* var(--bevel-border-l))
   );
 
-  background-color: transparent;
-  /* corner shape is entirely owned by clip-path below; a stray border-radius
-  would round the box the border/background layers paint into and soften the
-  square corners */
-  border-radius: 0;
-
-  clip-path: polygon(
+  --bevel-clip: polygon(
     /* top-left */
       calc(var(--_bevel-clip-nb) + var(--bevel-tl) * var(--_bevel-clip-chamf))
       var(--_bevel-clip-nb),
@@ -197,7 +206,7 @@
       calc(var(--_bevel-clip-nb) + var(--bevel-tl) * var(--_bevel-clip-chamf))
   );
 
-  background:
+  --bevel-images:
     /* corners */
     0 0 / var(--bevel-radius) var(--bevel-radius) no-repeat
       linear-gradient(
@@ -254,11 +263,29 @@
   /* The 8 border layers share --bevel-border-blend (screen for the glowy
   chat-bubble look; set it to `normal` for crisp opaque borders). The fill
   layer(s) get their own blend via --bevel-fill-blend. */
-  background-blend-mode:
+  --bevel-blend:
     var(--bevel-border-blend, screen), var(--bevel-border-blend, screen),
     var(--bevel-border-blend, screen), var(--bevel-border-blend, screen),
     var(--bevel-border-blend, screen), var(--bevel-border-blend, screen),
     var(--bevel-border-blend, screen), var(--bevel-border-blend, screen),
     var(--bevel-fill-blend, normal);
+}
+
+/* Draw the box. Deliberately the `background` shorthand, not the longhand: the
+layer list is the element's *whole* background, and any background-color the
+consumer wants has to be restated after the `@apply` (which is also why
+`background-color: transparent` here is a no-op rather than a hazard). */
+@utility bevel {
+  @apply bevel-layers;
+
+  background-color: transparent;
+  /* corner shape is entirely owned by clip-path; a stray border-radius would
+  round the box the border/background layers paint into and soften the square
+  corners */
+  border-radius: 0;
+
+  clip-path: var(--bevel-clip);
+  background: var(--bevel-images);
+  background-blend-mode: var(--bevel-blend);
   mix-blend-mode: var(--bevel-mix-blend, screen);
 }

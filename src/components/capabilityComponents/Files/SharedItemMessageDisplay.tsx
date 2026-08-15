@@ -92,9 +92,7 @@ export const SharedItemMessageDisplay = memo(
           </div>
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="font-medium wrap-anywhere">{node.name}</span>
-            <span className="text-base-content/50 truncate text-sm">
-              {metadata}
-            </span>
+            <span className="muted truncate text-sm">{metadata}</span>
           </span>
         </button>
         {previewNode && (

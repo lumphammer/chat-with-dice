@@ -29,7 +29,7 @@ export const UnshareDeckConfirmDialog = forwardRef<
           <h3 id={titleId} className="text-lg font-bold">
             Unshare "{name}"?
           </h3>
-          <p className="text-base-content/70 py-2">
+          <p className="muted py-2">
             This deck's pile has cards in its discard. Unsharing removes the
             deck from the room and clears the pile — this cannot be undone. To
             keep the pile for later, move the deck to the trash instead.
