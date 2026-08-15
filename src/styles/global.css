@@ -109,6 +109,8 @@ dark theme needs no edit here. */
 }
 
 @utility link-secondary {
+  color: var(--btn-color-text, var(--color-base-content));
+
   @variant dark {
     color: oklch(from var(--color-secondary) 80% c h);
   }

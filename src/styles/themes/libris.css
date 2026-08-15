@@ -341,7 +341,7 @@ markup), and the shorthand would reset it out from under them. */
 
         text-shadow: 0 0 10px white;
         font-weight: 600;
-        color: var(--btn-color-text, var(--color-base-content));
+        --btn-fg: var(--btn-color-text, var(--color-base-content));
         border: none;
         background-color: transparent;
         font-variant-caps: small-caps;
@@ -405,13 +405,14 @@ markup), and the shorthand would reset it out from under them. */
         );
         box-shadow: none;
 
-        &:hover {
-          /*background-color: color-mix(
-            in srgb,
-            var(--edge) 32%,
-            var(--color-base-100)
-          );*/
-        }
+        /* daisyUI's soft/outline/ghost/dash family deliberately ignores
+        `--btn-fg` at rest and paints its label in `--btn-color` — the fill hue —
+        flipping to `--btn-fg` only on hover, when the fill goes solid. This
+        theme's soft button keeps its tint on hover, so it wants one ink at both
+        states. `--btn-rest-fg` is daisyUI's own hook for exactly that (it uses
+        it itself on `.btn-neutral`), so this is a variable handover rather than
+        another `color` declaration fighting for the cascade. */
+        --btn-rest-fg: var(--btn-fg);
       }
       .btn-outline {
         /* rule only */
