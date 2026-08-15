@@ -270,8 +270,10 @@ never been seen rendered. See below.
 on every axis at once — light not dark, printed not emissive, serif not
 geometric, texture not glow — because a theme that differs only in hue would not
 have tested anything. Palette is the medieval scribe's: iron-gall ink on
-parchment, rubric red, verdigris, ultramarine, all three pigments at one
-lightness (`--l-fill`), so a single contrast check covers the whole set.
+parchment, rubric red, verdigris, ultramarine. All three pigments share one
+lightness (`--l-fill`) as a palette-consistency aid, though actual WCAG contrast
+ratios differ across pigment pairs and each pigment/content combination must be
+checked independently.
 
 **Done:** it styles nothing outside `themes/libris.css`, `themes/index.css` and
 the registry. Nothing had to be promoted into the base layer — the contract held.
