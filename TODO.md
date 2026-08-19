@@ -56,11 +56,11 @@
 - [x] Email-only login
 - [x] Hide irrelevant parts of account admin for anons
 - [x] Finish havocDark theme
+- [x] Cards
 
 - [ ] Cache usernames in ChatRoomDO?
 - [ ] Recent rooms list
 - [ ] Annotation/alt text
-- [ ] Cards
 
 - [ ] Periodic purge of anon users
 - [ ] Swipe to move between files in preview
