@@ -16,7 +16,6 @@ type TextPreviewProps = {
 type LoadState =
   | { kind: "loading" }
   | { kind: "loaded"; text: string }
-  | { kind: "too-large" }
   | { kind: "error"; message: string };
 
 const SKELETON_LINE_COUNT = 12;
@@ -39,20 +38,19 @@ function addSafeLinkTargets(html: string): string {
 
 export const TextPreview = memo(
   ({ contentType, filename, sizeBytes, src }: TextPreviewProps) => {
-    const [loadState, setLoadState] = useState<LoadState>(() =>
-      sizeBytes > TEXT_PREVIEW_SIZE_LIMIT_BYTES
-        ? { kind: "too-large" }
-        : { kind: "loading" },
-    );
+    // Whether the file is too big is a fact about the props, not something to
+    // discover and store: derived here, so it can't lag a render behind them.
+    const isTooLarge = sizeBytes > TEXT_PREVIEW_SIZE_LIMIT_BYTES;
+    const [loadState, setLoadState] = useState<LoadState>({ kind: "loading" });
     const isMarkdown = isMarkdownPreviewable(filename, contentType);
 
     useEffect(() => {
-      if (sizeBytes > TEXT_PREVIEW_SIZE_LIMIT_BYTES) {
-        setLoadState({ kind: "too-large" });
-        return;
-      }
+      if (isTooLarge) return;
 
       const abortController = new AbortController();
+      // Not derivable: this resets a *previous* file's result when the source
+      // changes, and the fetch that clears it can only start from here.
+      // oxlint-disable-next-line react/set-state-in-effect
       setLoadState({ kind: "loading" });
 
       void (async () => {
@@ -77,7 +75,7 @@ export const TextPreview = memo(
       })();
 
       return () => abortController.abort();
-    }, [sizeBytes, src]);
+    }, [isTooLarge, src]);
 
     const html = useMemo(() => {
       if (!isMarkdown || loadState.kind !== "loaded") return null;
@@ -86,7 +84,7 @@ export const TextPreview = memo(
       );
     }, [isMarkdown, loadState]);
 
-    if (loadState.kind === "too-large") {
+    if (isTooLarge) {
       return (
         <div
           className="bg-base-200 flex min-h-0 flex-1 flex-col items-center

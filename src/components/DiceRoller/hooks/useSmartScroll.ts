@@ -73,7 +73,11 @@ export function useSmartScroll({
       // User wants to stay at the bottom, auto-scroll to show new messages
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     } else if (messages.length > 0) {
-      // User is scrolled up, show new messages indicator
+      // User is scrolled up, show new messages indicator. Not derivable during
+      // render: whether a message is "new" depends on where the user was
+      // scrolled to at the moment it arrived, which lives in a ref alongside
+      // the scroll container itself.
+      // oxlint-disable-next-line react/set-state-in-effect
       setHasNewMessages(true);
     }
   }, [messages, onScroll]);

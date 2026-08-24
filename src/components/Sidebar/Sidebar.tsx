@@ -114,9 +114,17 @@ export const Sidebar = memo(
       return [...capabilityTabs, ...(isOwner ? ["config"] : []), "help"];
     }, [capabilitySidebars, isOwner]);
 
-    const [selectedTab, setSelectedTab] = useState<string | null>(
+    const [chosenTab, setChosenTab] = useState<string | null>(
       defaultValue ?? null,
     );
+    // Capabilities mount and unmount as the room is configured, so the chosen
+    // tab can stop existing. Falling back during render rather than correcting
+    // it in an effect means there's never a frame pointing at a tab that isn't
+    // there.
+    const selectedTab =
+      chosenTab && availableTabValues.includes(chosenTab)
+        ? chosenTab
+        : (defaultValue ?? availableTabValues[0] ?? null);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isDesktopClosed, setIsDesktopClosed, isDesktopClosedRef] =
       useStateWithRef(false);
@@ -154,18 +162,15 @@ export const Sidebar = memo(
       returnFocusRef,
     });
 
-    useEffect(() => {
-      setSelectedTab((current) => {
-        if (current && availableTabValues.includes(current)) return current;
-        return defaultValue ?? availableTabValues[0] ?? null;
-      });
-    }, [availableTabValues, defaultValue]);
-
+    // The shared-folder request is an event from elsewhere in the room UI (a
+    // click on a shared file) that arrives as changed context rather than as a
+    // callback, so the state changes it drives can only happen in an effect.
     useEffect(() => {
       if (!sharedFolderOpenRequest) return;
       if (!availableTabValues.includes("files.shared")) return;
 
-      setSelectedTab("files.shared");
+      // oxlint-disable-next-line react/set-state-in-effect
+      setChosenTab("files.shared");
       setIsDesktopClosed(false);
       if (!isDesktop) {
         setIsMobileOpen(true);
@@ -177,8 +182,13 @@ export const Sidebar = memo(
       setIsDesktopClosed,
     ]);
 
+    // Crossing to the desktop layout drops the mobile drawer, so coming back to
+    // a narrow container doesn't find it still open. `isDesktop` is measured
+    // from the container by a ResizeObserver, so an effect is the only place
+    // this can happen — there's no event to hang it off.
     useEffect(() => {
       if (isDesktop) {
+        // oxlint-disable-next-line react/set-state-in-effect
         setIsMobileOpen(false);
       }
     }, [isDesktop]);
@@ -215,7 +225,7 @@ export const Sidebar = memo(
         <Tabs.Root
           className="sidebar"
           value={selectedTab}
-          onValueChange={(details) => setSelectedTab(details.value)}
+          onValueChange={(details) => setChosenTab(details.value)}
           orientation="vertical"
           asChild
         >

@@ -167,7 +167,10 @@ const NewRoomForm = ({ initialIsLoggedIn }: { initialIsLoggedIn: boolean }) => {
 
         {/*<!-- Form -->*/}
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          // `handleSubmit` is bound in the event, not during render: it takes
+          // `onSubmit`, which reads refs, so calling it in the body would be a
+          // ref access on the render path.
+          onSubmit={(event) => void handleSubmit(onSubmit)(event)}
           className="flex flex-col gap-6"
           noValidate
         >

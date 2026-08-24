@@ -37,6 +37,7 @@ const DISMISS_VELOCITY = 0.6;
 const MIN_DISMISS_DISTANCE = 72;
 const MAX_DISMISS_DISTANCE = 160;
 const DISMISS_DISTANCE_RATIO = 0.35;
+const NO_DRAG = { distance: 0, progress: 0 };
 
 /**
  * Chooses a drag distance that feels proportional to the target while keeping
@@ -84,7 +85,11 @@ export function useSwipeToDismiss({
 }: Options) {
   const suppressNextClickRef = useRef(false);
   const dismissThresholdRef = useRef(MIN_DISMISS_DISTANCE);
-  const [dragDistance, setDragDistance] = useState(0);
+  // Distance and progress travel together: the threshold they are measured
+  // against is taken from the DOM when the gesture starts, so progress is
+  // worked out here, where that measurement is live, rather than read back out
+  // of the ref during render.
+  const [drag, setDrag] = useState(NO_DRAG);
   const [isDragging, setIsDragging] = useState(false);
 
   // After a swipe ends, the browser usually skips the synthesized click
@@ -113,7 +118,7 @@ export function useSwipeToDismiss({
 
       if (canceled) {
         setIsDragging(false);
-        setDragDistance(0);
+        setDrag(NO_DRAG);
         clearClickSuppressionSoon();
         return;
       }
@@ -140,7 +145,7 @@ export function useSwipeToDismiss({
           (absVelocity >= DISMISS_VELOCITY &&
             absDistance >= CLAIM_DISTANCE * 2);
         setIsDragging(false);
-        setDragDistance(0);
+        setDrag(NO_DRAG);
         if (passedThreshold) {
           if (movementX > 0) onDismiss?.();
           else if (movementX < 0) onReveal?.();
@@ -150,7 +155,10 @@ export function useSwipeToDismiss({
       }
 
       setIsDragging(true);
-      setDragDistance(rightwardDistance);
+      setDrag({
+        distance: rightwardDistance,
+        progress: Math.min(rightwardDistance / dismissThresholdRef.current, 1),
+      });
     },
     {
       axis: "x",
@@ -171,11 +179,8 @@ export function useSwipeToDismiss({
   );
 
   return {
-    dragDistance,
-    dragProgress:
-      dragDistance === 0
-        ? 0
-        : Math.min(dragDistance / dismissThresholdRef.current, 1),
+    dragDistance: drag.distance,
+    dragProgress: drag.progress,
     isDragging,
     swipeHandlers: { ...bind(), onClickCapture },
   };

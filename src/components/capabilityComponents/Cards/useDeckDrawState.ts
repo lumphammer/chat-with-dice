@@ -74,7 +74,9 @@ export function useDeckDrawState({
       cancelled = true;
     };
     // `discardKey` (not `discard`) is the dep: the array identity churns every
-    // render, the string does not.
+    // render, the string does not. It's a trigger rather than something the
+    // effect reads, hence the extra-dependency exemption.
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies
   }, [ownerUserId, deckNodeId, roomId, discardKey, refreshKey]);
 
   const remaining = useMemo(() => {

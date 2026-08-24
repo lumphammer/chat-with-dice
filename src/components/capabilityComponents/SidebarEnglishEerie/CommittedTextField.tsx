@@ -30,6 +30,10 @@ export const CommittedTextField = ({
   // incoming changes - if not focused, set the draft
   useEffect(() => {
     if (!isFocused) {
+      // Adopting the shared value can't be derived: once the field has been
+      // focused the draft is the user's, and the last value seen while
+      // unfocused has to be remembered across the focus.
+      // oxlint-disable-next-line react/set-state-in-effect
       setDraft(value);
     }
   }, [value, isFocused]);

@@ -100,6 +100,10 @@ export const DeckSettingsDialog = memo(
         return;
       }
       dialogRef.current?.showModal();
+      // `load` shows the skeleton before it awaits, so the linter sees a
+      // synchronous setState. Opening the dialog is the event that starts the
+      // read, and the same effect drives the native <dialog> anyway.
+      // oxlint-disable-next-line react/set-state-in-effect
       void load(true);
     }, [open, load]);
 
