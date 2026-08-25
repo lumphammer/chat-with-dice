@@ -140,6 +140,16 @@ export default defineConfig({
             // pattern in `callAction` runs the genuine input validator and
             // error wrapping, not a shim.
             "astro:actions": "astro/actions/runtime/entrypoints/server",
+            // That entrypoint drags Astro's build-time actions Vite plugin in
+            // with it, and the plugin loads `es-module-lexer`, whose module
+            // body compiles wasm — which workerd refuses. See the stub for the
+            // full story.
+            "es-module-lexer": fileURLToPath(
+              new URL(
+                "./src/test-utils/integration/esModuleLexerStub.ts",
+                import.meta.url,
+              ),
+            ),
           },
         },
         test: {
