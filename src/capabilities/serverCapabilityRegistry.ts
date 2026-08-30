@@ -7,6 +7,7 @@ import { feedbackServer } from "./feedback/server";
 import { filesServer } from "./files/server";
 import { havocServer } from "./havoc/server";
 import { laserfeelingsServer } from "./laserfeelings/server";
+import { microscopeServer } from "./microscope/server";
 import { rollServer } from "./roll/server";
 import { safetyServer } from "./safety/server";
 import { usersServer } from "./users/server";
@@ -30,4 +31,5 @@ export const serverCapabilityRegistry: Record<
   users: usersServer,
   safety: safetyServer,
   englisheerie: englisheerieServer,
+  microscope: microscopeServer,
 };

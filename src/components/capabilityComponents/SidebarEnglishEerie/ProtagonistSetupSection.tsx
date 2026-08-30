@@ -1,5 +1,5 @@
 import { englisheerieClient } from "#/capabilities/englisheerie/client";
-import { CommittedTextField } from "./CommittedTextField";
+import { CommittedTextField } from "../shared/CommittedTextField";
 import { ProtagonistTrioFields } from "./ProtagonistTrioFields";
 
 const BACKGROUND_ROWS = 3;
