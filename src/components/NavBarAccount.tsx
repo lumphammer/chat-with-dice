@@ -33,6 +33,10 @@ export function NavBarAccount({
   const revealed = !needsFade || !isPending;
 
   useEffect(() => {
+    // The current URL is exactly the kind of external system effects are for:
+    // these pages are prerendered, so `window` can't be read during render
+    // without the markup disagreeing with the server's.
+    // oxlint-disable-next-line react/set-state-in-effect
     setSignInHref(
       `/signin?returnUrl=${encodeURIComponent(window.location.pathname)}`,
     );

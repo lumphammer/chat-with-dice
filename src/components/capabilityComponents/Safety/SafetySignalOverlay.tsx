@@ -63,6 +63,10 @@ export const SafetySignalOverlay = memo(() => {
     ) {
       return;
     }
+    // A safety signal is an event broadcast to the room, and it reaches this
+    // component as changed capability state rather than as a callback, so an
+    // effect is the only place it can be picked up.
+    // oxlint-disable-next-line react/set-state-in-effect
     setShownSignal({
       id: signalId,
       kind: signalKind,

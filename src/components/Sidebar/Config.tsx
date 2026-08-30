@@ -7,6 +7,7 @@ import { DeleteButton } from "#/components/capabilityComponents/shared/DeleteBut
 import { SidebarPanel } from "#/components/capabilityComponents/shared/SidebarPanel";
 import type { RoomConfig } from "#/validators/roomConfigValidator";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
+import { useRefStash } from "../useRefStash";
 import { ThemePicker } from "./ThemePicker";
 import { actions } from "astro:actions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -70,8 +71,10 @@ export const Config = memo(() => {
     useRoomInfoContext();
 
   const [roomNameDraft, setRoomNameDraft] = useState(roomName);
-  const roomNameDraftRef = useRef(roomNameDraft);
-  roomNameDraftRef.current = roomNameDraft;
+  // Stashed rather than depended on: the effect below reads the draft to decide
+  // whether an incoming name may replace it, but must not re-run when the user
+  // types.
+  const roomNameDraftRef = useRefStash(roomNameDraft);
   const lastSyncedRoomNameRef = useRef(roomName);
   const lastSubmittedRoomNameRef = useRef<string | null>(null);
 
@@ -91,7 +94,7 @@ export const Config = memo(() => {
     }
 
     lastSyncedRoomNameRef.current = roomName;
-  }, [roomName]);
+  }, [roomName, roomNameDraftRef]);
 
   const trimmedName = roomNameDraft.trim();
   const canSubmitName = trimmedName.length > 0 && trimmedName !== roomName;

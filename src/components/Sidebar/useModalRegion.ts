@@ -1,3 +1,4 @@
+import { useRefStash } from "../useRefStash";
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 
@@ -77,8 +78,7 @@ export function useModalRegion({
   // Hold the latest refs array in a ref so the inert effect can read it
   // lazily without depending on the array's identity (which would otherwise
   // re-run the effect — and toggle inert — on every parent render).
-  const backgroundElementRefsRef = useRef(backgroundElementRefs);
-  backgroundElementRefsRef.current = backgroundElementRefs;
+  const backgroundElementRefsRef = useRefStash(backgroundElementRefs);
 
   useEffect(() => {
     if (!enabled) {
@@ -174,5 +174,5 @@ export function useModalRegion({
         }
       }
     };
-  }, [enabled]);
+  }, [backgroundElementRefsRef, enabled]);
 }

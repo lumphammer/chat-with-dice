@@ -1,3 +1,18 @@
+const GLITCH_BAR_COUNT = 24;
+const GLITCH_MIN_OPACITY = 0.15;
+// An irrational-ish stride, so walking it never lands in an obvious rhythm.
+const GLITCH_OPACITY_STRIDE = 0.618;
+
+// The footer's ragged glitch bar. A fixed pattern rather than `Math.random()`:
+// random numbers in render are impure — the bars would re-roll on every
+// re-render, and the server's would never match the client's on hydration.
+const GLITCH_BAR_OPACITIES = Array.from(
+  { length: GLITCH_BAR_COUNT },
+  (_, i) =>
+    GLITCH_MIN_OPACITY +
+    (((i + 1) * GLITCH_OPACITY_STRIDE) % 1) * (1 - GLITCH_MIN_OPACITY),
+);
+
 export function ErrorDisplay({
   message,
   detail,
@@ -59,11 +74,11 @@ export function ErrorDisplay({
 
         {/* Footer glitch bar */}
         <div className="mt-6 flex gap-1">
-          {Array.from({ length: 24 }).map((_, i) => (
+          {GLITCH_BAR_OPACITIES.map((opacity, i) => (
             <div
               key={i}
               className="h-1 flex-1 bg-pink-500"
-              style={{ opacity: Math.random() }}
+              style={{ opacity }}
             />
           ))}
         </div>

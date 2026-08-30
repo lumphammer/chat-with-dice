@@ -102,12 +102,21 @@ export const ImagePreview = memo(
 
     const [naturalSize, setNaturalSize] = useState<Size | null>(null);
     const [viewportSize, setViewportSize] = useState<Size | null>(null);
-    const [center, setCenter] = useState<Point>({ x: 0, y: 0 });
+    const [rawCenter, setCenter] = useState<Point>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(MIN_ZOOM);
     const [isDragging, setIsDragging] = useState(false);
     const [imageLoadState, setImageLoadState] =
       useState<ImageLoadState>("loading");
     const [showSpinner, setShowSpinner] = useState(false);
+
+    // What the viewport can actually show bounds where the centre may sit, and
+    // both ends of that move: the image loads, the container resizes, the zoom
+    // changes. Clamping here means the visible centre is always legal for the
+    // current geometry, instead of being corrected by an effect a render later.
+    const center = useMemo(
+      () => clampCenter(rawCenter, zoom, naturalSize, viewportSize),
+      [naturalSize, rawCenter, viewportSize, zoom],
+    );
 
     const fitScale = useMemo(
       () => getFitScale(naturalSize, viewportSize),
@@ -211,19 +220,29 @@ export const ImagePreview = memo(
     // `complete` image with no natural width failed, otherwise it loaded.
     useEffect(() => {
       const img = imgRef.current;
+      // oxlint-disable-next-line react/set-state-in-effect
       setImageLoadState(
         img?.complete ? (img.naturalWidth > 0 ? "loaded" : "error") : "loading",
       );
+      // `src` is the trigger; the state comes from the <img> element, which
+      // only knows about the new source after it has rendered.
+      // oxlint-disable-next-line react/exhaustive-effect-dependencies
     }, [src]);
 
     // Only reveal the spinner after a brief pause, then let it fade in. Keying
     // on `src` too restarts the pause for each new image and clears any spinner
     // left over from the previous one.
     useEffect(() => {
+      // Clearing a spinner left over from the previous image: it's a fact about
+      // elapsed time, not about the current props, so there's nothing to derive
+      // it from.
+      // oxlint-disable-next-line react/set-state-in-effect
       setShowSpinner(false);
       if (imageLoadState !== "loading") return;
       const timer = setTimeout(() => setShowSpinner(true), SPINNER_DELAY_MS);
       return () => clearTimeout(timer);
+      // `src` is an extra trigger on purpose — see above.
+      // oxlint-disable-next-line react/exhaustive-effect-dependencies
     }, [src, imageLoadState]);
 
     useEffect(() => {
@@ -242,12 +261,6 @@ export const ImagePreview = memo(
       observer.observe(container);
       return () => observer.disconnect();
     }, []);
-
-    useEffect(() => {
-      setCenter((current) =>
-        clampCenter(current, zoom, naturalSize, viewportSize),
-      );
-    }, [naturalSize, viewportSize, zoom]);
 
     const handleClick = () => {
       if (!needsExpand || movedRef.current) return;

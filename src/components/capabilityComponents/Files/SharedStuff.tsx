@@ -28,9 +28,13 @@ export const SharedStuff = memo(() => {
     node: FileStorageNode;
   } | null>(null);
 
+  // A request from elsewhere in the room UI to open a shared folder. It arrives
+  // as changed context rather than as a callback, so the navigation it asks for
+  // can only be done from an effect.
   useEffect(() => {
     if (!sharedFolderOpenRequest) return;
 
+    // oxlint-disable-next-line react/set-state-in-effect
     setPreviewFromList(null);
     setFolderView({
       ownerUserId: sharedFolderOpenRequest.ownerUserId,
@@ -93,20 +97,20 @@ export const SharedStuff = memo(() => {
       .sort((a, b) => b.dateShared - a.dateShared);
   }, [filesCap]);
 
-  useEffect(() => {
-    if (!filesCap.initialised || !previewFromList) return;
-    const sharedFile = filesCap.state.shares.find(
-      (share) => previewFromList.node.id === share.node.id,
-    );
-    if (sharedFile && sharedFile.node.name !== previewFromList.node.name) {
-      setPreviewFromList({
-        ...previewFromList,
-        node: {
-          ...previewFromList.node,
-          name: sharedFile.node.name,
-        },
-      });
+  // The open preview keeps its own copy of the node, so a rename broadcast by
+  // the owner would leave it showing the old name. The live name is read back
+  // out of the shares here rather than copied into state by an effect.
+  const previewNode = useMemo(() => {
+    if (!previewFromList) return null;
+    const sharedFile = filesCap.initialised
+      ? filesCap.state.shares.find(
+          (share) => previewFromList.node.id === share.node.id,
+        )
+      : undefined;
+    if (!sharedFile || sharedFile.node.name === previewFromList.node.name) {
+      return previewFromList.node;
     }
+    return { ...previewFromList.node, name: sharedFile.node.name };
   }, [filesCap, previewFromList]);
 
   if (!filesCap.initialised) {
@@ -158,9 +162,9 @@ export const SharedStuff = memo(() => {
           />
         ))}
       </ul>
-      {previewFromList && (
+      {previewFromList && previewNode && (
         <FilePreview
-          node={previewFromList.node}
+          node={previewNode}
           onClose={() => setPreviewFromList(null)}
           ownerUserId={previewFromList.ownerUserId}
           roomId={roomId}

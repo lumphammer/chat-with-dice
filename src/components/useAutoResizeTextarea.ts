@@ -16,6 +16,10 @@ export const useAutoResizeTextarea = (value: string) => {
     // it has shrunk, not the previous (larger) layout height.
     textarea.style.height = "auto";
     textarea.style.height = `${textarea.scrollHeight}px`;
+    // `value` is deliberately a trigger rather than something this effect reads:
+    // the height comes from the DOM, and the DOM only carries the new content
+    // once the new value has rendered.
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies
   }, [value]);
 
   return ref;

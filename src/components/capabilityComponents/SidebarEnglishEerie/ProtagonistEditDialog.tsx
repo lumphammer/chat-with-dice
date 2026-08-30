@@ -31,6 +31,11 @@ export const ProtagonistEditDialog = ({
 
   useEffect(() => {
     if (open) {
+      // Opening the dialog *is* the event that seeds the draft, and the same
+      // effect has to call `showModal` on the <dialog> anyway — the two belong
+      // together. `protagonist` is read but deliberately not depended on; see
+      // below.
+      // oxlint-disable-next-line react/set-state-in-effect
       setDraft(protagonist);
       dialogRef.current?.showModal();
     } else {
@@ -38,7 +43,7 @@ export const ProtagonistEditDialog = ({
     }
     // Deliberately not depending on `protagonist`: reseeding mid-edit because
     // somebody else saved would throw away what is being typed here.
-    // oxlint-disable-next-line exhaustive-deps
+    // oxlint-disable-next-line exhaustive-deps, react/exhaustive-effect-dependencies
   }, [open]);
 
   const setListItem = (

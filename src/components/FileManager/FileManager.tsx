@@ -119,8 +119,13 @@ export const FileManager = memo(
     const navigationIdRef = useRef(0);
     const shouldSkipInitialFetch = useRef(initialNodes !== undefined);
 
+    // Remembers how wide the toolbar is when it's *not* compact, so the header
+    // can tell whether it would still fit. Measured from the DOM by a
+    // ResizeObserver, and it has to survive the toolbar going compact, so it
+    // can neither be derived during render nor read back once collapsed.
     useEffect(() => {
       if (isToolbarCompact || toolbarWidth === 0) return;
+      // oxlint-disable-next-line react/set-state-in-effect
       setExpandedToolbarWidth(toolbarWidth);
     }, [isToolbarCompact, toolbarWidth]);
 
@@ -180,6 +185,10 @@ export const FileManager = memo(
         return;
       }
       void handleRefresh();
+      // `location.folderId` and `showDeleted` are triggers, not values read
+      // here: `handleRefresh` takes both from refs so that it doesn't change
+      // identity (and re-fetch) on every navigation.
+      // oxlint-disable-next-line react/exhaustive-effect-dependencies
     }, [handleRefresh, location.folderId, showDeleted]);
 
     const { uploading, uploadFiles, dismissError } = useUpload(

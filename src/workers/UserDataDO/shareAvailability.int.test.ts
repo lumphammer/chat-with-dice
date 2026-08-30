@@ -98,8 +98,8 @@ describe("findSharesAtOrBelow", () => {
 
     expect(rows).toHaveLength(2);
     expect(rows.every((row) => row.unavailable === 1)).toBe(true);
-    expect(rows.map((row) => row.node_id).sort()).toEqual(
-      [parent.id, child.id].sort(),
+    expect(rows.map((row) => row.node_id)).toEqual(
+      expect.arrayContaining([parent.id, child.id]),
     );
   });
 

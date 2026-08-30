@@ -9,6 +9,7 @@ import {
   type WebSocketClientMessage,
 } from "#/validators/webSocketMessageSchemas";
 import type { CapabilityInfoContextValue } from "../../../capabilities/reactContexts/capabilityInfoContext";
+import { useRefStash } from "../../useRefStash";
 import type { ConnectionStatus } from "../types";
 import { applyPatches, produce } from "immer";
 import {
@@ -41,20 +42,12 @@ export const useChatWebSocket = ({
 }) => {
   const { data: sessionData } = authClient.useSession();
 
-  // the websocket depend on the existence of a session, but not the specifics
-  // of it, so we trigger the effect based on a boolean and get the details from
-  // a ref. This avoids situations where
-  const [hasSession, setHasSession] = useState(false);
-  const sessionDataRef = useRef(sessionData);
-  useEffect(() => {
-    if (sessionData !== null) {
-      setHasSession(true);
-      sessionDataRef.current = sessionData;
-    } else {
-      setHasSession(false);
-      sessionDataRef.current = null;
-    }
-  }, [sessionData]);
+  // the websocket depends on the existence of a session, but not the specifics
+  // of it, so we trigger the effect on a boolean derived here and get the
+  // details from a stashed ref. This avoids tearing the socket down and
+  // rebuilding it every time a new session object arrives with the same answer.
+  const hasSession = sessionData !== null;
+  const sessionDataRef = useRefStash(sessionData);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connectionStatus, setConnectionStatus] =
@@ -138,7 +131,7 @@ export const useChatWebSocket = ({
             // replay remaining patches onto the arrived state
             const newState = applyPatches(
               data.payload.state,
-              info.patches.flatMap(([_, patches]) => patches),
+              info.patches.flatMap(([, patches]) => patches),
             );
             info.state = newState;
           });
@@ -196,6 +189,7 @@ export const useChatWebSocket = ({
     setRoomName,
     setRoomTheme,
     hasSession,
+    sessionDataRef,
   ]);
 
   // keepalive timer

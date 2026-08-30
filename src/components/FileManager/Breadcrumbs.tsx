@@ -201,6 +201,10 @@ export const Breadcrumbs = memo(
       observer.observe(fullElement);
       observer.observe(compactElement);
       return () => observer.disconnect();
+      // `segments` isn't read here: it's the trigger. The widths are measured
+      // from the rendered crumbs, so they have to be re-measured once a new set
+      // of segments is on the page.
+      // oxlint-disable-next-line react/exhaustive-effect-dependencies
     }, [onMeasuredWidths, segments]);
 
     return (

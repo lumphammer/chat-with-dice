@@ -104,7 +104,7 @@ function rollHandfulOfDice(
 
   const restored = sorted
     .toSorted((a, b) => a[0] - b[0])
-    .map(([_, face]) => face);
+    .map(([, face]) => face);
 
   return {
     faces: restored,
