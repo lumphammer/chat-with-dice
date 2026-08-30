@@ -22,11 +22,6 @@ export const SidebarMicroscopeLegacies = memo(() => {
       title="Legacies"
       isSaving={capInfo.initialised && capInfo.patches.length > 0}
     >
-      <p className="muted text-sm">
-        The threads this history keeps coming back to. Anyone may make one, and
-        anyone may pick one up in a legacy phase.
-      </p>
-
       {legacies === null && <p>Loading…</p>}
       {legacies !== null && legacies.length === 0 && (
         <p className="muted text-sm">No legacies yet.</p>

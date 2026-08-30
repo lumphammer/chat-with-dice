@@ -4,7 +4,7 @@ import {
   FlameIcon,
   GhostIcon,
   LayersIcon,
-  TelescopeIcon,
+  MicroscopeIcon,
 } from "lucide-react";
 import type { ComponentType } from "react";
 
@@ -84,7 +84,7 @@ export const roomPresets = {
     label: "Microscope",
     description:
       "Build a history together: a fractal timeline, the legacy list, and the palette",
-    Icon: TelescopeIcon,
+    Icon: MicroscopeIcon,
     config: {
       version: 1,
       // No dice: Microscope doesn't roll for anything.

@@ -4,7 +4,7 @@ import { SidebarMicroscopeLegacies } from "#/components/capabilityComponents/Sid
 import { SidebarMicroscopePalette } from "#/components/capabilityComponents/SidebarMicroscope/SidebarMicroscopePalette";
 import { SidebarMicroscopeTimeline } from "#/components/capabilityComponents/SidebarMicroscope/SidebarMicroscopeTimeline";
 import { microscopeCommon } from "./common";
-import { ListTree, Palette, Telescope } from "lucide-react";
+import { Microscope, Palette, Trophy } from "lucide-react";
 
 /**
  * Three tabs from one capability, where every other capability here has one.
@@ -19,13 +19,13 @@ export const microscopeClient = createClientCapability(microscopeCommon, {
       key: "timeline",
       label: "Microscope timeline",
       SidebarComponent: SidebarMicroscopeTimeline,
-      IconComponent: Telescope,
+      IconComponent: Microscope,
     },
     {
       key: "legacies",
       label: "Microscope legacies",
       SidebarComponent: SidebarMicroscopeLegacies,
-      IconComponent: ListTree,
+      IconComponent: Trophy,
     },
     {
       key: "palette",

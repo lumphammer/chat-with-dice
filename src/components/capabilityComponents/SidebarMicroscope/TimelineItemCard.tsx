@@ -13,9 +13,8 @@ import {
   CARD_TEXT_STYLES,
   CHILD_KIND,
   ITEM_KIND_LABELS,
-  TONE_GLYPH_SIZES,
-  TONE_LABELS,
-  ToneGlyph,
+  ToneIcon,
+  toneAndKindLabel,
 } from "./presentation";
 import { nanoid } from "nanoid";
 import { memo, useMemo, useState, type ReactNode } from "react";
@@ -106,34 +105,25 @@ export const TimelineItemCard = memo(
 
     return (
       <article className={`rounded-box ${CARD_STYLES[kind]}`}>
-        <div className="flex items-start gap-2">
-          <ToneGlyph
-            tone={tone}
-            size={TONE_GLYPH_SIZES[kind]}
-            className="mt-1 shrink-0"
-          />
-          <div className="min-w-0 grow">
-            <span className="sr-only">
-              {TONE_LABELS[tone]} {kindLabel}.{" "}
-            </span>
-            {bookends && bookends.length > 0 && (
-              <div className="mb-1 flex gap-1">
-                {bookends.map((bookend) => (
-                  <span key={bookend} className="badge badge-outline badge-xs">
-                    {BOOKEND_LABELS[bookend]}
-                  </span>
-                ))}
-              </div>
-            )}
-            <p className={`wrap-break-word ${CARD_TEXT_STYLES[kind]}`}>
-              {text}
-            </p>
-            {answer !== undefined && answer.length > 0 && (
-              <p className="muted mt-1 text-sm wrap-break-word">
-                <span className="font-semibold">Answer: </span>
-                {answer}
-              </p>
-            )}
+        {/* Everything that isn't the writing gets one row to itself, centred
+            on a common line. Sharing a row with the text meant the supertitle,
+            the bookend badges and the menu each sat wherever the text pushed
+            them, and a card with a badge lined up with nothing. The text is
+            better off here too: it now gets the card's full width instead of
+            being squeezed past a 36px button. */}
+        <div className="flex items-center gap-1.5">
+          {/* Icon and words are one unit: both flex children of the centred
+              row, so they sit on its line without any nudging. */}
+          <ToneIcon tone={tone} className="muted shrink-0" />
+          <span className="muted shrink-0 text-xs tracking-wide uppercase">
+            {toneAndKindLabel(tone, kind)}
+          </span>
+          <div className="flex min-w-0 grow flex-wrap items-center gap-1">
+            {bookends?.map((bookend) => (
+              <span key={bookend} className="badge badge-outline badge-xs">
+                {BOOKEND_LABELS[bookend]}
+              </span>
+            ))}
           </div>
           <ItemActionsMenu
             kind={kind}
@@ -167,6 +157,14 @@ export const TimelineItemCard = memo(
             onDelete={() => setIsConfirmingDelete(true)}
           />
         </div>
+
+        <p className={`wrap-break-word ${CARD_TEXT_STYLES[kind]}`}>{text}</p>
+        {answer !== undefined && answer.length > 0 && (
+          <p className="muted mt-1 text-sm wrap-break-word">
+            <span className="font-semibold">Answer: </span>
+            {answer}
+          </p>
+        )}
 
         {children}
 

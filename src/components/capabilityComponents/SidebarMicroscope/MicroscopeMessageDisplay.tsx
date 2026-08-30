@@ -1,7 +1,7 @@
 import { microscopeMessageValidator } from "#/capabilities/microscope/common";
 import { logger } from "#/utils/logger.ts";
 import type { JsonData } from "#/validators/jsonObjectValidator.ts";
-import { ITEM_KIND_LABELS, ToneGlyph } from "./presentation";
+import { ToneIcon, newItemLabel } from "./presentation";
 import { memo, useMemo } from "react";
 
 /**
@@ -24,18 +24,21 @@ export const MicroscopeMessageDisplay = memo(
     const data = parsed.data;
 
     return (
-      <div className="flex items-start gap-2">
-        {data.kind === "itemCreated" && (
-          <ToneGlyph tone={data.tone} className="mt-1 shrink-0" />
-        )}
-        <div className="min-w-0">
-          <div className="muted text-xs tracking-wide uppercase">
-            {data.kind === "itemCreated"
-              ? `New ${ITEM_KIND_LABELS[data.itemKind]}`
-              : "New legacy"}
-          </div>
-          <div className="wrap-break-word">{data.text}</div>
+      <div className="min-w-0">
+        {/* The icon is inline in the eyebrow rather than a column of its own.
+            A bubble the viewer sent is right-aligned (`data-is-mine:text-right`
+            on `ChatBubble`), and a flex row ignores that — the icon stayed
+            pinned to the left edge with the words a bubble's width away.
+            Inline, it goes wherever the text goes. */}
+        <div className="muted text-xs tracking-wide uppercase">
+          {data.kind === "itemCreated" && (
+            <ToneIcon tone={data.tone} className="mr-1 inline align-middle" />
+          )}
+          {data.kind === "itemCreated"
+            ? newItemLabel(data.tone, data.itemKind)
+            : "New legacy"}
         </div>
+        <div className="wrap-break-word">{data.text}</div>
       </div>
     );
   },

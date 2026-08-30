@@ -14,12 +14,10 @@ export const PaletteList = memo(
   ({
     list,
     heading,
-    description,
     placeholder,
   }: {
     list: "yes" | "no";
     heading: string;
-    description: string;
     placeholder: string;
   }) => {
     const capInfo = microscopeClient.useMount();
@@ -47,10 +45,9 @@ export const PaletteList = memo(
     return (
       <section>
         <h3 className="heading">{heading}</h3>
-        <p className="muted mt-1 text-sm">{description}</p>
 
         <form
-          className="mt-4"
+          className="mt-3"
           onSubmit={(event) => {
             event.preventDefault();
             handleAdd();

@@ -38,10 +38,7 @@ export const SidebarMicroscopeTimeline = memo(() => {
         <section>
           <h3 className="heading">History</h3>
           {capInfo.state.periods.length === 0 ? (
-            <p className="muted mt-1 text-sm">
-              Nothing yet. Start with the two bookends — where this history
-              begins, and where it ends.
-            </p>
+            <p className="muted mt-1 text-sm">Nothing yet.</p>
           ) : (
             <ol className="mt-3 flex flex-col gap-2">
               {capInfo.state.periods.map((period, index) => (
