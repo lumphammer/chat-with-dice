@@ -9,7 +9,7 @@ export const Credits = () => (
       Microscope
     </a>{" "}
     is by Ben Robbins, published by Lame Mage Productions. This is a place to
-    write your history down, not a copy of the rules — you'll need the book to
-    play.
+    write your history down, not a copy of the rules — you&apos;ll need the book
+    to play.
   </p>
 );
