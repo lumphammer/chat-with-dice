@@ -1,4 +1,5 @@
 import { MAX_TEXT_LENGTH } from "#/capabilities/microscope/common";
+import { isSubmitChord } from "./submitChord";
 import { useEffect, useId, useRef, useState } from "react";
 
 const TEXT_ROWS = 3;
@@ -45,6 +46,15 @@ export const TextEditDialog = ({
     // oxlint-disable-next-line exhaustive-deps, react/exhaustive-effect-dependencies
   }, [open]);
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // The chord lives on the textareas rather than on the <form>: a form is not
+    // an interactive element, and hanging key handlers off one is exactly what
+    // `jsx-a11y/no-noninteractive-element-interactions` is there to stop.
+    if (isSubmitChord(event)) {
+      handleSubmit(event);
+    }
+  };
+
   const canSave = draft.trim().length > 0;
 
   const handleSubmit = (event: { preventDefault: () => void }) => {
@@ -72,6 +82,7 @@ export const TextEditDialog = ({
           <label className="floating-label">
             <span>{label}</span>
             <textarea
+              onKeyDown={handleKeyDown}
               className="textarea textarea-neutral w-full"
               rows={TEXT_ROWS}
               maxLength={MAX_TEXT_LENGTH}

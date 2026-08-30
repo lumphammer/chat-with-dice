@@ -9,8 +9,11 @@ import { ItemActionsMenu } from "./ItemActionsMenu";
 import { ItemEditDialog, type ItemDraft } from "./ItemEditDialog";
 import { buildMoveOptions } from "./moveOptions";
 import {
+  CARD_STYLES,
+  CARD_TEXT_STYLES,
   CHILD_KIND,
   ITEM_KIND_LABELS,
+  TONE_GLYPH_SIZES,
   TONE_LABELS,
   ToneGlyph,
 } from "./presentation";
@@ -102,9 +105,13 @@ export const TimelineItemCard = memo(
     };
 
     return (
-      <article className="rounded-box border-base-content/30 border p-2">
+      <article className={`rounded-box ${CARD_STYLES[kind]}`}>
         <div className="flex items-start gap-2">
-          <ToneGlyph tone={tone} className="mt-1 shrink-0" />
+          <ToneGlyph
+            tone={tone}
+            size={TONE_GLYPH_SIZES[kind]}
+            className="mt-1 shrink-0"
+          />
           <div className="min-w-0 grow">
             <span className="sr-only">
               {TONE_LABELS[tone]} {kindLabel}.{" "}
@@ -118,7 +125,9 @@ export const TimelineItemCard = memo(
                 ))}
               </div>
             )}
-            <p className="wrap-break-word">{text}</p>
+            <p className={`wrap-break-word ${CARD_TEXT_STYLES[kind]}`}>
+              {text}
+            </p>
             {answer !== undefined && answer.length > 0 && (
               <p className="muted mt-1 text-sm wrap-break-word">
                 <span className="font-semibold">Answer: </span>
