@@ -1,17 +1,25 @@
 import type { RoomConfig } from "#/validators/roomConfigValidator";
-import { DicesIcon, FlameIcon, GhostIcon, LayersIcon } from "lucide-react";
+import {
+  DicesIcon,
+  FlameIcon,
+  GhostIcon,
+  LayersIcon,
+  MicroscopeIcon,
+} from "lucide-react";
 import type { ComponentType } from "react";
 
 export const GENERIC_ROOM_PRESET_NAME = "generic";
 const HAVOC_ROOM_PRESET_NAME = "havoc";
 const CARDS_ROOM_PRESET_NAME = "cards";
 const ENGLISH_EERIE_ROOM_PRESET_NAME = "englisheerie";
+const MICROSCOPE_ROOM_PRESET_NAME = "microscope";
 
 export const ROOM_PRESET_NAMES = [
   GENERIC_ROOM_PRESET_NAME,
   HAVOC_ROOM_PRESET_NAME,
   CARDS_ROOM_PRESET_NAME,
   ENGLISH_EERIE_ROOM_PRESET_NAME,
+  MICROSCOPE_ROOM_PRESET_NAME,
 ] as const;
 
 export type RoomPresetName = (typeof ROOM_PRESET_NAMES)[number];
@@ -70,6 +78,17 @@ export const roomPresets = {
       // Everything the game needs is built in — no dice roller, because the only
       // roll it makes is the obstruction d10 in its own sidebar.
       capabilities: [{ name: "englisheerie", config: {} }],
+    },
+  },
+  [MICROSCOPE_ROOM_PRESET_NAME]: {
+    label: "Microscope",
+    description:
+      "Build a history together: a fractal timeline, the legacy list, and the palette",
+    Icon: MicroscopeIcon,
+    config: {
+      version: 1,
+      // No dice: Microscope doesn't roll for anything.
+      capabilities: [{ name: "microscope", config: {} }],
     },
   },
 } satisfies Record<RoomPresetName, RoomPresetInfo>;

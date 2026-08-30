@@ -1,4 +1,4 @@
-import { CommittedTextField } from "./CommittedTextField";
+import { CommittedTextField } from "../shared/CommittedTextField";
 
 interface Props {
   legend: string;
