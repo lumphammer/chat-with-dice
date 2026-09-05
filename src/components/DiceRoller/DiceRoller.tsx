@@ -328,7 +328,16 @@ export const DiceRoller = memo(
                       >
                         <ChatForm onNewMessage={handleNewChatMessage} />
                       </div>
-                      {/* sidebar — grid-area: sidebar, spans header+chat+entry rows */}
+                      <div
+                        data-part="left-sidebar"
+                        className={styles.leftSidebarWrapper}
+                      >
+                        <Sidebar
+                          side="left"
+                          backgroundElementRefs={sidebarBackgroundRefs}
+                        />
+                      </div>
+                      {/* Right sidebar becomes the drawer on mobile. */}
                       <div
                         data-part="sidebar"
                         className={styles.sidebarWrapper}

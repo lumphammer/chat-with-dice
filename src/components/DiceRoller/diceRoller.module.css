@@ -5,12 +5,20 @@
   height: 100%;
   display: grid;
   grid-template-areas:
-    "header  header"
-    "chat    sidebar"
-    "entry   sidebar";
-  grid-template-columns: 1fr auto;
+    "header header header"
+    "left chat sidebar"
+    "left entry sidebar";
+  grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-rows: auto 1fr auto;
   container-type: size;
+  /* Both rails reserve 3rem. Count only open panels; the wide container
+     query in global.css uses this when both sidebars are available. */
+  --open-sidebars: 1;
+  &:has([data-side="left"]:not([data-desktop-closed])):has(
+      [data-side="right"]:not([data-desktop-closed])
+    ) {
+    --open-sidebars: 2;
+  }
   --bubble-dark-c: 0.12;
   --bubble-dark-l: 36%;
   --bubble-light-c: 0.12;
@@ -62,4 +70,15 @@
   grid-area: sidebar;
   position: relative;
   display: flex;
+}
+
+.leftSidebarWrapper {
+  grid-area: left;
+  position: relative;
+  display: none;
+
+  /* 2 × 20rem panels + 30rem chat + 2 × 3rem rails. */
+  @container (width >= 76rem) {
+    display: flex;
+  }
 }

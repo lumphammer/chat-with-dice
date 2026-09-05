@@ -6,12 +6,21 @@ import { useRoomUiNavigationContext } from "#/components/DiceRoller/contexts/roo
 import { FileManager } from "#/components/FileManager/FileManager";
 import { FilePreview } from "#/components/FileManager/FilePreview";
 import type { FileManagerLocation } from "#/components/FileManager/types";
+import { SidebarSideContext } from "#/components/Sidebar/sidebarSideContext";
 import type { FileStorageNode } from "#/validators/storageNodeValidator.ts";
 import { SharedItemListItem } from "./SharedItemListItem";
 import { Share2 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 export const SharedStuff = memo(() => {
+  const side = useContext(SidebarSideContext);
   const filesCap = filesClient.useMount();
   const { roomId, roomOwnerId } = useRoomInfoContext();
   const { sharedFolderOpenRequest } = useRoomUiNavigationContext();
@@ -32,7 +41,7 @@ export const SharedStuff = memo(() => {
   // as changed context rather than as a callback, so the navigation it asks for
   // can only be done from an effect.
   useEffect(() => {
-    if (!sharedFolderOpenRequest) return;
+    if (side !== "right" || !sharedFolderOpenRequest) return;
 
     // oxlint-disable-next-line react/set-state-in-effect
     setPreviewFromList(null);
@@ -52,7 +61,7 @@ export const SharedStuff = memo(() => {
         previewFileName: null,
       },
     });
-  }, [sharedFolderOpenRequest]);
+  }, [sharedFolderOpenRequest, side]);
 
   const handleSelect = useCallback((item: SharedItem) => {
     if (item.node.kind === "folder") {

@@ -1,6 +1,6 @@
 import { THEME_NAMES, themes } from "#/styles/themes/registry";
 import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
-import { memo } from "react";
+import { memo, useId } from "react";
 
 /**
  * Room theme picker. Applies live for everyone in the room: the DO persists the
@@ -9,6 +9,7 @@ import { memo } from "react";
  * preview mode to build — picking one *is* the preview.
  */
 export const ThemePicker = memo(() => {
+  const groupName = useId();
   const { roomTheme, setRoomTheme } = useRoomInfoContext();
 
   return (
@@ -32,7 +33,7 @@ export const ThemePicker = memo(() => {
               >
                 <input
                   type="radio"
-                  name="room-theme"
+                  name={groupName}
                   className="radio radio-primary row-span-2 mt-1"
                   value={name}
                   checked={isSelected}

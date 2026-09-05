@@ -1,5 +1,5 @@
 import { DeckBackOption } from "./DeckBackOption";
-import { memo } from "react";
+import { memo, useId } from "react";
 
 export type DeckImage = { nodeId: string; name: string };
 
@@ -21,6 +21,7 @@ export const DeckCommonBackPicker = memo(
     disabled: boolean;
     onSelect: (backNodeId: string | null) => void;
   }) => {
+    const groupName = useId();
     return (
       <div className="flex flex-col gap-1">
         <span className="font-medium">Common back</span>
@@ -35,7 +36,7 @@ export const DeckCommonBackPicker = memo(
           >
             <input
               type="radio"
-              name="deck-common-back"
+              name={groupName}
               className="radio radio-primary shrink-0"
               checked={commonBackId === null}
               disabled={disabled}
@@ -46,6 +47,7 @@ export const DeckCommonBackPicker = memo(
           {images.map((image) => (
             <DeckBackOption
               key={image.nodeId}
+              groupName={groupName}
               nodeId={image.nodeId}
               name={image.name}
               checked={commonBackId === image.nodeId}

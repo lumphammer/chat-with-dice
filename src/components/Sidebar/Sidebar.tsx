@@ -7,16 +7,19 @@ import { useRefStash } from "../useRefStash";
 import { useStateWithRef } from "../useStateWithRef";
 import { Config } from "./Config";
 import { Help } from "./Help";
+import { SidebarTabTrigger } from "./SidebarTabTrigger";
 import { MobileSidebarControlsProvider } from "./mobileSidebarContext";
+import { SidebarSideContext } from "./sidebarSideContext";
 import { useContainerMinWidth } from "./useContainerMinWidth";
 import { useModalRegion } from "./useModalRegion";
 import { useSwipeToDismiss } from "./useSwipeToDismiss";
 import { Tabs } from "@ark-ui/react/tabs";
 import { CircleHelp, Cog, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, ReactNode, RefObject } from "react";
+import type { CSSProperties, RefObject } from "react";
 
-const DESKTOP_CONTAINER_WIDTH_REM = 80;
+// Keep aligned with the sidebar container queries in global.css.
+const DESKTOP_CONTAINER_WIDTH_REM = 53;
 const SWIPE_HANDLE_SELECTOR = "[data-sidebar-swipe-handle]";
 const BACKDROP_DRAG_FADE_AMOUNT = 0.75;
 
@@ -24,38 +27,12 @@ type SidebarStyle = CSSProperties & {
   "--sidebar-drag-distance": string;
 };
 
-const SidebarTabTrigger = memo(
-  ({
-    children,
-    label,
-    onTriggerClick,
-    value,
-  }: {
-    children: ReactNode;
-    label: string;
-    onTriggerClick: (trigger: HTMLButtonElement, isSelected: boolean) => void;
-    value: string;
-  }) => (
-    <Tabs.Trigger
-      aria-label={label}
-      className="sidebar-tab-button"
-      value={value}
-      onClick={(event) => {
-        const isSelected = event.currentTarget.ariaSelected === "true";
-        onTriggerClick(event.currentTarget, isSelected);
-      }}
-    >
-      {children}
-    </Tabs.Trigger>
-  ),
-);
-
-SidebarTabTrigger.displayName = "SidebarTabTrigger";
-
 export const Sidebar = memo(
   ({
     backgroundElementRefs,
+    side = "right",
   }: {
+    side?: "left" | "right";
     /**
      * Refs to elements that should be inerted while the sidebar is in its
      * modal (mobile-open) state. The Sidebar can't know its own siblings, so
@@ -127,8 +104,8 @@ export const Sidebar = memo(
         : (defaultValue ?? availableTabValues[0] ?? null);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isDesktopClosed, setIsDesktopClosed, isDesktopClosedRef] =
-      useStateWithRef(false);
-    const isModalOpen = isMobileOpen && !isDesktop;
+      useStateWithRef(side === "left");
+    const isModalOpen = side === "right" && isMobileOpen && !isDesktop;
 
     const closeMobileSidebar = useCallback(() => {
       setIsMobileOpen(false);
@@ -143,7 +120,7 @@ export const Sidebar = memo(
       isDragging: isSwipeDragging,
       swipeHandlers,
     } = useSwipeToDismiss({
-      enabled: !isDesktop,
+      enabled: side === "right" && !isDesktop,
       handleSelector: SWIPE_HANDLE_SELECTOR,
       onDismiss: isModalOpen ? closeMobileSidebar : undefined,
       onReveal: !isModalOpen ? openMobileSidebar : undefined,
@@ -166,7 +143,7 @@ export const Sidebar = memo(
     // click on a shared file) that arrives as changed context rather than as a
     // callback, so the state changes it drives can only happen in an effect.
     useEffect(() => {
-      if (!sharedFolderOpenRequest) return;
+      if (side !== "right" || !sharedFolderOpenRequest) return;
       if (!availableTabValues.includes("files.shared")) return;
 
       // oxlint-disable-next-line react/set-state-in-effect
@@ -177,6 +154,7 @@ export const Sidebar = memo(
       }
     }, [
       availableTabValues,
+      side,
       isDesktop,
       sharedFolderOpenRequest,
       setIsDesktopClosed,
@@ -231,7 +209,8 @@ export const Sidebar = memo(
         >
           <aside
             ref={ref}
-            aria-label="Sidebar"
+            aria-label={`${side === "left" ? "Left" : "Right"} sidebar`}
+            data-side={side}
             data-desktop-closed={isDesktopClosed || undefined}
             data-mobile-open={isMobileOpen || undefined}
             data-swipe-dragging={isSwipeDragging || undefined}
@@ -299,32 +278,40 @@ export const Sidebar = memo(
                   </SidebarTabTrigger>
                 </nav>
               </Tabs.List>
-              <MobileSidebarControlsProvider
-                closeMobileSidebar={closeMobileSidebar}
-              >
-                <section className="sidebar-content-area">
-                  {capabilitySidebars.map(({ SidebarComponent, value }) => (
+              <SidebarSideContext value={side}>
+                <MobileSidebarControlsProvider
+                  closeMobileSidebar={closeMobileSidebar}
+                >
+                  <section
+                    className="sidebar-content-area"
+                    inert={isDesktop ? isDesktopClosed : !isModalOpen}
+                  >
+                    {capabilitySidebars.map(({ SidebarComponent, value }) => (
+                      <Tabs.Content
+                        key={value}
+                        value={value}
+                        className="sidebar-content-drawer"
+                      >
+                        <SidebarComponent />
+                      </Tabs.Content>
+                    ))}
+                    {isOwner && (
+                      <Tabs.Content
+                        value="config"
+                        className="sidebar-content-drawer"
+                      >
+                        <Config />
+                      </Tabs.Content>
+                    )}
                     <Tabs.Content
-                      key={value}
-                      value={value}
+                      value="help"
                       className="sidebar-content-drawer"
                     >
-                      <SidebarComponent />
+                      <Help />
                     </Tabs.Content>
-                  ))}
-                  {isOwner && (
-                    <Tabs.Content
-                      value="config"
-                      className="sidebar-content-drawer"
-                    >
-                      <Config />
-                    </Tabs.Content>
-                  )}
-                  <Tabs.Content value="help" className="sidebar-content-drawer">
-                    <Help />
-                  </Tabs.Content>
-                </section>
-              </MobileSidebarControlsProvider>
+                  </section>
+                </MobileSidebarControlsProvider>
+              </SidebarSideContext>
             </div>
           </aside>
         </Tabs.Root>

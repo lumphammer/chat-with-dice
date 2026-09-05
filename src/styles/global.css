@@ -342,9 +342,9 @@ the same reason. */
     right: 0;
     z-index: 50;
     display: grid;
-    grid-template-columns: [tabs] auto [content] 1fr;
+    grid-template-columns: [tabs] 3rem [content] 1fr;
     background-color: var(--color-base-200);
-    --sidebar-tab-rail-width: 3em;
+    --sidebar-tab-rail-width: 3rem;
     --mobile-close-button-size: calc(var(--spacing) * 10);
     --mobile-close-button-gap: calc(var(--spacing) * 2);
     --content-width-when-open: min(
@@ -367,13 +367,40 @@ the same reason. */
       );
     }
 
-    @container (width >= 80rem) {
+    @container (width >= 53rem) {
       position: relative;
       z-index: 0;
-      --content-width-when-open: var(--container-xs);
+      /* Reserve 30rem for chat and 3rem for the rail before growing the panel. */
+      --content-width-when-open: clamp(
+        var(--container-xs),
+        calc(100cqw - 33rem),
+        calc(var(--container-xs) * 1.5)
+      );
       --sidebar-width: var(--content-width-when-open);
       &[data-desktop-closed] {
         --sidebar-width: 0px;
+      }
+    }
+
+    @container (width >= 76rem) {
+      --content-width-when-open: clamp(
+        var(--container-xs),
+        calc((100cqw - 36rem) / var(--open-sidebars)),
+        calc(var(--container-xs) * 1.5)
+      );
+    }
+
+    &[data-side="left"] {
+      grid-template-columns: [content] 1fr [tabs] 3rem;
+
+      .sidebar-tab-rail {
+        grid-column: tabs;
+        grid-row: 1;
+      }
+
+      .sidebar-content-area {
+        grid-column: content;
+        grid-row: 1;
       }
     }
   }
@@ -382,8 +409,8 @@ the same reason. */
   of layout the tab rail sits over. On desktop the sidebar is in flow and takes
   its own space, so this collapses. */
   .sidebar-space-holder {
-    width: 3em; /* should equal --sidebar-tab-rail-width */
-    @container (width >= 80rem) {
+    width: 3rem; /* should equal --sidebar-tab-rail-width */
+    @container (width >= 53rem) {
       width: 0px;
     }
   }
@@ -514,7 +541,7 @@ the same reason. */
       height: calc(var(--spacing) * 5);
     }
 
-    @container (width >= 80rem) {
+    @container (width >= 53rem) {
       display: none;
     }
   }
