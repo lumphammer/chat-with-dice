@@ -705,6 +705,13 @@ markup), and the shorthand would reset it out from under them. */
       gap: 0.5em;
       padding: 0;
       width: 2.5em;
+      /* The layout reserves 3rem for the rail; keep these narrower tabs
+         against the panel, with spare space on the outside. */
+      justify-self: end;
+
+      .sidebar[data-side="left"] & {
+        justify-self: start;
+      }
     }
 
     /* An index tab cut into the fore-edge of the book: ruled on the three sides
