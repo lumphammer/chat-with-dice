@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: en-GB
+
+reviews:
+  # Mirrors the profile previously set in the CodeRabbit organisation UI. This
+  # file takes precedence over those settings, so it has to be restated here.
+  profile: assertive
+  tools:
+    # This project doesn't use stylelint — CSS is checked by prettier only, and
+    # the stylesheets deliberately use tight comment delimiters (/*like this*/)
+    # throughout. Stylelint's defaults flag those as errors on every review.
+    stylelint:
+      enabled: false
