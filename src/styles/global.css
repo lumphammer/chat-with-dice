@@ -370,7 +370,12 @@ the same reason. */
     @container (width >= 80rem) {
       position: relative;
       z-index: 0;
-      --content-width-when-open: var(--container-xs);
+      /* Grow with the room container, up to 50% wider than the narrow layout. */
+      --content-width-when-open: clamp(
+        var(--container-xs),
+        25cqw,
+        calc(var(--container-xs) * 1.5)
+      );
       --sidebar-width: var(--content-width-when-open);
       &[data-desktop-closed] {
         --sidebar-width: 0px;
