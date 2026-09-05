@@ -582,6 +582,14 @@ so the noise would end up blending against transparency. */
       );
       backdrop-filter: blur(30px);
 
+      &[data-side="left"] {
+        border-radius: 0 2em 2em 0;
+
+        &::before {
+          padding: 2px 2px 2px 0;
+        }
+      }
+
       &::before {
         content: "";
         position: absolute;
