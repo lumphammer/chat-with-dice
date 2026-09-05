@@ -8,12 +8,14 @@ import { memo } from "react";
  */
 export const DeckBackOption = memo(
   ({
+    groupName,
     nodeId,
     name,
     checked,
     disabled,
     onSelect,
   }: {
+    groupName: string;
     nodeId: string;
     name: string;
     checked: boolean;
@@ -27,7 +29,7 @@ export const DeckBackOption = memo(
       >
         <input
           type="radio"
-          name="deck-common-back"
+          name={groupName}
           className="radio radio-primary shrink-0"
           checked={checked}
           disabled={disabled}

@@ -10,7 +10,15 @@ import { useRoomInfoContext } from "../DiceRoller/contexts/roomInfoContext";
 import { useRefStash } from "../useRefStash";
 import { ThemePicker } from "./ThemePicker";
 import { actions } from "astro:actions";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const visibleCapabilityNames = capabilityNames
   .filter((name) => {
@@ -67,6 +75,7 @@ function setCapabilityEnabled(
 }
 
 export const Config = memo(() => {
+  const roomNameInputId = useId();
   const { roomConfig, setRoomConfig, roomName, setRoomName, roomId } =
     useRoomInfoContext();
 
@@ -145,14 +154,14 @@ export const Config = memo(() => {
         }}
       >
         <label
-          htmlFor="config-room-name"
+          htmlFor={roomNameInputId}
           className="mb-2 block text-xl font-medium"
         >
           Room name
         </label>
         <div className="join flex w-full">
           <input
-            id="config-room-name"
+            id={roomNameInputId}
             className="input input-primary join-item flex-1"
             value={roomNameDraft}
             onChange={(e) => setRoomNameDraft(e.target.value)}
