@@ -16,7 +16,8 @@ import { CircleHelp, Cog, X } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode, RefObject } from "react";
 
-const DESKTOP_CONTAINER_WIDTH_REM = 80;
+// Keep aligned with the sidebar container queries in global.css.
+const DESKTOP_CONTAINER_WIDTH_REM = 56;
 const SWIPE_HANDLE_SELECTOR = "[data-sidebar-swipe-handle]";
 const BACKDROP_DRAG_FADE_AMOUNT = 0.75;
 

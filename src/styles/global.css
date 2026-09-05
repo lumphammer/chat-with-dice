@@ -367,7 +367,7 @@ the same reason. */
       );
     }
 
-    @container (width >= 80rem) {
+    @container (width >= 56rem) {
       position: relative;
       z-index: 0;
       /* Grow with the room container, up to 50% wider than the narrow layout. */
@@ -388,7 +388,7 @@ the same reason. */
   its own space, so this collapses. */
   .sidebar-space-holder {
     width: 3em; /* should equal --sidebar-tab-rail-width */
-    @container (width >= 80rem) {
+    @container (width >= 56rem) {
       width: 0px;
     }
   }
@@ -519,7 +519,7 @@ the same reason. */
       height: calc(var(--spacing) * 5);
     }
 
-    @container (width >= 80rem) {
+    @container (width >= 56rem) {
       display: none;
     }
   }
