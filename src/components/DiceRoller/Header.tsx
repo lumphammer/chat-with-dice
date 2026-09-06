@@ -1,4 +1,4 @@
-import Logo from "#/assets/logo.svg?react";
+import Logo from "#/assets/logo.svg?react&illustration";
 import { NavBarAccount } from "../NavBarAccount";
 import type { ConnectionStatus } from "./types";
 import { memo } from "react";
@@ -26,13 +26,7 @@ export const Header = memo(
             aria-description="A d6 showing sixes on all sides, with a tail like a speech bubble"
             fill={undefined}
             stroke={undefined}
-            className="h-10 w-10
-              [&_.dark-part]:fill-[oklch(from_var(--color-neutral)_0.9_c_h)]
-              [&_.die-pips]:fill-[oklch(from_var(--color-primary)_0.6_c_h)]
-              [&_.light-part]:fill-[oklch(from_var(--color-neutral)_1_c_h)]
-              [&_.stroke]:fill-none
-              [&_.stroke]:stroke-[oklch(from_var(--color-neutral)_0.7_c_h)]
-              [&_.stroke]:stroke-8"
+            className="h-10 w-10"
           />
         </a>
         <div className="room-name min-w-0 flex-1 truncate">{roomName}</div>

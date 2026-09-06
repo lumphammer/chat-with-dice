@@ -17,12 +17,6 @@ export default defineConfig({
         {
           name: "preset-default",
         },
-        {
-          name: "removeAttrs",
-          params: {
-            attrs: "style",
-          },
-        },
       ],
     }),
   },

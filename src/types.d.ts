@@ -15,13 +15,13 @@ declare type RecursiveExpand<T> = T extends (...args: infer A) => infer R
       : never
     : T;
 
-declare module "*.svg?react&variant=illustration" {
+declare module "*.svg?react" {
   import type { ComponentType, SVGProps } from "react";
   const c: ComponentType<SVGProps<SVGSVGElement>>;
   export default c;
 }
 
-declare module "*.svg?react" {
+declare module "*.svg?react&illustration" {
   import type { ComponentType, SVGProps } from "react";
   const c: ComponentType<SVGProps<SVGSVGElement>>;
   export default c;
