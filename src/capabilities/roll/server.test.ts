@@ -1,9 +1,17 @@
-import { rollOneDie } from "./server";
+import type { ServerMountedCapability } from "#/capabilities/createServerCapability";
+import { messageDataValidator } from "#/capabilities/roll/common";
+import type { ChatMessage } from "#/validators/webSocketMessageSchemas";
+import type { Broadcaster } from "#/workers/ChatRoomDO/Broadcaster";
+import { CapabilityStateRepository } from "#/workers/ChatRoomDO/CapabilityStateRepository";
+import type { MessageJiggler } from "#/workers/ChatRoomDO/MessageJiggler";
+import type { NodeShareManager } from "#/workers/ChatRoomDO/NodeShareManager";
+import { rollOneDie, rollServer } from "./server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 const SAMPLES = 2000;
 
 // Die geometry under test.
+const D4_SIDES = 4;
 const D6_SIDES = 6;
 const D10_SIDES = 10;
 const D20_CARDINALITY = 20;
@@ -33,6 +41,66 @@ function mockRandomFaces(cardinality: number, sequence: number[]) {
     return (face - 1) / cardinality;
   });
 }
+
+async function mountRoll() {
+  const sentMessages: ChatMessage[] = [];
+  const storage = new Map<string, unknown>();
+  const mounted = await rollServer.mount({
+    doCtx: {} as unknown as DurableObjectState,
+    messageJiggler: {
+      sendChatMessage: (message: ChatMessage) =>
+        void sentMessages.push(message),
+    } as unknown as MessageJiggler,
+    stateRepository: new CapabilityStateRepository({
+      get: (key: string) => storage.get(key),
+      put: (key: string, value: unknown) => storage.set(key, value),
+      delete: (key: string) => storage.delete(key),
+      list: () => storage.entries(),
+    } as unknown as SyncKvStorage),
+    config: undefined,
+    nodeShareManager: {} as unknown as NodeShareManager,
+    broadcaster: { broadcast: () => {} } as unknown as Broadcaster,
+    getRoomOwnerUserId: async () => undefined,
+    dispatchHook: async () => {},
+  });
+  if (!mounted) throw new Error("roll capability failed to mount");
+  return { mounted, sentMessages };
+}
+
+function roll(
+  mounted: ServerMountedCapability,
+  modifier: { operator: "/"; operand: number },
+) {
+  return mounted.onMessage({
+    actionCall: {
+      actionName: "doRoll",
+      correlation: "roll-test",
+      params: {
+        arity: 1,
+        cardinality: 4,
+        dieType: "standard",
+        exploding: false,
+        favour: "normal",
+        keep: "all",
+        modifier,
+      },
+    },
+    userId: "roller",
+    displayName: "Roller",
+  });
+}
+
+describe("roll modifiers", () => {
+  test("rounds division results down to an integer", async () => {
+    mockRandomFaces(D4_SIDES, [D4_SIDES]);
+    const { mounted, sentMessages } = await mountRoll();
+
+    await roll(mounted, { operator: "/", operand: 3 });
+
+    const message = messageDataValidator.parse(sentMessages[0].capabilityData);
+    expect(message.result.total).toBe(1);
+  });
+});
 
 describe("rollOneDie standard", () => {
   test("produces 1..cardinality with no components", () => {

@@ -188,7 +188,7 @@ function modify(operand1: number, operator: Operator, operand2: number) {
   if (operator === "+") return operand1 + operand2;
   if (operator === "-") return operand1 - operand2;
   if (operator === "*") return operand1 * operand2;
-  if (operator === "/") return operand1 / operand2;
+  if (operator === "/") return Math.floor(operand1 / operand2);
   throw new Error(`Unknown operator: ${operator as any}`);
 }
 
