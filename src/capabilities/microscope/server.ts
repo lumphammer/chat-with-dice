@@ -10,10 +10,10 @@ import {
 } from "./common";
 
 /**
- * Only the three creating actions have a server half. The rest — editing,
- * moving, deleting, the palette removals — are pure transitions with nothing to
- * check: history here is communal, so there is no author to compare a caller
- * against, and nothing to say beyond what the transition already does.
+ * The creating actions and the first edit that answers a Scene have a server
+ * half. The rest are pure transitions with nothing to check: history here is
+ * communal, so there is no author to compare a caller against, and nothing to
+ * say beyond what the transition already does.
  *
  * Where an effect does exist it follows the same shape: fail the checks that
  * need authority, or call the shared `pureFn` and then say so in the chat log.
@@ -91,6 +91,29 @@ export const microscopeServer = createServerCapability(microscopeCommon, {
       }
       pureFn({ stateDraft, payload });
       sendChatMessage({ kind: "legacyCreated", text: payload.text });
+    },
+
+    editItem: ({ stateDraft, payload, pureFn, sendChatMessage }) => {
+      const slot = findItem(stateDraft, payload.id);
+      const isNewAnswer =
+        slot?.kind === "scene" &&
+        slot.siblings[slot.index].answer.trim() === "" &&
+        payload.answer !== undefined &&
+        payload.answer !== "";
+
+      pureFn({ stateDraft, payload });
+
+      if (isNewAnswer) {
+        const updatedSlot = findItem(stateDraft, payload.id);
+        if (updatedSlot?.kind === "scene") {
+          const scene = updatedSlot.siblings[updatedSlot.index];
+          sendChatMessage({
+            kind: "sceneAnswered",
+            question: scene.question,
+            answer: scene.answer,
+          });
+        }
+      }
     },
 
     // No chat message, unlike the other two creations: the palette is agreed in

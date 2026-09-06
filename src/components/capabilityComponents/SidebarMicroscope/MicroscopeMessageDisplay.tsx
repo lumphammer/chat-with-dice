@@ -5,9 +5,8 @@ import { ToneIcon, newItemLabel } from "./presentation";
 import { memo, useMemo } from "react";
 
 /**
- * The chat-log record of something being added to the history. Creations only:
- * what the table wants a record of is somebody making a thing everyone now has
- * to live with, not somebody fixing a typo half an hour later.
+ * A chat-log record of something being added to the history, including the
+ * answer that completes a Scene. Routine edits stay out of the log.
  */
 export const MicroscopeMessageDisplay = memo(
   ({ capabilityData }: { capabilityData?: JsonData }) => {
@@ -22,6 +21,22 @@ export const MicroscopeMessageDisplay = memo(
     }
 
     const data = parsed.data;
+
+    if (data.kind === "sceneAnswered") {
+      return (
+        <div className="min-w-0">
+          <div className="muted text-xs tracking-wide uppercase">
+            Scene answered
+          </div>
+          <blockquote
+            className="border-base-content/25 muted my-1 border-l-2 pl-3"
+          >
+            <div className="wrap-break-word">{data.question}</div>
+          </blockquote>
+          <div className="wrap-break-word">{data.answer}</div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-w-0">

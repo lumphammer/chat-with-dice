@@ -321,11 +321,17 @@ const legacyCreatedMessageValidator = z.object({
   text: z.string(),
 });
 
+const sceneAnsweredMessageValidator = z.object({
+  kind: z.literal("sceneAnswered"),
+  question: z.string(),
+  answer: z.string(),
+});
+
 /**
- * Creations reach the chat log; edits, moves and deletions don't. What the
- * table wants a record of is *someone made a thing and we all have to live with
- * it* — the moment the game is built out of. A running commentary on somebody
- * fixing a typo is not that.
+ * Creations and a Scene's first Answer reach the chat log; other edits, moves
+ * and deletions don't. What the table wants a record of is *someone made a
+ * thing and we all have to live with it* — the moments the game is built out
+ * of. A running commentary on somebody fixing a typo is not that.
  *
  * Palette entries are the deliberate exception among creations: they're agreed
  * in a burst during setup, and a dozen chat lines before play has started is
@@ -334,6 +340,7 @@ const legacyCreatedMessageValidator = z.object({
 export const microscopeMessageValidator = z.discriminatedUnion("kind", [
   itemCreatedMessageValidator,
   legacyCreatedMessageValidator,
+  sceneAnsweredMessageValidator,
 ]);
 
 /**

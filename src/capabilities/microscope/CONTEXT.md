@@ -44,7 +44,7 @@ Light or Dark, carried by every **Timeline Item** and drawn as a hollow or fille
 - A **Room** has at most one Microscope history: one **Big Picture**, one ordered list of **Periods**, one **Legacy** list, and one **Palette**
 - The three sidebar tabs — timeline, legacies, palette — are three views of that one history, and the only capability here to mount more than one tab
 - Every **Room Participant**, anonymous ones included, may make, edit, move and delete anything: nothing records an author, and nothing is anybody's to protect
-- Making a **Timeline Item** or a **Legacy** posts to the chat log; editing, moving and deleting do not, and **Palette** entries do not — what the log is for is the moment somebody adds something everyone now has to live with
+- Making a **Timeline Item** or a **Legacy** posts to the chat log, as does writing a **Scene**'s first **Answer**; later edits, moving and deleting do not, and **Palette** entries do not — what the log is for is the moment somebody adds something everyone now has to live with
 - Deleting a **Timeline Item** takes its whole subtree with it; the levels are strict, so an item can never be moved inside itself and no cycle is possible
 - A history is capped at 500 **Timeline Items** in total, rather than per level, because what needs bounding is the state broadcast in full to every socket on every change
 - Payloads are trimmed and length-checked at the door while stored state is unconstrained: a failed state parse falls back to a blank history, which would silently discard an evening of the table's work
