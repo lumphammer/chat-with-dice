@@ -44,7 +44,7 @@
     "@fontsource-variable/nunito-sans": "^5.3.0",
     "@fontsource-variable/orbitron": "^5.3.0",
     "@lucide/astro": "^1.37.0",
-    "@nanostores/react": "^1.1.0",
+    "@nanostores/react": "^2.0.1",
     "@svgr/core": "^8.1.0",
     "@svgr/plugin-jsx": "^8.1.0",
     "@tailwindcss/typography": "^0.5.20",
