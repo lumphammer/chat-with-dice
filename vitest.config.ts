@@ -1,9 +1,6 @@
 // oxlint-disable-next-line typescript/triple-slash-reference
 /// <reference types="vitest/config" />
-import {
-  type D1Migration,
-  cloudflareTest,
-} from "@cloudflare/vitest-pool-workers";
+import { type D1Migration, cloudflareTest } from "@cloudflare/vitest-plugin";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
