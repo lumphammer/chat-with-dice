@@ -20,7 +20,7 @@
     "knip": "DATABASE_BINDING=CORE_D1 knip --production",
     "check": "pnpm run types:check && pnpm run lint:check && pnpm run format:check && pnpm run test:once && pnpm run build",
     "types:generate:cloudflare": "wrangler types src/worker-configuration.d.ts",
-    "db:generate:authSchema": "npx https://pkg.pr.new/better-auth/better-auth/auth@9489 generate --output=src/schemas/auth-schema.ts",
+    "db:generate:authSchema": "pnpm dlx auth@latest generate --output=src/schemas/auth-schema.ts",
     "db:generate:coreD1": " DATABASE_BINDING=CORE_D1 drizzle-kit generate",
     "db:generate:ChatRoomDO": "DO_BINDING=CHAT_ROOM_DO drizzle-kit generate --config=./drizzle.durableObjects.config.ts",
     "db:generate:UserDataDO": "DO_BINDING=USER_DATA_DO drizzle-kit generate --config=./drizzle.durableObjects.config.ts",

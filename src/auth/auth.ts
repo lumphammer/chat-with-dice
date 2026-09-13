@@ -8,7 +8,7 @@ import { isAdminOrBetter, isSuperAdmin } from "#/utils/roleHelpers";
 import { sendEmail } from "#/utils/sendEmail";
 import { generateRandomName } from "../utils/generateRandomName";
 import { adminConfig } from "./adminConfig";
-import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { magicLink } from "better-auth/plugins";
