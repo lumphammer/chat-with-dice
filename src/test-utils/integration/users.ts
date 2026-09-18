@@ -119,13 +119,17 @@ export async function createTestUser(
 
 /**
  * Allocate a `USER_DATA_DO` id for the user and persist it (mirroring the
- * Better Auth post-sign-in hook in `auth.ts`). Returns the user with its
- * `userDataDOId` narrowed to `string`.
+ * `session.create.after` database hook in `auth.ts`). Returns the user with
+ * its `userDataDOId` narrowed to `string`.
+ *
+ * Like production, the id is opaque rather than derived from the user id, so
+ * tests can only reach the DO via the stored value — the same constraint the
+ * real code works under.
  */
 export async function attachUserDataDO(
   user: TestUser,
 ): Promise<TestUser & { userDataDOId: string }> {
-  const userDataDOId = env.USER_DATA_DO.idFromName(user.id).toString();
+  const userDataDOId = env.USER_DATA_DO.newUniqueId().toString();
   await db
     .update(users)
     .set({ user_data_do_id: userDataDOId })
