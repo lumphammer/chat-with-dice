@@ -15,7 +15,7 @@ import { magicLink } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { anonymous } from "better-auth/plugins";
 import { env, waitUntil } from "cloudflare:workers";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 
 // we are currently in limbo while we wait for
 // https://github.com/better-auth/better-auth/pull/9489 to land.
@@ -149,54 +149,37 @@ export const auth = betterAuth({
         }
       }
     }),
-    after: createAuthMiddleware(async (ctx) => {
-      // Magic-link sign-in completes on GET /magic-link/verify rather than a
-      // /sign-in/* path, so match both to backfill the durable object id on the
-      // user's first sign-in regardless of method.
-      if (
-        ctx.path.startsWith("/sign-in") ||
-        ctx.path.startsWith("/magic-link")
-      ) {
-        // on login, update the user with their durable object id if missing
-        // const user = (await getSessionFromCtx(ctx))?.user;
-
-        // const headers = ctx.request?.headers;
-        // if (!headers) {
-        //   console.log("no headers");
-        //   return;
-        // }
-        // const session = await auth.api.getSession({
-        //   headers,
-        // });
-        // if (!session) {
-        //   console.log("no session. ctx: ", ctx.context.newSession?.user); // this keeps hitting!
-        //   return;
-        // }
-        const user = ctx.context.newSession?.user;
-
-        if (!user) {
-          console.log("user not found from ctx.context.newSession?.user ");
-          return;
-        }
-        if ([null, undefined, ""].includes(user.userDataDOId)) {
-          console.log(
-            `user data do id missing for newly created user ${user.id}, adding it now`,
-          );
-          const durableObjectId = env.USER_DATA_DO.idFromName(
-            user.id,
-          ).toString();
-          await db
-            .update(users)
-            .set({ user_data_do_id: durableObjectId })
-            .where(eq(schema.users.id, user.id));
-        } else {
-          console.log("user data do id already set", user.id);
-        }
-      }
-    }),
   },
 
   databaseHooks: {
+    session: {
+      create: {
+        // Backfill the user's durable object id on every session creation.
+        //
+        // This deliberately isn't an endpoint `hooks.after`: there is no single
+        // path that means "signed in". A database session hook catches
+        // everything.
+        //
+        // The id is opaque, so we don't need to read the row first - a
+        // conditional UPDATE is enough, and it leaves rows that already have an
+        // id untouched.
+        after: async (session) => {
+          const durableObjectId = env.USER_DATA_DO.newUniqueId().toString();
+          await db
+            .update(users)
+            .set({ user_data_do_id: durableObjectId })
+            .where(
+              and(
+                eq(users.id, session.userId),
+                or(
+                  isNull(users.user_data_do_id),
+                  eq(users.user_data_do_id, ""),
+                ),
+              ),
+            );
+        },
+      },
+    },
     user: {
       create: {
         before: async (user) => {
@@ -256,7 +239,7 @@ export const auth = betterAuth({
         required: false,
         defaultValue: null,
         index: true,
-        input: true,
+        input: false,
       },
       storageQuotaBytes: {
         fieldName: "storage_quota_bytes",

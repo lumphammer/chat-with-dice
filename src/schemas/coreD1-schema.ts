@@ -1,6 +1,6 @@
-import { users, relations as authRelations } from "./auth-schema";
+import { users, authRelations } from "./auth-schema";
 import { rooms } from "./roomSchema";
-import { defineRelationsPart } from "drizzle-orm";
+import { defineRelations } from "drizzle-orm";
 
 export { accounts, sessions, users, verifications } from "./auth-schema";
 export { rooms };
@@ -11,7 +11,7 @@ export { rooms };
 //
 // We're  doing it here for all of "our" tables because otherwise the import
 // diagram can get a bit loopy.
-const relationsPart = defineRelationsPart({ users, rooms }, (r) => ({
+const appRelations = defineRelations({ users, rooms }, (r) => ({
   rooms: {
     creator: r.one.users({
       from: r.rooms.createdByUserId,
@@ -26,4 +26,16 @@ const relationsPart = defineRelationsPart({ users, rooms }, (r) => ({
   },
 }));
 
-export const relations = { ...authRelations, ...relationsPart };
+// deep merging these relations parts is pain right now
+// https://github.com/drizzle-team/drizzle-orm/issues/5674
+export const relations = {
+  ...appRelations,
+  ...authRelations,
+  users: {
+    ...authRelations.users,
+    relations: {
+      ...appRelations.users.relations,
+      ...authRelations.users.relations,
+    },
+  },
+};

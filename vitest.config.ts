@@ -109,6 +109,13 @@ export default defineConfig({
             miniflare: {
               compatibilityDate: "2026-04-18",
               compatibilityFlags: ["nodejs_compat"],
+              // Keep the suite hermetic. Signing in over the real auth handler
+              // runs `sendMagicLink`/`sendVerificationEmail`, which POST to
+              // api.resend.com. Those are fire-and-forget (`waitUntil`), so a
+              // real request would leave the network silently, on every run.
+              // Swallow all outbound fetches instead.
+              outboundService: () =>
+                new Response(null, { status: 204, statusText: "stubbed" }),
               d1Databases: ["CORE_D1"],
               durableObjects: {
                 USER_DATA_DO: { className: "UserDataDO", useSQLite: true },
