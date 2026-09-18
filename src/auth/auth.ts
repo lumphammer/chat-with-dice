@@ -160,13 +160,11 @@ export const auth = betterAuth({
         // path that means "signed in". A database session hook catches
         // everything.
         //
-        // The id is derived deterministically from the user id, so we don't
-        // need to read the row first - a conditional UPDATE is enough, and it
-        // leaves rows that already have an id untouched.
+        // The id is opaque, so we don't need to read the row first - a
+        // conditional UPDATE is enough, and it leaves rows that already have an
+        // id untouched.
         after: async (session) => {
-          const durableObjectId = env.USER_DATA_DO.idFromName(
-            session.userId,
-          ).toString();
+          const durableObjectId = env.USER_DATA_DO.newUniqueId().toString();
           await db
             .update(users)
             .set({ user_data_do_id: durableObjectId })
