@@ -1,0 +1,16 @@
+[
+  {
+    "label": "Attach to Cloudflare Worker",
+    "adapter": "JavaScript",
+    "type": "node",
+    "request": "attach",
+    "address": "127.0.0.1",
+    "port": 9229,
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "sourceMaps": true,
+    "resolveSourceMapLocations": null,
+    "attachExistingChildren": false,
+    "autoAttachChildProcesses": false,
+    "skipFiles": ["<node_internals>/**"]
+  }
+]
