@@ -27,6 +27,7 @@ const appRelations = defineRelations({ users, rooms }, (r) => ({
 }));
 
 // deep merging these relations parts is pain right now
+// https://github.com/drizzle-team/drizzle-orm/issues/5674
 export const relations = {
   ...appRelations,
   ...authRelations,
