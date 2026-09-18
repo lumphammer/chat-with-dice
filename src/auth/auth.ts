@@ -239,7 +239,7 @@ export const auth = betterAuth({
         required: false,
         defaultValue: null,
         index: true,
-        input: true,
+        input: false,
       },
       storageQuotaBytes: {
         fieldName: "storage_quota_bytes",
