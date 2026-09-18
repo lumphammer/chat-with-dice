@@ -26,4 +26,15 @@ const appRelations = defineRelations({ users, rooms }, (r) => ({
   },
 }));
 
-export const relations = { ...appRelations, ...authRelations };
+// deep merging these relations parts is pain right now
+export const relations = {
+  ...appRelations,
+  ...authRelations,
+  users: {
+    ...authRelations.users,
+    relations: {
+      ...appRelations.users.relations,
+      ...authRelations.users.relations,
+    },
+  },
+};
