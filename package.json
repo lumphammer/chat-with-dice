@@ -59,7 +59,7 @@
     "better-auth": "^1.7.5",
     "better-sqlite3": "^13.0.3",
     "daisyui": "^5.7.42",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.1",
     "drizzle-kit": "1.0.0-rc.4",
     "drizzle-orm": "1.0.0-rc.4-de6c356",
     "immer": "^11.1.18",
