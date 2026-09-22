@@ -117,7 +117,7 @@ importers:
         version: 5.39.2(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@astrojs/check':
         specifier: 0.9.10
-        version: 0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.8)(typescript@6.0.3)
+        version: 0.9.10(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)
       '@astrojs/cloudflare':
         specifier: 14.3.2
         version: 14.3.2(@types/node@25.9.8)(astro@7.3.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.8)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(wrangler@4.135.0(@types/node@25.9.8))(yaml@2.9.0)
@@ -227,14 +227,14 @@ importers:
         specifier: ^3.9.8
         version: 3.9.8
       prettier-plugin-astro:
-        specifier: ^0.14.1
-        version: 0.14.1
+        specifier: ^1.0.1
+        version: 1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8)
       prettier-plugin-astro-organize-imports:
         specifier: ^0.4.13
-        version: 0.4.13(prettier-plugin-astro@0.14.1)(prettier-plugin-tailwindcss@0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@0.14.1)(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8))(prettier@3.9.8)
+        version: 0.4.13(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier-plugin-tailwindcss@0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8))(prettier@3.9.8)
       prettier-plugin-classnames:
         specifier: ^0.10.4
-        version: 0.10.4(prettier-plugin-astro@0.14.1)(prettier@3.9.8)
+        version: 0.10.4(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)
       prettier-plugin-merge:
         specifier: ^0.10.1
         version: 0.10.1(prettier@3.9.8)
@@ -243,7 +243,7 @@ importers:
         version: 4.3.0(prettier@3.9.8)(typescript@6.0.3)
       prettier-plugin-tailwindcss:
         specifier: ^0.8.1
-        version: 0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@0.14.1)(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8)
+        version: 0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8)
       quikdown:
         specifier: ^1.2.21
         version: 1.2.21
@@ -1904,6 +1904,9 @@ packages:
 
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
+
+  '@prettier/parse-srcset@3.1.0':
+    resolution: {integrity: sha512-FIRv2rZotO9NP/r66taYqD1zICpPiBbrECqjKV/xqNotqDxF7fLzzUeK+1RSRx9Tenk0DajR/GcRmTJ2qtHaKQ==}
 
   '@rolldown/binding-android-arm-eabi@1.2.5':
     resolution: {integrity: sha512-DLe/i+l8ynIBY7XEQ191TeZvCoowIGa18R+dIV30GW7DiOtp74i/xX8hs8GUjW5ARV7VZuie3d6AumSmCwbeRA==}
@@ -3868,9 +3871,11 @@ packages:
       prettier-plugin-tailwindcss:
         optional: true
 
-  prettier-plugin-astro@0.14.1:
-    resolution: {integrity: sha512-RiBETaaP9veVstE4vUwSIcdATj6dKmXljouXc/DDNwBSPTp8FRkLGDSGFClKsAFeeg+13SB0Z1JZvbD76bigJw==}
-    engines: {node: ^14.15.0 || >=16.0.0}
+  prettier-plugin-astro@1.0.1:
+    resolution: {integrity: sha512-FKLtmNgyAoUbUixxmgkyO9ZMjEWCpHgMLtci8IakhCIzr8b+ML9YssBqsMfNoDdd/iE27BixwBZSq2amWDwpFQ==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      prettier: ^3.5.3
 
   prettier-plugin-classnames@0.10.4:
     resolution: {integrity: sha512-JIheUGkLGEqBwv/OWpizy+C6lY9z1fE9KpQpq8q+3j2xyzon7zBiv8Udn8tNkKwoQObrIg2e++DEVnMZiTOeJw==}
@@ -4080,8 +4085,9 @@ packages:
   s.color@0.0.15:
     resolution: {integrity: sha512-AUNrbEUHeKY8XsYr/DYpl+qk5+aM+DChopnWOPEzn8YKzOhv4l2zH6LzZms3tOZP3wwdOyc0RmTciyi46HLIuA==}
 
-  sass-formatter@0.7.9:
-    resolution: {integrity: sha512-CWZ8XiSim+fJVG0cFLStwDvft1VI7uvXdCNJYXhDvowiv+DsbD1nXLiQ4zrE5UBvj5DWZJ93cwN0NX5PMsr1Pw==}
+  sass-formatter@0.8.0:
+    resolution: {integrity: sha512-Nf4eMGE2O5vnJG7KPCRyksWS9gVKSYoUWtPeMXRRxwZSPVQhSGtL602xVYS65LvMkHmkvKa7xpauF0+/5pPwrg==}
+    hasBin: true
 
   satteri@0.10.5:
     resolution: {integrity: sha512-Ao1LKpAEa9Wdg0otgbVKViZHEq9ebdXe4DMrp3s9vQAU0HNIuHnFEuMuOcm0ZIXyV0Yzxj91NvhLpvXZJO/5ZQ==}
@@ -4768,9 +4774,9 @@ snapshots:
   '@ark/util@0.56.0':
     optional: true
 
-  '@astrojs/check@0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.8)(typescript@6.0.3)':
+  '@astrojs/check@0.9.10(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)':
     dependencies:
-      '@astrojs/language-server': 2.16.12(prettier-plugin-astro@0.14.1)(prettier@3.9.8)(typescript@6.0.3)
+      '@astrojs/language-server': 2.16.12(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)
       chokidar: 4.0.3
       kleur: 4.1.5
       typescript: 6.0.3
@@ -4877,7 +4883,7 @@ snapshots:
       smol-toml: 1.8.0
       unified: 11.0.5
 
-  '@astrojs/language-server@2.16.12(prettier-plugin-astro@0.14.1)(prettier@3.9.8)(typescript@6.0.3)':
+  '@astrojs/language-server@2.16.12(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)':
     dependencies:
       '@astrojs/compiler': 2.13.1
       '@astrojs/yaml2ts': 0.2.4
@@ -4899,7 +4905,7 @@ snapshots:
       vscode-uri: 3.1.0
     optionalDependencies:
       prettier: 3.9.8
-      prettier-plugin-astro: 0.14.1
+      prettier-plugin-astro: 1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8)
     transitivePeerDependencies:
       - typescript
 
@@ -5975,6 +5981,8 @@ snapshots:
       supports-color: 10.2.2
 
   '@poppinss/exception@1.2.3': {}
+
+  '@prettier/parse-srcset@3.1.0': {}
 
   '@rolldown/binding-android-arm-eabi@1.2.5':
     optional: true
@@ -8079,27 +8087,31 @@ snapshots:
 
   powershell-utils@0.1.0: {}
 
-  prettier-plugin-astro-organize-imports@0.4.13(prettier-plugin-astro@0.14.1)(prettier-plugin-tailwindcss@0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@0.14.1)(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8))(prettier@3.9.8):
+  prettier-plugin-astro-organize-imports@0.4.13(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier-plugin-tailwindcss@0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8))(prettier@3.9.8):
     dependencies:
       '@astrojs/compiler': 3.0.1
       prettier: 3.9.8
       typescript: 6.0.3
     optionalDependencies:
-      prettier-plugin-astro: 0.14.1
-      prettier-plugin-tailwindcss: 0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@0.14.1)(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8)
+      prettier-plugin-astro: 1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8)
+      prettier-plugin-tailwindcss: 0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8)
 
-  prettier-plugin-astro@0.14.1:
+  prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8):
     dependencies:
-      '@astrojs/compiler': 2.13.1
+      '@astrojs/compiler-rs': 0.4.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)
+      '@prettier/parse-srcset': 3.1.0
       prettier: 3.9.8
-      sass-formatter: 0.7.9
+      sass-formatter: 0.8.0
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
-  prettier-plugin-classnames@0.10.4(prettier-plugin-astro@0.14.1)(prettier@3.9.8):
+  prettier-plugin-classnames@0.10.4(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8):
     dependencies:
       prettier: 3.9.8
       zod: 3.22.4
     optionalDependencies:
-      prettier-plugin-astro: 0.14.1
+      prettier-plugin-astro: 1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8)
 
   prettier-plugin-merge@0.10.1(prettier@3.9.8):
     dependencies:
@@ -8111,12 +8123,12 @@ snapshots:
       prettier: 3.9.8
       typescript: 6.0.3
 
-  prettier-plugin-tailwindcss@0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@0.14.1)(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8):
+  prettier-plugin-tailwindcss@0.8.1(@trivago/prettier-plugin-sort-imports@6.0.2(prettier@3.9.8)(supports-color@10.2.2))(prettier-plugin-astro@1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier-plugin-organize-imports@4.3.0(prettier@3.9.8)(typescript@6.0.3))(prettier@3.9.8):
     dependencies:
       prettier: 3.9.8
     optionalDependencies:
       '@trivago/prettier-plugin-sort-imports': 6.0.2(prettier@3.9.8)(supports-color@10.2.2)
-      prettier-plugin-astro: 0.14.1
+      prettier-plugin-astro: 1.0.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(prettier@3.9.8)
       prettier-plugin-organize-imports: 4.3.0(prettier@3.9.8)(typescript@6.0.3)
 
   prettier@3.9.8: {}
@@ -8240,7 +8252,7 @@ snapshots:
 
   s.color@0.0.15: {}
 
-  sass-formatter@0.7.9:
+  sass-formatter@0.8.0:
     dependencies:
       suf-log: 2.5.3
 

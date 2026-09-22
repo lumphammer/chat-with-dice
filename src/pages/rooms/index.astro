@@ -4,12 +4,10 @@ import { RoomListWrapper } from "./_components/RoomListWrapper";
 export const prerender = false;
 ---
 
-{
-  Astro.locals.user ? (
-    <Layout title="Your rooms">
-      <RoomListWrapper client:only />
-    </Layout>
-  ) : (
-    <Layout title="Your rooms">You aint logged in</Layout>
-  )
-}
+{Astro.locals.user ? (
+  <Layout title="Your rooms">
+    <RoomListWrapper client:only />
+  </Layout>
+) : (
+  <Layout title="Your rooms">You aint logged in</Layout>
+)}

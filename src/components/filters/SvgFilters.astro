@@ -15,14 +15,16 @@ import CyberRetroGlitch from "./cyber-retro-glitch.astro";
       type="fractalNoise"
       baseFrequency="0.65"
       numOctaves="2"
-      stitchTiles="stitch"></feTurbulence>
+      stitchTiles="stitch"
+    ></feTurbulence>
   </filter>
   <filter id="blotchFilter">
     <feTurbulence
       type="fractalNoise"
       baseFrequency="0.15"
       numOctaves="2"
-      stitchTiles="stitch"></feTurbulence>
+      stitchTiles="stitch"
+    ></feTurbulence>
   </filter>
 
   <filter id="gentle-noise">
@@ -32,7 +34,8 @@ import CyberRetroGlitch from "./cyber-retro-glitch.astro";
       baseFrequency="0.3"
       numOctaves="4"
       stitchTiles="noStitch"
-      result="noise"></feTurbulence>
+      result="noise"
+    ></feTurbulence>
     <!-- Make it subtle by lowering opacity -->
     <feColorMatrix
       in="noise"
@@ -42,7 +45,8 @@ import CyberRetroGlitch from "./cyber-retro-glitch.astro";
         0 0 0 0 0
         0 0 0 0 0
         0 0 0 0.45 0"
-      result="fadedNoise"></feColorMatrix>
+      result="fadedNoise"
+    ></feColorMatrix>
     <!-- Blend noise over the source graphic -->
     <feBlend in="noise" in2="SourceGraphic" mode="multiply"></feBlend>
   </filter>
@@ -54,7 +58,8 @@ import CyberRetroGlitch from "./cyber-retro-glitch.astro";
       baseFrequency="0.05"
       numOctaves="2"
       seed="69"
-      result="turbulence"></feTurbulence>
+      result="turbulence"
+    ></feTurbulence>
     <feDisplacementMap
       in2="turbulence"
       in="SourceGraphic"
@@ -62,8 +67,7 @@ import CyberRetroGlitch from "./cyber-retro-glitch.astro";
       xChannelSelector="R"
       yChannelSelector="G"
       result="wibbles"
-    >
-    </feDisplacementMap>
+    ></feDisplacementMap>
     <!-- <feColorMatrix
       in="wibbles"
       type="matrix"
@@ -104,11 +108,13 @@ import CyberRetroGlitch from "./cyber-retro-glitch.astro";
     <feGaussianBlur
       in="feComponentTransfer-a52b6165"
       stdDeviation="8"
-      result="feGaussianBlur-db76bfdd"></feGaussianBlur>
+      result="feGaussianBlur-db76bfdd"
+    ></feGaussianBlur>
     <feComposite
       in="SourceGraphic"
       in2="feGaussianBlur-db76bfdd"
-      operator="over"></feComposite>
+      operator="over"
+    ></feComposite>
   </filter>
 
   <CyberRetroGlitch />
