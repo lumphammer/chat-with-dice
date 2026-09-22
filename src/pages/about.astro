@@ -26,19 +26,27 @@ const dateStringUTCISO = new Date().toISOString();
       problems, and follow development in the{" "}
       <a href="https://github.com/lumphammer/chat-with-dice">
         lumphammer/chat-with-dice GitHub repository
-      </a>.
+      </a>
+      .
     </p>
 
     <h2>More information</h2>
     <ul>
-      <li><a href="/terms">Terms of service</a></li>
-      <li><a href="/cookie-policy">Cookie Policy</a></li>
-      <li><a href="/contact">Contact us or send feedback</a></li>
+      <li>
+        <a href="/terms">Terms of service</a>
+      </li>
+      <li>
+        <a href="/cookie-policy">Cookie Policy</a>
+      </li>
+      <li>
+        <a href="/contact">Contact us or send feedback</a>
+      </li>
     </ul>
     <p>
-      Site built: <span data-timestamp={builtAtTime} id="timestamp"
-        >{dateStringUTCISO}</span
-      >
+      Site built:{" "}
+      <span data-timestamp={builtAtTime} id="timestamp">
+        {dateStringUTCISO}
+      </span>
     </p>
   </article>
 </Layout>
@@ -46,22 +54,22 @@ const dateStringUTCISO = new Date().toISOString();
 <script>
   import { getRelativeTimeString } from "#/utils/getRelativeTimeString";
 
-  function enableClickableTimestamp() {
-    const timestampSpan = document.getElementById("timestamp");
-    if (!timestampSpan) {
-      return;
-    }
-    const timestamp = Number(timestampSpan?.dataset.timestamp);
-    const relativeTimeString = getRelativeTimeString(timestamp);
-    const absoluteTimeString = timestampSpan.textContent;
-    let showRelative = true;
-    timestampSpan.textContent = relativeTimeString;
-    timestampSpan.addEventListener("click", () => {
-      showRelative = !showRelative;
-      timestampSpan.textContent = showRelative
-        ? relativeTimeString
-        : absoluteTimeString;
-    });
+function enableClickableTimestamp() {
+  const timestampSpan = document.getElementById("timestamp");
+  if (!timestampSpan) {
+    return;
   }
-  enableClickableTimestamp();
+  const timestamp = Number(timestampSpan?.dataset.timestamp);
+  const relativeTimeString = getRelativeTimeString(timestamp);
+  const absoluteTimeString = timestampSpan.textContent;
+  let showRelative = true;
+  timestampSpan.textContent = relativeTimeString;
+  timestampSpan.addEventListener("click", () => {
+    showRelative = !showRelative;
+    timestampSpan.textContent = showRelative
+      ? relativeTimeString
+      : absoluteTimeString;
+  });
+}
+enableClickableTimestamp();
 </script>

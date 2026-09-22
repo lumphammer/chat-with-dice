@@ -34,68 +34,66 @@ const dice = [
   <StyleDemoToolbar client:load />
   <!-- the toolbar is fixed, so the swatches need somewhere to start -->
   <div class="h-20 shrink-0"></div>
-  {
-    ["bg-base-100", "bg-base-200", "bg-base-300", "bg-black", "bg-white"].map(
-      (bg) => {
-        return (
-          <div class={`m-6 p-6 ${bg} rounded`}>
-            <h1 class="text-2xl font-bold">.{bg}</h1>
-            <p>Some text</p>
-            <p class="p text-primary">.text-primary</p>
-            <p class="p text-secondary">.text-secondary</p>
-            <p class="p text-accent">.text-accent</p>
-            <p class="p text-primary-text">.text-primary-text</p>
-            <p class="p text-secondary-text">.text-secondary-text</p>
-            <p class="p text-accent-text">.text-accent-text</p>
-            {buttonStyles.map((style) => (
-              <div class="my-2 flex flex-wrap gap-2">
-                {buttonColors.map((color) => (
-                  <div class={`btn ${style} ${color}`}>
-                    {[style, color]
-                      .filter(Boolean)
-                      .map((cls) => `.${cls}`)
-                      .join("")}
-                  </div>
-                ))}
-              </div>
-            ))}
-            <div class="my-4 flex flex-wrap gap-2">
-              {dice.map(({ label, Icon }) => (
-                <button type="button" class="btn btn-primary">
-                  <Icon class="h-5 w-5" />
-                  Roll {label}
-                </button>
+  {["bg-base-100", "bg-base-200", "bg-base-300", "bg-black", "bg-white"].map(
+    (bg) => {
+      return (
+        <div class={`m-6 p-6 ${bg} rounded`}>
+          <h1 class="text-2xl font-bold">.{bg}</h1>
+          <p>Some text</p>
+          <p class="p text-primary">.text-primary</p>
+          <p class="p text-secondary">.text-secondary</p>
+          <p class="p text-accent">.text-accent</p>
+          <p class="p text-primary-text">.text-primary-text</p>
+          <p class="p text-secondary-text">.text-secondary-text</p>
+          <p class="p text-accent-text">.text-accent-text</p>
+          {buttonStyles.map((style) => (
+            <div class="my-2 flex flex-wrap gap-2">
+              {buttonColors.map((color) => (
+                <div class={`btn ${style} ${color}`}>
+                  {[style, color]
+                    .filter(Boolean)
+                    .map((cls) => `.${cls}`)
+                    .join("")}
+                </div>
               ))}
             </div>
-
-            <div class="toast toast-info">
-              <div
-                data-scope="toast"
-                data-part="root"
-                data-type="info"
-                class="my-4 max-w-64 p-4"
-              >
-                .toast info
-              </div>
-            </div>
-            <div class="alert alert-primary my-4 max-w-64 p-4">
-              .alert.alert-primary
-            </div>
-
-            <div class="alert alert-error my-4 max-w-64 p-4">
-              .alert.alert-error
-            </div>
-
-            {["bg-base-100", "bg-base-200", "bg-base-300"].map((bg) => {
-              return (
-                <div class={`m-2 rounded p-2 ${bg} inline-block h-20 w-50`}>
-                  <h2 class="text-xl">.{bg}</h2>
-                </div>
-              );
-            })}
+          ))}
+          <div class="my-4 flex flex-wrap gap-2">
+            {dice.map(({ label, Icon }) => (
+              <button type="button" class="btn btn-primary">
+                <Icon class="h-5 w-5" />
+                Roll {label}
+              </button>
+            ))}
           </div>
-        );
-      },
-    )
-  }
+
+          <div class="toast toast-info">
+            <div
+              data-scope="toast"
+              data-part="root"
+              data-type="info"
+              class="my-4 max-w-64 p-4"
+            >
+              .toast info
+            </div>
+          </div>
+          <div class="alert alert-primary my-4 max-w-64 p-4">
+            .alert.alert-primary
+          </div>
+
+          <div class="alert alert-error my-4 max-w-64 p-4">
+            .alert.alert-error
+          </div>
+
+          {["bg-base-100", "bg-base-200", "bg-base-300"].map((bg) => {
+            return (
+              <div class={`m-2 rounded p-2 ${bg} inline-block h-20 w-50`}>
+                <h2 class="text-xl">.{bg}</h2>
+              </div>
+            );
+          })}
+        </div>
+      );
+    },
+  )}
 </Layout>

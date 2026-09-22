@@ -20,20 +20,18 @@ const initialUser = toClientUser(Astro.locals.user);
       dark:text-stone-100`}
   >
     <div class="navbar-start">
-      <a href="/" class="link link-primary link-hover text-xl font-medium"
-        ><Logo
+      <a href="/" class="link link-primary link-hover text-xl font-medium">
+        <Logo
           aria-label="Chat with Dice logo"
           aria-description="A d6 showing sixes on all sides, with a tail like a speech bubble"
           fill={undefined}
           stroke={undefined}
           class={"h-10 w-10"}
-        /></a
-      >
+        />
+      </a>
     </div>
     <div class="navbar-center">
-      <h1 class="heading">
-        {title ?? "Chat with Dice"}
-      </h1>
+      <h1 class="heading">{title ?? "Chat with Dice"}</h1>
     </div>
     <div class="navbar-end gap-4">
       <NavBarAccount client:load initialUser={initialUser} />

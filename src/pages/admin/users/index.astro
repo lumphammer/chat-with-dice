@@ -23,10 +23,8 @@ try {
 
 <AdminLayout title={"Users 🕵️‍♀️"} class="flex flex-col">
   {
-    (
-      <div class="flex-1">
-        <AdminUserList users={users} total={total} client:load />
-      </div>
-    )
+    <div class="flex-1">
+      <AdminUserList users={users} total={total} client:load />
+    </div>
   }
 </AdminLayout>
