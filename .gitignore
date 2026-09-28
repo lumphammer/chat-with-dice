@@ -27,6 +27,3 @@ pnpm-debug.log*
 .drizzle.env
 
 tmp
-
-# render benchmark builds
-bench/.builds/

@@ -92,17 +92,5 @@ export default defineConfig({
     builtin: true,
   },
   globals: {},
-  overrides: [
-    {
-      // the render benchmarks drive a browser one step at a time on purpose,
-      // and poke at window globals named after React's devtools hook
-      files: ["bench/**"],
-      rules: {
-        "eslint/no-await-in-loop": "off",
-        "eslint/no-magic-numbers": "off",
-        "eslint/no-underscore-dangle": "off",
-      },
-    },
-  ],
   ignorePatterns: [],
 });

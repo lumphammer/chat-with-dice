@@ -2,7 +2,7 @@
   "extends": "astro/tsconfigs/strict",
   "module": "esnext",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "bench/.builds"],
+  "exclude": ["dist"],
   "lib": ["dom", "esnext"],
   "compilerOptions": {
     "jsx": "react-jsx",

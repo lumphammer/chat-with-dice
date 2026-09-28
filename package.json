@@ -70,7 +70,6 @@
     "oxc-transform-react": "^0.151.0",
     "oxlint": "^1.85.0",
     "oxlint-tsgolint": "^7.0.2003",
-    "playwright": "^1.63.0",
     "prettier": "^3.9.9",
     "prettier-plugin-astro": "^1.1.0",
     "prettier-plugin-astro-organize-imports": "^0.4.13",
