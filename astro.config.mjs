@@ -8,7 +8,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 export default defineConfig({
   output: "static",
   adapter: cloudflare({}),
-  integrations: [react()],
+  integrations: [react({ compiler: true })],
   experimental: {
     // rustCompiler: true,
     svgOptimizer: svgoOptimizer({
