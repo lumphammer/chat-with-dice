@@ -36,7 +36,7 @@
     "@astrojs/check": "0.9.10",
     "@astrojs/cloudflare": "14.3.3",
     "@astrojs/compiler-rs": "^0.5.1",
-    "@astrojs/react": "6.0.6",
+    "@astrojs/react": "7.0.0",
     "@better-auth/drizzle-adapter": "^1.7.6",
     "@cloudflare/vitest-plugin": "^1.2.8",
     "@fontsource-variable/cinzel": "^5.3.0",
