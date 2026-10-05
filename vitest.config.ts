@@ -76,6 +76,10 @@ async function readDrizzleMigrations(
 
 const migrations = await readDrizzleMigrations("./migrations/coreD1");
 
+// Prefixes used by the Durable Object loggers (see `log`/`logError` in
+// `src/workers/*/utils.ts` and `src/workers/utils/setupDB.ts`).
+const quietLogPattern = /^\[(?:ChatRoomDO|UserDataDO|setupDB)\]/;
+
 const sharedAlias = {
   "#": fileURLToPath(new URL("./src", import.meta.url)),
   "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -87,6 +91,13 @@ export default defineConfig({
     jsxImportSource: "react",
   },
   test: {
+    // The Durable Objects log liberally (boot banners, migrations, full schema
+    // dumps) for observability in dev and prod. In tests that drowns the
+    // output, so drop their tagged lines. Set VERBOSE_DO_LOGS=1 to see them
+    // again while debugging. (Vitest only reads this hook from the root
+    // config, not from individual projects.)
+    onConsoleLog: (log) =>
+      Boolean(process.env.VERBOSE_DO_LOGS) || !quietLogPattern.test(log),
     projects: [
       {
         resolve: { alias: sharedAlias },
