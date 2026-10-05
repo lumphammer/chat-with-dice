@@ -52,7 +52,8 @@ function createMagicLinkUser(): Promise<TestUser> {
 /**
  * Complete a magic-link sign-in without an inbox. `sendMagicLink` only fires
  * the mail off, so we take the token Better Auth persisted alongside it (it
- * lands in the verification row's `identifier`) and follow the link ourselves.
+ * lands in the verification row's `identifier`, as `magic-link:<token>`) and
+ * follow the link ourselves.
  *
  * The table is shared with every other test in the run and timestamps collide
  * at millisecond resolution, so we diff the rows rather than take the newest.
@@ -75,13 +76,12 @@ async function signInByMagicLink(email: string): Promise<void> {
       .from(verifications)
   ).filter((row) => !before.has(row.id));
   expect(issued).toHaveLength(1);
+  const token = issued[0].identifier.replace(/^magic-link:/, "");
 
   const verifyResponse = await callAuthRoute(
     // The emailed link carries the callback URL through; without it the
     // endpoint answers with JSON instead of a redirect.
-    new Request(
-      `${BASE}/magic-link/verify?token=${issued[0].identifier}&callbackURL=/`,
-    ),
+    new Request(`${BASE}/magic-link/verify?token=${token}&callbackURL=/`),
   );
   // Signing in successfully redirects to the callback URL; a failure would
   // redirect to an error URL instead, so assert we landed where we meant to.
