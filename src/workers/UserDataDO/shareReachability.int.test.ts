@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 
 const ROOM_ID = "room-with-the-share";
 const OTHER_ROOM_ID = "room-without-the-share";
-const ROOM_DO_ID = "room-do-id";
+const ROOM_DO_ID = env.CHAT_ROOM_DO.newUniqueId().toString();
 
 const getDO = (userDataDOId: string) =>
   env.USER_DATA_DO.get(env.USER_DATA_DO.idFromString(userDataDOId));

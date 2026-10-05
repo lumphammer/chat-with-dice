@@ -10,9 +10,9 @@ import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 
 const ROOM_ID = "the-room";
-const ROOM_DO_ID = "the-room-do";
+const ROOM_DO_ID = env.CHAT_ROOM_DO.newUniqueId().toString();
 const OTHER_ROOM_ID = "other-room";
-const OTHER_ROOM_DO_ID = "other-room-do";
+const OTHER_ROOM_DO_ID = env.CHAT_ROOM_DO.newUniqueId().toString();
 
 /**
  * `findRoomsSharingNode` is a repository query, so the tests reach it through a

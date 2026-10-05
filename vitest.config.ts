@@ -132,6 +132,7 @@ export default defineConfig({
               d1Databases: ["CORE_D1"],
               durableObjects: {
                 USER_DATA_DO: { className: "UserDataDO", useSQLite: true },
+                CHAT_ROOM_DO: { className: "ChatRoomDOStub", useSQLite: true },
               },
               bindings: {
                 TEST_MIGRATIONS: migrations,

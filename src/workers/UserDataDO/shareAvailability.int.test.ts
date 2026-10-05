@@ -5,6 +5,10 @@ import {
   callAction,
   makeActionContext,
 } from "#/test-utils/integration/actions";
+import {
+  ROOM_NOTIFICATIONS_KEY,
+  type RoomNotification,
+} from "#/test-utils/integration/testWorker";
 import { createUserWithDO } from "#/test-utils/integration/users";
 import { UserDataRepository } from "#/workers/UserDataDO/UserDataRepository";
 import { runInDurableObject } from "cloudflare:test";
@@ -12,7 +16,6 @@ import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 
 const ROOM_ID = "the-room";
-const ROOM_DO_ID = "the-room-do";
 
 /**
  * `findSharesAtOrBelow` is a repository query, so the tests reach it through a
@@ -26,9 +29,25 @@ const findSharesAtOrBelow = (userDataDOId: string, nodeId: string) =>
       new UserDataRepository(state).findSharesAtOrBelow(nodeId),
   );
 
-/** `/Decks/Magus`, with a share on whichever folders are named. */
+/**
+ * The RPCs the room (a `ChatRoomDOStub` in tests) has received from the owner's
+ * `UserDataDO`.
+ */
+const roomNotifications = (roomDurableObjectId: string) =>
+  runInDurableObject(
+    env.CHAT_ROOM_DO.get(env.CHAT_ROOM_DO.idFromString(roomDurableObjectId)),
+    async (_instance, state) =>
+      (await state.storage.get<RoomNotification[]>(ROOM_NOTIFICATIONS_KEY)) ??
+      [],
+  );
+
+/**
+ * `/Decks/Magus`, with a share on whichever folders are named. Each tree gets
+ * its own room, so one test's notifications never show up in another's.
+ */
 async function setUpTree(shareOn: ("parent" | "child")[]) {
   const user = await createUserWithDO();
+  const roomDurableObjectId = env.CHAT_ROOM_DO.newUniqueId().toString();
   const ctx = makeActionContext(user);
   const parent = await callAction(createFolder, { name: "Decks" }, ctx);
   const child = await callAction(
@@ -45,18 +64,18 @@ async function setUpTree(shareOn: ("parent" | "child")[]) {
       userDataDO.shareNodeWithRoom({
         nodeId: which === "parent" ? parent.id : child.id,
         roomId: ROOM_ID,
-        roomDurableObjectId: ROOM_DO_ID,
+        roomDurableObjectId,
         userDisplayName: "Owner",
       }),
     ),
   );
 
-  return { user, ctx, parent, child };
+  return { user, ctx, parent, child, roomDurableObjectId };
 }
 
 describe("findSharesAtOrBelow", () => {
   it("finds a share on the node itself and reports it available", async () => {
-    const { user, child } = await setUpTree(["child"]);
+    const { user, child, roomDurableObjectId } = await setUpTree(["child"]);
 
     const rows = await findSharesAtOrBelow(user.userDataDOId, child.id);
 
@@ -64,7 +83,7 @@ describe("findSharesAtOrBelow", () => {
       {
         node_id: child.id,
         room_id: ROOM_ID,
-        room_durable_object_id: ROOM_DO_ID,
+        room_durable_object_id: roomDurableObjectId,
         unavailable: 0,
       },
     ]);
@@ -77,6 +96,52 @@ describe("findSharesAtOrBelow", () => {
     const rows = await findSharesAtOrBelow(user.userDataDOId, child.id);
 
     expect(rows).toMatchObject([{ node_id: child.id, unavailable: 1 }]);
+  });
+
+  it("tells the room when a share is binned, and again when it is restored", async () => {
+    const { user, ctx, child, roomDurableObjectId } = await setUpTree([
+      "child",
+    ]);
+
+    await callAction(deleteNode, { nodeId: child.id }, ctx);
+    await callAction(restoreNode, { nodeId: child.id }, ctx);
+
+    expect(await roomNotifications(roomDurableObjectId)).toEqual([
+      {
+        method: "onShareAvailabilityChange",
+        args: [[{ ownerUserId: user.id, nodeId: child.id, unavailable: true }]],
+      },
+      {
+        method: "onShareAvailabilityChange",
+        args: [
+          [{ ownerUserId: user.id, nodeId: child.id, unavailable: false }],
+        ],
+      },
+    ]);
+  });
+
+  it("tells the room once about every share below a binned folder", async () => {
+    // Both shares go to the same room, so binning Decks should send one RPC
+    // carrying both changes, including the one shadowed on Magus.
+    const { user, ctx, parent, child, roomDurableObjectId } = await setUpTree([
+      "parent",
+      "child",
+    ]);
+
+    await callAction(deleteNode, { nodeId: parent.id }, ctx);
+
+    const notifications = await roomNotifications(roomDurableObjectId);
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]).toMatchObject({
+      method: "onShareAvailabilityChange",
+    });
+    expect(notifications[0].args[0]).toEqual(
+      expect.arrayContaining([
+        { ownerUserId: user.id, nodeId: parent.id, unavailable: true },
+        { ownerUserId: user.id, nodeId: child.id, unavailable: true },
+      ]),
+    );
+    expect(notifications[0].args[0]).toHaveLength(2);
   });
 
   it("finds shares below the binned node, and reports them shadowed", async () => {

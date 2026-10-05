@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 
 const ROOM_ID = "room-with-the-share";
 const OTHER_ROOM_ID = "room-without-the-share";
-const ROOM_DO_ID = "room-do-id";
+const ROOM_DO_ID = env.CHAT_ROOM_DO.newUniqueId().toString();
 const FILE_SIZE = 100;
 
 const getDO = (userDataDOId: string) =>
