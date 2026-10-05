@@ -120,6 +120,30 @@ describe("findSharesAtOrBelow", () => {
     ]);
   });
 
+  it("tells the room once about every share below a binned folder", async () => {
+    // Both shares go to the same room, so binning Decks should send one RPC
+    // carrying both changes, including the one shadowed on Magus.
+    const { user, ctx, parent, child, roomDurableObjectId } = await setUpTree([
+      "parent",
+      "child",
+    ]);
+
+    await callAction(deleteNode, { nodeId: parent.id }, ctx);
+
+    const notifications = await roomNotifications(roomDurableObjectId);
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]).toMatchObject({
+      method: "onShareAvailabilityChange",
+    });
+    expect(notifications[0].args[0]).toEqual(
+      expect.arrayContaining([
+        { ownerUserId: user.id, nodeId: parent.id, unavailable: true },
+        { ownerUserId: user.id, nodeId: child.id, unavailable: true },
+      ]),
+    );
+    expect(notifications[0].args[0]).toHaveLength(2);
+  });
+
   it("finds shares below the binned node, and reports them shadowed", async () => {
     // The grant is on Magus; binning Decks shadows it. Notifying only about
     // shares *on* the binned node would miss this one entirely.
