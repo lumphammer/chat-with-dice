@@ -114,7 +114,7 @@ export function useUpload(
             throw new Error(message);
           }
 
-          const body = (await response.json()) as { id: string };
+          const body = await response.json<{ id: string }>();
           const thumbnail = await generateImageThumbnail(file);
           if (thumbnail) {
             try {
